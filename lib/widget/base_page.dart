@@ -37,13 +37,16 @@ abstract class BasePage<T extends BaseController> extends ControlWidget<T> {
 
 class _BasePageState<T extends BaseController> extends BaseState<T, BasePage> {
   @override
-  Widget buildWidget(BuildContext context, StateController controller) {
-    return Scaffold(
-      appBar: widget.buildAppBar(context, controller),
-      body: widget.buildPage(context, controller),
-      bottomNavigationBar: widget.buildBottomNavigation(context, controller),
-      bottomSheet: widget.buildBottomSheet(context, controller),
-      drawer: widget.buildDrawer(context, controller),
+  Widget buildWidget(BuildContext context, T controller) {
+    return WillPopScope(
+      onWillPop: controller.onBackPressed,
+      child: Scaffold(
+        appBar: widget.buildAppBar(context, controller),
+        body: widget.buildPage(context, controller),
+        bottomNavigationBar: widget.buildBottomNavigation(context, controller),
+        bottomSheet: widget.buildBottomSheet(context, controller),
+        drawer: widget.buildDrawer(context, controller),
+      ),
     );
   }
 }

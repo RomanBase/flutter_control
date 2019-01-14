@@ -52,12 +52,16 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
 abstract class BaseState<T extends StateController, U extends ControlWidget> extends ControlState<T, U> implements RouteNavigator {
   @override
   Future<dynamic> openRoute(Route route, {bool root: false}) {
-    return GlobalNavigation(context).openRoute(route, root: root);
+    if (root) {
+      return Navigator.of(context).pushReplacement(route);
+    } else {
+      return Navigator.of(context).push(route);
+    }
   }
 
   @override
   Future<dynamic> openRoot(Route route) {
-    return GlobalNavigation(context).openRoot(route);
+    return Navigator.of(context).pushAndRemoveUntil(route, (Route<dynamic> pop) => false);
   }
 
   @override
@@ -74,12 +78,12 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
 
   @override
   void backTo(String route) {
-    GlobalNavigation(context).backTo(route);
+    Navigator.of(context).popUntil((Route<dynamic> pop) => pop.settings.name == route);
   }
 
   @override
   void close({dynamic result}) {
-    GlobalNavigation(context).close();
+    Navigator.of(context).pop(result);
   }
 }
 
@@ -99,75 +103,5 @@ class _BaseWidgetState<T extends BaseController> extends BaseState<T, BasePage> 
   @override
   Widget buildWidget(BuildContext context, StateController controller) {
     return widget.buildPage(context, controller); // ignore: invalid_use_of_protected_member
-  }
-}
-
-class GlobalNavigation implements RouteNavigator {
-  final BuildContext context;
-
-  GlobalNavigation(this.context);
-
-  @override
-  Future<dynamic> openRoute(Route route, {bool root: false}) {
-    if (root) {
-      return Navigator.of(context).pushReplacement(route);
-    } else {
-      return Navigator.of(context).push(route);
-    }
-  }
-
-  @override
-  Future<dynamic> openRoot(Route route) {
-    return Navigator.of(context).pushAndRemoveUntil(route, (Route<dynamic> pop) => false);
-  }
-
-  @override
-  Future<dynamic> openDialog(WidgetInitializer initializer, {DialogType type: DialogType.popup}) {
-    return null;
-  }
-
-  @override
-  void backTo(String route) {
-    Navigator.of(context).popUntil((Route<dynamic> pop) => pop.settings.name == route);
-  }
-
-  @override
-  void close({dynamic result}) {
-    Navigator.of(context).pop(result);
-  }
-}
-
-class TreeNavigation implements RouteNavigator {
-  final BuildContext context;
-
-  TreeNavigation(this.context);
-
-  @override
-  Future<dynamic> openRoute(Route route, {bool root: false}) {
-    if (root) {
-      return Navigator.pushReplacement(context, route);
-    } else {
-      return Navigator.push(context, route);
-    }
-  }
-
-  @override
-  Future<dynamic> openRoot(Route route) {
-    return Navigator.pushAndRemoveUntil(context, route, (Route<dynamic> pop) => false);
-  }
-
-  @override
-  Future<dynamic> openDialog(WidgetInitializer initializer, {DialogType type: DialogType.popup}) {
-    return null;
-  }
-
-  @override
-  void backTo(String route) {
-    Navigator.popUntil(context, (Route<dynamic> pop) => pop.settings.name == route);
-  }
-
-  @override
-  void close({dynamic result}) {
-    Navigator.pop(context, result);
   }
 }

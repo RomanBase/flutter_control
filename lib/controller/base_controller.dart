@@ -108,14 +108,15 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   }
 }
 
-abstract class
-BaseController extends StateController implements RouteNavigator, RouteIdentifier {
+abstract class BaseController extends StateController implements RouteNavigator, RouteIdentifier {
   @override
   String get routeIdentifier => this.toString();
 
   RouteNavigator _navigator;
 
   final isLoading = FieldController<bool>(false);
+
+  Future<bool> onBackPressed() async => false;
 
   void subscribeNavigator(RouteNavigator navigator) {
     _navigator = navigator;
