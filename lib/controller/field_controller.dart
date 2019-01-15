@@ -11,6 +11,8 @@ class FieldController<T> implements Disposable {
 
   Sink<T> get sink => FieldSink<T>(this);
 
+  bool get isClosed => _stream.isClosed;
+
   T _value;
 
   T get value => _value;
@@ -27,7 +29,10 @@ class FieldController<T> implements Disposable {
 
   void setValue(T value) {
     _value = value;
-    _stream.add(value);
+
+    if (!_stream.isClosed) {
+      _stream.add(value);
+    }
   }
 
   void copyValue(FieldController<T> controller) {

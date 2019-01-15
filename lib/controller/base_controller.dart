@@ -32,7 +32,7 @@ abstract class RouteIdentifier {
   String get routeIdentifier;
 
   @protected
-  Route getRoute();
+  Route getRoute({RouteSettings settings});
 }
 
 abstract class WidgetInitializer {
@@ -76,6 +76,8 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   @protected
   void onTickerInitialized(TickerProvider ticker) {}
 
+  void reload() {}
+
   void subscribe(dynamic object) {
     if (_widget == null) {
       if (object is Widget) {
@@ -116,7 +118,7 @@ abstract class BaseController extends StateController implements RouteNavigator,
 
   final isLoading = FieldController<bool>(false);
 
-  Future<bool> onBackPressed() async => false;
+  Future<bool> onBackPressed() async => true;
 
   void subscribeNavigator(RouteNavigator navigator) {
     _navigator = navigator;
@@ -180,10 +182,10 @@ abstract class BaseController extends StateController implements RouteNavigator,
   }
 
   @override
-  Route getRoute() {
+  Route getRoute({RouteSettings settings}) {
     //TODO: more settings
-    final settings = RouteSettings(name: routeIdentifier ?? this.runtimeType.toString());
+    final routeSettings = settings ?? RouteSettings(name: routeIdentifier ?? this.toString());
 
-    return MaterialPageRoute(settings: settings, builder: (context) => initWidget());
+    return MaterialPageRoute(builder: (context) => getWidget());
   }
 }

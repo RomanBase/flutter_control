@@ -96,12 +96,12 @@ abstract class BaseWidget<T extends BaseController> extends ControlWidget<T> {
   @override
   State<StatefulWidget> createState() => _BaseWidgetState();
 
-  Widget buildPage(BuildContext context, T controller);
+  Widget buildWidget(BuildContext context, T controller);
 }
 
-class _BaseWidgetState<T extends BaseController> extends BaseState<T, BasePage> {
+class _BaseWidgetState<T extends BaseController> extends BaseState<T, BaseWidget> {
   @override
   Widget buildWidget(BuildContext context, StateController controller) {
-    return widget.buildPage(context, controller); // ignore: invalid_use_of_protected_member
+    return widget.buildWidget(context, controller); // ignore: invalid_use_of_protected_member
   }
 }
