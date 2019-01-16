@@ -41,6 +41,7 @@ class _BasePageState<T extends BaseController> extends BaseState<T, BasePage> {
     return WillPopScope(
       onWillPop: controller.onBackPressed,
       child: Scaffold(
+        backgroundColor: Theme.of(context).backgroundColor,
         appBar: widget.buildAppBar(context, controller),
         body: widget.buildPage(context, controller),
         bottomNavigationBar: widget.buildBottomNavigation(context, controller),

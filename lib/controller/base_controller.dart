@@ -110,7 +110,8 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   }
 }
 
-abstract class BaseController extends StateController implements RouteNavigator, RouteIdentifier {
+abstract class
+BaseController extends StateController implements RouteNavigator, RouteIdentifier {
   @override
   String get routeIdentifier => this.toString();
 
