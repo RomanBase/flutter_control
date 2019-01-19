@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-enum DialogType { popup, sheet }
+enum DialogType { popup, sheet, dock }
 
 typedef Action<T> = T Function();
 
@@ -21,7 +21,7 @@ abstract class RouteNavigator {
 
   Future<dynamic> openRoot(Route route);
 
-  Future<dynamic> openDialog(WidgetInitializer initializer, {DialogType type: DialogType.popup});
+  Future<dynamic> openDialog(WidgetInitializer initializer, {bool root: false, DialogType type: DialogType.popup});
 
   void backTo(String route);
 
@@ -102,6 +102,12 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   @override
   Widget getWidget() => _widget ?? (_widget = initWidget());
 
+  @protected
+  String localize(String key) => AppControl.of(_context)?.localize(key);
+
+  @protected
+  String extractLocalization(Map<String, String> field) => AppControl.of(_context)?.extractLocalization(field);
+
   @override
   void dispose() {
     _stateNotifier = null;
@@ -110,8 +116,7 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   }
 }
 
-abstract class
-BaseController extends StateController implements RouteNavigator, RouteIdentifier {
+abstract class BaseController extends StateController implements RouteNavigator, RouteIdentifier {
   @override
   String get routeIdentifier => this.toString();
 
@@ -145,8 +150,8 @@ BaseController extends StateController implements RouteNavigator, RouteIdentifie
   }
 
   @override
-  Future<dynamic> openDialog(WidgetInitializer widget, {DialogType type: DialogType.popup}) {
-    return _navigator?.openDialog(widget, type: type);
+  Future<dynamic> openDialog(WidgetInitializer widget, {bool root: false, DialogType type: DialogType.popup}) {
+    return _navigator?.openDialog(widget, root: root, type: type);
   }
 
   @override
@@ -177,9 +182,9 @@ BaseController extends StateController implements RouteNavigator, RouteIdentifie
     return openRoot(controller.getRoute());
   }
 
-  Future<dynamic> openDialogController(StateController controller, {List args}) {
+  Future<dynamic> openDialogController(StateController controller, {bool root: false, List args}) {
     controller.onInit(args);
-    return openDialog(controller);
+    return openDialog(controller, root: root);
   }
 
   @override

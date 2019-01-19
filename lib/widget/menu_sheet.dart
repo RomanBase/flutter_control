@@ -20,17 +20,27 @@ class MenuSheetController extends BaseController {
   Widget initWidget() => MenuSheet(controller: this);
 }
 
-class MenuSheet extends ControlWidget<MenuSheetController> {
+class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
   final ItemBuilder itemBuilder;
-  final WidgetBuilder headerBuilder;
-  final WidgetBuilder footerBuilder;
 
-  MenuSheet({@required MenuSheetController controller, this.itemBuilder, this.headerBuilder, this.footerBuilder}) : super(controller: controller);
+  MenuSheet({@required T controller, this.itemBuilder}) : super(controller: controller);
 
   @override
   State<StatefulWidget> createState() => _MenuSheetState();
 
-  Widget buildContainer(BuildContext context, List<Widget> widgets) {
+  Widget buildContainer(BuildContext context, Widget header, Widget footer, List<Widget> items) {
+    final list = List<Widget>();
+
+    if (header != null) {
+      list.add(header);
+    }
+
+    list.addAll(items);
+
+    if (footer != null) {
+      list.add(footer);
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -38,41 +48,12 @@ class MenuSheet extends ControlWidget<MenuSheetController> {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        children: widgets,
+        children: list,
       ),
     );
   }
-}
 
-class _MenuSheetState extends BaseState<MenuSheetController, MenuSheet> {
-  @override
-  Widget buildWidget(BuildContext context, MenuSheetController controller) {
-    final list = List<Widget>();
-    final header = widget.headerBuilder == null ? buildHeader() : widget.headerBuilder(context);
-    final footer = widget.footerBuilder == null ? buildFooter() : widget.headerBuilder(context);
-
-    if (header != null) {
-      list.add(header);
-    }
-
-    if (widget.itemBuilder == null) {
-      for (final item in controller.items) {
-        list.add(buildItem(item));
-      }
-    } else {
-      for (final item in controller.items) {
-        list.add(widget.itemBuilder(context, item));
-      }
-    }
-
-    if (footer != null) {
-      list.add(footer);
-    }
-
-    return widget.buildContainer(context, list);
-  }
-
-  Widget buildHeader() {
+  Widget buildHeader(BuildContext context, T controller) {
     return Container(
       margin: const EdgeInsets.only(top: 8.0, bottom: 16.0),
       height: 8.0,
@@ -85,11 +66,11 @@ class _MenuSheetState extends BaseState<MenuSheetController, MenuSheet> {
     );
   }
 
-  Widget buildFooter() {
+  Widget buildFooter(BuildContext context, T controller) {
     return SizedBox(height: 16.0);
   }
 
-  Widget buildItem(MenuSheetItem item) {
+  Widget buildItem(BuildContext context, MenuSheetItem item) {
     final list = List<Widget>();
 
     if (item.icon != null) {
@@ -117,5 +98,26 @@ class _MenuSheetState extends BaseState<MenuSheetController, MenuSheet> {
         onPressed: item.onItemSelected,
       ),
     );
+  }
+}
+
+class _MenuSheetState<T extends MenuSheetController> extends BaseState<T, MenuSheet> {
+  @override
+  Widget buildWidget(BuildContext context, T controller) {
+    final items = List<Widget>();
+    final header = widget.buildHeader(context, controller);
+    final footer = widget.buildFooter(context, controller);
+
+    if (widget.itemBuilder == null) {
+      for (final item in controller.items) {
+        items.add(widget.buildItem(context, item));
+      }
+    } else {
+      for (final item in controller.items) {
+        items.add(widget.itemBuilder(context, item));
+      }
+    }
+
+    return widget.buildContainer(context, header, footer, items);
   }
 }

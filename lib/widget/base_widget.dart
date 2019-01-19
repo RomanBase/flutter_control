@@ -4,11 +4,22 @@ abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   @protected
   final T controller;
 
+  @protected
+  BuildContext get context => controller.getContext();
+
   ControlWidget({Key key, @required this.controller}) : super(key: key);
+
+  @protected
+  String localize(String key) => AppControl.of(context)?.localize(key);
+
+  @protected
+  String extractLocalization(Map<String, String> field) => AppControl.of(context)?.extractLocalization(field);
 }
 
 abstract class ControlState<T extends StateController, U extends ControlWidget> extends State<U> implements StateNotifier {
   T get controller => widget.controller;
+
+  BuildContext get rootContext => AppControl.of(context)?.context;
 
   @override
   void initState() {
@@ -42,6 +53,12 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
 
   Widget buildWidget(BuildContext context, T controller);
 
+  @protected
+  String localize(String key) => AppControl.of(context)?.localize(key);
+
+  @protected
+  String extractLocalization(Map<String, String> field) => AppControl.of(context)?.extractLocalization(field);
+
   @override
   void dispose() {
     super.dispose();
@@ -65,12 +82,17 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
   }
 
   @override
-  Future<dynamic> openDialog(WidgetInitializer initializer, {DialogType type: DialogType.popup}) {
+  Future<dynamic> openDialog(WidgetInitializer initializer, {bool root: false, DialogType type: DialogType.popup}) async {
+    final control = AppControl.of(context);
+    final dialogContext = root ? (control?.context ?? context) : context;
+
     switch (type) {
       case DialogType.popup:
-        return showDialog(context: context, builder: (context) => initializer.getWidget());
+        return showDialog(context: dialogContext, builder: (context) => initializer.getWidget());
       case DialogType.sheet:
-        return showModalBottomSheet(context: context, builder: (context) => initializer.getWidget());
+        return showModalBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
+      case DialogType.dock:
+        return showBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
     }
 
     return null;
