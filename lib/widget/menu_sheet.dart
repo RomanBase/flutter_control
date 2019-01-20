@@ -1,33 +1,51 @@
 import 'package:flutter_control/core.dart';
 
-typedef ItemBuilder<Widget>(BuildContext context, MenuSheetItem item);
+typedef MenuItemBuilder<Widget>(BuildContext context, MenuSheetItem item);
 
+/// Menu item entity
 class MenuSheetItem {
+  /// Text key of menu item.
   final String key;
+
+  /// Icon name, or path to asset.
+  /// Can be null.
   final String icon;
+
+  /// Menu item title.
+  /// Can be null.
   final String title;
+
+  /// Callback when menu item is selected.
   final Action onItemSelected;
 
+  /// Default constructor.
   MenuSheetItem({this.key, this.icon, this.title, this.onItemSelected});
 }
 
+/// BaseController of menu items.
 class MenuSheetController extends BaseController {
   final List<MenuSheetItem> items;
 
+  /// Default constructor.
   MenuSheetController(this.items);
 
   @override
   Widget initWidget() => MenuSheet(controller: this);
 }
 
+/// Custom Widget menu to build mainly Dialog sheets.
+/// This class provides separate builder methods for different parts of menu to build more complex menus.
 class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
-  final ItemBuilder itemBuilder;
+  /// Widget builder for menu item.
+  final MenuItemBuilder itemBuilder;
 
-  MenuSheet({@required T controller, this.itemBuilder}) : super(controller: controller);
+  /// Default constructor.
+  MenuSheet({@required T controller, Key key, this.itemBuilder}) : super(controller: controller, key: key);
 
   @override
   State<StatefulWidget> createState() => _MenuSheetState();
 
+  /// Builds enclosure container of menu.
   Widget buildContainer(BuildContext context, Widget header, Widget footer, List<Widget> items) {
     final list = List<Widget>();
 
@@ -53,6 +71,7 @@ class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
     );
   }
 
+  /// Builds just header part of menu.
   Widget buildHeader(BuildContext context, T controller) {
     return Container(
       margin: const EdgeInsets.only(top: 8.0, bottom: 16.0),
@@ -66,10 +85,13 @@ class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
     );
   }
 
+  /// Builds just footer part of menu.
   Widget buildFooter(BuildContext context, T controller) {
     return SizedBox(height: 16.0);
   }
 
+  /// Builds one item of menu.
+  /// But item builder passed in constructor has more priority then this method.
   Widget buildItem(BuildContext context, MenuSheetItem item) {
     final list = List<Widget>();
 
@@ -101,6 +123,8 @@ class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
   }
 }
 
+/// State for MenuSheet.
+/// Build phase is exposed back to MenuSheet Widget for easier integration and custom menu part overrides.
 class _MenuSheetState<T extends MenuSheetController> extends BaseState<T, MenuSheet> {
   @override
   Widget buildWidget(BuildContext context, T controller) {
