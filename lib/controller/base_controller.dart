@@ -106,18 +106,32 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   /// State which inherits from StateNotifier.
   StateNotifier _stateNotifier;
 
+  /// init check.
+  bool _isInitialized = false;
+
+  /// return true if init function was called before.
+  bool get isInitialized => _isInitialized;
+
   /// Parent is typically Controller where openController was called.
   dynamic parent;
 
-  /// return True if widget is not null;
+  /// return true if widget is not null;
   bool get isWidgetInitialized => _widget != null;
 
   /// Is typically called by framework in openController functions.
   /// Can be used to init first Controller.
   Widget init([List args]) {
+    _isInitialized = true;
     onInit(args);
 
     return getWidget();
+  }
+
+  /// Is typically called by framework in openController functions.
+  /// Can be used to re-init first Controller.
+  void postInit([List args]) {
+    _isInitialized = true;
+    onInit(args);
   }
 
   /// Is typically called right after constructor.
@@ -270,14 +284,18 @@ abstract class BaseController extends StateController implements RouteNavigator,
   /// Check openRoute for more info.
   Future<dynamic> openController(BaseController controller, {bool root: false, bool replacement: false, List args}) {
     controller.parent = this;
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openRoute(controller.getRoute(), root: root, replacement: replacement);
   }
 
   /// Initializes controller and pushes Route into Navigator
   /// Check openRoot for more info.
   Future<dynamic> openRootController(BaseController controller, {List args}) {
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openRoot(controller.getRoute());
   }
 
@@ -285,7 +303,9 @@ abstract class BaseController extends StateController implements RouteNavigator,
   /// Check openDialog for more info.
   Future<dynamic> openDialogController(StateController controller, {bool root: false, List args}) {
     controller.parent = this;
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openDialog(controller, root: root);
   }
 

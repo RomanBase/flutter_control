@@ -4,7 +4,6 @@ import 'package:flutter_control/core.dart';
 /// Controller is then used in State.
 abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   /// StateController passed in constructor.
-  /// Controller is initialized and used in State.
   @protected
   final T controller;
 
@@ -52,6 +51,10 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   /// Subscribe this state to Controller and notify Controller about initialization.
   void _initController(T controller) {
     if (controller != null) {
+      if (!controller.isInitialized) {
+        controller.postInit();
+      }
+
       controller.subscribe(this);
 
       if (this is TickerProvider) {
