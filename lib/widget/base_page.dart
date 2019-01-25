@@ -1,53 +1,84 @@
 import 'package:flutter_control/core.dart';
 
+//TODO: expose more settings of Scaffold
+/// Shortcut Widget for ControlWidget.
+/// State with Scaffold is created automatically and build functions are exposed directly to Widget.
+/// Because Controller holds everything important and notifies about state changes, there is no need to build complex State.
 abstract class BasePage<T extends BaseController> extends ControlWidget<T> {
-  BasePage({
-    Key key,
-    @required T controller,
-  }) : super(key: key, controller: controller);
+  final bool ticker;
+  final bool primary;
+  final bool resizeToAvoidBottomPadding;
+
+  /// Default constructor
+  BasePage({Key key, @required T controller, this.ticker: false, this.primary: true, this.resizeToAvoidBottomPadding: false}) : super(key: key, controller: controller);
 
   @override
-  State<StatefulWidget> createState() => _BasePageState();
+  State<StatefulWidget> createState() => ticker ? _BasePageTickerState() : _BasePageState();
 
+  /// Build body for Scaffold.
   @protected
   Widget buildPage(BuildContext context, T controller);
 
+  /// Build AppBar for Scaffold.
   @protected
   AppBar buildAppBar(BuildContext context, T controller) {
     return null;
   }
 
+  /// Build BottomNavigation for Scaffold.
   @protected
   Widget buildBottomNavigation(BuildContext context, T controller) {
     return null;
   }
 
+  /// Build BottomSheet for Scaffold.
   @protected
   Widget buildBottomSheet(BuildContext context, T controller) {
     return null;
   }
 
+  /// Build Drawer for Scaffold.
   @protected
   Widget buildDrawer(BuildContext context, T controller) {
     return null;
   }
 
-  BuildContext get context => controller.getContext(); // ignore: invalid_use_of_protected_member
-}
-
-class _BasePageState<T extends BaseController> extends BaseState<T, BasePage> {
-  @override
-  Widget buildWidget(BuildContext context, T controller) {
+  /// Build root Widget.
+  @protected
+  Widget buildScaffold(BuildContext context, T controller) {
     return WillPopScope(
       onWillPop: controller.onBackPressed,
       child: Scaffold(
+        primary: primary,
+        resizeToAvoidBottomPadding: resizeToAvoidBottomPadding,
         backgroundColor: Theme.of(context).backgroundColor,
-        appBar: widget.buildAppBar(context, controller),
-        body: widget.buildPage(context, controller),
-        bottomNavigationBar: widget.buildBottomNavigation(context, controller),
-        bottomSheet: widget.buildBottomSheet(context, controller),
-        drawer: widget.buildDrawer(context, controller),
+        appBar: buildAppBar(context, controller),
+        body: buildPage(context, controller),
+        bottomNavigationBar: buildBottomNavigation(context, controller),
+        bottomSheet: buildBottomSheet(context, controller),
+        drawer: buildDrawer(context, controller),
       ),
     );
+  }
+}
+
+/// Shortcut State for BasePage. It just expose build functions to Widget.
+/// PopScope and Scaffold is created in default build.
+/// Basic Scaffold settings is populated to Widget part.
+class _BasePageState<T extends BaseController> extends BaseState<T, BasePage> {
+  @override
+  Widget buildWidget(BuildContext context, T controller) {
+    return widget.buildScaffold(context, controller);
+  }
+}
+
+/// Shortcut State for BasePage. It just expose build functions to Widget.
+/// PopScope and Scaffold is created in default build.
+/// Basic Scaffold settings is populated to Widget part.
+/// This State is initialized with TickerProviderMixin.
+class _BasePageTickerState<T extends BaseController> extends BaseState<T, BasePage> with TickerProviderStateMixin {
+  @override
+  Widget buildWidget(BuildContext context, T controller) {
+    return widget.buildScaffold(context, controller);
   }
 }

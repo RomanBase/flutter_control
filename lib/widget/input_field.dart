@@ -1,5 +1,6 @@
 import 'package:flutter_control/core.dart';
 
+/// Extends and adds functionality to standard FocusNode
 class FocusController extends FocusNode {
   BuildContext _context;
 
@@ -14,50 +15,79 @@ class FocusController extends FocusNode {
   }
 }
 
-/// CONTROLLER
+/// Controller of InputField.
+/// Can chain multiple Controllers for submissions.
 class InputController extends StateController {
+  /// Regex to check value validity.
   final String regex;
 
+  /// Standard TextEditingController to provide default text.
   final _editController = TextEditingController();
+
+  /// Controls focus of InputField.
   final _focusController = FocusController();
 
+  /// Warning text to display when Field isn't valid.
   String _error;
+
+  /// Current text of Field.
   String _text;
 
-  String get text => _text;
+  /// returns Current text.
+  /// not null
+  String get text => _text ?? '';
 
+  /// Validity of text - regex based.
   bool _isValid = true;
 
+  /// returns Current validity - regex based.
+  /// Validity is checked right after text submit.
   bool get isValid => _isValid;
 
+  /// returns true if Field is focused.
   bool get hasFocus => _focusController.hasFocus;
 
+  /// Next InputController.
   InputController _next;
+
+  /// Callback when user submit text.
   VoidCallback _onDone;
 
+  /// Helps easily add/remove callback at FocusController.
+  VoidCallback _onFocusChanged;
+
+  /// Default constructor
   InputController({String text, this.regex}) {
     _text = text;
   }
 
+  /// Sets text and notify InputField State to change Widget.
   void setText(String text) {
     _text = text;
     notifyState();
   }
 
+  /// Sets text and notify InputField State to change Widget.
   void setError(String text) {
     _error = text;
     notifyState();
   }
 
+  /// Sets next Controller into chain.
   InputController next(InputController controller) {
     return _next = controller;
   }
 
+  /// Sets callback for submit.
   void done(VoidCallback onDone) {
     _onDone = onDone;
   }
 
+  /// Submit text and unfocus controlled InputField and focus next one (if is chained).
+  /// Done callback is called as well.
   void submit() {
+    validate();
+
     if (_next != null) {
       _next.focus(true);
     }
@@ -67,6 +97,7 @@ class InputController extends StateController {
     }
   }
 
+  /// Change focus of InputField.
   void focus(bool requestFocus) {
     if (requestFocus) {
       _focusController.focus();
@@ -75,6 +106,23 @@ class InputController extends StateController {
     }
   }
 
+  /// Sets on focus changed listener.
+  /// Only one listener is active at time.
+  /// Set null to remove listener.
+  void onFocusChanged(Action<bool> listener) {
+    if (_onFocusChanged != null) {
+      _focusController.removeListener(_onFocusChanged);
+      _onFocusChanged = null;
+    }
+
+    if (listener != null) {
+      _focusController.addListener(_onFocusChanged = () => listener(hasFocus));
+    }
+  }
+
+  /// Validate text with given regex.
+  /// This method isn't called continuously.
+  /// Typically just after submit.
   bool validate() {
     if (regex == null) {
       return _isValid = true;
@@ -99,10 +147,14 @@ class InputController extends StateController {
   @override
   void dispose() {
     super.dispose();
+
+    //_editController.dispose();
+    //_focusController.dispose();
   }
 }
 
-/// WIDGET
+//TODO: expose more params from TextField
+/// More powerful TextField with Controller
 class InputField extends ControlWidget<InputController> {
   final String hint;
   final String label;
@@ -121,20 +173,20 @@ class InputField extends ControlWidget<InputController> {
     this.hint,
     this.label,
     this.style,
-    this.obscure = false,
+    this.obscure: false,
     this.cursorColor,
     this.decoration,
-    this.align = TextAlign.start,
+    this.align: TextAlign.start,
     this.keyboardType,
-    this.action = TextInputAction.next,
-    this.autocorrect = false,
+    this.action: TextInputAction.next,
+    this.autocorrect: false,
   }) : super(controller: controller);
 
   @override
   State<StatefulWidget> createState() => _InputFieldState();
 }
 
-/// STATE
+/// Builds just TextField and sets up Controllers.
 class _InputFieldState extends ControlState<InputController, InputField> {
   @override
   Widget buildWidget(BuildContext context, InputController controller) {
