@@ -6,8 +6,8 @@ class NavigationController extends BaseController {
   /// Name of the controller - typically used for menu items.
   final String title;
 
-  /// Icon name/path of the controller - typically used for menu items.
-  final String icon;
+  /// Icon name/path or IconData - typically used for menu items.
+  final dynamic icon;
 
   /// Initial Controller, that will be pushed into navigation as first Widget.
   final Getter<StateController> initializer;
@@ -40,10 +40,16 @@ class NavigationController extends BaseController {
   }
 
   /// Tries to navigate back in custom navigation stack.
-  /// returns true if Widget was popped from stack.
-  bool navigateBack() {
+  /// returns true if Widget was popped from inner stack.
+  Future<bool> navigateBack() async {
     if (!isRootInitialized) {
       return false;
+    }
+
+    bool backable = await (_controller as BaseController)?.navigateBack() ?? true;
+
+    if (!backable) {
+      return true;
     }
 
     final navigator = Navigator.of(getRootController().getContext());

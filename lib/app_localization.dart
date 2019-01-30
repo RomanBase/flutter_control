@@ -61,8 +61,9 @@ class AppLocalization {
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale) async {
-    if (!isLocalizationAvailable(iso2Locale)) {
+    if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
       iso2Locale = defaultLocale;
+      //TODO: check if default/any localization is loaded. Then return false.
     }
 
     if (_locale == iso2Locale) {
@@ -77,7 +78,6 @@ class AppLocalization {
 
   /// Loads localization from asset file for given locale.
   Future _initLocalization(String iso2Locale) async {
-    _data = Map();
     //TODO: load file
   }
 
@@ -93,13 +93,13 @@ class AppLocalization {
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(Map<String, String> map, String iso2Locale, String defaultLocale) {
+  String extractLocalization(Map<String, String> map, {String iso2Locale, String defaultLocale}) {
     if (map != null) {
-      if (map.containsKey(iso2Locale)) {
+      if (map.containsKey(iso2Locale ?? this.locale)) {
         return map[iso2Locale];
       }
 
-      if (map.containsKey(defaultLocale)) {
+      if (map.containsKey(defaultLocale ?? this.defaultLocale)) {
         return map[defaultLocale];
       }
     }

@@ -47,7 +47,7 @@ abstract class BasePage<T extends BaseController> extends ControlWidget<T> {
   @protected
   Widget buildScaffold(BuildContext context, T controller) {
     return WillPopScope(
-      onWillPop: controller.onBackPressed,
+      onWillPop: controller.navigateBack,
       child: Scaffold(
         primary: primary,
         resizeToAvoidBottomPadding: resizeToAvoidBottomPadding,

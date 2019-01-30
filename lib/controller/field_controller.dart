@@ -37,8 +37,13 @@ class FieldController<T> implements Disposable {
     subscribeTo(stream, onError: onError, onDone: onDone, cancelOnError: cancelOnError, converter: converter);
   }
 
-  /// Sets the value and adds it to stream.
+  /// Sets the value and adds it to the stream.
+  /// If given object is same as current value nothing happens.
   void setValue(T value) {
+    if (_value == value) {
+      return;
+    }
+
     _value = value;
 
     if (!_stream.isClosed) {
@@ -46,9 +51,14 @@ class FieldController<T> implements Disposable {
     }
   }
 
-  /// Copy last value from input controller and sets it to own stream.
-  void copyValue(FieldController<T> controller) {
+  /// Copy last value from given controller and sets it to its own stream.
+  void copyValueFrom(FieldController<T> controller) {
     setValue(controller.value);
+  }
+
+  /// Copy last value to given controller.
+  void copyValueTo(FieldController<T> controller) {
+    controller.setValue(value);
   }
 
   /// Initialize Sink with custom Converter.
@@ -108,6 +118,9 @@ class FieldController<T> implements Disposable {
       _subscriptions = null;
     }
   }
+
+  /// Returns FieldBuilder for this Controller.
+  FieldBuilder<T> builder({@required AsyncWidgetBuilder<T> builder}) => FieldBuilder<T>(controller: this, builder: builder);
 }
 
 /// Enclosure and adds functionality to standard Stream - StreamBuilder pattern.
@@ -128,6 +141,9 @@ class FieldListController<T> extends FieldController<List<T>> {
 
     super.setValue(list);
   }
+
+  /// Returns the object at given index.
+  T operator [](int index) => value[index];
 
   @override
   void setValue(List<T> items) {
@@ -169,6 +185,46 @@ class FieldListController<T> extends FieldController<List<T>> {
     value.removeAt(index);
     super.setValue(value);
   }
+}
+
+/// Shortcut for LoadingStatus Controller.
+class LoadingController extends FieldController<LoadingStatus> {
+  /// Return true if status is done.
+  bool get isDone => value == LoadingStatus.done;
+
+  /// Return true if status is progress.
+  bool get inProgress => value == LoadingStatus.progress;
+
+  /// Return true if status is error.
+  bool get hasError => value == LoadingStatus.error;
+
+  /// Inner message of LoadingStatus.
+  String message;
+
+  LoadingController([LoadingStatus status = LoadingStatus.progress]) : super(status);
+
+  /// Change status of FieldController and sets inner message.
+  void setStatus(LoadingStatus status, {String msg}) {
+    if (msg != null) {
+      message = msg;
+    }
+    setValue(status);
+  }
+
+  /// Change status of FieldController to progress and sets inner message.
+  void progress({String msg}) => setStatus(LoadingStatus.progress, msg: msg);
+
+  /// Change status of FieldController to done and sets inner message.
+  void done({String msg}) => setStatus(LoadingStatus.done, msg: msg);
+
+  /// Change status of FieldController to error and sets inner message.
+  void error({String msg}) => setStatus(LoadingStatus.error, msg: msg);
+
+  /// Change status of FieldController to outdated and sets inner message.
+  void outdated({String msg}) => setStatus(LoadingStatus.outdated, msg: msg);
+
+  /// Change status of FieldController to unknown and sets inner message.
+  void unknown({String msg}) => setStatus(LoadingStatus.unknown, msg: msg);
 }
 
 /// Standard Sink for FieldController.

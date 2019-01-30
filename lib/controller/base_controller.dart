@@ -93,7 +93,7 @@ abstract class WidgetInitializer {
 /// Initializes Widget and controls State.
 /// initWidget is typically called from parent class or as initializer.
 /// initWidget can return NULL, when controller is too general and is set directly to widget in build phase.
-abstract class StateController implements Initializable, Disposable, StateNotifier, WidgetInitializer {
+class StateController implements Initializable, Disposable, StateNotifier, WidgetInitializer {
   /// Widget can be initialized in two ways:
   /// - initWidget
   /// - subscribe
@@ -106,24 +106,56 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   /// State which inherits from StateNotifier.
   StateNotifier _stateNotifier;
 
-  /// Parent is typically Controller where openController was called.
-  dynamic parent;
+  /// init check.
+  bool _isInitialized = false;
 
-  /// return True if widget is not null;
+  /// return true if init function was called before.
+  bool get isInitialized => _isInitialized;
+
+  /// Parent Controller - close result will be delivery to parent.
+  /// Parent context is used when Widget is not initialized yet.
+  StateController parent;
+
+  /// return true if Widget is not null.
   bool get isWidgetInitialized => _widget != null;
 
+  /// return true if BuildContext is not null.
+  bool get isContextInitialized => getContext() != null;
+
+  /// returns AppControl if available.
+  /// nullable
+  AppControl get control => AppControl.of(getContext());
+
+  /// returns AppFactory if available.
+  /// nullable
+  AppFactory get factory => AppControl.factory(this);
+
   /// Is typically called by framework in openController functions.
-  /// Can be used to init first Controller.
-  Widget init([List args]) {
+  /// Can be used to re-init Controller.
+  @mustCallSuper
+  StateController init([List args]) {
+    _isInitialized = true;
     onInit(args);
 
-    return getWidget();
+    return this;
   }
 
   /// Is typically called right after constructor.
   /// Widget or State isn't available yet.
   @override
   void onInit(List args) {}
+
+  /// returns Object from List with given Type.
+  /// defaultValue is used if Type is not found in List.
+  T getArg<T>(List args, Type type, {T defaultValue}) {
+    for (var item in args) {
+      if (type == item.runtimeType) {
+        return item;
+      }
+    }
+
+    return defaultValue;
+  }
 
   @override
   void notifyState({dynamic state}) {
@@ -147,6 +179,7 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
   /// From now can be State controlled by this Controller.
   /// State must implement StateNotifier for proper functionality.
   /// This function can be override for more complex subscription.
+  @mustCallSuper
   void subscribe(dynamic object) {
     if (_widget == null) {
       if (object is Widget) {
@@ -165,40 +198,37 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
     }
   }
 
-  /// returns Object from List with given Type.
-  /// defaultValue is used if Type is not found in List.
-  T getArg<T>(List args, Type type, {T defaultValue}) {
-    for (var item in args) {
-      if (type == item.runtimeType) {
-        return item;
-      }
-    }
-
-    return defaultValue;
-  }
-
   /// returns context of controlled State if exist.
+  /// nullable
   @protected
   BuildContext getContext() => _context ?? parent?._context;
 
+  /// This function is typically called by framework.
+  /// nullable
+  @protected
+  Widget initWidget() => null;
+
   /// returns current widget or tries to initialize new one.
+  /// nullable
   @override
-  Widget getWidget() => _widget ?? (_widget = initWidget());
+  Widget getWidget({bool forceInit: false}) => forceInit ? _widget = initWidget() : _widget ?? (_widget = initWidget());
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.
+  /// Non null.
   @protected
-  String localize(String key) => AppControl.of(getContext())?.localize(key);
+  String localize(String key) => AppControl.localization(this)?.localize(key) ?? '';
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.
+  /// Non null.
   @protected
-  String extractLocalization(Map<String, String> field) => AppControl.of(getContext())?.extractLocalization(field);
+  String extractLocalization(Map<String, String> field) => AppControl.localization(this)?.extractLocalization(field) ?? '';
 
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.
-  /// This function can be override for more complex disposing.
   @override
+  @mustCallSuper
   void dispose() {
     _stateNotifier = null;
     _widget = null;
@@ -210,7 +240,7 @@ abstract class StateController implements Initializable, Disposable, StateNotifi
 /// initWidget is typically called from parent class or as initializer.
 /// initWidget can return NULL, when controller is too general and is set directly to widget in build phase.
 /// Adds navigation to StateController.
-abstract class BaseController extends StateController implements RouteNavigator, RouteIdentifier {
+class BaseController extends StateController implements RouteNavigator, RouteIdentifier {
   @override
   String get routeIdentifier => this.toString();
 
@@ -219,7 +249,7 @@ abstract class BaseController extends StateController implements RouteNavigator,
 
   /// Call this with WillPopScope Widget.
   /// return true to navigate back.
-  Future<bool> onBackPressed() async => true;
+  Future<bool> navigateBack() async => true;
 
   /// just set RouteNavigator
   void subscribeNavigator(RouteNavigator navigator) {
@@ -270,14 +300,18 @@ abstract class BaseController extends StateController implements RouteNavigator,
   /// Check openRoute for more info.
   Future<dynamic> openController(BaseController controller, {bool root: false, bool replacement: false, List args}) {
     controller.parent = this;
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openRoute(controller.getRoute(), root: root, replacement: replacement);
   }
 
   /// Initializes controller and pushes Route into Navigator
   /// Check openRoot for more info.
   Future<dynamic> openRootController(BaseController controller, {List args}) {
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openRoot(controller.getRoute());
   }
 
@@ -285,7 +319,9 @@ abstract class BaseController extends StateController implements RouteNavigator,
   /// Check openDialog for more info.
   Future<dynamic> openDialogController(StateController controller, {bool root: false, List args}) {
     controller.parent = this;
-    controller.onInit(args);
+    if (!controller.isInitialized) {
+      controller.init(args);
+    }
     return openDialog(controller, root: root);
   }
 

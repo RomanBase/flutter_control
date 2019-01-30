@@ -4,7 +4,6 @@ import 'package:flutter_control/core.dart';
 /// Controller is then used in State.
 abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   /// StateController passed in constructor.
-  /// Controller is initialized and used in State.
   @protected
   final T controller;
 
@@ -49,9 +48,13 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
     _initController(widget.controller);
   }
 
-  /// Subscribe this state to Controller and notify Controller about initialization.
+  /// Subscribe this State to Controller and notify Controller about initialization.
   void _initController(T controller) {
     if (controller != null) {
+      if (!controller.isInitialized) {
+        controller.init();
+      }
+
       controller.subscribe(this);
 
       if (this is TickerProvider) {
@@ -116,9 +119,9 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
 
     switch (type) {
       case DialogType.popup:
-        return showDialog(context: dialogContext, builder: (context) => initializer.getWidget());
+        return await showDialog(context: dialogContext, builder: (context) => initializer.getWidget());
       case DialogType.sheet:
-        return showModalBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
+        return await showModalBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
       case DialogType.dock:
         return showBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
     }

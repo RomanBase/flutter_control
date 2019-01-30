@@ -5,6 +5,7 @@ export 'package:flutter/material.dart';
 export 'package:flutter_control/app_control.dart';
 export 'package:flutter_control/app_localization.dart';
 export 'package:flutter_control/app_base.dart';
+export 'package:flutter_control/app_factory.dart';
 
 export 'package:flutter_control/controller/base_controller.dart';
 export 'package:flutter_control/controller/field_controller.dart';

@@ -9,20 +9,17 @@ class AppControl extends InheritedWidget {
   /// Used for custom class integration.
   static Type _accessType;
 
-  /// Key of root State
+  /// Key of root State.
   final GlobalKey rootKey;
 
-  /// Context of root Scaffold
+  /// Context of root Scaffold.
   final ContextHolder contextHolder;
 
-  /// Custom localization.
-  final AppLocalization localization;
-
-  /// Stored objects for global use.
-  final _items = Map<String, dynamic>();
+  /// Locale of current App.
+  final String iso2Locale;
 
   /// Root context of App (root Scaffold).
-  /// Mainly used for Navigator and Dialogs
+  /// Mainly used for Navigator and Dialogs.
   BuildContext get context => contextHolder.context;
 
   /// returns nearest AppControl to given context.
@@ -35,66 +32,48 @@ class AppControl extends InheritedWidget {
     return context.inheritFromWidgetOfExactType(_accessType);
   }
 
+  /// returns instance of AppFactory.
+  /// context is currently ignored.
+  /// nullable
+  static AppFactory factory([dynamic context]) => AppFactory.of(context);
+
+  /// returns instance of AppLocalization
+  /// context is currently ignored
+  /// nullable
+  static AppLocalization localization([dynamic context]) => factory(context)?.getItem('localization');
+
   /// Default constructor
-  AppControl({@required this.rootKey, @required this.contextHolder, Key key, this.localization, Widget child, Map<String, dynamic> entries}) : super(key: key, child: child) {
+  AppControl({Key key, @required this.rootKey, @required this.contextHolder, this.iso2Locale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
+    assert(rootKey != null);
+    assert(contextHolder != null);
+
     _accessType = this.runtimeType;
 
-    if (entries != null) {
-      _items.addAll(entries);
-    }
-  }
-
-  /// Adds object with given key for global use.
-  void addItem(String key, dynamic object) {
-    _items[key] = object;
-  }
-
-  /// returns object of requested type by given key.
-  /// Can be null.
-  T getItem<T>(String key) {
-    return _items[key] as T;
-  }
-
-  /// returns object of requested type.
-  /// Can be null.
-  T getItemByType<T>(Type type) {
-    for (final item in _items.values) {
-      if (item.runtimeType == type) {
-        return item as T;
-      }
+    if (entries == null) {
+      entries = Map<String, dynamic>();
     }
 
-    return null;
-  }
+    if (locales == null || locales.isEmpty) {
+      locales = List<LocalizationAsset>();
+      locales.add(LocalizationAsset('en', null));
+    }
 
-  /// removes item of given key.
-  T removeItem<T>(String key) {
-    return _items.remove(key) as T;
-  }
+    entries['control'] = this;
+    entries['localization'] = AppLocalization(iso2Locale ?? locales[0].iso2Locale, locales);
 
-  /// removes all items of given type
-  void removeItemByType(Type type) {
-    _items.removeWhere((key, item) => item.runtimeType == type);
+    factory(this).init(items: entries, initializers: initializers);
+
+    contextHolder.once((context) => localization(this)?.changeLocale(iso2Locale));
   }
 
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale) {
-    return localization?.changeLocale(iso2Locale);
-  }
-
-  /// Tries to localize text by given key.
-  String localize(String key) {
-    return localization?.localize(key);
-  }
-
-  /// Tries to localize text by given key.
-  String extractLocalization(Map<String, String> map) {
-    return localization?.extractLocalization(map, localization.locale, localization.defaultLocale);
+    return localization(this)?.changeLocale(iso2Locale);
   }
 
   @override
   bool updateShouldNotify(AppControl oldWidget) {
-    return localization?.locale != oldWidget.localization?.locale;
+    return iso2Locale != oldWidget.iso2Locale;
   }
 }

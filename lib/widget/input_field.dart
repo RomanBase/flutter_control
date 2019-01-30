@@ -34,7 +34,7 @@ class InputController extends StateController {
   String _text;
 
   /// returns Current text.
-  /// not null
+  /// Non null
   String get text => _text ?? '';
 
   /// Validity of text - regex based.
@@ -55,6 +55,9 @@ class InputController extends StateController {
 
   /// Helps easily add/remove callback at FocusController.
   VoidCallback _onFocusChanged;
+
+  /// Callback when user changes text.
+  Action<String> _onChanged;
 
   /// Default constructor
   InputController({String text, this.regex}) {
@@ -78,9 +81,27 @@ class InputController extends StateController {
     return _next = controller;
   }
 
-  /// Sets callback for submit.
-  void done(VoidCallback onDone) {
+  /// Sets callback for input submit.
+  InputController done(VoidCallback onDone) {
     _onDone = onDone;
+
+    return this;
+  }
+
+  /// Sets callback for text changes.
+  InputController changed(Action<String> onChanged) {
+    _onChanged = onChanged;
+
+    return this;
+  }
+
+  /// Sets text to controller and notify text changed listener.
+  void _changeText(String text) {
+    _text = text;
+
+    if (_onChanged != null) {
+      _onChanged(text);
+    }
   }
 
   /// Submit text and unfocus controlled InputField and focus next one (if is chained).
@@ -158,7 +179,7 @@ class InputController extends StateController {
 class InputField extends ControlWidget<InputController> {
   final String hint;
   final String label;
-
+  final TextStyle labelStyle;
   final TextStyle style;
   final bool obscure;
   final Color cursorColor;
@@ -172,6 +193,7 @@ class InputField extends ControlWidget<InputController> {
     @required InputController controller,
     this.hint,
     this.label,
+    this.labelStyle,
     this.style,
     this.obscure: false,
     this.cursorColor,
@@ -193,7 +215,7 @@ class _InputFieldState extends ControlState<InputController, InputField> {
     controller._focusController.setContext(context);
 
     return TextField(
-      onChanged: (text) => controller._text = text,
+      onChanged: controller._changeText,
       onSubmitted: (text) => controller.submit(),
       controller: controller._editController,
       focusNode: controller._focusController,
@@ -206,6 +228,7 @@ class _InputFieldState extends ControlState<InputController, InputField> {
       autocorrect: widget.autocorrect,
       decoration: (widget.decoration ?? InputDecoration()).copyWith(
         labelText: widget.label,
+        labelStyle: widget.labelStyle,
         hintText: widget.hint,
         errorText: (!controller.isValid && !controller._focusController.hasFocus) ? controller._error : null,
       ),
