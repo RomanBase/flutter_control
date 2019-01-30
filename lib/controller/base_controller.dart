@@ -140,6 +140,13 @@ class StateController implements Initializable, Disposable, StateNotifier, Widge
     return this;
   }
 
+  /// Is typically called by framework in openController functions.
+  /// Can be used to re-init first Controller.
+  void postInit([List args]) {
+    _isInitialized = true;
+    onInit(args);
+  }
+
   /// Is typically called right after constructor.
   /// Widget or State isn't available yet.
   @override
