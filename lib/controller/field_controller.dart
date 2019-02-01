@@ -45,9 +45,12 @@ class FieldController<T> implements Disposable {
     }
 
     _value = value;
+    notify();
+  }
 
+  void notify() {
     if (!_stream.isClosed) {
-      _stream.add(value);
+      _stream.add(_value);
     }
   }
 
@@ -153,37 +156,42 @@ class FieldListController<T> extends FieldController<List<T>> {
       value.addAll(items);
     }
 
-    super.setValue(value);
+    super.notify();
   }
 
   /// Adds item to List and notifies stream.
   void add(T item) {
     value.add(item);
-    super.setValue(value);
+
+    super.notify();
   }
 
   /// Adds all items to List and notifies stream.
   void addAll(Iterable<T> items) {
     value.addAll(items);
-    super.setValue(value);
+
+    super.notify();
   }
 
   /// Adds item to List at given index and notifies stream.
   void insert(int index, T item) {
     value.insert(index, item);
-    super.setValue(value);
+
+    super.notify();
   }
 
   /// Removes item from List and notifies stream.
   void remove(T item) {
     value.remove(item);
-    super.setValue(value);
+
+    super.notify();
   }
 
   /// Removes item from List at given index and notifies stream.
   void removeAt(int index) {
     value.removeAt(index);
-    super.setValue(value);
+
+    super.notify();
   }
 }
 
@@ -277,6 +285,18 @@ class FieldBuilder<T> extends StreamBuilder<T> {
 
   @override
   Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
+    Widget widget = super.build(context, currentSummary);
+
+    return widget ?? Container();
+  }
+}
+
+/// Extends from StreamBuilder - adds some functionality to be used easily with FieldListController.
+class FieldListBuilder<T> extends StreamBuilder<List<T>> {
+  FieldListBuilder({Key key, @required FieldController<List<T>> controller, @required AsyncWidgetBuilder<List<T>> builder}) : super(key: key, initialData: controller._value, stream: controller._stream.stream, builder: builder);
+
+  @override
+  Widget build(BuildContext context, AsyncSnapshot<List<T>> currentSummary) {
     Widget widget = super.build(context, currentSummary);
 
     return widget ?? Container();

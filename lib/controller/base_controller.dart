@@ -140,13 +140,6 @@ class StateController implements Initializable, Disposable, StateNotifier, Widge
     return this;
   }
 
-  /// Is typically called by framework in openController functions.
-  /// Can be used to re-init first Controller.
-  void postInit([List args]) {
-    _isInitialized = true;
-    onInit(args);
-  }
-
   /// Is typically called right after constructor.
   /// Widget or State isn't available yet.
   @override
@@ -326,9 +319,11 @@ class BaseController extends StateController implements RouteNavigator, RouteIde
   /// Check openDialog for more info.
   Future<dynamic> openDialogController(StateController controller, {bool root: false, List args}) {
     controller.parent = this;
+
     if (!controller.isInitialized) {
       controller.init(args);
     }
+
     return openDialog(controller, root: root);
   }
 
@@ -338,5 +333,19 @@ class BaseController extends StateController implements RouteNavigator, RouteIde
     final routeSettings = settings ?? RouteSettings(name: routeIdentifier);
 
     return MaterialPageRoute(settings: routeSettings, builder: (context) => getWidget());
+
+    //just for debug
+    return PageRouteBuilder(
+        pageBuilder: (BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+          return AnimatedBuilder(
+              animation: animation,
+              builder: (BuildContext context, Widget child) {
+                return Opacity(
+                  opacity: animation.value,
+                  child: getWidget(),
+                );
+              });
+        },
+        transitionDuration: Duration(milliseconds: 1000));
   }
 }
