@@ -64,6 +64,17 @@ class InputController extends StateController {
     _text = text;
   }
 
+  @override
+  void onStateInitialized(State<StatefulWidget> state) {
+    super.onStateInitialized(state);
+
+    _focusController.addListener(() {
+      if (hasFocus) {
+        setError(null);
+      }
+    });
+  }
+
   /// Sets text and notify InputField State to change Widget.
   void setText(String text) {
     _text = text;
@@ -149,7 +160,20 @@ class InputController extends StateController {
       return _isValid = true;
     }
 
-    return _isValid = text != null && RegExp(regex).hasMatch(text);
+    return _isValid = RegExp(regex).hasMatch(text ?? '');
+  }
+
+  /// Validate text with given regex thru all chained inputs.
+  /// This method isn't called continuously.
+  /// Typically after whole form submission.
+  bool validateChain() {
+    if (_next == null) {
+      return validate();
+    }
+
+    final isNextValid = _next.validateChain();
+
+    return validate() && isNextValid;
   }
 
   @override
@@ -226,10 +250,18 @@ class _InputFieldState extends ControlState<InputController, InputField> {
       keyboardType: widget.keyboardType,
       textInputAction: widget.action,
       autocorrect: widget.autocorrect,
-      decoration: (widget.decoration ?? InputDecoration()).copyWith(
+      decoration: (widget.decoration ??
+              InputDecoration(
+                border: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor.withOpacity(0.75))),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor)),
+                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor.withOpacity(0.25))),
+              ))
+          .copyWith(
         labelText: widget.label,
         labelStyle: widget.labelStyle,
         hintText: widget.hint,
+        hintStyle: widget.labelStyle,
         errorText: (!controller.isValid && !controller._focusController.hasFocus) ? controller._error : null,
       ),
     );

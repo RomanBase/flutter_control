@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter_control/core.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
@@ -27,7 +30,7 @@ class AppLocalization {
   String _locale;
 
   /// Current localization data.
-  Map<String, String> _data = Map();
+  Map<String, dynamic> _data = Map();
 
   /// Default constructor
   AppLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
@@ -49,7 +52,6 @@ class AppLocalization {
   bool isLocalizationAvailable(String iso2Locale) {
     for (final asset in assets) {
       if (asset.iso2Locale == iso2Locale) {
-        //TODO: check if file is available
         return true;
       }
     }
@@ -57,13 +59,23 @@ class AppLocalization {
     return false;
   }
 
+  /// returns asset path for given locale
+  String getAssetPath(String iso2Locale) {
+    for (final asset in assets) {
+      if (asset.iso2Locale == iso2Locale) {
+        return asset.assetPath;
+      }
+    }
+
+    return null;
+  }
+
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
-      iso2Locale = defaultLocale;
-      //TODO: check if default/any localization is loaded. Then return false.
+      return false;
     }
 
     if (_locale == iso2Locale) {
@@ -71,14 +83,26 @@ class AppLocalization {
     }
 
     _locale = iso2Locale;
-    await _initLocalization(_locale);
-
-    return true;
+    return await _initLocalization(getAssetPath(iso2Locale));
   }
 
   /// Loads localization from asset file for given locale.
-  Future _initLocalization(String iso2Locale) async {
-    //TODO: load file
+  Future<bool> _initLocalization(String path) async {
+    if (path == null) {
+      return false;
+    }
+
+    final json = await rootBundle.loadString(path, cache: false);
+    final data = jsonDecode(json);
+
+    if (data != null) {
+      _data.clear();
+      _data.addAll(data);
+
+      return true;
+    }
+
+    return false;
   }
 
   /// Tries to localize text by given key.

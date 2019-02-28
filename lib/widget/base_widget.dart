@@ -29,8 +29,11 @@ abstract class ControlWidget<T extends StateController> extends StatefulWidget {
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
 abstract class ControlState<T extends StateController, U extends ControlWidget> extends State<U> implements StateNotifier {
+  /// Holds controller thru widget tree changes.
+  T _controller; //TODO: preserve controller settings ?
+
   /// StateController from parent Widget.
-  T get controller => widget.controller;
+  T get controller => _controller;
 
   /// Root context of App.
   /// Mainly used for Navigator.
@@ -45,7 +48,9 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   void initState() {
     super.initState();
 
-    _initController(widget.controller);
+    _controller = widget.controller;
+
+    _initController(controller);
   }
 
   /// Subscribe this State to Controller and notify Controller about initialization.
@@ -72,7 +77,7 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
 
   @override
   Widget build(BuildContext context) {
-    return buildWidget(context, widget.controller);
+    return buildWidget(context, controller);
   }
 
   /// Standard build function with given controller.
@@ -89,9 +94,16 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   String extractLocalization(Map<String, String> field) => controller?.extractLocalization(field); // ignore: invalid_use_of_protected_member
 
   @override
+  void didUpdateWidget(U oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    _controller = oldWidget.controller;
+  }
+
+  @override
   void dispose() {
     super.dispose();
-    widget.controller?.dispose();
+    controller?.dispose();
   }
 }
 

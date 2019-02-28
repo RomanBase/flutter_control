@@ -149,7 +149,7 @@ class FieldListController<T> extends FieldController<List<T>> {
   T operator [](int index) => value[index];
 
   @override
-  void setValue(List<T> items) {
+  void setValue(Iterable<T> items) {
     value.clear();
 
     if (items != null) {
@@ -205,6 +205,8 @@ class LoadingController extends FieldController<LoadingStatus> {
 
   /// Return true if status is error.
   bool get hasError => value == LoadingStatus.error;
+
+  bool get hasMessage => message?.isNotEmpty ?? false;
 
   /// Inner message of LoadingStatus.
   String message;
@@ -292,13 +294,53 @@ class FieldBuilder<T> extends StreamBuilder<T> {
 }
 
 /// Extends from StreamBuilder - adds some functionality to be used easily with FieldListController.
-class FieldListBuilder<T> extends StreamBuilder<List<T>> {
-  FieldListBuilder({Key key, @required FieldController<List<T>> controller, @required AsyncWidgetBuilder<List<T>> builder}) : super(key: key, initialData: controller._value, stream: controller._stream.stream, builder: builder);
+class FieldListBuilder<T> extends FieldBuilder<List<T>> {
+  FieldListBuilder({Key key, @required FieldController<List<T>> controller, @required AsyncWidgetBuilder<List<T>> builder}) : super(key: key, controller: controller, builder: builder);
+}
 
-  @override
-  Widget build(BuildContext context, AsyncSnapshot<List<T>> currentSummary) {
-    Widget widget = super.build(context, currentSummary);
+class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
+  final WidgetBuilder progress;
+  final WidgetBuilder done;
+  final WidgetBuilder error;
+  final WidgetBuilder outdated;
+  final WidgetBuilder unknown;
 
-    return widget ?? Container();
-  }
+  FieldLoadingBuilder({
+    Key key,
+    @required LoadingController controller,
+    this.progress,
+    this.done,
+    this.error,
+    this.outdated,
+    this.unknown,
+  }) : super(
+          key: key,
+          controller: controller,
+          builder: (context, snapshot) {
+            final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
+
+            switch (state) {
+              case LoadingStatus.progress:
+                return progress != null
+                    ? progress(context)
+                    : Column(
+                        children: <Widget>[CircularProgressIndicator()],
+                      );
+              case LoadingStatus.done:
+                return done != null ? done(context) : null;
+              case LoadingStatus.error:
+                return error != null
+                    ? error(context)
+                    : controller.hasMessage
+                        ? Column(
+                            children: <Widget>[Text(controller.message)],
+                          )
+                        : null;
+              case LoadingStatus.outdated:
+                return outdated != null ? outdated(context) : null;
+              default:
+                return unknown != null ? unknown(context) : null;
+            }
+          },
+        );
 }
