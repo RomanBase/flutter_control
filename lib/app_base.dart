@@ -13,7 +13,7 @@ class BaseApp extends StatefulWidget {
   final List<LocalizationAsset> locales;
   final BaseController root;
   final Map<String, dynamic> entries;
-  final String iso2Locale;
+  final String defaultLocale;
 
   /// Root GlobalKey of default Scaffold.
   /// Is passed into AppControl.
@@ -24,7 +24,7 @@ class BaseApp extends StatefulWidget {
   final contextHolder = ContextHolder();
 
   /// Default constructor
-  BaseApp({this.title, this.theme, this.iso2Locale, this.locales, @required this.root, this.entries});
+  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries});
 
   @override
   State<StatefulWidget> createState() => BaseAppState();
@@ -41,7 +41,7 @@ class BaseAppState extends State<BaseApp> {
     return AppControl(
       rootKey: widget.rootKey,
       contextHolder: widget.contextHolder,
-      iso2Locale: widget.iso2Locale,
+      defaultLocale: widget.defaultLocale,
       locales: widget.locales,
       entries: widget.entries,
       child: MaterialApp(
@@ -51,7 +51,6 @@ class BaseAppState extends State<BaseApp> {
           key: widget.rootKey,
           body: Builder(builder: (ctx) {
             widget.contextHolder.changeContext(ctx);
-            //localization.changeLocale(widget.iso2Locale ?? (localization.deviceLocale(context)?.languageCode ?? localization.defaultLocale));
             return widget.root.init().getWidget(forceInit: true);
           }),
         ),

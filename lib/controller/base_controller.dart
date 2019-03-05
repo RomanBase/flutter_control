@@ -223,7 +223,7 @@ class StateController implements Initializable, Disposable, StateNotifier, Widge
   /// Localization is part of AppControl or BaseApp Widget.
   /// Non null.
   @protected
-  String extractLocalization(Map<String, String> field) => AppControl.localization(this)?.extractLocalization(field) ?? '';
+  String extractLocalization(Map field) => AppControl.localization(this)?.extractLocalization(field) ?? '';
 
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.

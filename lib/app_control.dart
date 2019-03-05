@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 /// One of the root Widgets of App.
@@ -15,8 +17,8 @@ class AppControl extends InheritedWidget {
   /// Context of root Scaffold.
   final ContextHolder contextHolder;
 
-  /// Locale of current App.
-  final String iso2Locale;
+  /// Returns current locale.
+  String get iso2Locale => localization(this)?.locale;
 
   /// Root context of App (root Scaffold).
   /// Mainly used for Navigator and Dialogs.
@@ -29,7 +31,13 @@ class AppControl extends InheritedWidget {
       return null;
     }
 
-    return context.inheritFromWidgetOfExactType(_accessType);
+    final control = context.inheritFromWidgetOfExactType(_accessType);
+
+    if (control != null) {
+      return control;
+    }
+
+    return factory(context).getItem('control');
   }
 
   /// returns instance of AppFactory.
@@ -43,7 +51,7 @@ class AppControl extends InheritedWidget {
   static AppLocalization localization([dynamic context]) => factory(context)?.getItem('localization');
 
   /// Default constructor
-  AppControl({Key key, @required this.rootKey, @required this.contextHolder, this.iso2Locale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
+  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
@@ -59,17 +67,17 @@ class AppControl extends InheritedWidget {
     }
 
     entries['control'] = this;
-    entries['localization'] = AppLocalization(iso2Locale ?? locales[0].iso2Locale, locales);
+    entries['localization'] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).init(items: entries, initializers: initializers);
 
-    contextHolder.once((context) => localization(this)?.changeLocale(iso2Locale));
+    contextHolder.once((context) => localization(this).changeToSystemLocale(context));
   }
 
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale) {
-    return localization(this)?.changeLocale(iso2Locale);
+  Future<bool> changeLocale(String iso2Locale) async {
+    return await localization(this)?.changeLocale(iso2Locale);
   }
 
   @override

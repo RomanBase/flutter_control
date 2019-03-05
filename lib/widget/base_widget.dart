@@ -23,7 +23,7 @@ abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.
   @protected
-  String extractLocalization(Map<String, String> field) => controller?.extractLocalization(field) ?? ''; // ignore: invalid_use_of_protected_member
+  String extractLocalization(Map field) => controller?.extractLocalization(field) ?? ''; // ignore: invalid_use_of_protected_member
 }
 
 /// Base State for ControlWidget and StateController
