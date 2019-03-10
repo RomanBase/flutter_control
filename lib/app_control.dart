@@ -14,15 +14,8 @@ class AppControl extends InheritedWidget {
   /// Key of root State.
   final GlobalKey rootKey;
 
-  /// Context of root Scaffold.
-  final ContextHolder contextHolder;
-
   /// Returns current locale.
   String get iso2Locale => localization(this)?.locale;
-
-  /// Root context of App (root Scaffold).
-  /// Mainly used for Navigator and Dialogs.
-  BuildContext get context => contextHolder.context;
 
   /// returns nearest AppControl to given context.
   /// nullable
@@ -51,7 +44,7 @@ class AppControl extends InheritedWidget {
   static AppLocalization localization([dynamic context]) => factory(context)?.getItem('localization');
 
   /// Default constructor
-  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
+  AppControl({Key key, @required this.rootKey, @required ContextHolder contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
@@ -73,6 +66,10 @@ class AppControl extends InheritedWidget {
 
     contextHolder.once((context) => localization(this).changeToSystemLocale(context));
   }
+
+  /// Returns root context for given context
+  /// A context of current Navigator
+  BuildContext rootContext(BuildContext context) => Navigator.of(context).context;
 
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.

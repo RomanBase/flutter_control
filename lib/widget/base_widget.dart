@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 /// Base StatefulWidget to cooperate with StateController.
@@ -35,11 +37,8 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   /// StateController from parent Widget.
   T get controller => _controller;
 
-  /// Root context of App.
-  /// Mainly used for Navigator.
-  /// Context is part of AppControl.
-  /// If AppControl isn't found, standard context is returned.
-  BuildContext get rootContext => AppControl.of(context)?.context ?? context;
+  /// Root context of current Navigator
+  BuildContext get rootContext => Navigator.of(context).context ?? context;
 
   /// Helper function to return expected context.
   BuildContext getContext({bool root: false}) => root ? rootContext : context;

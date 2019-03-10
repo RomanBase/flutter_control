@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 /// AppFactory for initializing and storing objects.
@@ -26,6 +28,12 @@ class AppFactory {
     if (initializers != null) {
       _initializers.addAll(initializers);
     }
+
+    _items.forEach((key, value) {
+      if (value is Initializable) {
+        value.onInit(null);
+      }
+    });
   }
 
   /// Adds action to initialize object.
@@ -47,7 +55,7 @@ class AppFactory {
   T getItem<T>(String key, [List args]) {
     final item = _items[key] as T;
 
-    if (item != null && item is Initializable) {
+    if (item != null && item is Initializable && args != null) {
       item.onInit(args);
     }
 

@@ -89,7 +89,7 @@ class FieldController<T> implements Disposable {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
-
+    
     final subscription = stream.listen(
       (data) {
         setValue(converter != null ? converter(data) : data);
@@ -102,6 +102,12 @@ class FieldController<T> implements Disposable {
     _subscriptions.add(subscription);
 
     return subscription;
+  }
+
+  StreamSubscription streamTo(FieldController<T> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter}) {
+    controller.setValue(value);
+
+    return controller.subscribeTo(_stream.stream, onError: onError, onDone: onDone, cancelOnError: cancelOnError, converter: converter);
   }
 
   @override
@@ -120,6 +126,12 @@ class FieldController<T> implements Disposable {
 
       _subscriptions = null;
     }
+  }
+
+  void cancelSubscription(StreamSubscription subscription) {
+    _subscriptions.remove(subscription);
+
+    subscription.cancel();
   }
 
   /// Returns FieldBuilder for this Controller.

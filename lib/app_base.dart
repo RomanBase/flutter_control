@@ -45,15 +45,13 @@ class BaseAppState extends State<BaseApp> {
       locales: widget.locales,
       entries: widget.entries,
       child: MaterialApp(
+        key: widget.rootKey,
         title: widget.title,
         theme: widget.theme,
-        home: Scaffold(
-          key: widget.rootKey,
-          body: Builder(builder: (ctx) {
-            widget.contextHolder.changeContext(ctx);
-            return widget.root.init().getWidget(forceInit: true);
-          }),
-        ),
+        home: Builder(builder: (context) {
+          widget.contextHolder.changeContext(context);
+          return widget.root.getWidget(forceInit: true);
+        }),
       ),
     );
   }
