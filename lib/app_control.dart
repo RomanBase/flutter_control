@@ -73,8 +73,8 @@ class AppControl extends InheritedWidget {
 
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale) async {
-    return await localization(this)?.changeLocale(iso2Locale);
+  Future<bool> changeLocale(String iso2Locale, {VoidCallback onChanged}) async {
+    return await localization(this)?.changeLocale(iso2Locale, onChanged: onChanged);
   }
 
   @override

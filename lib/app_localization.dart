@@ -37,6 +37,10 @@ class AppLocalization {
   /// When localization key isn't found for given locale, then localize() returns key and current locale (key_locale).
   bool debug = true;
 
+  bool get isActive => _data.length > 0;
+
+  VoidCallback onLocalizationChanged;
+
   /// Default constructor
   AppLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
     if (preloadDefaultLocalization) {
@@ -84,7 +88,7 @@ class AppLocalization {
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale) async {
+  Future<bool> changeLocale(String iso2Locale, {VoidCallback onChanged}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
       print("localization not available: $iso2Locale");
       return false;
@@ -97,11 +101,11 @@ class AppLocalization {
     }
 
     _locale = iso2Locale;
-    return await _initLocalization(getAssetPath(iso2Locale));
+    return await _initLocalization(getAssetPath(iso2Locale), onChanged);
   }
 
   /// Loads localization from asset file for given locale.
-  Future<bool> _initLocalization(String path) async {
+  Future<bool> _initLocalization(String path, VoidCallback onChanged) async {
     if (path == null) {
       return false;
     }
@@ -114,6 +118,14 @@ class AppLocalization {
       //_data.addAll(data);
 
       data.forEach((key, value) => _data[key] = value);
+
+      if (onLocalizationChanged != null) {
+        onLocalizationChanged();
+      }
+
+      if (onChanged != null) {
+        onChanged();
+      }
 
       return true;
     }
