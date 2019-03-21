@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_control/core.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_control/core.dart';
 
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
@@ -17,6 +17,9 @@ class LocalizationAsset {
 }
 
 class AppLocalization {
+  /// key to shared preferences where preferred locale is stored.
+  static const String preference_key = 'pref_locale';
+
   /// default app locale in iso2 standard.
   final String defaultLocale;
 
@@ -44,7 +47,7 @@ class AppLocalization {
   /// Default constructor
   AppLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
     if (preloadDefaultLocalization) {
-      changeLocale(defaultLocale);
+      changeLocale(defaultLocale, preferred: false);
     }
   }
 
@@ -53,11 +56,21 @@ class AppLocalization {
     return Localizations.localeOf(context, nullOk: true);
   }
 
-  Future<bool> changeToSystemLocale(BuildContext context) async {
-    final locale = deviceLocale(context);
+  /// changes localization to system language
+  /// @preferred - true: changes localization to in app preferred language (if previously set).
+  Future<bool> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
+    final pref = preferred ? await AppControl.prefs(this).get(preference_key) : null;
+
+    String locale;
+
+    if (pref != null && isLocalizationAvailable(pref)) {
+      locale = pref;
+    } else {
+      locale = deviceLocale(context)?.languageCode;
+    }
 
     if (locale != null) {
-      return await changeLocale(locale.languageCode);
+      return await changeLocale(locale);
     }
 
     return false;
@@ -74,7 +87,7 @@ class AppLocalization {
     return false;
   }
 
-  /// returns asset path for given locale or null if localization asset is not available
+  /// returns asset path for given locale or null if localization asset is not available.
   String getAssetPath(String iso2Locale) {
     for (final asset in assets) {
       if (asset.iso2Locale == iso2Locale) {
@@ -88,13 +101,17 @@ class AppLocalization {
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale, {VoidCallback onChanged}) async {
+  Future<bool> changeLocale(String iso2Locale, {bool preferred: true, VoidCallback onChanged}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
       print("localization not available: $iso2Locale");
       return false;
     }
 
     print("localization change to: $iso2Locale");
+
+    if (preferred) {
+      AppControl.prefs(this).set(preference_key, iso2Locale);
+    }
 
     if (_locale == iso2Locale) {
       return true;

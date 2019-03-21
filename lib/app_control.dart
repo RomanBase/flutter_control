@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter_control/app_prefs.dart';
 import 'package:flutter_control/core.dart';
 
 /// One of the root Widgets of App.
@@ -43,6 +44,11 @@ class AppControl extends InheritedWidget {
   /// nullable
   static AppLocalization localization([dynamic context]) => factory(context)?.getItem('localization');
 
+  /// returns instance of AppPrefs
+  /// context is currently ignored
+  /// nullable
+  static AppPrefs prefs([dynamic context]) => factory(context)?.getItem('prefs');
+
   /// Default constructor
   AppControl({Key key, @required this.rootKey, @required ContextHolder contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
     assert(rootKey != null);
@@ -56,10 +62,11 @@ class AppControl extends InheritedWidget {
 
     if (locales == null || locales.isEmpty) {
       locales = List<LocalizationAsset>();
-      locales.add(LocalizationAsset('en', null));
+      locales.add(LocalizationAsset(defaultLocale ?? 'en', null));
     }
 
     entries['control'] = this;
+    entries['prefs'] = AppPrefs();
     entries['localization'] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).init(items: entries, initializers: initializers);

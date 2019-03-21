@@ -11,6 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+
+  # https://pub.dartlang.org/packages/shared_preferences
+  shared_preferences: any
+
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
