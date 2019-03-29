@@ -89,7 +89,7 @@ class FieldController<T> implements Disposable {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
-    
+
     final subscription = stream.listen(
       (data) {
         setValue(converter != null ? converter(data) : data);
@@ -355,4 +355,60 @@ class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
             }
           },
         );
+}
+
+typedef AsyncFieldBuilder<T> = Widget Function(BuildContext context, T value);
+
+class FieldObjectBuilder<T> extends FieldBuilder<T> {
+  FieldObjectBuilder({
+    Key key,
+    @required FieldController<T> controller,
+    @required AsyncFieldBuilder<T> builder,
+    WidgetBuilder noData,
+  }) : super(
+            key: key,
+            controller: controller,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return builder(context, snapshot.data);
+              }
+
+              if (noData != null) {
+                return noData(context);
+              }
+            });
+}
+
+class BoolController extends FieldController<bool> {
+  BoolController([bool value = false]) : super(value);
+
+  void toggle() {
+    setValue(!value);
+  }
+
+  void setTrue() => setValue(true);
+
+  void setFalse() => setValue(false);
+}
+
+class FieldBoolBuilder extends FieldObjectBuilder<bool> {
+  FieldBoolBuilder({
+    Key key,
+    @required FieldController<bool> controller,
+    AsyncFieldBuilder<bool> builder,
+    WidgetBuilder noData,
+  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+}
+
+class StringController extends FieldController<String> {
+  StringController([String value]) : super(value);
+}
+
+class FieldStringBuilder extends FieldObjectBuilder<String> {
+  FieldStringBuilder({
+    Key key,
+    @required FieldController<String> controller,
+    AsyncFieldBuilder<String> builder,
+    WidgetBuilder noData,
+  }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }

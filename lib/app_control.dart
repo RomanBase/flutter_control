@@ -21,14 +21,12 @@ class AppControl extends InheritedWidget {
   /// returns nearest AppControl to given context.
   /// nullable
   static AppControl of(BuildContext context) {
-    if (context == null) {
-      return null;
-    }
+    if (context != null) {
+      final control = context.inheritFromWidgetOfExactType(_accessType);
 
-    final control = context.inheritFromWidgetOfExactType(_accessType);
-
-    if (control != null) {
-      return control;
+      if (control != null) {
+        return control;
+      }
     }
 
     return factory(context).getItem('control');
