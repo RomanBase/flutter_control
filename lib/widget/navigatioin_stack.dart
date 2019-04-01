@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 /// Controller with its own Navigator.
@@ -60,6 +62,20 @@ class NavigationController extends BaseController {
     }
 
     return false;
+  }
+
+  Future<void> navigateToRoot() async {
+    final pop = await navigateBack();
+
+    if (pop) {
+      await navigateToRoot();
+    }
+  }
+
+  @override
+  void notifyState({state}) {
+    //super.notifyState(state: state);
+    _controller?.notifyState(state: state);
   }
 
   /// Pops all Widgets from navigation stack until root controller.
