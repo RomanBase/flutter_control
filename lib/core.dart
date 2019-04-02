@@ -9,6 +9,7 @@ export 'package:flutter_control/app_factory.dart';
 
 export 'package:flutter_control/controller/base_controller.dart';
 export 'package:flutter_control/controller/field_controller.dart';
+export 'package:flutter_control/controller/future_block.dart';
 
 export 'package:flutter_control/widget/base_page.dart';
 export 'package:flutter_control/widget/base_widget.dart';

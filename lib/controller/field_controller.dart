@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
+typedef AsyncFieldBuilder<T> = Widget Function(BuildContext context, T value);
+
 /// Enclosure and adds functionality to standard Stream - StreamBuilder pattern.
 /// Use then FieldBuilder for easier integration into Widget.
 class FieldController<T> implements Disposable {
@@ -138,9 +140,74 @@ class FieldController<T> implements Disposable {
   FieldBuilder<T> builder({@required AsyncWidgetBuilder<T> builder}) => FieldBuilder<T>(controller: this, builder: builder);
 }
 
+/// Standard Sink for FieldController.
+class FieldSink<T> extends Sink<T> {
+  /// Target FieldController - initialized in constructor
+  FieldController _target;
+
+  /// Initialize Sink with target controller
+  FieldSink(FieldController<T> target) {
+    assert(target != null);
+
+    _target = target;
+  }
+
+  @override
+  void add(T data) {
+    if (_target != null) {
+      _target.setValue(data);
+    }
+  }
+
+  @override
+  void close() {
+    _target = null;
+  }
+}
+
+/// Sink with converter for FieldController
+/// Converts value and then sends it to controller.
+class FieldSinkConverter<T> extends FieldSink<dynamic> {
+  /// Value Converter - initialized in constructor
+  final Converter<T> converter;
+
+  /// Initialize Sink with target controller and value converter.
+  FieldSinkConverter(FieldController<T> target, this.converter) : super(target) {
+    assert(converter != null);
+  }
+
+  @override
+  void add(dynamic data) {
+    if (_target != null) {
+      _target.setValue(converter(data));
+    }
+  }
+}
+
+/// Extends from StreamBuilder - adds some functionality to be used easily with FieldController.
+class FieldBuilder<T> extends StreamBuilder<T> {
+  FieldBuilder({
+    Key key,
+    @required FieldController<T> controller,
+    @required AsyncWidgetBuilder<T> builder,
+  }) : super(
+          key: key,
+          initialData: controller._value,
+          stream: controller._stream.stream,
+          builder: builder,
+        );
+
+  @override
+  Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
+    Widget widget = super.build(context, currentSummary);
+
+    return widget ?? Container();
+  }
+}
+
 /// Enclosure and adds functionality to standard Stream - StreamBuilder pattern.
 /// Use then FieldBuilder for easier integration into Widget.
-class FieldListController<T> extends FieldController<List<T>> {
+class ListController<T> extends FieldController<List<T>> {
   /// returns number of items in list.
   int get length => value.length;
 
@@ -148,7 +215,7 @@ class FieldListController<T> extends FieldController<List<T>> {
   bool get isEmpty => value.isEmpty;
 
   /// Default constructor.
-  FieldListController([Iterable<T> items]) {
+  ListController([Iterable<T> items]) {
     final list = List<T>();
     if (items != null) {
       list.addAll(items);
@@ -207,6 +274,11 @@ class FieldListController<T> extends FieldController<List<T>> {
   }
 }
 
+/// Extends from StreamBuilder - adds some functionality to be used easily with FieldListController.
+class FieldListBuilder<T> extends FieldBuilder<List<T>> {
+  FieldListBuilder({Key key, @required FieldController<List<T>> controller, @required AsyncWidgetBuilder<List<T>> builder}) : super(key: key, controller: controller, builder: builder);
+}
+
 /// Shortcut for LoadingStatus Controller.
 class LoadingController extends FieldController<LoadingStatus> {
   /// Return true if status is done.
@@ -249,67 +321,7 @@ class LoadingController extends FieldController<LoadingStatus> {
   void unknown({String msg}) => setStatus(LoadingStatus.unknown, msg: msg);
 }
 
-/// Standard Sink for FieldController.
-class FieldSink<T> extends Sink<T> {
-  /// Target FieldController - initialized in constructor
-  FieldController _target;
-
-  /// Initialize Sink with target controller
-  FieldSink(FieldController<T> target) {
-    assert(target != null);
-
-    _target = target;
-  }
-
-  @override
-  void add(T data) {
-    if (_target != null) {
-      _target.setValue(data);
-    }
-  }
-
-  @override
-  void close() {
-    _target = null;
-  }
-}
-
-/// Sink with converter for FieldController
-/// Converts value and then sends it to controller.
-class FieldSinkConverter<T> extends FieldSink<dynamic> {
-  /// Value Converter - initialized in constructor
-  final Converter<T> converter;
-
-  /// Initialize Sink with target controller and value converter.
-  FieldSinkConverter(FieldController<T> target, this.converter) : super(target) {
-    assert(converter != null);
-  }
-
-  @override
-  void add(dynamic data) {
-    if (_target != null) {
-      _target.setValue(converter(data));
-    }
-  }
-}
-
-/// Extends from StreamBuilder - adds some functionality to be used easily with FieldController.
-class FieldBuilder<T> extends StreamBuilder<T> {
-  FieldBuilder({Key key, @required FieldController<T> controller, @required AsyncWidgetBuilder<T> builder}) : super(key: key, initialData: controller._value, stream: controller._stream.stream, builder: builder);
-
-  @override
-  Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
-    Widget widget = super.build(context, currentSummary);
-
-    return widget ?? Container();
-  }
-}
-
-/// Extends from StreamBuilder - adds some functionality to be used easily with FieldListController.
-class FieldListBuilder<T> extends FieldBuilder<List<T>> {
-  FieldListBuilder({Key key, @required FieldController<List<T>> controller, @required AsyncWidgetBuilder<List<T>> builder}) : super(key: key, controller: controller, builder: builder);
-}
-
+/// Loading
 class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
   final WidgetBuilder progress;
   final WidgetBuilder done;
@@ -357,8 +369,7 @@ class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
         );
 }
 
-typedef AsyncFieldBuilder<T> = Widget Function(BuildContext context, T value);
-
+/// Object builder
 class FieldObjectBuilder<T> extends FieldBuilder<T> {
   FieldObjectBuilder({
     Key key,
@@ -379,6 +390,7 @@ class FieldObjectBuilder<T> extends FieldBuilder<T> {
             });
 }
 
+/// Boolean
 class BoolController extends FieldController<bool> {
   BoolController([bool value = false]) : super(value);
 
@@ -395,11 +407,12 @@ class FieldBoolBuilder extends FieldObjectBuilder<bool> {
   FieldBoolBuilder({
     Key key,
     @required FieldController<bool> controller,
-    AsyncFieldBuilder<bool> builder,
+    @required AsyncFieldBuilder<bool> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }
 
+/// String
 class StringController extends FieldController<String> {
   StringController([String value]) : super(value);
 }
@@ -408,7 +421,35 @@ class FieldStringBuilder extends FieldObjectBuilder<String> {
   FieldStringBuilder({
     Key key,
     @required FieldController<String> controller,
-    AsyncFieldBuilder<String> builder,
+    @required AsyncFieldBuilder<String> builder,
+    WidgetBuilder noData,
+  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+}
+
+/// Double
+class DoubleController extends FieldController<double> {
+  DoubleController([double value = 0.0]) : super(value);
+}
+
+class FieldDoubleBuilder extends FieldObjectBuilder<double> {
+  FieldDoubleBuilder({
+    Key key,
+    @required FieldController<double> controller,
+    @required AsyncFieldBuilder<double> builder,
+    WidgetBuilder noData,
+  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+}
+
+/// Integer
+class IntegerController extends FieldController<int> {
+  IntegerController([int value = 0]) : super(value);
+}
+
+class FieldIntegerBuilder extends FieldObjectBuilder<int> {
+  FieldIntegerBuilder({
+    Key key,
+    @required FieldController<int> controller,
+    @required AsyncFieldBuilder<int> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }
