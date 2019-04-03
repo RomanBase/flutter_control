@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 /// Types of dialogs for RouteNavigator.

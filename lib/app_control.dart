@@ -12,12 +12,6 @@ class AppControl extends InheritedWidget {
   /// Used for custom class integration.
   static Type _accessType;
 
-  /// Key of root State.
-  final GlobalKey rootKey;
-
-  /// Returns current locale.
-  String get iso2Locale => localization(this)?.locale;
-
   /// returns nearest AppControl to given context.
   /// nullable
   static AppControl of(BuildContext context) {
@@ -47,8 +41,18 @@ class AppControl extends InheritedWidget {
   /// nullable
   static AppPrefs prefs([dynamic context]) => factory(context)?.getItem('prefs');
 
+  /// Key of root State.
+  final GlobalKey rootKey;
+
+  final ContextHolder contextHolder;
+
+  /// Returns current locale.
+  String get iso2Locale => localization(this)?.locale;
+
+  BuildContext get currentContext => contextHolder.context;
+
   /// Default constructor
-  AppControl({Key key, @required this.rootKey, @required ContextHolder contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child}) : super(key: key, child: child) {
+  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child, bool debug: true}) : super(key: key, child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
@@ -60,7 +64,7 @@ class AppControl extends InheritedWidget {
 
     if (locales == null || locales.isEmpty) {
       locales = List<LocalizationAsset>();
-      locales.add(LocalizationAsset(defaultLocale ?? 'en', null));
+      locales.add(LocalizationAsset('en', null));
     }
 
     entries['control'] = this;
@@ -68,8 +72,11 @@ class AppControl extends InheritedWidget {
     entries['localization'] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).init(items: entries, initializers: initializers);
+    localization(this).debug = debug;
 
-    contextHolder.once((context) => localization(this).changeToSystemLocale(context));
+    contextHolder.once((context) {
+      localization(this).changeToSystemLocale(context);
+    });
   }
 
   /// Returns root context for given context

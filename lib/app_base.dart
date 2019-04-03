@@ -14,6 +14,7 @@ class BaseApp extends StatefulWidget {
   final BaseController root;
   final Map<String, dynamic> entries;
   final String defaultLocale;
+  final bool debug;
 
   /// Root GlobalKey of default Scaffold.
   /// Is passed into AppControl.
@@ -24,7 +25,7 @@ class BaseApp extends StatefulWidget {
   final contextHolder = ContextHolder();
 
   /// Default constructor
-  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries});
+  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug: true});
 
   @override
   State<StatefulWidget> createState() => BaseAppState();
@@ -53,6 +54,7 @@ class BaseAppState extends State<BaseApp> {
           return widget.root.getWidget(forceInit: true);
         }),
       ),
+      debug: widget.debug,
     );
   }
 

@@ -37,8 +37,8 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   /// StateController from parent Widget.
   T get controller => _controller;
 
-  /// Root context of current Navigator
-  BuildContext get rootContext => Navigator.of(context).context ?? context;
+  /// Current context from AppControl's ContextHolder
+  BuildContext get rootContext => AppControl.of(context)?.currentContext ?? context;
 
   /// Helper function to return expected context.
   BuildContext getContext({bool root: false}) => root ? rootContext : context;
