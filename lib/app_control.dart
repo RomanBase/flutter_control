@@ -52,7 +52,7 @@ class AppControl extends InheritedWidget {
   BuildContext get currentContext => contextHolder.context;
 
   /// Default constructor
-  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child, bool debug: true}) : super(key: key, child: child) {
+  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child, bool debug}) : super(key: key, child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
@@ -72,7 +72,7 @@ class AppControl extends InheritedWidget {
     entries['localization'] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).init(items: entries, initializers: initializers);
-    localization(this).debug = debug;
+    localization(this).debug = debug ?? debugMode;
 
     contextHolder.once((context) {
       localization(this).changeToSystemLocale(context);

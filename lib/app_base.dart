@@ -25,7 +25,7 @@ class BaseApp extends StatefulWidget {
   final contextHolder = ContextHolder();
 
   /// Default constructor
-  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug: true});
+  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug});
 
   @override
   State<StatefulWidget> createState() => BaseAppState();
