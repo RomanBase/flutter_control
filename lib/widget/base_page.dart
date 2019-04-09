@@ -8,9 +8,10 @@ abstract class BasePage<T extends BaseController> extends ControlWidget<T> {
   final bool ticker;
   final bool primary;
   final bool resizeToAvoidBottomPadding;
+  final bool popScope;
 
   /// Default constructor
-  BasePage({Key key, @required T controller, this.ticker: false, this.primary: true, this.resizeToAvoidBottomPadding: false}) : super(key: key, controller: controller);
+  BasePage({Key key, @required T controller, this.ticker: false, this.primary: true, this.popScope: false, this.resizeToAvoidBottomPadding: false}) : super(key: key, controller: controller);
 
   @override
   State<StatefulWidget> createState() => ticker ? _BasePageTickerState() : _BasePageState();
@@ -46,19 +47,25 @@ abstract class BasePage<T extends BaseController> extends ControlWidget<T> {
   /// Build root Widget.
   @protected
   Widget buildScaffold(BuildContext context, T controller) {
-    return WillPopScope(
-      onWillPop: controller.navigateBack,
-      child: Scaffold(
-        primary: primary,
-        resizeToAvoidBottomPadding: resizeToAvoidBottomPadding,
-        backgroundColor: Theme.of(context).backgroundColor,
-        appBar: buildAppBar(context, controller),
-        body: buildPage(context, controller),
-        bottomNavigationBar: buildBottomNavigation(context, controller),
-        bottomSheet: buildBottomSheet(context, controller),
-        drawer: buildDrawer(context, controller),
-      ),
+    final scaffold = Scaffold(
+      primary: primary,
+      resizeToAvoidBottomPadding: resizeToAvoidBottomPadding,
+      backgroundColor: Theme.of(context).backgroundColor,
+      appBar: buildAppBar(context, controller),
+      body: buildPage(context, controller),
+      bottomNavigationBar: buildBottomNavigation(context, controller),
+      bottomSheet: buildBottomSheet(context, controller),
+      drawer: buildDrawer(context, controller),
     );
+
+    if (popScope) {
+      return WillPopScope(
+        onWillPop: controller.navigateBack,
+        child: scaffold,
+      );
+    } else {
+      return scaffold;
+    }
   }
 }
 

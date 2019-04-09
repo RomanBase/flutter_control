@@ -14,6 +14,9 @@ abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   @protected
   BuildContext get context => controller?.getContext(); // ignore: invalid_use_of_protected_member
 
+  @protected
+  Device get device => Device(MediaQuery.of(context));
+
   /// Default constructor
   ControlWidget({Key key, @required this.controller}) : super(key: key);
 
@@ -36,6 +39,8 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
 
   /// StateController from parent Widget.
   T get controller => _controller;
+
+  Device get device => widget.device;
 
   /// Current context from AppControl's ContextHolder
   BuildContext get rootContext => AppControl.of(context)?.currentContext ?? context;
