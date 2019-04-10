@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_control/core.dart';
 
 /// Types of dialogs for RouteNavigator.
-enum DialogType { popup, sheet, dock }
+enum DialogType { popup, sheet, dialog, dock }
 
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 

@@ -138,6 +138,8 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
         return await showDialog(context: dialogContext, builder: (context) => initializer.getWidget());
       case DialogType.sheet:
         return await showModalBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
+      case DialogType.dialog:
+        return await Navigator.of(dialogContext).push(MaterialPageRoute(builder: (BuildContext context) => initializer.getWidget(), fullscreenDialog: true));
       case DialogType.dock:
         return showBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
     }
