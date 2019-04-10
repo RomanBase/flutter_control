@@ -4,6 +4,8 @@ import 'package:flutter_control/core.dart';
 
 typedef AsyncFieldBuilder<T> = Widget Function(BuildContext context, T value);
 
+typedef bool Predicate<T>(T value);
+
 /// Enclosure and adds functionality to standard Stream - StreamBuilder pattern.
 /// Use then FieldBuilder for easier integration into Widget.
 class FieldController<T> implements Disposable {
@@ -271,6 +273,29 @@ class ListController<T> extends FieldController<List<T>> {
     value.removeAt(index);
 
     super.notify();
+  }
+
+  StreamSubscription filterTo(FieldController<List<T>> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter, Predicate<T> filter}) {
+    if (_subscriptions == null) {
+      _subscriptions = List();
+    }
+
+    final subscription = _stream.stream.listen(
+      (data) {
+        if (filter != null) {
+          data = data.where(filter).toList();
+        }
+
+        controller.setValue(converter != null ? converter(data) : data);
+      },
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+
+    _subscriptions.add(subscription);
+
+    return subscription;
   }
 }
 
