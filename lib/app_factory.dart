@@ -13,6 +13,10 @@ class GlobalSubscription<T> implements Disposable {
 
   bool isValidForBroadcast(String key, dynamic value) => value is T && (key == null || key == this.key);
 
+  void cancel() {
+    dispose();
+  }
+
   @override
   void dispose() {
     if (_parent != null) {
