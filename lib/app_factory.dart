@@ -2,8 +2,28 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
+class GlobalSubscription<T> implements Disposable {
+  AppFactory _parent;
+
+  ValueChanged<T> _onData;
+
+  final String key;
+
+  GlobalSubscription(this.key);
+
+  bool isValidForBroadcast(String key, dynamic value) => value is T && (key == null || key == this.key);
+
+  @override
+  void dispose() {
+    if (_parent != null) {
+      _parent.cancelSubscription(this);
+      _parent = null;
+    }
+  }
+}
+
 /// AppFactory for initializing and storing objects.
-class AppFactory {
+class AppFactory implements Disposable {
   static final AppFactory instance = AppFactory._();
 
   AppFactory._();
@@ -18,6 +38,9 @@ class AppFactory {
 
   /// Stored Getters for object initialization.
   final _initializers = Map<Type, Getter>();
+
+  final _globalSubscriptions = List<GlobalSubscription>();
+  final _globalValue = Map<String, dynamic>();
 
   /// Initializes default items and initializers in factory.
   void init({Map<String, dynamic> items, Map<Type, Getter> initializers}) {
@@ -111,5 +134,45 @@ class AppFactory {
   /// removes initializer of given Type.
   void removeInitializer(Type type) {
     _initializers.remove(type);
+  }
+
+  /// Subscription to global stream
+  GlobalSubscription<T> subscribe<T>(String key, void onData(T data)) {
+    assert(onData != null);
+
+    final sub = GlobalSubscription<T>(key);
+
+    sub._parent = this;
+    sub._onData = onData;
+
+    _globalSubscriptions.add(sub);
+
+    final lastValue = _globalValue[sub.key];
+
+    if (lastValue != null && sub.isValidForBroadcast(sub.key, lastValue)) {
+      sub._onData(lastValue);
+    }
+
+    return sub;
+  }
+
+  /// Cancels subscriptions to global stream
+  void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
+
+  /// Sets data to global stream
+  void broadcast(String key, dynamic value) {
+    _globalValue[key] = value;
+
+    _globalSubscriptions.forEach((sub) {
+      if (sub.isValidForBroadcast(key, value)) {
+        sub._onData(value);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _globalSubscriptions.clear();
+    _globalValue.clear();
   }
 }

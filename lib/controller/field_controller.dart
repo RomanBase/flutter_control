@@ -261,18 +261,47 @@ class ListController<T> extends FieldController<List<T>> {
     super.notify();
   }
 
-  /// Removes item from List and notifies stream.
-  void remove(T item) {
-    value.remove(item);
+  /// Replaces first item in List for given [test]
+  bool replace(T item, Predicate<T> test, [bool notify = true]) {
+    final index = value.indexWhere(test);
+
+    final replace = index >= 0;
+
+    if (replace) {
+      value.removeAt(index);
+      value.insert(index, item);
+    }
+
+    if (notify) {
+      super.notify();
+    }
+
+    return replace;
+  }
+
+  /// For every item is performed replace
+  void replaceAll(Iterable<T> items, Predicate<T> test) {
+    items.forEach((item) => replace(item, test, false));
 
     super.notify();
   }
 
-  /// Removes item from List at given index and notifies stream.
-  void removeAt(int index) {
-    value.removeAt(index);
+  /// Removes item from List and notifies stream.
+  bool remove(T item) {
+    final removed = value.remove(item);
 
     super.notify();
+
+    return removed;
+  }
+
+  /// Removes item from List at given index and notifies stream.
+  T removeAt(int index) {
+    final item = value.removeAt(index);
+
+    super.notify();
+
+    return item;
   }
 
   StreamSubscription filterTo(FieldController<List<T>> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter, Predicate<T> filter}) {

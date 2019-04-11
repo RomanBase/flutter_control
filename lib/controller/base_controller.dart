@@ -8,9 +8,9 @@ enum DialogType { popup, sheet, dialog, dock }
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
 typedef Getter<T> = T Function();
-typedef Action<T> = Function(T);
+typedef Action<T> = void Function(T);
 typedef Converter<T> = T Function(dynamic);
-typedef Notifier<T> = Function(T);
+typedef Notifier<T> = void Function(T);
 
 /// Standard initialization of object right after constructor;
 abstract class Initializable {
