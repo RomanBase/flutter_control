@@ -286,6 +286,12 @@ class ListController<T> extends FieldController<List<T>> {
     super.notify();
   }
 
+  /// [Iterable.firstWhere]
+  T find(Predicate<T> test) => value.firstWhere(test);
+
+  /// [Iterable.where]
+  Iterable<T> filter(Predicate<T> test) => value.where(test);
+
   /// Removes item from List and notifies stream.
   bool remove(T item) {
     final removed = value.remove(item);
@@ -304,6 +310,7 @@ class ListController<T> extends FieldController<List<T>> {
     return item;
   }
 
+  /// Filter input stream into this controller
   StreamSubscription filterTo(FieldController<List<T>> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter, Predicate<T> filter}) {
     if (_subscriptions == null) {
       _subscriptions = List();
