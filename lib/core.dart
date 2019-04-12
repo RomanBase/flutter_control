@@ -16,7 +16,9 @@ export 'package:flutter_control/controller/field_controller.dart';
 export 'package:flutter_control/controller/future_block.dart';
 
 export 'package:flutter_control/util/device.dart';
+export 'package:flutter_control/util/handler.dart';
 
+export 'package:flutter_control/widget/action_popup.dart';
 export 'package:flutter_control/widget/base_page.dart';
 export 'package:flutter_control/widget/base_widget.dart';
 export 'package:flutter_control/widget/fade_in.dart';

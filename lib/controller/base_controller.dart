@@ -80,28 +80,32 @@ abstract class RouteIdentifier {
 /// Simple widget initializer and holder.
 /// initWidget is typically called from parent class or as initializer.
 /// initWidget can return NULL, when controller is too general and is set directly to Widget in build phase.
-abstract class WidgetInitializer {
+class WidgetInitializer {
   /// Current Widget.
   Widget _widget;
 
   /// This function is typically called by framework.
   @protected
-  Widget initWidget();
+  Widget initWidget() => null;
 
   /// returns current Widget or tries to initialize new one.
-  Widget getWidget() => _widget ?? (_widget = initWidget());
+  Widget getWidget({forceInit: false}) => forceInit ? (_widget = initWidget()) : (_widget ?? (_widget = initWidget()));
+}
+
+class WidgetBuilderInitializer extends WidgetInitializer {
+  final BuildContext context;
+  final WidgetBuilder builder;
+
+  WidgetBuilderInitializer(this.context, this.builder);
+
+  @override
+  Widget initWidget() => builder(context);
 }
 
 /// Initializes Widget and controls State.
 /// initWidget is typically called from parent class or as initializer.
 /// initWidget can return NULL, when controller is too general and is set directly to widget in build phase.
-class StateController implements Initializable, Disposable, StateNotifier, WidgetInitializer {
-  /// Widget can be initialized in two ways:
-  /// - initWidget
-  /// - subscribe
-  @override
-  Widget _widget;
-
+class StateController extends WidgetInitializer implements Initializable, Disposable, StateNotifier {
   /// BuildContext of current State.
   BuildContext _context;
 
@@ -204,16 +208,6 @@ class StateController implements Initializable, Disposable, StateNotifier, Widge
   /// nullable
   @protected
   BuildContext getContext() => _context ?? parent?._context;
-
-  /// This function is typically called by framework.
-  /// nullable
-  @protected
-  Widget initWidget() => null;
-
-  /// returns current widget or tries to initialize new one.
-  /// nullable
-  @override
-  Widget getWidget({bool forceInit: false}) => forceInit ? _widget = initWidget() : _widget ?? (_widget = initWidget());
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.

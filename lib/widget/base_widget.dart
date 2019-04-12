@@ -171,6 +171,7 @@ abstract class BaseWidget<T extends StateController> extends ControlWidget<T> {
   State<StatefulWidget> createState() => ticker ? _BaseWidgetTickerState() : _BaseWidgetState();
 
   /// Standard build function with given controller exposed directly to Widget.
+  @protected
   Widget buildWidget(BuildContext context, T controller);
 }
 
@@ -178,7 +179,7 @@ abstract class BaseWidget<T extends StateController> extends ControlWidget<T> {
 class _BaseWidgetState<T extends StateController> extends BaseState<T, BaseWidget> {
   @override
   Widget buildWidget(BuildContext context, T controller) {
-    return widget.buildWidget(context, controller); // ignore: invalid_use_of_protected_member
+    return widget.buildWidget(context, controller);
   }
 }
 
@@ -187,6 +188,6 @@ class _BaseWidgetState<T extends StateController> extends BaseState<T, BaseWidge
 class _BaseWidgetTickerState<T extends StateController> extends BaseState<T, BaseWidget> with TickerProviderStateMixin {
   @override
   Widget buildWidget(BuildContext context, T controller) {
-    return widget.buildWidget(context, controller); // ignore: invalid_use_of_protected_member
+    return widget.buildWidget(context, controller);
   }
 }
