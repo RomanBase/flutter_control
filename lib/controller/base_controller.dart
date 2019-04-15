@@ -313,14 +313,14 @@ class BaseController extends StateController implements RouteNavigator, RouteIde
 
   /// Initializes controller and shows Dialog
   /// Check openDialog for more info.
-  Future<dynamic> openDialogController(StateController controller, {bool root: false, List args}) {
+  Future<dynamic> openDialogController(StateController controller, {bool root: false, DialogType type, List args}) {
     controller.parent = this;
 
     if (!controller.isInitialized) {
       controller.init(args);
     }
 
-    return openDialog(controller, root: root);
+    return openDialog(controller, root: root, type: type);
   }
 
   @override

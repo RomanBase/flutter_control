@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_control/core.dart';
 
 typedef MenuItemBuilder<Widget>(BuildContext context, MenuSheetItem item);
@@ -25,9 +27,14 @@ class MenuSheetItem {
 /// BaseController of menu items.
 class MenuSheetController extends BaseController {
   final List<MenuSheetItem> items;
+  final bool closeable;
 
   /// Default constructor.
-  MenuSheetController(this.items);
+  MenuSheetController(this.items, {this.closeable: false});
+
+  Future<dynamic> show(BaseController parent, {bool root: true, DialogType type: DialogType.dock}) {
+    return parent.openDialogController(this, root: root, type: type);
+  }
 
   @override
   Widget initWidget() => MenuSheet(controller: this);
@@ -87,6 +94,17 @@ class MenuSheet<T extends MenuSheetController> extends ControlWidget<T> {
 
   /// Builds just footer part of menu.
   Widget buildFooter(BuildContext context, T controller) {
+    if (controller.closeable) {
+      return SizedBox(
+        width: double.infinity,
+        height: 56.0,
+        child: FlatButton(
+          onPressed: controller.close,
+          child: Text(localize('close'), style: Theme.of(context).textTheme.body1.copyWith(fontWeight: FontWeight.bold)),
+        ),
+      );
+    }
+
     return SizedBox(height: 16.0);
   }
 
