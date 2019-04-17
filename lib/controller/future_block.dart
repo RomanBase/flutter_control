@@ -24,7 +24,7 @@ class FutureBlock {
     });
   }
 
-  /// re-trigger current delay action and sets new duration
+  /// re-trigger current delay action and sets new duration, but block is postponed only when current delay is active.
   /// can be called multiple times - only last call will be handled.
   bool postpone(Duration duration) {
     if (isActive) {
