@@ -21,12 +21,12 @@ abstract class ControlWidget<T extends StateController> extends StatefulWidget {
   ControlWidget({Key key, @required this.controller}) : super(key: key);
 
   /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
+  /// Localization is part of AppControl.
   @protected
   String localize(String key) => controller?.localize(key) ?? ''; // ignore: invalid_use_of_protected_member
 
   /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
+  /// Localization is part of AppControl.
   @protected
   String extractLocalization(Map field) => controller?.extractLocalization(field) ?? ''; // ignore: invalid_use_of_protected_member
 }
@@ -90,12 +90,12 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.
   @protected
-  String localize(String key) => controller?.localize(key); // ignore: invalid_use_of_protected_member
+  String localize(String key) => widget.localize(key);
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl or BaseApp Widget.
   @protected
-  String extractLocalization(Map<String, String> field) => controller?.extractLocalization(field); // ignore: invalid_use_of_protected_member
+  String extractLocalization(Map<String, String> field) => widget.extractLocalization(field);
 
   @override
   void didUpdateWidget(U oldWidget) {
@@ -126,7 +126,7 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
 
   @override
   Future<dynamic> openRoot(Route route) {
-    return Navigator.of(context).pushAndRemoveUntil(route, (Route<dynamic> pop) => false);
+    return Navigator.of(context).pushAndRemoveUntil(route, (pop) => false);
   }
 
   @override
@@ -147,7 +147,11 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
 
   @override
   void backTo(String route) {
-    Navigator.of(context).popUntil((Route<dynamic> pop) => pop.settings.name == route);
+    Navigator.of(context).popUntil((pop) => pop.settings.name == route);
+  }
+
+  void backToRoot() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
