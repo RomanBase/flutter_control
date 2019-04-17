@@ -4,6 +4,8 @@ import 'package:flutter_control/core.dart';
 
 typedef AsyncFieldBuilder<T> = Widget Function(BuildContext context, T value);
 
+typedef bool Predicate<T>(T value);
+
 /// Enclosure and adds functionality to standard Stream - StreamBuilder pattern.
 /// Use then FieldBuilder for easier integration into Widget.
 class FieldController<T> implements Disposable {
@@ -259,18 +261,77 @@ class ListController<T> extends FieldController<List<T>> {
     super.notify();
   }
 
-  /// Removes item from List and notifies stream.
-  void remove(T item) {
-    value.remove(item);
+  /// Replaces first item in List for given [test]
+  bool replace(T item, Predicate<T> test, [bool notify = true]) {
+    final index = value.indexWhere(test);
+
+    final replace = index >= 0;
+
+    if (replace) {
+      value.removeAt(index);
+      value.insert(index, item);
+    }
+
+    if (notify) {
+      super.notify();
+    }
+
+    return replace;
+  }
+
+  /// For every item is performed replace
+  void replaceAll(Iterable<T> items, Predicate<T> test) {
+    items.forEach((item) => replace(item, test, false));
 
     super.notify();
   }
 
-  /// Removes item from List at given index and notifies stream.
-  void removeAt(int index) {
-    value.removeAt(index);
+  /// [Iterable.firstWhere]
+  T find(Predicate<T> test) => value.firstWhere(test);
+
+  /// [Iterable.where]
+  Iterable<T> filter(Predicate<T> test) => value.where(test);
+
+  /// Removes item from List and notifies stream.
+  bool remove(T item) {
+    final removed = value.remove(item);
 
     super.notify();
+
+    return removed;
+  }
+
+  /// Removes item from List at given index and notifies stream.
+  T removeAt(int index) {
+    final item = value.removeAt(index);
+
+    super.notify();
+
+    return item;
+  }
+
+  /// Filter input stream into this controller
+  StreamSubscription filterTo(FieldController<List<T>> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter, Predicate<T> filter}) {
+    if (_subscriptions == null) {
+      _subscriptions = List();
+    }
+
+    final subscription = _stream.stream.listen(
+      (data) {
+        if (filter != null) {
+          data = data.where(filter).toList();
+        }
+
+        controller.setValue(converter != null ? converter(data) : data);
+      },
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+
+    _subscriptions.add(subscription);
+
+    return subscription;
   }
 }
 

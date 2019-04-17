@@ -43,6 +43,7 @@ class NavigationController extends BaseController {
 
   /// Tries to navigate back in custom navigation stack.
   /// returns true if Widget was popped from inner stack.
+  @override
   Future<bool> navigateBack() async {
     if (!isRootInitialized) {
       return false;
@@ -102,7 +103,7 @@ class NavigationController extends BaseController {
 /// Controller is used as ObjectKey to prevent Widget caching in multiple NavigationStack solution.
 class NavigationStack extends ControlWidget<NavigationController> {
   /// Default constructor
-  NavigationStack(NavigationController controller) : super(controller: controller, key: ObjectKey(controller));
+  NavigationStack(NavigationController controller) : super(key: ObjectKey(controller), controller: controller);
 
   @override
   State<StatefulWidget> createState() => _NavigationStackState();
