@@ -152,6 +152,7 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
     Navigator.of(context).popUntil((pop) => pop.settings.name == route);
   }
 
+  @override
   void backToRoot() {
     Navigator.of(context).popUntil((route) => route.isFirst);
   }

@@ -55,6 +55,9 @@ abstract class RouteNavigator {
   /// As well AppControl can be initialized with custom root context and root Key.
   Future<dynamic> openDialog(WidgetInitializer initializer, {bool root: false, DialogType type: DialogType.popup});
 
+  /// Goes back in navigation stack until first Route.
+  void backToRoot();
+
   /// Goes back in navigation stack until Route with given name is found.
   void backTo(String route);
 
@@ -274,6 +277,11 @@ class BaseController extends StateController implements RouteNavigator, RouteIde
   @override
   Future<dynamic> openDialog(WidgetInitializer widget, {bool root: false, DialogType type: DialogType.popup}) {
     return _navigator?.openDialog(widget, root: root, type: type);
+  }
+
+  @override
+  void backToRoot() {
+    _navigator?.backToRoot();
   }
 
   @override
