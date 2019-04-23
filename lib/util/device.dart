@@ -15,7 +15,11 @@ class Device {
 
   double get ratio => 1.0 / data.devicePixelRatio;
 
-  bool get hasNotch => data.padding.top > 0.0;
+  bool get hasNotch => data.padding.top > 20.0;
+
+  double get topBorderSize => data.padding.top;
+
+  double get bottomBorderSize => data.padding.bottom;
 
   double px(double value) => value * ratio;
 
