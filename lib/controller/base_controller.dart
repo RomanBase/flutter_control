@@ -139,6 +139,8 @@ class StateController extends WidgetInitializer implements Initializable, Dispos
   /// nullable
   AppFactory get factory => AppControl.factory(this);
 
+  bool preventDispose = false;
+
   /// Is typically called by framework in openController functions.
   /// Can be used to re-init Controller.
   @mustCallSuper
@@ -298,6 +300,8 @@ class BaseController extends StateController implements RouteNavigator, RouteIde
   void dispose() {
     super.dispose();
     _navigator = null;
+
+    print("dispose: ${this.toString()}");
   }
 
   /// Initializes controller and pushes Route into Navigator

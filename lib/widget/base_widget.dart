@@ -107,7 +107,10 @@ abstract class ControlState<T extends StateController, U extends ControlWidget> 
   @override
   void dispose() {
     super.dispose();
-    controller?.dispose();
+
+    if (controller != null && !controller.preventDispose) {
+      controller.dispose();
+    }
   }
 }
 
