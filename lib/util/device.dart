@@ -2,10 +2,11 @@ import 'package:flutter_control/core.dart';
 
 class Device {
   final MediaQueryData data;
+  final BuildContext context;
 
-  Device(this.data);
+  const Device(this.data, [this.context]);
 
-  factory Device.of(BuildContext context) => Device(MediaQuery.of(context));
+  factory Device.of(BuildContext context) => Device(MediaQuery.of(context), context);
 
   Size get size => data.size;
 
