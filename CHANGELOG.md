@@ -1,7 +1,7 @@
 ## [0.1.0] - StackNavigator for bottom menu, tabs, multi pages, etc.
 Minor changes to Control workflow.
 
-* Core implementation of Control skeleton. Controllers and Streams workflow to separate app logic from Widgets.
+* Core implementation of Control skeleton. Controller and Stream workflow to separate app logic from Widgets.
 
 AppFactory instance for object initialization and store. Also works as global multi-stream.
 

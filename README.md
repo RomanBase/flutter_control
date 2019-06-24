@@ -1,4 +1,4 @@
-Controllers and Streams workflow to separate app logic from Widgets.
+Controller - Stream workflow to separate app logic from Widgets.
 
 AppFactory instance for object initialization and storage. Also works as global multi-stream.
 
