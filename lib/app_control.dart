@@ -3,6 +3,12 @@ import 'dart:async';
 import 'package:flutter_control/app_prefs.dart';
 import 'package:flutter_control/core.dart';
 
+class FactoryKey {
+  static const String localization = 'localization';
+  static const String preferences = 'prefs';
+  static const String control = 'control';
+}
+
 /// One of the root Widgets of App.
 /// Initializes with GlobalKey and BuildContext of root Widgets (Scaffold is recommended).
 /// AppControl can hold important objects to use them anywhere in App.
@@ -23,7 +29,7 @@ class AppControl extends InheritedWidget {
       }
     }
 
-    return factory(context).getItem('control');
+    return factory(context).getItem(FactoryKey.control);
   }
 
   /// returns instance of AppFactory.
@@ -34,25 +40,41 @@ class AppControl extends InheritedWidget {
   /// returns instance of AppLocalization
   /// context is currently ignored
   /// nullable
-  static AppLocalization localization([dynamic context]) => factory(context)?.getItem('localization');
+  static AppLocalization localization([dynamic context]) => factory(context)?.getItem(FactoryKey.localization);
 
   /// returns instance of AppPrefs
   /// context is currently ignored
   /// nullable
-  static AppPrefs prefs([dynamic context]) => factory(context)?.getItem('prefs');
-
-  /// Key of root State.
-  final GlobalKey rootKey;
-
-  final ContextHolder contextHolder;
+  static AppPrefs prefs([dynamic context]) => factory(context)?.getItem(FactoryKey.preferences);
 
   /// Returns current locale.
   String get iso2Locale => localization(this)?.locale;
 
-  BuildContext get currentContext => contextHolder.context;
+  /// Key of root State.
+  final GlobalKey rootKey;
+
+  /// Holder of current root context.
+  /// Don't get/set context directly - use [rootContext] instead.
+  final ContextHolder contextHolder;
+
+  /// Returns current context from [contextHolder]
+  BuildContext get rootContext => contextHolder.context;
+
+  /// Sets new root context to [contextHolder]
+  set rootContext(BuildContext context) => contextHolder.changeContext(context);
 
   /// Default constructor
-  AppControl({Key key, @required this.rootKey, @required this.contextHolder, String defaultLocale, List<LocalizationAsset> locales, Map<String, dynamic> entries, Map<Type, Getter> initializers, Widget child, bool debug}) : super(key: key, child: child) {
+  AppControl({
+    Key key,
+    @required this.rootKey,
+    @required this.contextHolder,
+    String defaultLocale,
+    List<LocalizationAsset> locales,
+    Map<String, dynamic> entries,
+    Map<Type, Getter> initializers,
+    Widget child,
+    bool debug,
+  }) : super(key: key, child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
@@ -67,9 +89,9 @@ class AppControl extends InheritedWidget {
       locales.add(LocalizationAsset('en', null));
     }
 
-    entries['control'] = this;
-    entries['prefs'] = AppPrefs();
-    entries['localization'] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
+    entries[FactoryKey.control] = this;
+    entries[FactoryKey.preferences] = AppPrefs();
+    entries[FactoryKey.localization] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).init(items: entries, initializers: initializers);
     localization(this).debug = debug ?? debugMode;
@@ -78,10 +100,6 @@ class AppControl extends InheritedWidget {
       localization(this).changeToSystemLocale(context);
     });
   }
-
-  /// Returns root context for given context
-  /// A context of current Navigator
-  BuildContext rootContext(BuildContext context) => Navigator.of(context).context;
 
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.

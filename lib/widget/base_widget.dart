@@ -2,122 +2,231 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
-/// Base StatefulWidget to cooperate with StateController.
-/// Controller is then used in State.
-abstract class ControlWidget<T extends StateController> extends StatefulWidget {
-  /// StateController passed in constructor.
+class WidgetStateHolder implements Disposable {
+  bool initialized = false;
+  ControlState state;
+  List<BaseController> controllers;
+
+  @override
+  void dispose() {
+    state = null;
+    controllers = null;
+  }
+}
+
+/// Base [StatefulWidget] to cooperate with [BaseController].
+/// [BaseController]
+/// [StateController]
+///
+/// [RouteControl] & [RouteController]
+/// [RouteHandler] & [PageRouteProvider]
+///
+/// [AppFactory]
+/// [AppControl]
+/// [AppLocalization]
+///
+/// [ControlState]
+/// [ControlTickerState]
+/// [ControlSingleTickerState]
+//TODO: get performance
+abstract class ControlWidget extends StatefulWidget implements Initializable, Disposable {
+  final holder = WidgetStateHolder();
+
   @protected
-  final T controller;
+  ControlState get state => holder?.state;
+
+  List<BaseController> get controllers => holder?.controllers;
 
   /// Widget don't have native access to BuildContext.
-  /// This one is brought thru controller, where context is passed during State initialization.
-  @protected
-  BuildContext get context => controller?.getContext(); // ignore: invalid_use_of_protected_member
+  BuildContext get context => state?.context;
 
+  /// instance of [AppFactory].
+  @protected
+  AppFactory get factory => AppFactory.of(this);
+
+  /// instance of [AppControl].
+  @protected
+  AppControl get control => AppControl.of(context);
+
+  /// instance of [Device].
+  /// Helper for [MediaQuery].
   @protected
   Device get device => Device(MediaQuery.of(context));
 
+  /// instance of nearest [ThemeData].
+  @protected
+  ThemeData get theme => Theme.of(context);
+
+  /// instance of [AppLocalization].
+  AppLocalization get _localization => AppControl.localization(context);
+
   /// Default constructor
-  ControlWidget({Key key, @required this.controller}) : super(key: key);
+  ControlWidget({Key key}) : super(key: key) {
+    _initHolder();
+  }
+
+  void _initHolder() {
+    if (!holder.initialized) {
+      holder.initialized = true;
+      holder.controllers = onConstruct()?.where((item) => item != null)?.toList();
+    }
+  }
+
+  /// Called during construction phase.
+  /// Returned controllers will be notified during Widget/State initialization.
+  @protected
+  List<BaseController> onConstruct();
+
+  @override
+  ControlState<ControlWidget> createState() => ControlState();
+
+  /// Returns context of this widget or [root] context that is stored in [AppControl]
+  BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
+
+  /// When [RouteHandler] is used, then this function is called right after Widget construction. +
+  /// All controllers (from [onConstruct]) are initialized too.
+  @override
+  @protected
+  @mustCallSuper
+  void init(Map args) {
+    controllers?.forEach((controller) {
+      controller.init(args);
+    });
+  }
+
+  /// Called during State initialization.
+  /// All controllers (from [onConstruct]) are subscribed to this Widget and given State.
+  @protected
+  @mustCallSuper
+  void onInitState(ControlState state) {
+    controllers?.forEach((controller) {
+      controller.subscribe(this);
+      controller.subscribe(state);
+
+      if (controller is AnimationInitializer && state is TickerProvider) {
+        (controller as AnimationInitializer).onTickerInitialized(state as TickerProvider);
+      }
+
+      if (controller is StateController) {
+        state._createSub(controller);
+        controller.onStateInitialized();
+      }
+    });
+  }
+
+  T getController<T>() => factory.findItem<T>(controllers);
+
+  /// [StatelessWidget.build]
+  /// [StatefulWidget.build]
+  @protected
+  Widget build(BuildContext context);
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl.
   @protected
-  String localize(String key) => controller?.localize(key) ?? ''; // ignore: invalid_use_of_protected_member
+  String localize(String key) => _localization?.localize(key) ?? '';
 
   /// Tries to localize text by given key.
   /// Localization is part of AppControl.
   @protected
-  String extractLocalization(Map field) => controller?.extractLocalization(field) ?? ''; // ignore: invalid_use_of_protected_member
+  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
+
+  /// Disposes and removes all controllers (from [onConstruct]).
+  /// Controller can prevent disposing [BaseController.preventDispose].
+  @override
+  @mustCallSuper
+  void dispose() {
+    printDebug("dispose ${this.toString()}");
+
+    controllers?.forEach((controller) {
+      if (!controller.preventDispose) {
+        controller.dispose();
+      }
+    });
+
+    holder.dispose();
+  }
+}
+
+/// [ControlWidget] with [ControlTickerState]
+abstract class ControlTickerWidget extends ControlWidget {
+  ControlTickerWidget({Key key}) : super(key: key);
+
+  @protected
+  TickerProvider get ticker => holder.state as TickerProvider;
+
+  @override
+  ControlState<ControlWidget> createState() => ControlTickerState();
+}
+
+/// [ControlWidget] with [ControlSingleTickerState]
+abstract class ControlSingleTickerWidget extends ControlWidget {
+  ControlSingleTickerWidget({Key key}) : super(key: key);
+
+  @protected
+  TickerProvider get ticker => holder.state as TickerProvider;
+
+  @override
+  ControlState<ControlWidget> createState() => ControlSingleTickerState();
 }
 
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
-abstract class ControlState<T extends StateController, U extends ControlWidget> extends State<U> implements StateNotifier {
-  /// Holds controller thru widget tree changes.
-  T _controller; //TODO: preserve controller settings ?
-
-  /// StateController from parent Widget.
-  T get controller => _controller;
-
-  Device get device => widget.device;
-
-  /// Current context from AppControl's ContextHolder
-  BuildContext get rootContext => AppControl.of(context)?.currentContext ?? context;
-
-  /// Helper function to return expected context.
-  BuildContext getContext({bool root: false}) => root ? rootContext : context;
+class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
+  /// List of Subscriptions from [StateController]s
+  List<ActionSubscription> _stateSubs;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = widget.controller;
-
-    _initController(controller);
-  }
-
-  /// Subscribe this State to Controller and notify Controller about initialization.
-  void _initController(T controller) {
-    if (controller != null) {
-      if (!controller.isInitialized) {
-        controller.init();
-      }
-
-      controller.subscribe(this);
-
-      if (this is TickerProvider) {
-        controller.onTickerInitialized(this as TickerProvider); // ignore: invalid_use_of_protected_member
-      }
-
-      controller.onStateInitialized(this); // ignore: invalid_use_of_protected_member
-    }
+    widget.onInitState(this);
+    widget.holder.state = this;
   }
 
   @override
-  void notifyState({state}) {
+  void notifyState([state]) {
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return buildWidget(context, controller);
+    widget.holder.state = this;
+
+    return widget.build(context);
   }
 
-  /// Standard build function with given controller.
-  Widget buildWidget(BuildContext context, T controller);
+  void _createSub(StateController controller) {
+    if (_stateSubs == null) {
+      _stateSubs = List<ActionSubscription>();
+    }
 
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  @protected
-  String localize(String key) => widget.localize(key);
-
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  @protected
-  String extractLocalization(Map<String, String> field) => widget.extractLocalization(field);
-
-  @override
-  void didUpdateWidget(U oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    _controller = oldWidget.controller;
+    _stateSubs.add(controller.subscribeStateNotifier(notifyState));
   }
 
+  /// Disposes Widget.
   @override
+  @mustCallSuper
   void dispose() {
     super.dispose();
 
-    if (controller != null && !controller.preventDispose) {
-      controller.dispose();
+    if (_stateSubs != null) {
+      _stateSubs.forEach((sub) => sub.cancel());
+      _stateSubs.clear();
     }
+
+    widget.dispose();
   }
 }
 
-/// Base State for ControlWidget and BaseController
-/// State is subscribed to Controller which notifies back about state changes.
-/// Adds navigation possibility to default ControlState
-abstract class BaseState<T extends StateController, U extends ControlWidget> extends ControlState<T, U> implements RouteNavigator {
+/// [ControlState] with [TickerProviderStateMixin]
+class ControlTickerState<U extends ControlWidget> extends ControlState<U> with TickerProviderStateMixin {}
+
+/// [ControlState] with [SingleTickerProviderStateMixin]
+class ControlSingleTickerState<U extends ControlWidget> extends ControlState<U> with SingleTickerProviderStateMixin {}
+
+/// Mixin class to enable navigation for [ControlWidget]
+mixin RouteControl on ControlWidget implements RouteNavigator {
   @override
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {
     if (replacement) {
@@ -133,26 +242,26 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
   }
 
   @override
-  Future<dynamic> openDialog(WidgetInitializer initializer, {bool root: false, DialogType type: DialogType.popup}) async {
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup}) async {
     final dialogContext = getContext(root: root);
 
     switch (type) {
       case DialogType.popup:
-        return await showDialog(context: dialogContext, builder: (context) => initializer.getWidget());
+        return await showDialog(context: dialogContext, builder: (context) => builder(context));
       case DialogType.sheet:
-        return await showModalBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
+        return await showModalBottomSheet(context: dialogContext, builder: (context) => builder(context));
       case DialogType.dialog:
-        return await Navigator.of(dialogContext).push(MaterialPageRoute(builder: (BuildContext context) => initializer.getWidget(), fullscreenDialog: true));
+        return await Navigator.of(dialogContext).push(MaterialPageRoute(builder: (BuildContext context) => builder(context), fullscreenDialog: true));
       case DialogType.dock:
-        return showBottomSheet(context: dialogContext, builder: (context) => initializer.getWidget());
+        return showBottomSheet(context: dialogContext, builder: (context) => builder(context));
     }
 
     return null;
   }
 
   @override
-  void backTo(String route) {
-    Navigator.of(context).popUntil((pop) => pop.settings.name == route);
+  void backTo(String routeIdentifier) {
+    Navigator.of(context).popUntil((route) => route.settings.name == routeIdentifier);
   }
 
   @override
@@ -161,41 +270,7 @@ abstract class BaseState<T extends StateController, U extends ControlWidget> ext
   }
 
   @override
-  void close({dynamic result}) {
+  void close([dynamic result]) {
     Navigator.of(context).pop(result);
-  }
-}
-
-/// Shortcut Widget for ControlWidget.
-/// State is created automatically and build function is exposed directly to Widget.
-/// Because Controller holds everything important and notifies about state changes, there is no need to build complex State.
-abstract class BaseWidget<T extends StateController> extends ControlWidget<T> {
-  final bool ticker;
-
-  /// Default constructor
-  BaseWidget({Key key, @required T controller, this.ticker: false}) : super(key: key, controller: controller);
-
-  @override
-  State<StatefulWidget> createState() => ticker ? _BaseWidgetTickerState() : _BaseWidgetState();
-
-  /// Standard build function with given controller exposed directly to Widget.
-  @protected
-  Widget buildWidget(BuildContext context, T controller);
-}
-
-/// Shortcut State for BaseWidget. It just expose build function to Widget.
-class _BaseWidgetState<T extends StateController> extends BaseState<T, BaseWidget> {
-  @override
-  Widget buildWidget(BuildContext context, T controller) {
-    return widget.buildWidget(context, controller);
-  }
-}
-
-/// Shortcut State for BaseWidget. It just expose build function to Widget.
-/// This State is initialized with TickerProviderMixin.
-class _BaseWidgetTickerState<T extends StateController> extends BaseState<T, BaseWidget> with TickerProviderStateMixin {
-  @override
-  Widget buildWidget(BuildContext context, T controller) {
-    return widget.buildWidget(context, controller);
   }
 }

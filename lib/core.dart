@@ -6,25 +6,25 @@ import 'package:flutter_control/core.dart';
 
 export 'package:flutter/material.dart';
 
-export 'package:flutter_control/app_control.dart';
-export 'package:flutter_control/app_localization.dart';
 export 'package:flutter_control/app_base.dart';
+export 'package:flutter_control/app_control.dart';
 export 'package:flutter_control/app_factory.dart';
+export 'package:flutter_control/app_localization.dart';
+export 'package:flutter_control/app_prefs.dart';
+export 'package:flutter_control/base_theme.dart';
 
 export 'package:flutter_control/controller/base_controller.dart';
 export 'package:flutter_control/controller/field_controller.dart';
-export 'package:flutter_control/controller/future_block.dart';
 
 export 'package:flutter_control/util/device.dart';
-export 'package:flutter_control/util/handler.dart';
+export 'package:flutter_control/util/future_block.dart';
 
-export 'package:flutter_control/widget/action_popup.dart';
-export 'package:flutter_control/widget/base_page.dart';
 export 'package:flutter_control/widget/base_widget.dart';
-export 'package:flutter_control/widget/fade_in.dart';
 export 'package:flutter_control/widget/input_field.dart';
-export 'package:flutter_control/widget/menu_sheet.dart';
-export 'package:flutter_control/widget/navigatioin_stack.dart';
+export 'package:flutter_control/widget/navigation_stack.dart';
+export 'package:flutter_control/widget/widget_provider.dart';
+
+export 'package:flutter_control/entity/menu.dart';
 
 bool get debugMode => !inRelease();
 
@@ -47,5 +47,11 @@ T onPlatform<T>({Getter<T> android, Getter<T> ios, Getter<T> all}) {
       return ios == null ? (all == null ? null : all()) : ios();
     default:
       return all == null ? null : all();
+  }
+}
+
+void printDebug(Object object) {
+  if (debugMode) {
+    print(object);
   }
 }

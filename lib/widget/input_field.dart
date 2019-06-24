@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_control/core.dart';
 
-/// Extends and adds functionality to standard FocusNode
+/// Extends and adds functionality to standard [FocusNode]
 class FocusController extends FocusNode {
   BuildContext _context;
 
@@ -15,17 +17,20 @@ class FocusController extends FocusNode {
   }
 }
 
-/// Controller of InputField.
+/// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
 class InputController extends StateController {
+  @override
+  bool get preventDispose => true;
+
   /// Regex to check value validity.
   final String regex;
 
   /// Standard TextEditingController to provide default text.
-  final _editController = TextEditingController();
+  TextEditingController _editController;
 
   /// Controls focus of InputField.
-  final _focusController = FocusController();
+  FocusController _focusController;
 
   /// Warning text to display when Field isn't valid.
   String _error;
@@ -35,7 +40,7 @@ class InputController extends StateController {
 
   /// returns Current text.
   /// Non null
-  String get text => _text ?? '';
+  String get value => _text ?? '';
 
   /// Validity of text - regex based.
   bool _isValid = true;
@@ -45,7 +50,7 @@ class InputController extends StateController {
   bool get isValid => _isValid;
 
   /// returns true if Field is focused.
-  bool get hasFocus => _focusController.hasFocus;
+  bool get hasFocus => _focusController?.hasFocus ?? false;
 
   /// Next InputController.
   InputController _next;
@@ -64,16 +69,25 @@ class InputController extends StateController {
     _text = text;
   }
 
-  @override
-  void onStateInitialized(State<StatefulWidget> state) {
-    super.onStateInitialized(state);
+  /// Initializes [TextEditingController] and [FocusController].
+  /// Can be called multiple times to prevent early disposed controllers.
+  void _initControllers() {
+    if (_editController == null) {
+      _editController = TextEditingController(text: value);
+    }
 
-    _focusController.addListener(() {
-      if (hasFocus) {
-        setError(null);
-      }
-    });
+    if (_focusController == null) {
+      _focusController = FocusController();
+      _focusController.addListener(() {
+        if (hasFocus) {
+          setError(null);
+        }
+      });
+    }
   }
+
+  @override
+  void onStateInitialized() => _initControllers();
 
   /// Sets text and notify InputField State to change Widget.
   void setText(String text) {
@@ -131,6 +145,10 @@ class InputController extends StateController {
 
   /// Change focus of InputField.
   void focus(bool requestFocus) {
+    if (_focusController == null) {
+      return;
+    }
+
     if (requestFocus) {
       _focusController.focus();
     } else {
@@ -142,6 +160,8 @@ class InputController extends StateController {
   /// Only one listener is active at time.
   /// Set null to remove listener.
   void onFocusChanged(Action<bool> listener) {
+    _initControllers();
+
     if (_onFocusChanged != null) {
       _focusController.removeListener(_onFocusChanged);
       _onFocusChanged = null;
@@ -160,82 +180,227 @@ class InputController extends StateController {
       return _isValid = true;
     }
 
-    return _isValid = RegExp(regex).hasMatch(text ?? '');
+    return _isValid = RegExp(regex).hasMatch(value ?? '');
   }
 
   /// Validate text with given regex thru all chained inputs.
   /// This method isn't called continuously.
   /// Typically after whole form submission.
-  bool validateChain() {
+  bool validateChain({bool unfocus: true}) {
     if (_next == null) {
       return validate();
     }
 
-    final isNextValid = _next.validateChain();
+    if (unfocus) {
+      focus(false);
+    }
+
+    final isNextValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isNextValid;
   }
 
-  @override
-  void notifyState({state}) {
-    if (text != null) {
-      _editController.text = text;
-      _editController.selection = TextSelection.collapsed(offset: text.length);
-    }
-
-    super.notifyState(state: state);
+  /// Unfocus field thru all chained inputs.
+  void unfocusChain() {
+    focus(false);
+    _next?.unfocusChain();
   }
 
   @override
-  InputField initWidget() => InputField(controller: this);
+  void notifyState([state]) {
+    if (value != null) {
+      _initControllers();
+
+      _editController.text = value;
+      _editController.selection = TextSelection.collapsed(offset: value.length);
+    }
+
+    super.notifyState(state);
+  }
 
   @override
   void dispose() {
     super.dispose();
 
-    //_editController.dispose();
-    //_focusController.dispose();
+    _editController.dispose();
+    _focusController.dispose();
+
+    _editController = null;
+    _focusController = null;
   }
 }
 
-//TODO: expose more params from TextField
-/// More powerful TextField with Controller
-class InputField extends ControlWidget<InputController> {
+/// More powerful [TextField] with [InputController] and default [InputDecoration]
+///
+/// [InputController.next]
+/// [InputController.done]
+/// [InputController.changed]
+class InputField extends ControlWidget {
+  /// Controller of the [TextField]
+  /// Sets initial text, focus, error etc.
+  final InputController controller;
+
+  /// Text that suggests what sort of input the field accepts.
+  ///
+  /// Displayed on top of the input [child] (i.e., at the same location on the
+  /// screen where text may be entered in the input [child]) when the input
+  /// [isEmpty] and either (a) [labelText] is null or (b) the input has the focus.
   final String hint;
+
+  /// Text that describes the input field.
+  ///
+  /// When the input field is empty and unfocused, the label is displayed on
+  /// top of the input field (i.e., at the same location on the screen where
+  /// text may be entered in the input field). When the input field receives
+  /// focus (or if the field is non-empty), the label moves above (i.e.,
+  /// vertically adjacent to) the input field.
   final String label;
-  final TextStyle labelStyle;
+
+  /// The style to use for the text being edited.
+  ///
+  /// This text style is also used as the base style for the [decoration].
+  ///
+  /// If null, defaults to the `subhead` text style from the current [Theme].
   final TextStyle style;
-  final bool obscure;
-  final Color cursorColor;
+
+  /// The decoration to show around the text field.
+  ///
+  /// By default, draws a horizontal line under the text field but can be
+  /// configured to show an icon, label, hint text, and error text.
+  ///
+  /// Specify null to remove the decoration entirely (including the
+  /// extra padding introduced by the decoration to save space for the labels).
   final InputDecoration decoration;
-  final TextAlign align;
+
+  /// {@macro flutter.widgets.editableText.keyboardType}
   final TextInputType keyboardType;
-  final TextInputAction action;
+
+  /// The type of action button to use for the keyboard.
+  ///
+  /// Defaults to [TextInputAction.newline] if [keyboardType] is
+  /// [TextInputType.multiline] and [TextInputAction.done] otherwise.
+  final TextInputAction textInputAction;
+
+  /// {@macro flutter.widgets.editableText.textCapitalization}
+  final TextCapitalization textCapitalization;
+
+  /// {@macro flutter.widgets.editableText.strutStyle}
+  final StrutStyle strutStyle;
+
+  /// {@macro flutter.widgets.editableText.textAlign}
+  final TextAlign textAlign;
+
+  /// {@macro flutter.widgets.editableText.textDirection}
+  final TextDirection textDirection;
+
+  /// {@macro flutter.widgets.editableText.autofocus}
+  final bool autofocus;
+
+  /// {@macro flutter.widgets.editableText.obscureText}
+  final bool obscureText;
+
+  /// {@macro flutter.widgets.editableText.autocorrect}
   final bool autocorrect;
 
+  /// {@macro flutter.widgets.editableText.maxLines}
+  final int maxLines;
+
+  /// {@macro flutter.widgets.editableText.minLines}
+  final int minLines;
+
+  /// {@macro flutter.widgets.editableText.expands}
+  final bool expands;
+
+  /// {@macro flutter.widgets.text_field.maxLength}
+  final int maxLength;
+
+  /// {@macro flutter.widgets.text_field.maxLengthEnforced}
+  final bool maxLengthEnforced;
+
+  /// {@macro flutter.widgets.editableText.inputFormatters}
+  final List<TextInputFormatter> inputFormatters;
+
+  /// If false the text field is "disabled": it ignores taps and its
+  /// [decoration] is rendered in grey.
+  ///
+  /// If non-null this property overrides the [decoration]'s
+  /// [Decoration.enabled] property.
+  final bool enabled;
+
+  /// {@macro flutter.widgets.editableText.cursorWidth}
+  final double cursorWidth;
+
+  /// {@macro flutter.widgets.editableText.cursorRadius}
+  final Radius cursorRadius;
+
+  /// The color to use when painting the cursor.
+  ///
+  /// Defaults to the theme's `cursorColor` when null.
+  final Color cursorColor;
+
+  /// The appearance of the keyboard.
+  ///
+  /// This setting is only honored on iOS devices.
+  ///
+  /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
+  final Brightness keyboardAppearance;
+
+  /// {@macro flutter.widgets.editableText.scrollPadding}
+  final EdgeInsets scrollPadding;
+
+  /// {@macro flutter.widgets.editableText.enableInteractiveSelection}
+  final bool enableInteractiveSelection;
+
+  /// {@macro flutter.widgets.scrollable.dragStartBehavior}
+  final DragStartBehavior dragStartBehavior;
+
+  /// {@macro flutter.widgets.edtiableText.scrollPhysics}
+  final ScrollPhysics scrollPhysics;
+
   InputField({
-    @required InputController controller,
-    this.hint,
+    Key key,
+    @required this.controller,
     this.label,
-    this.labelStyle,
-    this.style,
-    this.obscure: false,
-    this.cursorColor,
-    this.decoration,
-    this.align: TextAlign.start,
+    this.hint,
+    this.decoration = const InputDecoration(),
     this.keyboardType,
-    this.action: TextInputAction.next,
-    this.autocorrect: false,
-  }) : super(controller: controller);
+    this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.style,
+    this.strutStyle,
+    this.textAlign = TextAlign.start,
+    this.textDirection,
+    this.autofocus = false,
+    this.obscureText = false,
+    this.autocorrect = true,
+    this.maxLines = 1,
+    this.minLines,
+    this.expands = false,
+    this.maxLength,
+    this.maxLengthEnforced = true,
+    this.inputFormatters,
+    this.enabled,
+    this.cursorWidth = 2.0,
+    this.cursorRadius,
+    this.cursorColor,
+    this.keyboardAppearance,
+    this.scrollPadding = const EdgeInsets.all(20.0),
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.enableInteractiveSelection,
+    this.scrollPhysics,
+  }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _InputFieldState();
-}
+  List<BaseController> onConstruct() => [controller];
 
-/// Builds just TextField and sets up Controllers.
-class _InputFieldState extends ControlState<InputController, InputField> {
   @override
-  Widget buildWidget(BuildContext context, InputController controller) {
+  void onInitState(ControlState<ControlWidget> state) {
+    super.onInitState(state);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    controller._initControllers();
     controller._focusController.setContext(context);
 
     return TextField(
@@ -243,27 +408,42 @@ class _InputFieldState extends ControlState<InputController, InputField> {
       onSubmitted: (text) => controller.submit(),
       controller: controller._editController,
       focusNode: controller._focusController,
-      style: widget.style,
-      obscureText: widget.obscure,
-      cursorColor: widget.cursorColor,
-      textAlign: widget.align,
-      keyboardType: widget.keyboardType,
-      textInputAction: widget.action,
-      autocorrect: widget.autocorrect,
-      decoration: (widget.decoration ??
+      decoration: (decoration ??
               InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor.withOpacity(0.75))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.cursorColor.withOpacity(0.25))),
+                border: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.75))),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
+                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.25))),
               ))
           .copyWith(
-        labelText: widget.label,
-        labelStyle: widget.labelStyle,
-        hintText: widget.hint,
-        hintStyle: widget.labelStyle,
+        labelText: label,
+        hintText: hint,
         errorText: (!controller.isValid && !controller._focusController.hasFocus) ? controller._error : null,
       ),
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      style: style,
+      strutStyle: strutStyle,
+      textAlign: textAlign,
+      textDirection: textDirection,
+      autofocus: autofocus,
+      obscureText: obscureText,
+      autocorrect: autocorrect,
+      maxLines: maxLines,
+      minLines: minLines,
+      expands: expands,
+      maxLength: maxLength,
+      maxLengthEnforced: maxLengthEnforced,
+      inputFormatters: inputFormatters,
+      enabled: enabled,
+      cursorWidth: cursorWidth,
+      cursorRadius: cursorRadius,
+      cursorColor: cursorColor,
+      keyboardAppearance: keyboardAppearance,
+      scrollPadding: scrollPadding,
+      dragStartBehavior: dragStartBehavior,
+      enableInteractiveSelection: enableInteractiveSelection,
+      scrollPhysics: scrollPhysics,
     );
   }
 }

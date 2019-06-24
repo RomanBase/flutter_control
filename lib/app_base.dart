@@ -11,21 +11,13 @@ class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
   final List<LocalizationAsset> locales;
-  final BaseController root;
+  final WidgetBuilder root;
   final Map<String, dynamic> entries;
   final String defaultLocale;
   final bool debug;
 
-  /// Root GlobalKey of default Scaffold.
-  /// Is passed into AppControl.
-  final rootKey = GlobalKey<State<BaseApp>>();
-
-  /// Root BuildContext of default Scaffold.
-  /// Is passed into AppControl.
-  final contextHolder = ContextHolder();
-
   /// Default constructor
-  BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug});
+  const BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug});
 
   @override
   State<StatefulWidget> createState() => BaseAppState();
@@ -37,31 +29,47 @@ class BaseApp extends StatefulWidget {
 /// BuildContext from Scaffold is used as root context.
 /// Structure: AppControl -> MaterialApp -> Scaffold -> Your Content (root - BaseController).
 class BaseAppState extends State<BaseApp> {
+  /// Root GlobalKey of default Scaffold.
+  /// Is passed into AppControl.
+  final rootKey = GlobalKey<State<BaseApp>>();
+
+  /// Root BuildContext of default Scaffold.
+  /// Is passed into AppControl.
+  final contextHolder = ContextHolder();
+
   @override
   Widget build(BuildContext context) {
     return AppControl(
-      rootKey: widget.rootKey,
-      contextHolder: widget.contextHolder,
+      rootKey: rootKey,
+      contextHolder: contextHolder,
       defaultLocale: widget.defaultLocale,
       locales: widget.locales,
       entries: widget.entries,
+      debug: widget.debug,
       child: MaterialApp(
-        key: widget.rootKey,
+        key: rootKey,
         title: widget.title,
         theme: widget.theme,
         home: Builder(builder: (context) {
-          widget.contextHolder.changeContext(context);
-          return widget.root.getWidget(forceInit: true);
+          contextHolder.changeContext(context);
+          final root = widget.root(context);
+
+          if (root is Initializable) {
+            (root as Initializable).init({});
+          }
+
+          debugPrint('build root');
+
+          return root;
         }),
       ),
-      debug: widget.debug,
     );
   }
 
   @override
   void dispose() {
     super.dispose();
-    widget?.contextHolder?.dispose();
+    contextHolder.dispose();
   }
 }
 

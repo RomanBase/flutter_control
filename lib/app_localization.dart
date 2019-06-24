@@ -9,13 +9,16 @@ class LocalizationAsset {
   /// Locale key in iso2 standard (en, es, etc.).
   final String iso2Locale;
 
-  /// Asset path to file with localization data.
+  /// Asset path to file with localization data (json).
+  /// - /assets/localization/en.json
   final String assetPath;
 
   /// Default constructor
   LocalizationAsset(this.iso2Locale, this.assetPath);
 }
 
+/// Simple [Map] based localization.
+/// - /assets/localization/en.json
 class AppLocalization {
   /// key to shared preferences where preferred locale is stored.
   static const String preference_key = 'pref_locale';
@@ -37,7 +40,7 @@ class AppLocalization {
   Map<String, dynamic> _data = Map();
 
   /// Enables debug mode for localization.
-  /// When localization key isn't found for given locale, then localize() returns key and current locale (key_locale).
+  /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
   bool get isActive => _data.length > 0;
@@ -107,8 +110,6 @@ class AppLocalization {
       return false;
     }
 
-    print("localization change to: $iso2Locale");
-
     if (preferred) {
       AppControl.prefs(this).set(preference_key, iso2Locale);
     }
@@ -124,6 +125,7 @@ class AppLocalization {
   /// Loads localization from asset file for given locale.
   Future<bool> _initLocalization(String path, VoidCallback onChanged) async {
     if (path == null) {
+      print("invalid localization file path");
       return false;
     }
 
@@ -131,10 +133,9 @@ class AppLocalization {
     final data = jsonDecode(json);
 
     if (data != null) {
-      //_data.clear();
-      //_data.addAll(data);
-
       data.forEach((key, value) => _data[key] = value);
+
+      print("localization changed to: $path");
 
       if (onLocalizationChanged != null) {
         onLocalizationChanged();
@@ -146,6 +147,8 @@ class AppLocalization {
 
       return true;
     }
+
+    print("localization failed to change: $path");
 
     return false;
   }
@@ -159,6 +162,10 @@ class AppLocalization {
 
     return debug ? "${key}_$_locale" : '';
   }
+
+  /// Updates value in current set.
+  /// This update is only runtime and isn't stored to localization file.
+  void update(String key, String value) => _data[key] = value;
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
@@ -176,6 +183,6 @@ class AppLocalization {
       }
     }
 
-    return debug ? "empty_${iso2Locale}_or_$defaultLocale" : '';
+    return debug ? "empty_{$iso2Locale}_$defaultLocale" : '';
   }
 }

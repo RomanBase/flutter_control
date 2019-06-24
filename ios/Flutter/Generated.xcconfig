@@ -1,8 +1,8 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/base/Library/Flutter/flutter
-FLUTTER_APPLICATION_PATH=/Users/base/Pria/ketodiet-app/ketodiet/flutter_control
+FLUTTER_ROOT=C:\Apps\Flutter
+FLUTTER_APPLICATION_PATH=D:\Apino\phantas_theory\flutter_control
 FLUTTER_TARGET=lib/main.dart
 FLUTTER_BUILD_DIR=build
-SYMROOT=${SOURCE_ROOT}/../build/ios
-FLUTTER_FRAMEWORK_DIR=/Users/base/Library/Flutter/flutter/bin/cache/artifacts/engine/ios
-FLUTTER_BUILD_NAME=0.0.1
+SYMROOT=${SOURCE_ROOT}/../build\ios
+FLUTTER_FRAMEWORK_DIR=C:\Apps\Flutter\bin\cache\artifacts\engine\ios
+FLUTTER_BUILD_NAME=0.0.2
