@@ -17,7 +17,15 @@ class BaseApp extends StatefulWidget {
   final bool debug;
 
   /// Default constructor
-  const BaseApp({this.title, this.theme, this.defaultLocale, this.locales, @required this.root, this.entries, this.debug});
+  const BaseApp({
+    @required this.title,
+    this.theme,
+    this.defaultLocale,
+    this.locales,
+    @required this.root,
+    this.entries,
+    this.debug,
+  });
 
   @override
   State<StatefulWidget> createState() => BaseAppState();

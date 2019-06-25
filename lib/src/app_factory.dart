@@ -33,9 +33,7 @@ class GlobalSubscription<T> implements Disposable {
 }
 
 class FactoryProvider {
-  static T of<T>() => AppFactory._instance.getType<T>();
-
-  static T key<T>(String key) => AppFactory._instance.get<T>(key);
+  static T of<T>([String key]) => AppFactory._instance.get(key) ?? AppFactory._instance.getType<T>();
 }
 
 /// Factory for initializing and storing objects.

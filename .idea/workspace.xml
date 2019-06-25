@@ -3,26 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/android/local.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_base.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_control.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app_factory.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_factory.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app_localization.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_localization.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/app_prefs.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_prefs.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/base_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/base_theme.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/controller/base_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/base_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/controller/field_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/field_controller.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/entity/menu.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/entity/menu.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/util/device.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/device.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/util/future_block.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/future_block.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widget/base_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widget/input_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/input_field.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widget/navigation_stack.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widget/widget_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/controller_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/controller_test.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,16 +12,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/core.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
+            <state relative-caret-position="374">
+              <caret line="40" column="39" selection-start-line="40" selection-start-column="39" selection-end-line="40" selection-end-column="39" />
+              <folding>
+                <element signature="e#26#43#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pubspec.yaml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="51">
@@ -148,7 +131,14 @@
       <option name="project" value="LOCAL" />
       <updated>1561479894377</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="struct">
+      <created>1561481822023</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1561481822023</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -156,7 +146,7 @@
     <editor active="true" />
     <layout>
       <window_info id="Capture Tool" />
-      <window_info active="true" content_ui="combo" id="Project" visible="true" weight="0.28553244" />
+      <window_info content_ui="combo" id="Project" visible="true" weight="0.28553244" />
       <window_info id="Structure" side_tool="true" />
       <window_info id="Image Layers" />
       <window_info id="Designer" />
@@ -167,11 +157,11 @@
       <window_info anchor="bottom" id="TODO" />
       <window_info anchor="bottom" id="Run" />
       <window_info anchor="bottom" id="Debug" />
-      <window_info anchor="bottom" id="Terminal" visible="true" weight="0.32975295" />
+      <window_info anchor="bottom" id="Terminal" weight="0.32975295" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
       <window_info anchor="bottom" id="Flutter Performance" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Messages" weight="0.32975295" />
+      <window_info active="true" anchor="bottom" id="Messages" visible="true" weight="0.32975295" />
       <window_info anchor="right" id="Capture Analysis" />
       <window_info anchor="right" id="Theme Preview" />
       <window_info anchor="right" id="Flutter Inspector" />
@@ -181,7 +171,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="config" />
-    <option name="LAST_COMMIT_MESSAGE" value="config" />
+    <MESSAGE value="struct" />
+    <option name="LAST_COMMIT_MESSAGE" value="struct" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/README.md">
@@ -218,13 +209,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/core.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/CHANGELOG.md">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -236,6 +220,23 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
           <caret line="3" column="37" lean-forward="true" selection-start-line="3" selection-start-column="37" selection-end-line="3" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/controller/base_controller.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="9" column="8" selection-start-line="9" selection-start-column="8" selection-end-line="9" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/core.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="40" column="39" selection-start-line="40" selection-start-column="39" selection-end-line="40" selection-end-column="39" />
+          <folding>
+            <element signature="e#26#43#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
