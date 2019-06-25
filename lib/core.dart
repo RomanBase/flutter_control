@@ -1,30 +1,29 @@
 library flutter_control;
 
 import 'dart:io';
-
-import 'package:flutter_control/core.dart';
+import 'core.dart';
 
 export 'package:flutter/material.dart';
 
-export 'package:flutter_control/app_base.dart';
-export 'package:flutter_control/app_control.dart';
-export 'package:flutter_control/app_factory.dart';
-export 'package:flutter_control/app_localization.dart';
-export 'package:flutter_control/app_prefs.dart';
-export 'package:flutter_control/base_theme.dart';
+export './src/app_base.dart';
+export './src/app_control.dart';
+export './src/app_factory.dart';
+export './src/app_localization.dart';
+export './src/app_prefs.dart';
+export './src/base_theme.dart';
 
-export 'package:flutter_control/controller/base_controller.dart';
-export 'package:flutter_control/controller/field_controller.dart';
+export './src/controller/base_controller.dart';
+export './src/controller/field_controller.dart';
 
-export 'package:flutter_control/util/device.dart';
-export 'package:flutter_control/util/future_block.dart';
+export './src/util/device.dart';
+export './src/util/future_block.dart';
 
-export 'package:flutter_control/widget/base_widget.dart';
-export 'package:flutter_control/widget/input_field.dart';
-export 'package:flutter_control/widget/navigation_stack.dart';
-export 'package:flutter_control/widget/widget_provider.dart';
+export './src/widget/base_widget.dart';
+export './src/widget/input_field.dart';
+export './src/widget/navigation_stack.dart';
+export './src/widget/widget_provider.dart';
 
-export 'package:flutter_control/entity/menu.dart';
+export './src/entity/menu.dart';
 
 bool get debugMode => !inRelease();
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_control/app_prefs.dart';
+import 'package:flutter_control/src/app_prefs.dart';
 import 'package:flutter_control/core.dart';
 
 class FactoryKey {

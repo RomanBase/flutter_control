@@ -1,3 +1,4 @@
+## [0.1.1] - Struct
 ## [0.1.0] - StackNavigator for bottom menu, tabs, multi pages, etc.
 Minor changes to Control workflow.
 

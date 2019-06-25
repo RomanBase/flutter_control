@@ -1,8 +1,8 @@
 name: flutter_control
 description: A new Flutter package.
-version: 0.1.0
+version: 0.1.1
 author: "Roman <ro.hornak@gmail.com>"
-homepage: https://github.com/romanbase/
+homepage: https://github.com/romanbase/flutter_control
 
 environment:
   sdk: ">=2.1.0 <3.0.0"

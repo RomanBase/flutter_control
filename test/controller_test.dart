@@ -1,4 +1,4 @@
-import 'package:flutter_control/controller/field_controller.dart';
+import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
