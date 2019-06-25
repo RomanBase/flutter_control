@@ -32,6 +32,12 @@ class GlobalSubscription<T> implements Disposable {
   }
 }
 
+class FactoryProvider {
+  static T of<T>() => AppFactory._instance.getType<T>();
+
+  static T key<T>(String key) => AppFactory._instance.get<T>(key);
+}
+
 /// Factory for initializing and storing objects.
 /// Factory also creates global subscription stream driven by keys.
 ///
@@ -61,7 +67,7 @@ class AppFactory implements Disposable {
   final _globalValue = Map<String, dynamic>();
 
   /// Initializes default items and initializers in factory.
-  void init({Map<String, dynamic> items, Map<Type, Getter> initializers}) {
+  void initialize({Map<String, dynamic> items, Map<Type, Getter> initializers}) {
     if (items != null) {
       _items.addAll(items);
     }
@@ -77,14 +83,14 @@ class AppFactory implements Disposable {
     });
   }
 
-  /// Stores initializer for later use - [initItem].
+  /// Stores initializer for later use - [init].
   void addInitializer<T>(Getter<T> initializer) {
     _initializers[T] = initializer;
   }
 
-  /// Stores [object] with given [key] for later use - [getItem] and [getItemByType].
+  /// Stores [object] with given [key] for later use - [get] and [getType].
   /// Object with same [key] previously stored in factory is overridden.
-  void addItem(String key, dynamic object) {
+  void add(String key, dynamic object) {
     printDebug("factory add: $key");
 
     if (key == null || key.isEmpty) {
@@ -95,14 +101,14 @@ class AppFactory implements Disposable {
   }
 
   /// returns object of requested type by given key.
-  /// check [getItemByType] or [getItemInit] for more complex getters
+  /// check [getType] or [getWith] for more complex getters
   /// nullable
-  T getItem<T>(String key) => _items[key] as T;
+  T get<T>(String key) => _items[key] as T;
 
   /// returns object of requested type by given key.
   /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
   /// nullable
-  T getItemInit<T>(String key, [Map args]) {
+  T getWith<T>(String key, [Map args]) {
     final item = _items[key] as T;
 
     if (item != null && item is Initializable && args != null) {
@@ -114,43 +120,24 @@ class AppFactory implements Disposable {
 
   /// returns object of requested type.
   /// nullable
-  T getItemByType<T>([Map args]) {
-    T result;
-
+  T getType<T>([Map args]) {
     for (final item in _items.values) {
       if (item.runtimeType == T) {
-        result = item as T;
-        break;
-      }
-    }
-
-    if (_initializers.containsKey(T)) {
-      result = _initializers[T]() as T;
-    }
-
-    if (result != null && result is Initializable) {
-      result.init(args);
-    }
-
-    return result;
-  }
-
-  T findItem<T>(Iterable collection, {T defaultValue}) {
-    if (collection != null) {
-      for (final item in collection) {
-        if (item.runtimeType == T) {
-          return item as T;
+        if (item is Initializable && args != null) {
+          item.init(args);
         }
+
+        return item;
       }
     }
 
-    return defaultValue;
+    return init<T>(args);
   }
 
   /// returns new object of requested type.
   /// initializer must be specified - [addInitializer]
   /// nullable
-  T initItem<T>([Map args]) {
+  T init<T>([Map args]) {
     if (_initializers.containsKey(T)) {
       final item = _initializers[T]() as T;
 
@@ -165,13 +152,17 @@ class AppFactory implements Disposable {
   }
 
   /// Removes item of given key.
-  T removeItem<T>(String key) {
+  T remove<T>(String key) {
     return _items.remove(key) as T;
   }
 
   /// Removes all items of given type
-  void removeItemByType(Type type) {
+  void removeType(Type type, {bool includeInitializers: false}) {
     _items.removeWhere((key, item) => item.runtimeType == type);
+
+    if (includeInitializers) {
+      removeInitializer(type);
+    }
   }
 
   /// Removes initializer of given Type.
@@ -181,6 +172,17 @@ class AppFactory implements Disposable {
 
   /// Checks if key is in Factory.
   bool contains(String key) => _items.containsKey(key);
+
+  /// Checks if Type is in Factory.
+  bool containsType<T>({bool includeInitializers: true}) {
+    for (final item in _items.values) {
+      if (item.runtimeType == T) {
+        return true;
+      }
+    }
+
+    return _initializers.containsKey(T);
+  }
 
   /// Subscription to global stream
   GlobalSubscription<T> subscribe<T>(String key, void onData(T data)) {
@@ -218,6 +220,22 @@ class AppFactory implements Disposable {
         sub._onData(value);
       }
     });
+  }
+
+  T find<T>(Iterable collection, {bool includeFactory: true, T defaultValue}) {
+    if (collection != null) {
+      for (final item in collection) {
+        if (item.runtimeType == T) {
+          return item;
+        }
+      }
+    }
+
+    if (includeFactory) {
+      return getType<T>() ?? defaultValue;
+    }
+
+    return defaultValue;
   }
 
   @override

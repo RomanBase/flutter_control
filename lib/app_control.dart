@@ -29,7 +29,7 @@ class AppControl extends InheritedWidget {
       }
     }
 
-    return factory(context).getItem(FactoryKey.control);
+    return factory(context).get(FactoryKey.control);
   }
 
   /// returns instance of AppFactory.
@@ -40,12 +40,12 @@ class AppControl extends InheritedWidget {
   /// returns instance of AppLocalization
   /// context is currently ignored
   /// nullable
-  static AppLocalization localization([dynamic context]) => factory(context)?.getItem(FactoryKey.localization);
+  static AppLocalization localization([dynamic context]) => factory(context)?.get(FactoryKey.localization);
 
   /// returns instance of AppPrefs
   /// context is currently ignored
   /// nullable
-  static AppPrefs prefs([dynamic context]) => factory(context)?.getItem(FactoryKey.preferences);
+  static AppPrefs prefs([dynamic context]) => factory(context)?.get(FactoryKey.preferences);
 
   /// Returns current locale.
   String get iso2Locale => localization(this)?.locale;
@@ -93,7 +93,7 @@ class AppControl extends InheritedWidget {
     entries[FactoryKey.preferences] = AppPrefs();
     entries[FactoryKey.localization] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
-    factory(this).init(items: entries, initializers: initializers);
+    factory(this).initialize(items: entries, initializers: initializers);
     localization(this).debug = debug ?? debugMode;
 
     contextHolder.once((context) {

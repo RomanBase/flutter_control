@@ -114,7 +114,7 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
     });
   }
 
-  T getController<T>() => factory.findItem<T>(controllers);
+  T getController<T>() => factory.find<T>(controllers);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
