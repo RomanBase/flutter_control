@@ -1,7 +1,7 @@
 name: flutter_control
 description: A new Flutter package.
-version: 0.0.2
-author: Roman
+version: 0.1.0
+author: "Roman <ro.hornak@gmail.com>"
 homepage: https://github.com/romanbase/
 
 environment:
@@ -17,7 +17,7 @@ dependencies:
 
 
   # https://pub.dartlang.org/packages/shared_preferences
-  shared_preferences: any
+  shared_preferences: ">=0.1.0 <1.0.0"
 
 flutter:
 
