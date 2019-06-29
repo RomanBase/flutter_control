@@ -174,7 +174,7 @@ abstract class ControlSingleTickerWidget extends ControlWidget {
 /// State is subscribed to Controller which notifies back about state changes.
 class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
   /// List of Subscriptions from [StateController]s
-  List<ActionSubscription> _stateSubs;
+  List<ControlSubscription> _stateSubs;
 
   @override
   void initState() {
@@ -198,7 +198,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   void _createSub(StateController controller) {
     if (_stateSubs == null) {
-      _stateSubs = List<ActionSubscription>();
+      _stateSubs = List<ControlSubscription>();
     }
 
     _stateSubs.add(controller.subscribeStateNotifier(notifyState));

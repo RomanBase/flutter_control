@@ -228,8 +228,8 @@ class NavigatorStackController extends StateController {
   NavigatorController get currentController => _items[currentPageIndex];
 
   /// Notifies about page changes.
-  /// Can be used with [ActionBuilder] to rebuild menu or highlight active widget.
-  final onPageChanged = ActionController<int>.broadcast(0);
+  /// Can be used with [ControlBuilder] to rebuild menu or highlight active widget.
+  final onPageChanged = ActionControl<int>.broadcast(0);
 
   /// Sets page index and notifies [onPageChanged]
   /// Given index is clamped between valid indexes [items.length]

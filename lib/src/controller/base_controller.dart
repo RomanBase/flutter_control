@@ -161,7 +161,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
 /// Typically [ControlState] is used on the other side.
 class StateController extends BaseController implements StateNotifier {
   /// Notify listeners.
-  final _notifier = ActionController.broadcast();
+  final _notifier = ActionControl.broadcast();
 
   /// Called during State initialization.
   void onStateInitialized() {}
@@ -173,7 +173,7 @@ class StateController extends BaseController implements StateNotifier {
     _notifier.notify(state);
   }
 
-  ActionSubscription subscribeStateNotifier(Action action) => _notifier.subscribe(action);
+  ControlSubscription subscribeStateNotifier(Action action) => _notifier.subscribe(action);
 
   @override
   @mustCallSuper

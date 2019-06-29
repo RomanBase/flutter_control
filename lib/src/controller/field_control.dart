@@ -7,11 +7,16 @@ typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value)
 
 typedef bool Predicate<T>(T value);
 
-/// Subscription to [ActionController]
-class ActionSubscription<T> implements Disposable {
-  ActionController<T> _parent;
+/// Subscription to [ActionControl]
+class ControlSubscription<T> implements Disposable {
+  ActionControl<T> _parent;
   Action<T> _action;
-  bool keep = true;
+
+  bool _keep = true;
+  bool _active = true;
+
+  /// Checks if parent and action is valid and sub is active.
+  bool get isActive => _active && _parent != null && _active != null;
 
   /// Removes parent and action reference.
   /// Can be called multiple times.
@@ -20,7 +25,16 @@ class ActionSubscription<T> implements Disposable {
     _action = null;
   }
 
-  /// Cancels subscription to [ActionController]
+  /// Sets subscription to listen just for one more time, then will be canceled by [ActionControl].
+  void onceMore() => _keep = false;
+
+  /// Pauses this subscription and [ActionControl] broadcast will skip this sub.
+  void pause() => _active = false;
+
+  /// Resumes this subscription and [ActionControl] broadcast will again starts notifying this sub.
+  void resume() => _active = true;
+
+  /// Cancels subscription to [ActionControl]
   /// Can be called multiple times
   void cancel() {
     _parent?.cancel(this);
@@ -35,9 +49,9 @@ class ActionSubscription<T> implements Disposable {
 }
 
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
-/// [ActionController.single] - Only one sub can be active.
-/// [ActionController.broadcast] - Multiple subs can be used.
-class ActionController<T> implements Disposable {
+/// [ActionControl.single] - Only one sub can be active.
+/// [ActionControl.broadcast] - Multiple subs can be used.
+class ActionControl<T> implements Disposable {
   /// Current value.
   T _value;
 
@@ -45,26 +59,26 @@ class ActionController<T> implements Disposable {
   T get lastValue => _value;
 
   /// Current subscription.
-  ActionSubscription<T> _sub;
+  ControlSubscription<T> _sub;
 
   ///Default constructor.
-  ActionController._([T value]) {
+  ActionControl._([T value]) {
     _value = value;
   }
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
-  factory ActionController.single([T value]) => ActionController<T>._(value);
+  factory ActionControl.single([T value]) => ActionControl<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  factory ActionController.broadcast([T value]) => _ActionControllerBroadcast<T>(value);
+  factory ActionControl.broadcast([T value]) => _ActionControlBroadcast<T>(value);
 
   /// Subscribes event for changes.
-  /// Returns [ActionSubscription] for later cancellation.
+  /// Returns [ControlSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ActionSubscription<T> subscribe(Action<T> action) {
-    _sub = ActionSubscription<T>();
+  ControlSubscription<T> subscribe(Action<T> action) {
+    _sub = ControlSubscription<T>();
     _sub._parent = this;
     _sub._action = action;
 
@@ -76,13 +90,13 @@ class ActionController<T> implements Disposable {
   }
 
   /// Subscribes event for just one next change.
-  /// Returns [ActionSubscription] for later cancellation.
+  /// Returns [ControlSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ActionSubscription<T> once(Action<T> action) {
-    _sub = ActionSubscription<T>();
+  ControlSubscription<T> once(Action<T> action) {
+    _sub = ControlSubscription<T>();
     _sub._parent = this;
     _sub._action = action;
-    _sub.keep = false;
+    _sub._keep = false;
 
     if (_value != null) {
       action(_value);
@@ -96,10 +110,10 @@ class ActionController<T> implements Disposable {
   void notify(T value) {
     _value = value;
 
-    if (_sub != null) {
+    if (_sub != null && _sub.isActive) {
       _sub._action(value);
 
-      if (!_sub.keep) {
+      if (!_sub._keep) {
         cancel();
       }
     }
@@ -107,7 +121,7 @@ class ActionController<T> implements Disposable {
 
   /// Removes specified sub from listeners.
   /// If no sub is specified then removes all.
-  void cancel([ActionSubscription<T> subscription]) {
+  void cancel([ControlSubscription<T> subscription]) {
     _sub?._clear();
     _sub = null;
   }
@@ -120,22 +134,22 @@ class ActionController<T> implements Disposable {
 
 /// Listen for changes and updates Widget every time when value is changed.
 ///
-/// [ActionController.single] - single sub.
-/// [ActionController.broadcast] - multiple subs.
+/// [ActionControl.single] - single sub.
+/// [ActionControl.broadcast] - multiple subs.
 /// [ControlWidgetBuilder] - returns Widget based on given value.
-class ActionBuilder<T> extends StatefulWidget {
-  final ActionController<T> controller;
+class ControlBuilder<T> extends StatefulWidget {
+  final ActionControl<T> controller;
   final ControlWidgetBuilder<T> builder;
 
-  const ActionBuilder({Key key, @required this.controller, @required this.builder}) : super(key: key);
+  const ControlBuilder({Key key, @required this.controller, @required this.builder}) : super(key: key);
 
   @override
-  _ActionBuilderState createState() => _ActionBuilderState<T>();
+  _ControlBuilderState createState() => _ControlBuilderState<T>();
 }
 
-class _ActionBuilderState<T> extends State<ActionBuilder> {
+class _ControlBuilderState<T> extends State<ControlBuilder> {
   T _value;
-  ActionSubscription<T> _sub;
+  ControlSubscription<T> _sub;
 
   @override
   void initState() {
@@ -159,18 +173,14 @@ class _ActionBuilderState<T> extends State<ActionBuilder> {
   }
 }
 
-//########################################################################################
-//########################################################################################
-//########################################################################################
+/// Broadcast version of [ActionControl]
+class _ActionControlBroadcast<T> extends ActionControl<T> {
+  final _list = List<ControlSubscription<T>>();
 
-/// Broadcast version of [ActionController]
-class _ActionControllerBroadcast<T> extends ActionController<T> {
-  final _list = List<ActionSubscription<T>>();
-
-  _ActionControllerBroadcast([T value]) : super._(value);
+  _ActionControlBroadcast([T value]) : super._(value);
 
   @override
-  ActionSubscription<T> subscribe(Action<T> action) {
+  ControlSubscription<T> subscribe(Action<T> action) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
 
@@ -184,9 +194,9 @@ class _ActionControllerBroadcast<T> extends ActionController<T> {
   }
 
   @override
-  ActionSubscription<T> once(Action<T> action) {
+  ControlSubscription<T> once(Action<T> action) {
     final sub = super.subscribe(action);
-    sub.keep = false;
+    sub._keep = false;
 
     _sub = null; // just clear unused sub reference
 
@@ -205,16 +215,16 @@ class _ActionControllerBroadcast<T> extends ActionController<T> {
 
     _list.forEach((sub) => sub._action(_value));
 
-    final onceList = _list.where((sub) => !sub.keep);
+    final onceList = _list.where((sub) => !sub._keep);
 
     if (onceList.isNotEmpty) {
       onceList.forEach((sub) => sub._clear());
-      _list.removeWhere((sub) => !sub.keep);
+      _list.removeWhere((sub) => !sub._keep);
     }
   }
 
   @override
-  void cancel([ActionSubscription<T> subscription]) {
+  void cancel([ControlSubscription<T> subscription]) {
     if (subscription == null) {
       _list.forEach((sub) => sub._clear());
       _list.clear();
@@ -231,11 +241,15 @@ class _ActionControllerBroadcast<T> extends ActionController<T> {
   }
 }
 
+//########################################################################################
+//########################################################################################
+//########################################################################################
+
 /// Enclosure and adds functionality to standard [Stream] and [StreamBuilder] flow.
-/// Use [FieldBuilder] or basic variants ([FieldStringBuilder], [FieldBoolBuilder], etc.) for easier integration into Widget.
+/// Use [FieldBuilder] or basic variants ([StringBuilder], [BoolBuilder], etc.) for easier integration into Widget.
 ///
-/// There is few basic controllers to work with [BoolController], [StringController]. etc.
-class FieldController<T> implements Disposable {
+/// There is few basic controllers to work with [BoolControl], [StringControl]. etc.
+class FieldControl<T> implements Disposable {
   /// Current broadcast [StreamController].
   final _stream = StreamController<T>.broadcast();
 
@@ -255,8 +269,11 @@ class FieldController<T> implements Disposable {
   /// Returns current value - last in stream.
   T get value => _value;
 
+  /// Checks if any value is available.
+  bool get hasData => _value != null;
+
   /// Initialize controller and [Stream] with default value.
-  FieldController([T value]) {
+  FieldControl([T value]) {
     if (value != null) {
       setValue(value);
     }
@@ -282,21 +299,17 @@ class FieldController<T> implements Disposable {
   }
 
   /// Copy last value from given controller and sets it to its own stream.
-  void copyValueFrom(FieldController<T> controller) {
-    setValue(controller.value);
-  }
+  void copyValueFrom(FieldControl<T> controller) => setValue(controller.value);
 
   /// Copy last value to given controller.
-  void copyValueTo(FieldController<T> controller) {
-    controller.setValue(value);
-  }
+  void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
 
   /// Returns [Sink] with custom [Converter].
   Sink<dynamic> sinkConverter(Converter<T> converter) => FieldSinkConverter(this, converter);
 
   /// Subscribes to [Stream] of this controller.
-  /// [StreamSubscription] are automatically closed during dispose phase of [FieldController].
-  StreamSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError}) {
+  /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
+  StreamSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false}) {
     final subscription = _stream.stream.listen(
       onData,
       onError: onError,
@@ -318,8 +331,8 @@ class FieldController<T> implements Disposable {
   /// Subscribes this controller to given [Stream].
   /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
   /// Via [Converter] is possible to convert value from input stream type to own stream value.
-  /// [StreamSubscription] is automatically closed during dispose phase of [FieldController].
-  StreamSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter}) {
+  /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
+  StreamSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
@@ -338,10 +351,16 @@ class FieldController<T> implements Disposable {
     return subscription;
   }
 
-  StreamSubscription streamTo(FieldController<T> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter}) {
+  StreamSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
     controller.setValue(value);
 
-    return controller.subscribeTo(_stream.stream, onError: onError, onDone: onDone, cancelOnError: cancelOnError, converter: converter);
+    return controller.subscribeTo(
+      _stream.stream,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+      converter: converter,
+    );
   }
 
   @override
@@ -370,13 +389,13 @@ class FieldController<T> implements Disposable {
   }
 }
 
-/// Standard [Sink] for [FieldController].
+/// Standard [Sink] for [FieldControl].
 class FieldSink<T> extends Sink<T> {
   /// Target FieldController - initialized in constructor
-  FieldController _target;
+  FieldControl _target;
 
   /// Initialize Sink with target controller
-  FieldSink(FieldController<T> target) {
+  FieldSink(FieldControl<T> target) {
     assert(target != null);
 
     _target = target;
@@ -395,14 +414,14 @@ class FieldSink<T> extends Sink<T> {
   }
 }
 
-/// [Sink] with converter for [FieldController]
+/// [Sink] with converter for [FieldControl]
 /// Converts value and then sends it to controller.
 class FieldSinkConverter<T> extends FieldSink<dynamic> {
   /// Value Converter - initialized in constructor
   final Converter<T> converter;
 
   /// Initialize Sink with target controller and value converter.
-  FieldSinkConverter(FieldController<T> target, this.converter) : super(target) {
+  FieldSinkConverter(FieldControl<T> target, this.converter) : super(target) {
     assert(converter != null);
   }
 
@@ -414,12 +433,12 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
   }
 }
 
-/// Extends [StreamBuilder] and adds some functionality to be used easily with [FieldController].
+/// Extends [StreamBuilder] and adds some functionality to be used easily with [FieldControl].
 /// If no [Widget] is [build] then empty [Container] is returned.
 class FieldBuilder<T> extends StreamBuilder<T> {
   FieldBuilder({
     Key key,
-    @required FieldController<T> controller,
+    @required FieldControl<T> controller,
     @required AsyncWidgetBuilder<T> builder,
   }) : super(
           key: key,
@@ -442,7 +461,7 @@ class FieldBuilder<T> extends StreamBuilder<T> {
 
 /// Controller for [List].
 /// Expose functionality of standard [List] and notifies [FieldBuilder] about changes.
-class ListController<T> extends FieldController<List<T>> {
+class ListControl<T> extends FieldControl<List<T>> {
   /// returns number of items in list.
   int get length => value.length;
 
@@ -452,7 +471,7 @@ class ListController<T> extends FieldController<List<T>> {
   bool nullable = false;
 
   /// Default constructor.
-  ListController([Iterable<T> items]) {
+  ListControl([Iterable<T> items]) {
     final list = List<T>();
     if (items != null) {
       list.addAll(items);
@@ -558,14 +577,17 @@ class ListController<T> extends FieldController<List<T>> {
     notify();
   }
 
-  /// [Iterable.firstWhere].
+  /// [List.firstWhere].
   T firstWhere(Predicate<T> test) => value.firstWhere(test);
 
-  /// [Iterable.where].
+  /// [List.where].
   Iterable<T> where(Predicate<T> test) => value.where(test);
 
   /// [Iterable.indexWhere]
   int indexWhere(Predicate<T> test, [int start = 0]) => value.indexWhere(test, start);
+
+  /// [Iterable.indexOf]
+  int indexOf(T object) => value.indexOf(object);
 
   /// [Iterable.clear].
   void clear() => setValue(null);
@@ -582,8 +604,11 @@ class ListController<T> extends FieldController<List<T>> {
     notify();
   }
 
+  /// [List.sublist].
+  List<T> sublist(int start, [int end]) => value.sublist(start, end);
+
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldController<List<T>> controller, {Function onError, void onDone(), bool cancelOnError, Converter<T> converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter, Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
@@ -599,13 +624,13 @@ class ListController<T> extends FieldController<List<T>> {
   }
 }
 
-/// Builder for [ListController]
-/// [FieldController]
+/// Builder for [ListControl]
+/// [FieldControl]
 /// [FieldBuilder]
-class FieldListBuilder<T> extends FieldObjectBuilder<List<T>> {
-  FieldListBuilder({
+class ListBuilder<T> extends ControlObjectBuilder<List<T>> {
+  ListBuilder({
     Key key,
-    @required FieldController<List<T>> controller,
+    @required FieldControl<List<T>> controller,
     @required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
@@ -616,7 +641,7 @@ class FieldListBuilder<T> extends FieldObjectBuilder<List<T>> {
 //########################################################################################
 
 /// Shortcut for LoadingStatus Controller.
-class LoadingController extends FieldController<LoadingStatus> {
+class LoadingControl extends FieldControl<LoadingStatus> {
   /// Return true if status is done.
   bool get isDone => value == LoadingStatus.done;
 
@@ -631,7 +656,7 @@ class LoadingController extends FieldController<LoadingStatus> {
   /// Inner message of LoadingStatus.
   String message;
 
-  LoadingController([LoadingStatus status = LoadingStatus.done]) : super(status);
+  LoadingControl([LoadingStatus status = LoadingStatus.done]) : super(status);
 
   /// Change status of FieldController and sets inner message.
   void setStatus(LoadingStatus status, {String msg}) {
@@ -657,19 +682,19 @@ class LoadingController extends FieldController<LoadingStatus> {
   void unknown({String msg}) => setStatus(LoadingStatus.unknown, msg: msg);
 }
 
-/// Builder for [LoadingController].
+/// Builder for [LoadingControl].
 /// [LoadingStatus]
 /// [FieldBuilder]
-class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
+class LoadingBuilder extends FieldBuilder<LoadingStatus> {
   final WidgetBuilder progress;
   final WidgetBuilder done;
   final WidgetBuilder error;
   final WidgetBuilder outdated;
   final WidgetBuilder unknown;
 
-  FieldLoadingBuilder({
+  LoadingBuilder({
     Key key,
-    @required LoadingController controller,
+    @required LoadingControl controller,
     this.progress,
     this.done,
     this.error,
@@ -712,12 +737,12 @@ class FieldLoadingBuilder extends FieldBuilder<LoadingStatus> {
 //########################################################################################
 
 /// Object builder - checks if [AsyncSnapshot] has data and builds Widget from [builder] or [noData].
-/// [FieldController]
+/// [FieldControl]
 /// [FieldBuilder]
-class FieldObjectBuilder<T> extends FieldBuilder<T> {
-  FieldObjectBuilder({
+class ControlObjectBuilder<T> extends FieldBuilder<T> {
+  ControlObjectBuilder({
     Key key,
-    @required FieldController<T> controller,
+    @required FieldControl<T> controller,
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
   }) : super(
@@ -735,14 +760,14 @@ class FieldObjectBuilder<T> extends FieldBuilder<T> {
 }
 
 /// Boolean controller
-/// [FieldController]
-/// [FieldBoolBuilder]
-class BoolController extends FieldController<bool> {
+/// [FieldControl]
+/// [BoolBuilder]
+class BoolControl extends FieldControl<bool> {
   bool get isTrue => value;
 
   bool get isFalse => !value;
 
-  BoolController([bool value = false]) : super(value);
+  BoolControl([bool value = false]) : super(value);
 
   void toggle() {
     setValue(!value);
@@ -753,73 +778,73 @@ class BoolController extends FieldController<bool> {
   void setFalse() => setValue(false);
 }
 
-/// Builder for [BoolController]
-/// [FieldController]
-/// [FieldObjectBuilder]
-class FieldBoolBuilder extends FieldObjectBuilder<bool> {
-  FieldBoolBuilder({
+/// Builder for [BoolControl]
+/// [FieldControl]
+/// [ControlObjectBuilder]
+class BoolBuilder extends ControlObjectBuilder<bool> {
+  BoolBuilder({
     Key key,
-    @required FieldController<bool> controller,
+    @required FieldControl<bool> controller,
     @required ControlWidgetBuilder<bool> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// String controller
-/// [FieldController]
-/// [FieldBoolBuilder]
-class StringController extends FieldController<String> {
+/// [FieldControl]
+/// [StringBuilder]
+class StringControl extends FieldControl<String> {
   /// [String.isEmpty]
   bool get isEmpty => value?.isEmpty ?? true;
 
-  StringController([String value]) : super(value);
+  StringControl([String value]) : super(value);
 }
 
-/// Builder for [StringController]
-/// [FieldController]
-/// [FieldObjectBuilder]
-class FieldStringBuilder extends FieldObjectBuilder<String> {
-  FieldStringBuilder({
+/// Builder for [StringControl]
+/// [FieldControl]
+/// [ControlObjectBuilder]
+class StringBuilder extends ControlObjectBuilder<String> {
+  StringBuilder({
     Key key,
-    @required FieldController<String> controller,
+    @required FieldControl<String> controller,
     @required ControlWidgetBuilder<String> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// Double controller
-/// [FieldController]
-/// [FieldBoolBuilder]
-class DoubleController extends FieldController<double> {
-  DoubleController([double value = 0.0]) : super(value);
+/// [FieldControl]
+/// [DoubleBuilder]
+class DoubleControl extends FieldControl<double> {
+  DoubleControl([double value = 0.0]) : super(value);
 }
 
-/// Builder for [DoubleController]
-/// [FieldController]
-/// [FieldObjectBuilder]
-class FieldDoubleBuilder extends FieldObjectBuilder<double> {
-  FieldDoubleBuilder({
+/// Builder for [DoubleControl]
+/// [FieldControl]
+/// [ControlObjectBuilder]
+class DoubleBuilder extends ControlObjectBuilder<double> {
+  DoubleBuilder({
     Key key,
-    @required FieldController<double> controller,
+    @required FieldControl<double> controller,
     @required ControlWidgetBuilder<double> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// Integer controller
-/// [FieldController]
-/// [FieldIntegerBuilder]
-class IntegerController extends FieldController<int> {
-  IntegerController([int value = 0]) : super(value);
+/// [FieldControl]
+/// [IntegerBuilder]
+class IntegerControl extends FieldControl<int> {
+  IntegerControl([int value = 0]) : super(value);
 }
 
-/// Builder for [IntegerController]
-/// [FieldController]
-/// [FieldObjectBuilder]
-class FieldIntegerBuilder extends FieldObjectBuilder<int> {
-  FieldIntegerBuilder({
+/// Builder for [IntegerControl]
+/// [FieldControl]
+/// [ControlObjectBuilder]
+class IntegerBuilder extends ControlObjectBuilder<int> {
+  IntegerBuilder({
     Key key,
-    @required FieldController<int> controller,
+    @required FieldControl<int> controller,
     @required ControlWidgetBuilder<int> builder,
     WidgetBuilder noData,
   }) : super(key: key, controller: controller, builder: builder, noData: noData);

@@ -12,11 +12,22 @@ class GlobalSubscription<T> implements Disposable {
   /// [AppFactory.broadcast]
   ValueChanged<T> _onData;
 
+  bool _active = true;
+
+  /// Checks if parent is valid and sub is active.
+  bool get isActive => _parent != null && _active;
+
   /// Default constructor.
   GlobalSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) => value is T && (key == null || key == this.key);
+  bool isValidForBroadcast(String key, dynamic value) => _active && value is T && (key == null || key == this.key);
+
+  /// Pauses this subscription and [AppFactory] broadcast will skip this sub.
+  void pause() => _active = false;
+
+  /// Resumes this subscription and [AppFactory] broadcast will again starts notifying this sub.
+  void resume() => _active = true;
 
   /// Cancels subscription to global stream in [AppFactory].
   void cancel() {
