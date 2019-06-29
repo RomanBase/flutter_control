@@ -29,36 +29,42 @@ class WidgetStateHolder implements Disposable {
 /// [ControlTickerState]
 /// [ControlSingleTickerState]
 //TODO: get performance
-abstract class ControlWidget extends StatefulWidget implements Initializable, Disposable {
+abstract class ControlWidget extends StatefulWidget
+    implements Initializable, Disposable {
+  /// Holder for [State] nad Controllers.
   final holder = WidgetStateHolder();
 
+  /// Widget's [State]
+  /// [holder] - [onInitState]
   @protected
   ControlState get state => holder?.state;
 
+  /// List of Controllers passed during construction phase.
+  /// [holder] - [onConstruct]
   List<BaseController> get controllers => holder?.controllers;
 
-  /// Widget don't have native access to BuildContext.
+  /// Context of Widget's [State]
   BuildContext get context => state?.context;
 
-  /// instance of [AppFactory].
+  /// Instance of [AppFactory].
   @protected
   AppFactory get factory => AppFactory.of(this);
 
-  /// instance of [AppControl].
+  /// Instance of [AppControl].
   @protected
   AppControl get control => AppControl.of(context);
 
-  /// instance of [Device].
+  /// Instance of [Device].
   /// Helper for [MediaQuery].
   @protected
   Device get device => Device(MediaQuery.of(context));
 
-  /// instance of nearest [ThemeData].
+  /// Instance of nearest [ThemeData].
   @protected
   ThemeData get theme => Theme.of(context);
 
-  /// instance of [AppLocalization].
-  AppLocalization get _localization => AppControl.localization(context);
+  /// Instance of [AppLocalization].
+  AppLocalization get _localization => factory.get(FactoryKey.localization);
 
   /// Default constructor
   ControlWidget({Key key}) : super(key: key) {
@@ -68,7 +74,8 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   void _initHolder() {
     if (!holder.initialized) {
       holder.initialized = true;
-      holder.controllers = onConstruct()?.where((item) => item != null)?.toList();
+      holder.controllers =
+          onConstruct()?.where((item) => item != null)?.toList();
     }
   }
 
@@ -81,7 +88,8 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   ControlState<ControlWidget> createState() => ControlState();
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) =>
+      root ? control.rootContext ?? context : context;
 
   /// When [RouteHandler] is used, then this function is called right after Widget construction. +
   /// All controllers (from [onConstruct]) are initialized too.
@@ -104,7 +112,8 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
       controller.subscribe(state);
 
       if (controller is AnimationInitializer && state is TickerProvider) {
-        (controller as AnimationInitializer).onTickerInitialized(state as TickerProvider);
+        (controller as AnimationInitializer)
+            .onTickerInitialized(state as TickerProvider);
       }
 
       if (controller is StateController) {
@@ -122,14 +131,15 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   Widget build(BuildContext context);
 
   /// Tries to localize text by given key.
-  /// Localization is part of AppControl.
+  /// Localization is part of [AppControl].
   @protected
   String localize(String key) => _localization?.localize(key) ?? '';
 
   /// Tries to localize text by given key.
-  /// Localization is part of AppControl.
+  /// Localization is part of [AppControl].
   @protected
-  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
+  String extractLocalization(Map field) =>
+      _localization?.extractLocalization(field) ?? '';
 
   /// Disposes and removes all controllers (from [onConstruct]).
   /// Controller can prevent disposing [BaseController.preventDispose].
@@ -172,7 +182,8 @@ abstract class ControlSingleTickerWidget extends ControlWidget {
 
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
-class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
+class ControlState<U extends ControlWidget> extends State<U>
+    implements StateNotifier {
   /// List of Subscriptions from [StateController]s
   List<ControlSubscription> _stateSubs;
 
@@ -220,15 +231,18 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 }
 
 /// [ControlState] with [TickerProviderStateMixin]
-class ControlTickerState<U extends ControlWidget> extends ControlState<U> with TickerProviderStateMixin {}
+class ControlTickerState<U extends ControlWidget> extends ControlState<U>
+    with TickerProviderStateMixin {}
 
 /// [ControlState] with [SingleTickerProviderStateMixin]
-class ControlSingleTickerState<U extends ControlWidget> extends ControlState<U> with SingleTickerProviderStateMixin {}
+class ControlSingleTickerState<U extends ControlWidget> extends ControlState<U>
+    with SingleTickerProviderStateMixin {}
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
   @override
-  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {
+  Future<dynamic> openRoute(Route route,
+      {bool root: false, bool replacement: false}) {
     if (replacement) {
       return Navigator.of(context).pushReplacement(route);
     } else {
@@ -242,18 +256,24 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   }
 
   @override
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup}) async {
+  Future<dynamic> openDialog(WidgetBuilder builder,
+      {bool root: false, DialogType type: DialogType.popup}) async {
     final dialogContext = getContext(root: root);
 
     switch (type) {
       case DialogType.popup:
-        return await showDialog(context: dialogContext, builder: (context) => builder(context));
+        return await showDialog(
+            context: dialogContext, builder: (context) => builder(context));
       case DialogType.sheet:
-        return await showModalBottomSheet(context: dialogContext, builder: (context) => builder(context));
+        return await showModalBottomSheet(
+            context: dialogContext, builder: (context) => builder(context));
       case DialogType.dialog:
-        return await Navigator.of(dialogContext).push(MaterialPageRoute(builder: (BuildContext context) => builder(context), fullscreenDialog: true));
+        return await Navigator.of(dialogContext).push(MaterialPageRoute(
+            builder: (BuildContext context) => builder(context),
+            fullscreenDialog: true));
       case DialogType.dock:
-        return showBottomSheet(context: dialogContext, builder: (context) => builder(context));
+        return showBottomSheet(
+            context: dialogContext, builder: (context) => builder(context));
     }
 
     return null;
@@ -261,7 +281,8 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
 
   @override
   void backTo(String routeIdentifier) {
-    Navigator.of(context).popUntil((route) => route.settings.name == routeIdentifier);
+    Navigator.of(context)
+        .popUntil((route) => route.settings.name == routeIdentifier);
   }
 
   @override

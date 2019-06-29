@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteBuilder = Route Function(WidgetBuilder builder, RouteSettings settings);
+typedef RouteBuilder = Route Function(
+    WidgetBuilder builder, RouteSettings settings);
 
 /// Abstract implementation of simple widget initializer and holder.
 abstract class WidgetInitializer {
@@ -13,7 +14,8 @@ abstract class WidgetInitializer {
 
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
+  factory WidgetInitializer.of(WidgetBuilder builder) =>
+      _WidgetInitBuilder(builder);
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -22,7 +24,10 @@ abstract class WidgetInitializer {
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, Map args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
+  Widget getWidget(BuildContext context, {forceInit: false, Map args}) =>
+      forceInit
+          ? (_widget = initWidget(context, args: args))
+          : (_widget ?? (_widget = initWidget(context, args: args)));
 
   /// Returns context of initialized [ControlWidget]
   /// nullable
@@ -80,7 +85,8 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openRoute]
-  Future<dynamic> openRoute({bool root: false, bool replacement: false, Map args}) {
+  Future<dynamic> openRoute(
+      {bool root: false, bool replacement: false, Map args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
     return navigator.openRoute(
@@ -111,16 +117,19 @@ class RouteHandler {
   }
 
   /// Wraps [builder] and init widget during build phase.
-  WidgetBuilder _initBuilder(WidgetBuilder builder, Map args) => WidgetInitializer.of(builder).wrap(args: args);
+  WidgetBuilder _initBuilder(WidgetBuilder builder, Map args) =>
+      WidgetInitializer.of(builder).wrap(args: args);
 }
 
 /// Abstract class for [PageRoute] construction with given settings.
 class PageRouteProvider {
   /// Default [PageRoute] generator.
-  factory PageRouteProvider.of({String identifier, String type, @required WidgetBuilder builder}) => PageRouteProvider()
-    ..identifier = identifier
-    ..type = type
-    ..builder = builder;
+  factory PageRouteProvider.of(
+          {String identifier, String type, @required WidgetBuilder builder}) =>
+      PageRouteProvider()
+        ..identifier = identifier
+        ..type = type
+        ..builder = builder;
 
   /// Route identifier [RouteSettings].
   String identifier;

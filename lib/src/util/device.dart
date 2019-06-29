@@ -6,7 +6,8 @@ class Device {
 
   const Device(this.data, [this.context]);
 
-  factory Device.of(BuildContext context) => Device(MediaQuery.of(context), context);
+  factory Device.of(BuildContext context) =>
+      Device(MediaQuery.of(context), context);
 
   bool get portrait => data.orientation == Orientation.portrait;
 

@@ -21,7 +21,8 @@ class GlobalSubscription<T> implements Disposable {
   GlobalSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) => _active && value is T && (key == null || key == this.key);
+  bool isValidForBroadcast(String key, dynamic value) =>
+      _active && value is T && (key == null || key == this.key);
 
   /// Pauses this subscription and [AppFactory] broadcast will skip this sub.
   void pause() => _active = false;
@@ -44,7 +45,8 @@ class GlobalSubscription<T> implements Disposable {
 }
 
 class FactoryProvider {
-  static T of<T>([String key]) => AppFactory._instance.get(key) ?? AppFactory._instance.getType<T>();
+  static T of<T>([String key]) =>
+      AppFactory._instance.get(key) ?? AppFactory._instance.getType<T>();
 }
 
 /// Factory for initializing and storing objects.
@@ -76,7 +78,8 @@ class AppFactory implements Disposable {
   final _globalValue = Map<String, dynamic>();
 
   /// Initializes default items and initializers in factory.
-  void initialize({Map<String, dynamic> items, Map<Type, Getter> initializers}) {
+  void initialize(
+      {Map<String, dynamic> items, Map<Type, Getter> initializers}) {
     if (items != null) {
       _items.addAll(items);
     }
@@ -214,7 +217,8 @@ class AppFactory implements Disposable {
   }
 
   /// Cancels subscriptions to global stream
-  void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
+  void cancelSubscription(GlobalSubscription sub) =>
+      _globalSubscriptions.remove(sub);
 
   /// Sets data to global stream.
   /// Subs with same [key] a [value] type will be notified.

@@ -48,7 +48,8 @@ class AppLocalization {
   VoidCallback onLocalizationChanged;
 
   /// Default constructor
-  AppLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
+  AppLocalization(this.defaultLocale, this.assets,
+      {bool preloadDefaultLocalization: true}) {
     if (preloadDefaultLocalization) {
       changeLocale(defaultLocale, preferred: false);
     }
@@ -61,8 +62,10 @@ class AppLocalization {
 
   /// changes localization to system language
   /// @preferred - true: changes localization to in app preferred language (if previously set).
-  Future<bool> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
-    final pref = preferred ? await AppControl.prefs(this).get(preference_key) : null;
+  Future<bool> changeToSystemLocale(BuildContext context,
+      {bool preferred: true}) async {
+    final pref =
+        preferred ? await AppControl.prefs(this).get(preference_key) : null;
 
     String locale;
 
@@ -104,7 +107,8 @@ class AppLocalization {
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale, {bool preferred: true, VoidCallback onChanged}) async {
+  Future<bool> changeLocale(String iso2Locale,
+      {bool preferred: true, VoidCallback onChanged}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
       print("localization not available: $iso2Locale");
       return false;
@@ -169,7 +173,8 @@ class AppLocalization {
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(Map map, {String iso2Locale, String defaultLocale}) {
+  String extractLocalization(Map map,
+      {String iso2Locale, String defaultLocale}) {
     iso2Locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 

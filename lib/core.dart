@@ -28,7 +28,9 @@ export './src/entity/menu.dart';
 bool get debugMode => !inRelease();
 
 bool inRelease({bool profileModeAsRelease: true}) {
-  bool result = profileModeAsRelease ? true : bool.fromEnvironment('dart.vm.product'); // profile and release mode
+  bool result = profileModeAsRelease
+      ? true
+      : bool.fromEnvironment('dart.vm.product'); // profile and release mode
 
   assert(() {
     result = false; // debug mode

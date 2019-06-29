@@ -93,7 +93,11 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   BuildContext get navContext => _ctx.context;
 
   /// Default constructor
-  NavigatorStack._({@required this.controller, @required this.builder, this.overrideNavigation: false}) : super(key: ObjectKey(controller));
+  NavigatorStack._(
+      {@required this.controller,
+      @required this.builder,
+      this.overrideNavigation: false})
+      : super(key: ObjectKey(controller));
 
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
   /// With [overrideNavigation] Widget will create [WillPopScope] and handles back button.
@@ -101,7 +105,10 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static NavigatorStack single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false}) {
+  static NavigatorStack single(
+      {NavigatorStack controller,
+      @required WidgetBuilder builder,
+      bool overrideNavigation: false}) {
     return NavigatorStack._(
       controller: controller ?? NavigatorController(),
       builder: builder,
@@ -119,7 +126,11 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static _NavigatorStackOffstage pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true}) {
+  static _NavigatorStackOffstage pages(
+      {Key key,
+      NavigatorStackController controller,
+      @required List<NavigatorStack> pages,
+      bool overrideNavigation: true}) {
     return _NavigatorStackOffstage(
       pages: pages,
       controller: controller ?? NavigatorStackController,
@@ -137,7 +148,10 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static _NavigatorStackOffstage menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true}) {
+  static _NavigatorStackOffstage menu(
+      {NavigatorStackController controller,
+      @required Map<MenuItem, WidgetBuilder> pages,
+      bool overrideNavigation: true}) {
     final items = List<NavigatorStack>();
 
     pages.forEach((key, value) => items.add(NavigatorStack._(
@@ -214,7 +228,8 @@ class NavigatorStackController extends StateController {
   List<NavigatorController> get items => _items;
 
   /// List of MenuItems set in Widget construct phase.
-  List<MenuItem> get menuItems => _items.map((item) => item.menu).toList(growable: false);
+  List<MenuItem> get menuItems =>
+      _items.map((item) => item.menu).toList(growable: false);
 
   /// Current page index.
   int _pageIndex = 0;
@@ -286,7 +301,8 @@ class _NavigatorStackOffstage extends ControlWidget {
 
   @override
   List<BaseController> onConstruct() {
-    controller._items = pages.map((page) => page.controller).toList(growable: false);
+    controller._items =
+        pages.map((page) => page.controller).toList(growable: false);
     controller.currentController.isSelected = true;
 
     return [controller];

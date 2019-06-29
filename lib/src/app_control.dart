@@ -34,18 +34,19 @@ class AppControl extends InheritedWidget {
 
   /// returns instance of AppFactory.
   /// context is currently ignored.
-  /// nullable
   static AppFactory factory([dynamic context]) => AppFactory.of(context);
 
   /// returns instance of AppLocalization
   /// context is currently ignored
   /// nullable
-  static AppLocalization localization([dynamic context]) => factory(context)?.get(FactoryKey.localization);
+  static AppLocalization localization([dynamic context]) =>
+      factory(context).get(FactoryKey.localization);
 
   /// returns instance of AppPrefs
   /// context is currently ignored
   /// nullable
-  static AppPrefs prefs([dynamic context]) => factory(context)?.get(FactoryKey.preferences);
+  static AppPrefs prefs([dynamic context]) =>
+      factory(context).get(FactoryKey.preferences);
 
   /// Returns current locale.
   String get iso2Locale => localization(this)?.locale;
@@ -91,7 +92,8 @@ class AppControl extends InheritedWidget {
 
     entries[FactoryKey.control] = this;
     entries[FactoryKey.preferences] = AppPrefs();
-    entries[FactoryKey.localization] = AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
+    entries[FactoryKey.localization] =
+        AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).initialize(items: entries, initializers: initializers);
     localization(this).debug = debug ?? debugMode;
@@ -104,7 +106,8 @@ class AppControl extends InheritedWidget {
   /// Changes localization of all sub widgets (typically whole app).
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale, {VoidCallback onChanged}) async {
-    return await localization(this)?.changeLocale(iso2Locale, onChanged: onChanged);
+    return await localization(this)
+        ?.changeLocale(iso2Locale, onChanged: onChanged);
   }
 
   @override

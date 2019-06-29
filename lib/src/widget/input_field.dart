@@ -195,7 +195,8 @@ class InputController extends StateController {
       focus(false);
     }
 
-    final isNextValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
+    final isNextValid = _next.validateChain(
+        unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isNextValid;
   }
@@ -410,15 +411,24 @@ class InputField extends ControlWidget {
       focusNode: controller._focusController,
       decoration: (decoration ??
               InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.75))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.25))),
+                border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursorColor)),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide:
+                        BorderSide(color: cursorColor.withOpacity(0.75))),
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursorColor)),
+                disabledBorder: UnderlineInputBorder(
+                    borderSide:
+                        BorderSide(color: cursorColor.withOpacity(0.25))),
               ))
           .copyWith(
         labelText: label,
         hintText: hint,
-        errorText: (!controller.isValid && !controller._focusController.hasFocus) ? controller._error : null,
+        errorText:
+            (!controller.isValid && !controller._focusController.hasFocus)
+                ? controller._error
+                : null,
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,

@@ -3,7 +3,8 @@ import 'dart:math';
 
 import 'package:flutter_control/core.dart';
 
-typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(
+    BuildContext context, T value);
 
 typedef bool Predicate<T>(T value);
 
@@ -72,7 +73,8 @@ class ActionControl<T> implements Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  factory ActionControl.broadcast([T value]) => _ActionControlBroadcast<T>(value);
+  factory ActionControl.broadcast([T value]) =>
+      _ActionControlBroadcast<T>(value);
 
   /// Subscribes event for changes.
   /// Returns [ControlSubscription] for later cancellation.
@@ -141,7 +143,9 @@ class ControlBuilder<T> extends StatefulWidget {
   final ActionControl<T> controller;
   final ControlWidgetBuilder<T> builder;
 
-  const ControlBuilder({Key key, @required this.controller, @required this.builder}) : super(key: key);
+  const ControlBuilder(
+      {Key key, @required this.controller, @required this.builder})
+      : super(key: key);
 
   @override
   _ControlBuilderState createState() => _ControlBuilderState<T>();
@@ -163,7 +167,8 @@ class _ControlBuilderState<T> extends State<ControlBuilder> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(context, _value) ?? Container();
+  Widget build(BuildContext context) =>
+      widget.builder(context, _value) ?? Container();
 
   @override
   void dispose() {
@@ -305,11 +310,13 @@ class FieldControl<T> implements Disposable {
   void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
 
   /// Returns [Sink] with custom [Converter].
-  Sink<dynamic> sinkConverter(Converter<T> converter) => FieldSinkConverter(this, converter);
+  Sink<dynamic> sinkConverter(Converter<T> converter) =>
+      FieldSinkConverter(this, converter);
 
   /// Subscribes to [Stream] of this controller.
   /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
-  StreamSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false}) {
+  StreamSubscription subscribe(void onData(T event),
+      {Function onError, void onDone(), bool cancelOnError: false}) {
     final subscription = _stream.stream.listen(
       onData,
       onError: onError,
@@ -332,7 +339,11 @@ class FieldControl<T> implements Disposable {
   /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
   /// Via [Converter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
-  StreamSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+  StreamSubscription subscribeTo(Stream stream,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      Converter<T> converter}) {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
@@ -351,7 +362,11 @@ class FieldControl<T> implements Disposable {
     return subscription;
   }
 
-  StreamSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+  StreamSubscription streamTo(FieldControl<T> controller,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      Converter<T> converter}) {
     controller.setValue(value);
 
     return controller.subscribeTo(
@@ -584,7 +599,8 @@ class ListControl<T> extends FieldControl<List<T>> {
   Iterable<T> where(Predicate<T> test) => value.where(test);
 
   /// [Iterable.indexWhere]
-  int indexWhere(Predicate<T> test, [int start = 0]) => value.indexWhere(test, start);
+  int indexWhere(Predicate<T> test, [int start = 0]) =>
+      value.indexWhere(test, start);
 
   /// [Iterable.indexOf]
   int indexOf(T object) => value.indexOf(object);
@@ -608,7 +624,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   List<T> sublist(int start, [int end]) => value.sublist(start, end);
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl<List<T>> controller,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      Converter<T> converter,
+      Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
@@ -633,7 +654,8 @@ class ListBuilder<T> extends ControlObjectBuilder<List<T>> {
     @required FieldControl<List<T>> controller,
     @required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder noData,
-  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+  }) : super(
+            key: key, controller: controller, builder: builder, noData: noData);
 }
 
 //########################################################################################
@@ -787,7 +809,8 @@ class BoolBuilder extends ControlObjectBuilder<bool> {
     @required FieldControl<bool> controller,
     @required ControlWidgetBuilder<bool> builder,
     WidgetBuilder noData,
-  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+  }) : super(
+            key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// String controller
@@ -809,7 +832,8 @@ class StringBuilder extends ControlObjectBuilder<String> {
     @required FieldControl<String> controller,
     @required ControlWidgetBuilder<String> builder,
     WidgetBuilder noData,
-  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+  }) : super(
+            key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// Double controller
@@ -828,7 +852,8 @@ class DoubleBuilder extends ControlObjectBuilder<double> {
     @required FieldControl<double> controller,
     @required ControlWidgetBuilder<double> builder,
     WidgetBuilder noData,
-  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+  }) : super(
+            key: key, controller: controller, builder: builder, noData: noData);
 }
 
 /// Integer controller
@@ -847,5 +872,6 @@ class IntegerBuilder extends ControlObjectBuilder<int> {
     @required FieldControl<int> controller,
     @required ControlWidgetBuilder<int> builder,
     WidgetBuilder noData,
-  }) : super(key: key, controller: controller, builder: builder, noData: noData);
+  }) : super(
+            key: key, controller: controller, builder: builder, noData: noData);
 }

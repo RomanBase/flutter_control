@@ -116,7 +116,8 @@ class ContextHolder implements Disposable {
   }
 
   /// Subscribe listener for context changes.
-  void subscribe(OnContextChanged onContextChanged, {bool instantNotify: false}) {
+  void subscribe(OnContextChanged onContextChanged,
+      {bool instantNotify: false}) {
     _onContextChanged = onContextChanged;
 
     if (instantNotify && context != null) {
