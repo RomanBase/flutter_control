@@ -1,3 +1,4 @@
+## [0.1.4] - Code refactor
 ## [0.1.3] - Control refactor
 ## [0.1.2] - FactoryProvider
 ## [0.1.1] - Struct
