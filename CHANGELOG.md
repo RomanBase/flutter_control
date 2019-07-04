@@ -1,9 +1,10 @@
+## [0.1.6] - App to Base refactor
 ## [0.1.5] - Control refactor
 ## [0.1.4] - Code refactor
 ## [0.1.3] - Control refactor
 ## [0.1.2] - FactoryProvider
 ## [0.1.1] - Struct
-## [0.1.0] - StackNavigator for bottom menu, tabs, multi pages, etc.
+## [0.1.0] - Flutter Control.
 Minor changes to Control workflow.
 
 * Core implementation of Control skeleton. Controller and Stream workflow to separate app logic from Widgets.
