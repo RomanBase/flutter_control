@@ -173,7 +173,7 @@ class StateController extends BaseController implements StateNotifier {
   void notifyState([dynamic state]) {
     debugPrint("notify state: $this");
 
-    _notifier.notify(state);
+    _notifier.setValue(state);
   }
 
   ControlSubscription subscribeStateNotifier(Action action) =>

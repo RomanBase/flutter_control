@@ -257,7 +257,7 @@ class NavigatorStackController extends StateController {
     currentController.isSelected = true;
 
     if (onPageChanged != null) {
-      onPageChanged.notify(currentPageIndex);
+      onPageChanged.setValue(currentPageIndex);
     }
 
     notifyState();
