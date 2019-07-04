@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
-class WidgetStateHolder implements Disposable {
+class WidgetControlHolder implements Disposable {
   bool initialized = false;
   ControlState state;
   List<BaseController> controllers;
@@ -51,10 +51,10 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [ControlState]
 /// [_ControlTickerState]
 /// [_ControlSingleTickerState]
-//TODO: get performance
+//TODO: [get] performance
 abstract class ControlWidget extends StatefulWidget implements Initializable, Disposable {
   /// Holder for [State] nad Controllers.
-  final holder = WidgetStateHolder();
+  final holder = WidgetControlHolder();
 
   /// Widget's [State]
   /// [holder] - [onInitState]
@@ -142,7 +142,9 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
     });
   }
 
-  T getController<T>() => factory.find<T>(controllers);
+  /// Looks for [Type] in initialized controllers, then look up whole factory.
+  @protected
+  T getControl<T>() => factory.find<T>(controllers);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]

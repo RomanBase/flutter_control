@@ -21,8 +21,7 @@ class GlobalSubscription<T> implements Disposable {
   GlobalSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) =>
-      _active && value is T && (key == null || key == this.key);
+  bool isValidForBroadcast(String key, dynamic value) => _active && value is T && (key == null || key == this.key);
 
   /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
   void pause() => _active = false;
@@ -45,8 +44,7 @@ class GlobalSubscription<T> implements Disposable {
 }
 
 class FactoryProvider {
-  static T of<T>([String key]) =>
-      ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
+  static T of<T>([String key]) => ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
 }
 
 /// Factory for initializing and storing objects.
@@ -78,8 +76,7 @@ class ControlFactory implements Disposable {
   final _globalValue = Map<String, dynamic>();
 
   /// Initializes default items and initializers in factory.
-  void initialize(
-      {Map<String, dynamic> items, Map<Type, Initializer> initializers}) {
+  void initialize({Map<String, dynamic> items, Map<Type, Initializer> initializers}) {
     if (items != null) {
       _items.addAll(items);
     }
@@ -103,8 +100,6 @@ class ControlFactory implements Disposable {
   /// Stores [object] with given [key] for later use - [get] and [getType].
   /// Object with same [key] previously stored in factory is overridden.
   void add(String key, dynamic object) {
-    printDebug("factory add: $key");
-
     if (key == null || key.isEmpty) {
       key = object.toString();
     }
@@ -217,8 +212,7 @@ class ControlFactory implements Disposable {
   }
 
   /// Cancels subscriptions to global stream
-  void cancelSubscription(GlobalSubscription sub) =>
-      _globalSubscriptions.remove(sub);
+  void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
 
   /// Sets data to global stream.
   /// Subs with same [key] a [value] type will be notified.
@@ -235,6 +229,9 @@ class ControlFactory implements Disposable {
     });
   }
 
+  /// Looks for item by [Type] in collection.
+  /// [includeFactory] to search in factory too.
+  /// [defaultValue] is returned if nothing found.
   T find<T>(Iterable collection, {bool includeFactory: true, T defaultValue}) {
     if (collection != null) {
       for (final item in collection) {
@@ -249,6 +246,22 @@ class ControlFactory implements Disposable {
     }
 
     return defaultValue;
+  }
+
+  @override
+  String toString() {
+    final buffer = StringBuffer();
+
+    buffer.writeln('--- Items ---');
+    _items.forEach((key, value) => buffer.writeln('$key - $value'));
+
+    buffer.writeln('--- Initializers ---');
+    _initializers.forEach((key, value) => buffer.writeln('$key - $value'));
+
+    buffer.writeln('--- Subscriptions ---');
+    _globalSubscriptions.forEach((item) => buffer.writeln('${item.key} - ${_globalValue[item.key]}'));
+
+    return buffer.toString();
   }
 
   @override
