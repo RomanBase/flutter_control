@@ -168,7 +168,7 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   }
 
   @override
-  List<BaseController> onConstruct() {
+  List<BaseController> initControllers() {
     return [controller];
   }
 
@@ -300,7 +300,7 @@ class _NavigatorStackOffstage extends ControlWidget {
   }
 
   @override
-  List<BaseController> onConstruct() {
+  List<BaseController> initControllers() {
     controller._items =
         pages.map((page) => page.controller).toList(growable: false);
     controller.currentController.isSelected = true;

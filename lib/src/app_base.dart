@@ -2,17 +2,17 @@ import 'package:flutter_control/core.dart';
 
 typedef OnContextChanged = Function(BuildContext context);
 
-/// Main(root) Widget for whole app.
-/// AppControl and root Scaffold is build in State.
-/// This Widget helps easily integrate AppControl as InheritedWidget into application.
+/// Main - root - [Widget] for whole app.
+/// [AppControl] is build on top of everything.
+/// This Widget helps easily integrate [AppControl] as [InheritedWidget] for descendant widgets.
 /// Currently supports only MaterialApp.
-/// /// Structure: AppControl -> MaterialApp -> Scaffold -> Your Content (root - BaseController).
 class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
   final List<LocalizationAsset> locales;
   final WidgetBuilder root;
   final Map<String, dynamic> entries;
+  final Map<Type, Initializer> initializers;
   final String defaultLocale;
   final bool debug;
 
@@ -24,6 +24,7 @@ class BaseApp extends StatefulWidget {
     this.locales,
     @required this.root,
     this.entries,
+    this.initializers,
     this.debug,
   });
 
@@ -53,6 +54,7 @@ class BaseAppState extends State<BaseApp> {
       defaultLocale: widget.defaultLocale,
       locales: widget.locales,
       entries: widget.entries,
+      initializers: widget.initializers,
       debug: widget.debug,
       child: MaterialApp(
         key: rootKey,
@@ -116,8 +118,7 @@ class ContextHolder implements Disposable {
   }
 
   /// Subscribe listener for context changes.
-  void subscribe(OnContextChanged onContextChanged,
-      {bool instantNotify: false}) {
+  void subscribe(OnContextChanged onContextChanged, {bool instantNotify: false}) {
     _onContextChanged = onContextChanged;
 
     if (instantNotify && context != null) {

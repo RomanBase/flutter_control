@@ -7,9 +7,9 @@ export 'package:flutter/material.dart';
 
 export './src/app_base.dart';
 export './src/app_control.dart';
-export './src/app_factory.dart';
-export './src/app_localization.dart';
-export './src/app_prefs.dart';
+export './src/factory.dart';
+export './src/base_localization.dart';
+export './src/base_prefs.dart';
 export './src/base_theme.dart';
 
 export './src/controller/base_controller.dart';
@@ -40,7 +40,7 @@ bool inRelease({bool profileModeAsRelease: true}) {
   return result;
 }
 
-T onPlatform<T>({Getter<T> android, Getter<T> ios, Getter<T> all}) {
+T onPlatform<T>({Initializer<T> android, Initializer<T> ios, Initializer<T> all}) {
   switch (Platform.operatingSystem) {
     case 'android':
       return android == null ? (all == null ? null : all()) : android();

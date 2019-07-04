@@ -392,7 +392,7 @@ class InputField extends ControlWidget {
   }) : super(key: key);
 
   @override
-  List<BaseController> onConstruct() => [controller];
+  List<BaseController> initControllers() => [controller];
 
   @override
   void onInitState(ControlState<ControlWidget> state) {

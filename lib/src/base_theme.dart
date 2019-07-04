@@ -1,3 +1,4 @@
+//TODO:
 class BaseTheme {
   static const padding = 16.0;
   static const padding_half = 8.0;
@@ -27,12 +28,10 @@ class BaseTheme {
   static String asset(String path) => "assets/$path";
 
   /// Refers to assets/images/name.ext
-  static String image(String name, [String ext = 'png']) =>
-      asset("images/$name.$ext");
+  static String image(String name, [String ext = 'png']) => asset("images/$name.$ext");
 
   /// Refers to assets/icons/name.ext
-  static String icon(String name, [String ext = 'png']) =>
-      asset("icons/$name.$ext");
+  static String icon(String name, [String ext = 'png']) => asset("icons/$name.$ext");
 
   /// Refers to assets/data/name.ext
   static String data(String name, String ext) => asset("data/$name.$ext");

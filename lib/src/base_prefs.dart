@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AppPrefs {
+class BasePrefs {
   Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
   Future<void> set(String key, String value) async =>

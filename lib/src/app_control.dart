@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_control/src/app_prefs.dart';
+import 'package:flutter_control/src/base_prefs.dart';
 import 'package:flutter_control/core.dart';
 
 class FactoryKey {
@@ -34,18 +34,18 @@ class AppControl extends InheritedWidget {
 
   /// returns instance of AppFactory.
   /// context is currently ignored.
-  static AppFactory factory([dynamic context]) => AppFactory.of(context);
+  static ControlFactory factory([dynamic context]) => ControlFactory.of(context);
 
   /// returns instance of AppLocalization
   /// context is currently ignored
   /// nullable
-  static AppLocalization localization([dynamic context]) =>
+  static BaseLocalization localization([dynamic context]) =>
       factory(context).get(FactoryKey.localization);
 
   /// returns instance of AppPrefs
   /// context is currently ignored
   /// nullable
-  static AppPrefs prefs([dynamic context]) =>
+  static BasePrefs prefs([dynamic context]) =>
       factory(context).get(FactoryKey.preferences);
 
   /// Returns current locale.
@@ -72,7 +72,7 @@ class AppControl extends InheritedWidget {
     String defaultLocale,
     List<LocalizationAsset> locales,
     Map<String, dynamic> entries,
-    Map<Type, Getter> initializers,
+    Map<Type, Initializer> initializers,
     Widget child,
     bool debug,
   }) : super(key: key, child: child) {
@@ -91,9 +91,9 @@ class AppControl extends InheritedWidget {
     }
 
     entries[FactoryKey.control] = this;
-    entries[FactoryKey.preferences] = AppPrefs();
+    entries[FactoryKey.preferences] = BasePrefs();
     entries[FactoryKey.localization] =
-        AppLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
+        BaseLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
 
     factory(this).initialize(items: entries, initializers: initializers);
     localization(this).debug = debug ?? debugMode;

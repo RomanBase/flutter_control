@@ -7,7 +7,7 @@ enum DialogType { popup, sheet, dialog, dock }
 
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
-typedef Getter<T> = T Function();
+typedef Initializer<T> = T Function();
 typedef Action<T> = void Function(T);
 typedef Converter<T> = T Function(dynamic);
 
@@ -48,8 +48,7 @@ abstract class RouteNavigator {
   ///
   /// [Scaffold] as root context for [Navigator] is part of [BaseApp] Widget.
   /// As well [AppControl] can be initialized with custom root context and root Key.
-  Future<dynamic> openRoute(Route route,
-      {bool root: false, bool replacement: false});
+  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
 
   /// Clears current [Navigator] and opens new [Route].
   Future<dynamic> openRoot(Route route);
@@ -58,8 +57,7 @@ abstract class RouteNavigator {
   ///
   /// Scaffold as root context for [Navigator] is part of [BaseApp] Widget.
   /// As well [AppControl] can be initialized with custom root context and root Key.
-  Future<dynamic> openDialog(WidgetBuilder builder,
-      {bool root: false, DialogType type: DialogType.popup});
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
 
   /// Goes back in navigation stack until first [Route].
   void backToRoot();
@@ -82,8 +80,8 @@ abstract class AnimationInitializer {
 /// [subscribe] is called during State's init phase.
 ///
 /// [AppControl]
-/// [AppFactory]
-/// [AppLocalization]
+/// [ControlFactory]
+/// [BaseLocalization]
 class BaseController implements Initializable, Subscriptionable, Disposable {
   /// init check.
   bool _isInitialized = false;
@@ -91,16 +89,16 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// return true if init function was called before.
   bool get isInitialized => _isInitialized;
 
-  /// returns instance of [AppFactory] if available.
+  /// returns instance of [ControlFactory] if available.
   /// nullable
-  AppFactory get factory => AppFactory.of(this);
+  ControlFactory get factory => ControlFactory.of(this);
 
   /// returns instance of [AppControl] if available.
   /// nullable
   AppControl get control => factory.get(FactoryKey.control);
 
-  /// returns instance of [AppLocalization]
-  AppLocalization get _localization => factory.get(FactoryKey.localization);
+  /// returns instance of [BaseLocalization]
+  BaseLocalization get _localization => factory.get(FactoryKey.localization);
 
   /// prevent calling dispose from [ControlWidget]
   bool get preventDispose => false;
@@ -148,8 +146,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// Localization is part of AppControl or BaseApp Widget.
   /// Non null.
   @protected
-  String extractLocalization(Map field) =>
-      _localization?.extractLocalization(field) ?? '';
+  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
 
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.
@@ -176,8 +173,7 @@ class StateController extends BaseController implements StateNotifier {
     _notifier.setValue(state);
   }
 
-  ControlSubscription subscribeStateNotifier(Action action) =>
-      _notifier.subscribe(action);
+  ControlSubscription subscribeStateNotifier(Action action) => _notifier.subscribe(action);
 
   @override
   @mustCallSuper
@@ -214,10 +210,8 @@ mixin RouteController on BaseController {
 
   /// [RouteNavigator.openRoute].
   /// [RouteHandler] -> [PageRouteProvider]
-  Future<dynamic> openPage(PageRouteProvider provider,
-      {bool root: false, bool replacement: false, Map args}) {
-    return RouteHandler(_navigator, provider)
-        .openRoute(root: root, replacement: replacement, args: args);
+  Future<dynamic> openPage(PageRouteProvider provider, {bool root: false, bool replacement: false, Map args}) {
+    return RouteHandler(_navigator, provider).openRoute(root: root, replacement: replacement, args: args);
   }
 
   /// [RouteNavigator.openRoot].
@@ -228,10 +222,8 @@ mixin RouteController on BaseController {
 
   /// [RouteNavigator.openDialog].
   /// [RouteHandler] -> [PageRouteProvider]
-  Future<dynamic> openDialog(PageRouteProvider provider,
-      {bool root: false, DialogType type: DialogType.popup}) {
-    return RouteHandler(_navigator, provider)
-        .openDialog(root: root, type: type);
+  Future<dynamic> openDialog(PageRouteProvider provider, {bool root: false, DialogType type: DialogType.popup}) {
+    return RouteHandler(_navigator, provider).openDialog(root: root, type: type);
   }
 
   /// [RouteNavigator.close].

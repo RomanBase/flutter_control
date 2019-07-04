@@ -2,14 +2,14 @@ import 'package:flutter_control/core.dart';
 
 class GlobalSubscription<T> implements Disposable {
   /// Key of global sub.
-  /// [AppFactory.broadcast]
+  /// [ControlFactory.broadcast]
   final String key;
 
   /// Parent of this sub - who creates and setup this sub.
-  AppFactory _parent;
+  ControlFactory _parent;
 
   /// Callback from sub.
-  /// [AppFactory.broadcast]
+  /// [ControlFactory.broadcast]
   ValueChanged<T> _onData;
 
   bool _active = true;
@@ -24,13 +24,13 @@ class GlobalSubscription<T> implements Disposable {
   bool isValidForBroadcast(String key, dynamic value) =>
       _active && value is T && (key == null || key == this.key);
 
-  /// Pauses this subscription and [AppFactory] broadcast will skip this sub.
+  /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
   void pause() => _active = false;
 
-  /// Resumes this subscription and [AppFactory] broadcast will again starts notifying this sub.
+  /// Resumes this subscription and [ControlFactory] broadcast will again starts notifying this sub.
   void resume() => _active = true;
 
-  /// Cancels subscription to global stream in [AppFactory].
+  /// Cancels subscription to global stream in [ControlFactory].
   void cancel() {
     if (_parent != null) {
       _parent.cancelSubscription(this);
@@ -46,30 +46,30 @@ class GlobalSubscription<T> implements Disposable {
 
 class FactoryProvider {
   static T of<T>([String key]) =>
-      AppFactory._instance.get(key) ?? AppFactory._instance.getType<T>();
+      ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
 }
 
 /// Factory for initializing and storing objects.
 /// Factory also creates global subscription stream driven by keys.
 ///
-/// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [AppLocalization] and [AppPrefs].
+/// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [BaseLocalization] and [BasePrefs].
 /// Fill [BaseApp.entries] for initial items to store inside factory.
-class AppFactory implements Disposable {
+class ControlFactory implements Disposable {
   /// Instance of AppFactory.
-  static final AppFactory _instance = AppFactory._();
+  static final ControlFactory _instance = ControlFactory._();
 
   /// Default constructor
-  AppFactory._();
+  ControlFactory._();
 
-  /// Returns instance of [AppFactory] for given context.
+  /// Returns instance of [ControlFactory] for given context.
   /// Currently is context ignored and exist only one instance of factory.
-  static AppFactory of([dynamic context]) => _instance;
+  static ControlFactory of([dynamic context]) => _instance;
 
   /// Stored objects for global use.
   final _items = Map<String, dynamic>();
 
   /// Stored Getters for object initialization.
-  final _initializers = Map<Type, Getter>();
+  final _initializers = Map<Type, Initializer>();
 
   /// List of active subs.
   final _globalSubscriptions = List<GlobalSubscription>();
@@ -79,7 +79,7 @@ class AppFactory implements Disposable {
 
   /// Initializes default items and initializers in factory.
   void initialize(
-      {Map<String, dynamic> items, Map<Type, Getter> initializers}) {
+      {Map<String, dynamic> items, Map<Type, Initializer> initializers}) {
     if (items != null) {
       _items.addAll(items);
     }
@@ -96,7 +96,7 @@ class AppFactory implements Disposable {
   }
 
   /// Stores initializer for later use - [init].
-  void addInitializer<T>(Getter<T> initializer) {
+  void addInitializer<T>(Initializer<T> initializer) {
     _initializers[T] = initializer;
   }
 

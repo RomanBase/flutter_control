@@ -40,7 +40,7 @@ class Device {
 
   Offset dpOffset(Offset offset) => Offset(dp(offset.dx), dp(offset.dy));
 
-  T onOrientation<T>(Getter<T> portrait, Getter<T> landscape) {
+  T onOrientation<T>(Initializer<T> portrait, Initializer<T> landscape) {
     if (this.portrait) {
       return portrait();
     }
