@@ -14,6 +14,7 @@ export './src/base_theme.dart';
 
 export './src/controller/base_controller.dart';
 export './src/controller/field_control.dart';
+export './src/controller/base_model.dart';
 
 export './src/util/device.dart';
 export './src/util/future_block.dart';

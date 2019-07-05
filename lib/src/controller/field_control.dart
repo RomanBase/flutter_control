@@ -48,10 +48,6 @@ class ControlSubscription<T> implements Disposable {
   }
 }
 
-class ObservableControl<T> extends _ActionControlBroadcast<T> {
-  ObservableControl([T value]) : super._(value);
-}
-
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
@@ -467,9 +463,7 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
 
   @override
   Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
-    Widget widget = super.build(context, currentSummary);
-
-    return widget ?? Container();
+    return super.build(context, currentSummary) ?? Container();
   }
 }
 
@@ -631,7 +625,17 @@ class ListControl<T> extends FieldControl<List<T>> {
   int indexOf(T object) => value.indexOf(object);
 
   /// [Iterable.clear].
-  void clear() => setValue(null);
+  void clear({bool disposeItems: false}) {
+    if (disposeItems) {
+      value.forEach((item) {
+        if (item is Disposable) {
+          item.dispose();
+        }
+      });
+    }
+
+    setValue(null);
+  }
 
   /// [Iterable.sort].
   void sort([int compare(T a, T b)]) {
@@ -662,6 +666,13 @@ class ListControl<T> extends FieldControl<List<T>> {
       onDone: onDone,
       cancelOnError: cancelOnError,
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _value.clear();
   }
 }
 

@@ -26,7 +26,7 @@ abstract class SingleControlWidget<T extends BaseController> extends ControlWidg
   }
 
   @protected
-  T initController();
+  T initController() => getControl<T>();
 }
 
 /// [ControlWidget] with no init Controllers.
@@ -178,19 +178,6 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   }
 }
 
-/// Helps [ControlWidget] to create State with [TickerProviderStateMixin]
-/// Override [singleTicker] to create State with [SingleTickerProviderStateMixin].
-mixin ControlTickerProvider on ControlWidget {
-  @protected
-  bool get singleTicker => false;
-
-  @protected
-  TickerProvider get ticker => holder.state as TickerProvider;
-
-  @override
-  ControlState<ControlWidget> createState() => singleTicker ? _ControlSingleTickerState() : _ControlTickerState();
-}
-
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
 class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
@@ -245,6 +232,19 @@ class _ControlTickerState<U extends ControlWidget> extends ControlState<U> with 
 
 /// [ControlState] with [SingleTickerProviderStateMixin]
 class _ControlSingleTickerState<U extends ControlWidget> extends ControlState<U> with SingleTickerProviderStateMixin {}
+
+/// Helps [ControlWidget] to create State with [TickerProviderStateMixin]
+/// Override [singleTicker] to create State with [SingleTickerProviderStateMixin].
+mixin TickerControl on ControlWidget {
+  @protected
+  bool get singleTicker => false;
+
+  @protected
+  TickerProvider get ticker => holder.state as TickerProvider;
+
+  @override
+  ControlState<ControlWidget> createState() => singleTicker ? _ControlSingleTickerState() : _ControlTickerState();
+}
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
