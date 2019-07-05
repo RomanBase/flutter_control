@@ -9,7 +9,7 @@ typedef OnContextChanged = Function(BuildContext context);
 class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
-  final List<LocalizationAsset> locales;
+  final Map<String, String> locales;
   final WidgetBuilder root;
   final Map<String, dynamic> entries;
   final Map<Type, Initializer> initializers;
@@ -46,6 +46,26 @@ class BaseAppState extends State<BaseApp> {
   /// Is passed into AppControl.
   final contextHolder = ContextHolder();
 
+  WidgetInitializer _rootBuilder;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _rootBuilder = WidgetInitializer.of((context) {
+      contextHolder.changeContext(context);
+      final root = widget.root(context);
+
+      if (root is Initializable) {
+        (root as Initializable).init({});
+      }
+
+      debugPrint('build root');
+
+      return root;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppControl(
@@ -60,18 +80,9 @@ class BaseAppState extends State<BaseApp> {
         key: rootKey,
         title: widget.title,
         theme: widget.theme,
-        home: Builder(builder: (context) {
-          contextHolder.changeContext(context);
-          final root = widget.root(context);
-
-          if (root is Initializable) {
-            (root as Initializable).init({});
-          }
-
-          debugPrint('build root');
-
-          return root;
-        }),
+        home: Builder(
+          builder: (context) => _rootBuilder.getWidget(context),
+        ),
       ),
     );
   }

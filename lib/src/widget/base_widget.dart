@@ -127,6 +127,12 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
+    if (this.state == state) {
+      return;
+    }
+
+    holder.state = state;
+
     controllers?.forEach((controller) {
       controller.subscribe(this);
       controller.subscribe(state);
@@ -189,7 +195,6 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     super.initState();
 
     widget.onInitState(this);
-    widget.holder.state = this;
   }
 
   @override
@@ -199,7 +204,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   @override
   Widget build(BuildContext context) {
-    widget.holder.state = this;
+    widget.onInitState(this);
 
     return widget.build(context);
   }

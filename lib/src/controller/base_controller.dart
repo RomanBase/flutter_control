@@ -111,7 +111,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   @mustCallSuper
   BaseController init([Map args]) {
     if (isInitialized && preventMultiInit) {
-      print("controller is already initialized: ${this.toString()}");
+      printDebug('controller is already initialized: ${this.toString()}');
       return this;
     }
 
@@ -167,11 +167,8 @@ class StateController extends BaseController implements StateNotifier {
   void onStateInitialized() {}
 
   @override
-  void notifyState([dynamic state]) {
-    debugPrint("notify state: $this");
+  void notifyState([dynamic state]) => _notifier.setValue(state);
 
-    _notifier.setValue(state);
-  }
 
   ControlSubscription subscribeStateNotifier(Action action) => _notifier.subscribe(action);
 

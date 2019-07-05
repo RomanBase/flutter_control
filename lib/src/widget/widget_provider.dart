@@ -85,8 +85,7 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openRoute]
-  Future<dynamic> openRoute(
-      {bool root: false, bool replacement: false, Map args}) {
+  Future<dynamic> openRoute({bool root: false, bool replacement: false, Map args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
     return navigator.openRoute(
@@ -124,8 +123,7 @@ class RouteHandler {
 /// Abstract class for [PageRoute] construction with given settings.
 class PageRouteProvider {
   /// Default [PageRoute] generator.
-  factory PageRouteProvider.of(
-          {String identifier, String type, @required WidgetBuilder builder}) =>
+  factory PageRouteProvider.of({String identifier, String type, @required WidgetBuilder builder}) =>
       PageRouteProvider()
         ..identifier = identifier
         ..type = type

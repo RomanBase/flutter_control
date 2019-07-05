@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter_control/src/base_prefs.dart';
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control/src/base_prefs.dart';
 
 class FactoryKey {
   static const String localization = 'localization';
@@ -70,7 +70,7 @@ class AppControl extends InheritedWidget {
     @required this.rootKey,
     @required this.contextHolder,
     String defaultLocale,
-    List<LocalizationAsset> locales,
+    Map<String, String> locales,
     Map<String, dynamic> entries,
     Map<Type, Initializer> initializers,
     Widget child,
@@ -81,19 +81,25 @@ class AppControl extends InheritedWidget {
 
     _accessType = this.runtimeType;
 
+    if (factory(this).isInitialized) {
+      return; //TODO: solve this for hot reload
+    }
+
     if (entries == null) {
       entries = Map<String, dynamic>();
     }
 
     if (locales == null || locales.isEmpty) {
-      locales = List<LocalizationAsset>();
-      locales.add(LocalizationAsset('en', null));
+      locales = Map<String, String>();
+      locales['en'] = null;
     }
+
+    final localizationAssets = List<LocalizationAsset>();
+    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
     entries[FactoryKey.control] = this;
     entries[FactoryKey.preferences] = BasePrefs();
-    entries[FactoryKey.localization] =
-        BaseLocalization(defaultLocale ?? locales[0].iso2Locale, locales);
+    entries[FactoryKey.localization] = BaseLocalization(defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
 
     factory(this).initialize(items: entries, initializers: initializers);
     localization(this).debug = debug ?? debugMode;

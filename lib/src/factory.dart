@@ -29,6 +29,8 @@ class GlobalSubscription<T> implements Disposable {
   /// Resumes this subscription and [ControlFactory] broadcast will again starts notifying this sub.
   void resume() => _active = true;
 
+  void _notify(dynamic value) => _onData(value as T);
+
   /// Cancels subscription to global stream in [ControlFactory].
   void cancel() {
     if (_parent != null) {
@@ -43,8 +45,38 @@ class GlobalSubscription<T> implements Disposable {
   }
 }
 
-class FactoryProvider {
+class ControlProvider {
   static T of<T>([String key]) => ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
+}
+
+class ArgProvider {
+  static T map<T>(Map map, {dynamic key, T defaultValue}) {
+    if (map == null) {
+      return defaultValue;
+    }
+
+    if (map.containsKey(key)) {
+      return map[key];
+    }
+
+    final item = map.values.firstWhere((item) => item is T);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  static T list<T>(List list, [T defaultValue]) {
+    final item = list.firstWhere((item) => item is T);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
 }
 
 /// Factory for initializing and storing objects.
@@ -75,8 +107,18 @@ class ControlFactory implements Disposable {
   /// Last available value for subs.
   final _globalValue = Map<String, dynamic>();
 
+  bool _initialized = false;
+
+  bool get isInitialized => _initialized;
+
   /// Initializes default items and initializers in factory.
   void initialize({Map<String, dynamic> items, Map<Type, Initializer> initializers}) {
+    if (_initialized) {
+      return;
+    }
+
+    _initialized = true;
+
     if (items != null) {
       _items.addAll(items);
     }
@@ -88,6 +130,7 @@ class ControlFactory implements Disposable {
     _items.forEach((key, value) {
       if (value is Initializable) {
         value.init(null);
+        printDebug('factory init $key - ${value.hashCode}');
       }
     });
   }
@@ -144,11 +187,11 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [addInitializer]
   /// nullable
-  T init<T>([Map args]) {
+  T init<T>([Map args, forceInit = false]) {
     if (_initializers.containsKey(T)) {
       final item = _initializers[T]() as T;
 
-      if (item is Initializable) {
+      if (item is Initializable && (forceInit || args != null)) {
         item.init(args);
       }
 
@@ -192,7 +235,7 @@ class ControlFactory implements Disposable {
   }
 
   /// Subscription to global stream
-  GlobalSubscription<T> subscribe<T>(String key, void onData(T data)) {
+  GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) {
     assert(onData != null);
 
     final sub = GlobalSubscription<T>(key);
@@ -205,7 +248,7 @@ class ControlFactory implements Disposable {
     final lastValue = _globalValue[sub.key];
 
     if (lastValue != null && sub.isValidForBroadcast(sub.key, lastValue)) {
-      sub._onData(lastValue);
+      sub._notify(lastValue);
     }
 
     return sub;
@@ -224,7 +267,7 @@ class ControlFactory implements Disposable {
 
     _globalSubscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
-        sub._onData(value);
+        sub._notify(value);
       }
     });
   }
