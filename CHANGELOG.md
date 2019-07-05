@@ -1,43 +1,18 @@
-## [0.1.6] - App to Base refactor
-## [0.1.5] - Control refactor
-## [0.1.4] - Code refactor
-## [0.1.3] - Control refactor
-## [0.1.2] - FactoryProvider
-## [0.1.1] - Struct
-## [0.1.0] - Flutter Control.
-Minor changes to Control workflow.
+## [0.8.5] - Alpha version
+- [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
+- [AppControl] Is [InheritedWidget] around whole App. Holds Factory and other important Controllers.
+- [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide communication and synchronization between separated parts of App.
 
-* Core implementation of Control skeleton. Controller and Stream workflow to separate app logic from Widgets.
+- [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
+- [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets.
 
-AppFactory instance for object initialization and store. Also works as global multi-stream.
+- [BaseController] Stores all Business Logic and initializes self during Widget construction. Have native access to Factory and Control.
+- [StateController] Adds functionality to notify State of [ControlWidget].
+- [RouteController] Mixin for [BaseController] to enable Control Route Navigator. ([ControlWidget] must implement [RouteControl])
+- [BaseModel] Lightweight version of Controller. Mainly used for Items in dynamic List or to separate/reuse Logic.  
 
-AppBase as top layer Widget - setups all core Controls.
-AppControl as top layer InheritedWidget with access to all core Control objects.
-
-AppLocalization - basic .json based localization.
-AppPrefs - just wrapping for SharedPreferences plugin.
-BaseTheme - some basic sizes etc.
-
----
-
-ControlWidget is base StatefulWidget of Control workflow. Some functionality is pulled from ControlState to prevent overuse of States.
- - ticker variants: ControlTickerWidget, ControlSingleTickerWidget.
-
-RouteControl is mixin for ControlWidget to enable Navigation via Controllers.
-RouteHandler wraps Navigator routing and Widgets initialization.
-NavigationStack wraps Navigator and adds some functionality for Controllers.
-InputField wraps TextField and adds some functionality for Controllers.
-FieldBuilder wraps StreamBuilder and adds some functionality for Controllers.
- - basic variants: FieldBoolBuilder, FieldListBuilder, etc.
-
----
-
-BaseController is base controller used with ControlWidget.
-StateController can notify ControlWidget about State changes.
-RouteController is mixin to enable Navigation from Controller.
-FieldController wraps Stream for easier use and adds some functionality.
- - basic variants: BoolController, ListController, ObjectController, etc.
-
----
-
-Some utils, helpers etc.
+- [ControlWidget] Base Widget to work with Controllers. Have native access to Factory and Control. 
+- [BaseControlWidget] Widget with no init Controllers, but still have access to Factory etc. so Controllers can be get from there.
+- [SingleControlWidget] Widget with just one generic Controller.
+- [RouteControl] Mixin for [ControlWidget] to enable Control Route Navigation. ([BaseController] must implement [RouteController])
+- [TickerControl] Mixin for [ControlWidget] to provide TickerProvider for AnimationControllers.
