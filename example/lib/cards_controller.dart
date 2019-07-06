@@ -6,6 +6,8 @@ class CardsController extends BaseController with RouteController {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
 
+  int _counter = 0;
+
   CardsController() {
     cards.subscribe((value) => countLabel.setValue('${value.length}'));
   }
@@ -17,7 +19,7 @@ class CardsController extends BaseController with RouteController {
     factory.subscribe<CardModel>('remove_card', (card) => removeCard(card));
   }
 
-  void addCard() => newCard('${localize('card')} ${cards.length}');
+  void addCard() => newCard('${localize('card_title')} ${_counter++}');
 
   CardModel newCard(String title) {
     if (title == null || title.isEmpty) {
@@ -49,16 +51,18 @@ class DetailController extends BaseController with RouteController {
 
   ListControl<CardItemModel> get items => _model.items;
 
-  String get title => _model.title;
+  final title = StringControl();
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
     _model = ArgProvider.map<CardModel>(args);
+
+    _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }
 
-  void addItem() => newItem('${localize('item')} ${items.length}');
+  void addItem() => newItem('${localize('item_title')} ${items.length}');
 
   CardItemModel newItem(String title) {
     if (title == null || title.isEmpty) {
@@ -76,6 +80,13 @@ class DetailController extends BaseController with RouteController {
     factory.broadcast('remove_card', _model);
     close();
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    title.dispose();
+  }
 }
 
 class CardModel extends BaseModel {
@@ -85,7 +96,7 @@ class CardModel extends BaseModel {
   final items = ListControl<CardItemModel>();
 
   CardModel(this.title) {
-    progress.subscribe((list) => _updateProgress());
+    items.subscribe((list) => _updateProgress());
   }
 
   void _updateProgress() {
@@ -93,7 +104,7 @@ class CardModel extends BaseModel {
     final num = items.where((item) => item.done.isTrue).length;
 
     if (sum == 0) {
-      countLabel.setValue(localize('empty'));
+      countLabel.setValue(localize('empty_card'));
       progress.setValue(0.0);
       return;
     }

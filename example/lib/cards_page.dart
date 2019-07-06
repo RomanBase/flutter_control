@@ -7,7 +7,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cards'),
+        title: Text(localize('title')),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -26,6 +26,9 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
             itemBuilder: (context, index) => CardWidget(controller.cards[index]),
           );
         },
+        noData: (context) => Center(
+              child: Text(localize('empty_list')),
+            ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addCard,
@@ -88,7 +91,10 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.title),
+        title: FieldBuilder<String>(
+          controller: controller.title,
+          builder: (context, title) => Text(title),
+        ),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.delete_outline),
@@ -104,6 +110,9 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
             itemBuilder: (context, index) => ItemWidget(items[index]),
           );
         },
+        noData: (context) => Center(
+              child: Text(localize('empty_list')),
+            ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addItem,

@@ -1,5 +1,7 @@
 {
+  "title": "Control Cards",
   "card_title": "Card",
   "item_title": "Item",
-  "empty": "card is empty"
+  "empty_card": "card is empty",
+  "empty_list": "add new item with + button"
 }
