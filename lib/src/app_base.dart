@@ -11,10 +11,12 @@ class BaseApp extends StatefulWidget {
   final ThemeData theme;
   final Map<String, String> locales;
   final WidgetBuilder root;
+  final WidgetBuilder loader;
   final Map<String, dynamic> entries;
   final Map<Type, Initializer> initializers;
   final String defaultLocale;
   final bool debug;
+  final Duration loaderDelay;
 
   /// Default constructor
   const BaseApp({
@@ -23,9 +25,11 @@ class BaseApp extends StatefulWidget {
     this.defaultLocale,
     this.locales,
     @required this.root,
+    this.loader,
     this.entries,
     this.initializers,
     this.debug,
+    this.loaderDelay,
   });
 
   @override
@@ -48,9 +52,13 @@ class BaseAppState extends State<BaseApp> {
 
   WidgetInitializer _rootBuilder;
 
+  bool _loading = true;
+
   @override
   void initState() {
     super.initState();
+
+    _initControl(widget.locales, widget.entries, widget.initializers);
 
     _rootBuilder = WidgetInitializer.of((context) {
       contextHolder.changeContext(context);
@@ -66,23 +74,67 @@ class BaseAppState extends State<BaseApp> {
     });
   }
 
+  void _initControl(Map<String, String> locales, Map<String, dynamic> entries, Map<Type, Initializer> initializers) {
+    final factory = ControlFactory.of(this);
+
+    if (factory.isInitialized) {
+      return; //TODO: solve this for hot reload
+    }
+
+    if (entries == null) {
+      entries = Map<String, dynamic>();
+    }
+
+    if (locales == null || locales.isEmpty) {
+      locales = Map<String, String>();
+      locales['en'] = null;
+    }
+
+    final localizationAssets = List<LocalizationAsset>();
+    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
+
+    entries[FactoryKey.control] = this;
+    entries[FactoryKey.preferences] = BasePrefs();
+    entries[FactoryKey.localization] = BaseLocalization(widget.defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
+
+    factory.initialize(items: entries, initializers: initializers);
+
+    final localization = ControlProvider.of<BaseLocalization>(FactoryKey.localization);
+    localization.debug = widget.debug ?? debugMode;
+
+    contextHolder.once((context) async {
+      await localization.changeToSystemLocale(context);
+
+      if (widget.loaderDelay != null) {
+        await Future.delayed(widget.loaderDelay);
+      }
+
+      setState(() {
+        _loading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppControl(
       rootKey: rootKey,
       contextHolder: contextHolder,
-      defaultLocale: widget.defaultLocale,
-      locales: widget.locales,
-      entries: widget.entries,
-      initializers: widget.initializers,
-      debug: widget.debug,
+      debug: widget.debug ?? debugMode,
       child: MaterialApp(
         key: rootKey,
         title: widget.title,
         theme: widget.theme,
-        home: Builder(
-          builder: (context) => _rootBuilder.getWidget(context),
-        ),
+        home: _loading
+            ? Builder(
+                builder: (context) {
+                  contextHolder.changeContext(context);
+                  return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
+                },
+              )
+            : Builder(
+                builder: (context) => _rootBuilder.getWidget(context),
+              ),
       ),
     );
   }

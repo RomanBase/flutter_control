@@ -19,7 +19,7 @@ class LocalizationAsset {
 
 /// Simple [Map] based localization.
 /// - /assets/localization/en.json
-class BaseLocalization {
+class BaseLocalization with PrefsProvider {
   /// key to shared preferences where preferred locale is stored.
   static const String preference_key = 'pref_locale';
 
@@ -62,7 +62,7 @@ class BaseLocalization {
   /// changes localization to system language
   /// @preferred - true: changes localization to in app preferred language (if previously set).
   Future<bool> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
-    final pref = preferred ? await AppControl.prefs(this).get(preference_key) : null;
+    final pref = preferred ? await prefs.get(preference_key) : null;
 
     String locale;
 
@@ -111,7 +111,7 @@ class BaseLocalization {
     }
 
     if (preferred) {
-      AppControl.prefs(this).set(preference_key, iso2Locale);
+      prefs.set(preference_key, iso2Locale);
     }
 
     if (_locale == iso2Locale) {

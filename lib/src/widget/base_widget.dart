@@ -86,7 +86,7 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   ThemeData get theme => Theme.of(context);
 
   /// Instance of [BaseLocalization].
-  BaseLocalization get _localization => factory.get(FactoryKey.localization);
+  BaseLocalization get _localization => ControlProvider.of(FactoryKey.localization);
 
   /// Default constructor
   ControlWidget({Key key}) : super(key: key) {
