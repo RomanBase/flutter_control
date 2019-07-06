@@ -1,6 +1,7 @@
+## [0.8.95] - BaseApp and Control initialization
 ## [0.8.5] - Alpha version
 - [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
-- [AppControl] Is [InheritedWidget] around whole App. Holds Factory and other important Controllers.
+- [AppControl] Is [InheritedWidget] around whole App. Holds root Context and global Key.
 - [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide communication and synchronization between separated parts of App.
 
 - [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
