@@ -13,20 +13,20 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 Control and App initialization. TodoController is initialized and stored in global [ControlFactory].
 ```dart
-class MainApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BaseApp(
-      title: 'Flutter Control',
-      theme: ThemeData(),
-      entries: {
-        'todo': TodoController(),
-      },
-      root: (context) => TodoPage(),
-    );
-  }
-}
-```
+   class MainApp extends StatelessWidget {
+     @override
+     Widget build(BuildContext context) {
+       return BaseApp(
+         title: 'Flutter Control',
+         theme: ThemeData(),
+         entries: {
+           'todo': TodoController(),
+         },
+         root: (context) => TodoPage(),
+       );
+     }
+   }
+   ```
 
 Controller handles all Business Logic. Simply adds and removes items from List and recalculates item done count.
 [StringControl] and [ListControl] wraps [Stream] and notifies [FieldBuilder] about changes.

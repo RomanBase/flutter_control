@@ -1,16 +1,62 @@
-# flutter_control_example
+BaseApp initializes Control and Factory. It's little shortcut to start with Flutter Control.
+```dart
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BaseApp(
+      title: 'Flutter Control',
+      theme: ThemeData(),
+      entries: {
+        'todo': MyController(),
+      },
+      root: (context) => MyWidget(),
+    );
+  }
+}
+```
 
-Example App with Flutter Control.
+Business logic layer.
+```dart
+class MyController extends BaseController {
+  final count = FieldConrol<int>(0);
 
-## Getting Started
+  void increment() => count.setValue(count.value++);
 
-This project is a starting point for a Flutter application.
+  void decrement() => count.setValue(count.value--);
 
-A few resources to get you started if this is your first Flutter project:
+  @override
+  void dispose() {
+    super.dispose();
+    count.dispose();
+  }
+}
+```
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+Presentation layer.
+```dart
+class MyWidget extends SingleControlWidget<MyController> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: controller.increment,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: FieldBuilder<int>(
+            controller: controller.count,
+            builder: (context, value) => Text('$value'),
+          ),
+        ),
+        IconButton(
+          icon: Icon(Icons.remove),
+          onPressed: controller.decrement,
+        ),
+      ],
+    );
+  }
+}
+```
