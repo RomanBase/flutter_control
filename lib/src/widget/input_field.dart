@@ -62,7 +62,7 @@ class InputController extends StateController {
   VoidCallback _onFocusChanged;
 
   /// Callback when user changes text.
-  Action<String> _onChanged;
+  ValueCallback<String> _onChanged;
 
   /// Default constructor
   InputController({String text, this.regex}) {
@@ -114,7 +114,7 @@ class InputController extends StateController {
   }
 
   /// Sets callback for text changes.
-  InputController changed(Action<String> onChanged) {
+  InputController changed(ValueCallback<String> onChanged) {
     _onChanged = onChanged;
 
     return this;
@@ -160,7 +160,7 @@ class InputController extends StateController {
   /// Sets on focus changed listener.
   /// Only one listener is active at time.
   /// Set null to remove listener.
-  void onFocusChanged(Action<bool> listener) {
+  void onFocusChanged(ValueCallback<bool> listener) {
     _initControllers();
 
     if (_onFocusChanged != null) {

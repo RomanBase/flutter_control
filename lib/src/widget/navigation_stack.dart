@@ -47,7 +47,7 @@ class NavigatorController extends BaseController implements _StackNavigator {
   }
 
   /// Notifies about selection changes.
-  Action<bool> onSelectionChanged;
+  ValueCallback<bool> onSelectionChanged;
 
   /// Default constructor
   NavigatorController({this.menu});

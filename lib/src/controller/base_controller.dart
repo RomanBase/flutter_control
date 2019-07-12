@@ -8,7 +8,7 @@ enum DialogType { popup, sheet, dialog, dock }
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
 typedef Initializer<T> = T Function();
-typedef Action<T> = void Function(T);
+typedef ValueCallback<T> = void Function(T);
 typedef Converter<T> = T Function(dynamic);
 
 /// Standard initialization of object right after constructor.
@@ -170,7 +170,7 @@ class StateController extends BaseController implements StateNotifier {
   void notifyState([dynamic state]) => _notifier.setValue(state);
 
 
-  ControlSubscription subscribeStateNotifier(Action action) => _notifier.subscribe(action);
+  ControlSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
 
   @override
   @mustCallSuper

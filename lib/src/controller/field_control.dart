@@ -10,7 +10,7 @@ typedef bool Predicate<T>(T value);
 /// Subscription to [ActionControl]
 class ControlSubscription<T> implements Disposable {
   ActionControl<T> _parent;
-  Action<T> _action;
+  ValueCallback<T> _action;
 
   bool _keep = true;
   bool _active = true;
@@ -77,7 +77,7 @@ class ActionControl<T> implements Disposable {
   /// Subscribes event for changes.
   /// Returns [ControlSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ControlSubscription<T> subscribe(Action<T> action) {
+  ControlSubscription<T> subscribe(ValueCallback<T> action) {
     _sub = ControlSubscription<T>();
     _sub._parent = this;
     _sub._action = action;
@@ -92,7 +92,7 @@ class ActionControl<T> implements Disposable {
   /// Subscribes event for just one next change.
   /// Returns [ControlSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ControlSubscription<T> once(Action<T> action) {
+  ControlSubscription<T> once(ValueCallback<T> action) {
     _sub = ControlSubscription<T>();
     _sub._parent = this;
     _sub._action = action;
@@ -144,7 +144,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   _ActionControlBroadcast._([T value]) : super._(value);
 
   @override
-  ControlSubscription<T> subscribe(Action<T> action) {
+  ControlSubscription<T> subscribe(ValueCallback<T> action) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
 
@@ -158,7 +158,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ControlSubscription<T> once(Action<T> action) {
+  ControlSubscription<T> once(ValueCallback<T> action) {
     final sub = super.subscribe(action);
     sub._keep = false;
 
