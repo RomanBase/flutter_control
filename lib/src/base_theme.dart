@@ -23,6 +23,7 @@ class BaseTheme {
 
   static const anim_duration = const Duration(milliseconds: 250);
   static const anim_duration_fast = const Duration(milliseconds: 150);
+  static const anim_duration_slow = const Duration(milliseconds: 500);
 
   /// Refers to assets/path
   static String asset(String path) => "assets/$path";

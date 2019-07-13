@@ -85,6 +85,10 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   @protected
   ThemeData get theme => Theme.of(context);
 
+  /// Instance of nearest [TextTheme].
+  @protected
+  TextTheme get font => theme.textTheme;
+
   /// Instance of [BaseLocalization].
   BaseLocalization get _localization => ControlProvider.of(FactoryKey.localization);
 
@@ -147,6 +151,8 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
       }
     });
   }
+
+  void notifyState() => holder.state.notifyState();
 
   /// Looks for [Type] in initialized controllers, then look up whole factory.
   @protected

@@ -49,4 +49,6 @@ class FutureBlock {
 
     _callback = null;
   }
+
+  static Future nextFrame(VoidCallback action) => Future.delayed(const Duration(), action);
 }

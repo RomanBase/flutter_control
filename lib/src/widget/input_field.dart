@@ -113,6 +113,14 @@ class InputController extends StateController {
     return this;
   }
 
+  VoidCallback chainSubmit() {
+    if (_onDone != null) {
+      return _onDone;
+    }
+
+    return _next?.chainSubmit();
+  }
+
   /// Sets callback for text changes.
   InputController changed(ValueCallback<String> onChanged) {
     _onChanged = onChanged;
@@ -365,7 +373,7 @@ class InputField extends ControlWidget {
     @required this.controller,
     this.label,
     this.hint,
-    this.decoration = const InputDecoration(),
+    this.decoration,
     this.keyboardType,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
@@ -406,6 +414,8 @@ class InputField extends ControlWidget {
     controller._initControllers();
     controller._focusController.setContext(context);
 
+    final cursor = cursorColor ?? theme.cursorColor;
+
     return TextField(
       onChanged: controller._changeText,
       onSubmitted: (text) => controller.submit(),
@@ -413,10 +423,12 @@ class InputField extends ControlWidget {
       focusNode: controller._focusController,
       decoration: (decoration ??
               InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.75))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursorColor.withOpacity(0.25))),
+                border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+                labelStyle: font.body1.copyWith(color: cursor.withOpacity(0.5)),
+                hintStyle: font.body1.copyWith(color: cursor.withOpacity(0.5)),
               ))
           .copyWith(
         labelText: label,
@@ -425,7 +437,7 @@ class InputField extends ControlWidget {
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      style: style,
+      style: style ?? font.body1.copyWith(color: cursor),
       strutStyle: strutStyle,
       textAlign: textAlign,
       textDirection: textDirection,
@@ -441,7 +453,7 @@ class InputField extends ControlWidget {
       enabled: enabled,
       cursorWidth: cursorWidth,
       cursorRadius: cursorRadius,
-      cursorColor: cursorColor,
+      cursorColor: cursor,
       keyboardAppearance: keyboardAppearance,
       scrollPadding: scrollPadding,
       dragStartBehavior: dragStartBehavior,
