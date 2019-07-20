@@ -38,6 +38,9 @@ class InputController extends StateController {
   /// Current text of Field.
   String _text;
 
+  /// Text obscure for passwords etc.
+  bool _obscure = false;
+
   /// returns Current text.
   /// Non null
   String get value => _text ?? '';
@@ -101,6 +104,16 @@ class InputController extends StateController {
     notifyState();
   }
 
+  /// Sets text obscure to show/hide passwords etc.
+  void setObscure(bool obscure) {
+    if (_obscure == obscure) {
+      return;
+    }
+
+    _obscure = obscure;
+    notifyState();
+  }
+
   /// Sets next Controller into chain.
   InputController next(InputController controller) {
     return _next = controller;
@@ -111,14 +124,6 @@ class InputController extends StateController {
     _onDone = onDone;
 
     return this;
-  }
-
-  VoidCallback chainSubmit() {
-    if (_onDone != null) {
-      return _onDone;
-    }
-
-    return _next?.chainSubmit();
   }
 
   /// Sets callback for text changes.
@@ -138,7 +143,7 @@ class InputController extends StateController {
   }
 
   /// Submit text and unfocus controlled InputField and focus next one (if is chained).
-  /// Done callback is called as well.
+  /// [done] callback is called as well.
   void submit() {
     validate();
 
@@ -149,6 +154,19 @@ class InputController extends StateController {
     if (_onDone != null) {
       _onDone();
     }
+  }
+
+  /// [done] callback is called for first or for [all] chained inputs.
+  void chainSubmit({bool all: false}) {
+    if (_onDone != null) {
+      _onDone();
+
+      if (!all) {
+        return;
+      }
+    }
+
+    _next?.chainSubmit();
   }
 
   /// Change focus of InputField.
@@ -215,7 +233,8 @@ class InputController extends StateController {
     _next?.unfocusChain();
   }
 
-  void empty() => setText(null);
+  /// Clears text and notifies [TextField]
+  void clear() => setText(null);
 
   @override
   void notifyState([state]) {
@@ -402,7 +421,11 @@ class InputField extends ControlWidget {
   }) : super(key: key);
 
   @override
-  List<BaseController> initControllers() => [controller];
+  List<BaseController> initControllers() {
+    controller._obscure = obscureText;
+
+    return [controller];
+  }
 
   @override
   void onInitState(ControlState<ControlWidget> state) {
@@ -442,7 +465,7 @@ class InputField extends ControlWidget {
       textAlign: textAlign,
       textDirection: textDirection,
       autofocus: autofocus,
-      obscureText: obscureText,
+      obscureText: controller._obscure,
       autocorrect: autocorrect,
       maxLines: maxLines,
       minLines: minLines,

@@ -244,6 +244,36 @@ class _ControlBuilderState<T> extends State<ControlBuilder> {
   }
 }
 
+class ControlBuilderGroup extends StatefulWidget {
+  final List<ActionControl> controllers;
+  final ControlWidgetBuilder<List<dynamic>> builder;
+
+  const ControlBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
+
+  @override
+  _ControlBuilderGroupState createState() => _ControlBuilderGroupState();
+}
+
+class _ControlBuilderGroupState extends State<FieldBuilderGroup> {
+  List<dynamic> _values;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _values = widget.controllers.map((item) => item.value).toList(growable: false);
+
+    widget.controllers.forEach((controller) => controller.subscribe((data) => setState(() {
+          _values = widget.controllers.map((item) => item.value).toList(growable: false);
+        })));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _values);
+  }
+}
+
 //########################################################################################
 //########################################################################################
 //########################################################################################
@@ -341,7 +371,7 @@ class FieldControl<T> implements Disposable {
     }
 
     final subscription = stream.listen(
-          (data) {
+      (data) {
         setValue(converter != null ? converter(data) : data);
       },
       onError: onError,
@@ -455,11 +485,11 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
     @required FieldControl<T> controller,
     @required AsyncWidgetBuilder<T> builder,
   }) : super(
-    key: key,
-    initialData: controller._value,
-    stream: controller._stream.stream,
-    builder: builder,
-  );
+          key: key,
+          initialData: controller._value,
+          stream: controller._stream.stream,
+          builder: builder,
+        );
 
   @override
   Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
@@ -477,17 +507,19 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
   }) : super(
-      key: key,
-      controller: controller,
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return builder(context, snapshot.data);
-        }
+            key: key,
+            controller: controller,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return builder(context, snapshot.data);
+              }
 
-        if (noData != null) {
-          return noData(context);
-        }
-      });
+              if (noData != null) {
+                return noData(context);
+              }
+
+              return null;
+            });
 }
 
 //########################################################################################
@@ -655,7 +687,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// Filters data into given [controller].
   StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter, Predicate<T> filter}) {
     return subscribe(
-          (data) {
+      (data) {
         if (filter != null) {
           data = data.where(filter).toList();
         }
@@ -686,17 +718,19 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
     @required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder noData,
   }) : super(
-      key: key,
-      controller: controller,
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data.length > 0) {
-          return builder(context, snapshot.data);
-        }
+            key: key,
+            controller: controller,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data.length > 0) {
+                return builder(context, snapshot.data);
+              }
 
-        if (noData != null) {
-          return noData(context);
-        }
-      });
+              if (noData != null) {
+                return noData(context);
+              }
+
+              return null;
+            });
 }
 
 //########################################################################################
@@ -764,35 +798,35 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
     this.outdated,
     this.unknown,
   }) : super(
-    key: key,
-    controller: controller,
-    builder: (context, snapshot) {
-      final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
+          key: key,
+          controller: controller,
+          builder: (context, snapshot) {
+            final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
 
-      switch (state) {
-        case LoadingStatus.progress:
-          return progress != null
-              ? progress(context)
-              : Column(
-            children: <Widget>[CircularProgressIndicator()],
-          );
-        case LoadingStatus.done:
-          return done != null ? done(context) : null;
-        case LoadingStatus.error:
-          return error != null
-              ? error(context)
-              : controller.hasMessage
-              ? Column(
-            children: <Widget>[Text(controller.message)],
-          )
-              : null;
-        case LoadingStatus.outdated:
-          return outdated != null ? outdated(context) : null;
-        default:
-          return unknown != null ? unknown(context) : null;
-      }
-    },
-  );
+            switch (state) {
+              case LoadingStatus.progress:
+                return progress != null
+                    ? progress(context)
+                    : Column(
+                        children: <Widget>[CircularProgressIndicator()],
+                      );
+              case LoadingStatus.done:
+                return done != null ? done(context) : null;
+              case LoadingStatus.error:
+                return error != null
+                    ? error(context)
+                    : controller.hasMessage
+                        ? Column(
+                            children: <Widget>[Text(controller.message)],
+                          )
+                        : null;
+              case LoadingStatus.outdated:
+                return outdated != null ? outdated(context) : null;
+              default:
+                return unknown != null ? unknown(context) : null;
+            }
+          },
+        );
 }
 
 //########################################################################################
@@ -840,4 +874,38 @@ class DoubleControl extends FieldControl<double> {
 /// [IntegerBuilder]
 class IntegerControl extends FieldControl<int> {
   IntegerControl([int value = 0]) : super(value);
+}
+
+//########################################################################################
+//########################################################################################
+//########################################################################################
+
+class FieldBuilderGroup extends StatefulWidget {
+  final List<FieldControl> controllers;
+  final ControlWidgetBuilder<List<dynamic>> builder;
+
+  const FieldBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
+
+  @override
+  _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
+}
+
+class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
+  List<dynamic> _values;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _values = widget.controllers.map((item) => item.value).toList(growable: false);
+
+    widget.controllers.forEach((controller) => controller.subscribe((data) => setState(() {
+          _values = widget.controllers.map((item) => item.value).toList(growable: false);
+        })));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _values);
+  }
 }

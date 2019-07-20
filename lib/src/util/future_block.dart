@@ -52,3 +52,30 @@ class FutureBlock {
 
   static Future nextFrame(VoidCallback action) => Future.delayed(const Duration(), action);
 }
+
+class DelayBlock {
+  int _millis;
+  DateTime _start;
+
+  DelayBlock(Duration duration, [bool startNow = true]) {
+    _millis = duration.inMilliseconds;
+    if (startNow) {
+      start();
+    }
+  }
+
+  void start() {
+    _start = DateTime.now();
+  }
+
+  Future<void> finish() {
+    final currentDelay = DateTime.now().difference(_start).inMilliseconds;
+    final delay = _millis - currentDelay;
+
+    if (delay > 0) {
+      return Future.delayed(Duration(milliseconds: delay));
+    }
+
+    return Future(() {});
+  }
+}
