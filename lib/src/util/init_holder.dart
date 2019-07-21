@@ -14,6 +14,7 @@ class InitHolder<T> {
 
   bool set({@required ValueGetter<T> builder, bool override: false}) {
     if (_builder == null || override) {
+      _value = null;
       _builder = builder;
       return true;
     }

@@ -23,6 +23,7 @@ export './src/util/init_holder.dart';
 export './src/widget/base_widget.dart';
 export './src/widget/input_field.dart';
 export './src/widget/navigation_stack.dart';
+export './src/widget/stable_widget.dart';
 export './src/widget/widget_provider.dart';
 
 export './src/entity/menu.dart';

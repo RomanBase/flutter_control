@@ -137,7 +137,7 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static _NavigatorStackOffstage menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true}) {
+  static _NavigatorStackOffstage menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool}) {
     final items = List<NavigatorStack>();
 
     pages.forEach((key, value) => items.add(NavigatorStack._(
