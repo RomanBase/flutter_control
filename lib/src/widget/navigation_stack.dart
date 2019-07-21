@@ -160,29 +160,33 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
 
   @override
   Widget build(BuildContext context) {
-    final navigator = Navigator(
-      onGenerateRoute: (routeSettings) {
-        return MaterialPageRoute(builder: (context) {
-          _ctx.changeContext(context);
-          final widget = builder(context);
+    return StableWidget(
+      builder: (context) {
+        final navigator = Navigator(
+          onGenerateRoute: (routeSettings) {
+            return MaterialPageRoute(builder: (context) {
+              _ctx.changeContext(context);
 
-          if (widget is Initializable) {
-            (widget as Initializable).init({});
-          }
+              final widget = builder(context);
 
-          return widget;
-        });
+              if (widget is Initializable) {
+                (widget as Initializable).init({});
+              }
+              return widget;
+            });
+          },
+        );
+
+        if (overrideNavigation) {
+          return WillPopScope(
+            onWillPop: controller.popScope,
+            child: navigator,
+          );
+        }
+
+        return navigator;
       },
     );
-
-    if (overrideNavigation) {
-      return WillPopScope(
-        onWillPop: controller.popScope,
-        child: navigator,
-      );
-    }
-
-    return navigator;
   }
 
   @override
