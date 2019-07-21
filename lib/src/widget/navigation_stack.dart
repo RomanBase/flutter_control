@@ -101,11 +101,14 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static NavigatorStack single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false}) {
-    return NavigatorStack._(
-      controller: controller ?? NavigatorController(),
-      builder: builder,
-      overrideNavigation: overrideNavigation,
+  static StableWidget single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
+    return StableWidget(
+      forceOverride: !stable,
+      builder: (context) => NavigatorStack._(
+        controller: controller ?? NavigatorController(),
+        builder: builder,
+        overrideNavigation: overrideNavigation,
+      ),
     );
   }
 
@@ -119,11 +122,14 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static _NavigatorStackOffstage pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true}) {
-    return _NavigatorStackOffstage(
-      pages: pages,
-      controller: controller ?? NavigatorStackController,
-      overrideNavigation: overrideNavigation,
+  static StableWidget pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true, bool stable: true}) {
+    return StableWidget(
+      forceOverride: !stable,
+      builder: (context) => _NavigatorStackOffstage(
+        pages: pages,
+        controller: controller ?? NavigatorStackController(),
+        overrideNavigation: overrideNavigation,
+      ),
     );
   }
 
@@ -137,19 +143,24 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static _NavigatorStackOffstage menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool}) {
-    final items = List<NavigatorStack>();
+  static StableWidget menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool stable: true}) {
+    return StableWidget(
+      forceOverride: !stable,
+      builder: (context) {
+        final items = List<NavigatorStack>();
 
-    pages.forEach((key, value) => items.add(NavigatorStack._(
-          controller: NavigatorController(menu: key),
-          builder: value,
-          overrideNavigation: false,
-        )));
+        pages.forEach((key, value) => items.add(NavigatorStack._(
+              controller: NavigatorController(menu: key),
+              builder: value,
+              overrideNavigation: false,
+            )));
 
-    return NavigatorStack.pages(
-      controller: controller,
-      pages: items,
-      overrideNavigation: overrideNavigation,
+        return _NavigatorStackOffstage(
+          pages: items,
+          controller: controller ?? NavigatorStackController(),
+          overrideNavigation: overrideNavigation,
+        );
+      },
     );
   }
 
