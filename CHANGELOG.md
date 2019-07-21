@@ -1,3 +1,5 @@
+## [0.9.0] - StableWidget
+- fixed NavigationStack widget.
 ## [0.8.98] - Control Group Builders
 ## [0.8.96] - Flutter 1.7 support
 ## [0.8.5] - Alpha version
