@@ -1,6 +1,5 @@
-## [0.8.97] - Control Group Builders
+## [0.8.98] - Control Group Builders
 ## [0.8.96] - Flutter 1.7 support
-## [0.8.95] - BaseApp and Control initialization
 ## [0.8.5] - Alpha version
 - [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
 - [AppControl] Is [InheritedWidget] around whole App. Holds root Context and global Key.
