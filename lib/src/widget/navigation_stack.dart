@@ -164,7 +164,13 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(builder: (context) {
           _ctx.changeContext(context);
-          return builder(context);
+          final widget = builder(context);
+
+          if (widget is Initializable) {
+            (widget as Initializable).init({});
+          }
+
+          return widget;
         });
       },
     );
@@ -290,13 +296,6 @@ class _NavigatorStackOffstage extends ControlWidget {
     controller.currentController.isSelected = true;
 
     return [controller];
-  }
-
-  @override
-  void init(Map args) {
-    super.init(args);
-
-    pages.forEach((page) => page.init(args));
   }
 
   @override
