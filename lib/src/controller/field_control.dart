@@ -835,7 +835,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
 
 /// Boolean controller
 /// [FieldControl]
-/// [BoolBuilder]
+/// [FieldBuilder]
 class BoolControl extends FieldControl<bool> {
   bool get isTrue => value;
 
@@ -854,7 +854,7 @@ class BoolControl extends FieldControl<bool> {
 
 /// String controller
 /// [FieldControl]
-/// [StringBuilder]
+/// [FieldBuilder]
 class StringControl extends FieldControl<String> {
   /// [String.isEmpty]
   bool get isEmpty => value?.isEmpty ?? true;
@@ -864,16 +864,38 @@ class StringControl extends FieldControl<String> {
 
 /// Double controller
 /// [FieldControl]
-/// [DoubleBuilder]
+/// [FieldBuilder]
 class DoubleControl extends FieldControl<double> {
+  double min = 0.0;
+  double max = 1.0;
+
   DoubleControl([double value = 0.0]) : super(value);
+
+  DoubleControl.inRange({double value: 0.0, this.min: 0.0, this.max: 1.0}) {
+    setInRange(value);
+  }
+
+  setInRange(double value, {double min, double max}) {
+    setValue((value ?? 0.0).clamp(min ?? this.min, max ?? this.max));
+  }
 }
 
 /// Integer controller
 /// [FieldControl]
-/// [IntegerBuilder]
+/// [FieldBuilder]
 class IntegerControl extends FieldControl<int> {
+  int min = 0;
+  int max = 100;
+
   IntegerControl([int value = 0]) : super(value);
+
+  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100}) {
+    setInRange(value);
+  }
+
+  setInRange(int value, {int min, int max}) {
+    setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+  }
 }
 
 //########################################################################################
