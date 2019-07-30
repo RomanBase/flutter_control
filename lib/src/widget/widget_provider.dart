@@ -173,6 +173,8 @@ class PageRouteProvider {
 
     return MaterialPageRoute(builder: builder, settings: settings);
   }
+
+  RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
 }
 
 //########################################################################################
