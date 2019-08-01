@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-class FactoryKey {
+class ControlKey {
   static const String localization = 'localization';
   static const String preferences = 'prefs';
   static const String control = 'control';
@@ -26,14 +26,17 @@ class AppControl extends InheritedWidget {
       }
     }
 
-    return ControlProvider.of(FactoryKey.control);
+    return ControlProvider.of(ControlKey.control);
   }
 
   /// Returns current locale.
-  String get iso2Locale => ControlProvider.of(FactoryKey.localization)?.locale;
+  String get iso2Locale => ControlProvider.of(ControlKey.localization)?.locale;
 
   /// Key of root State.
   final GlobalKey rootKey;
+
+  /// Global key of [AppControl]
+  GlobalKey get mainKey => key;
 
   /// Holder of current root context.
   /// Don't get/set context directly - use [rootContext] instead.
@@ -50,12 +53,11 @@ class AppControl extends InheritedWidget {
 
   /// Default constructor
   AppControl({
-    Key key,
     @required this.rootKey,
     @required this.contextHolder,
     Widget child,
     this.debug: true,
-  }) : super(key: key, child: child) {
+  }) : super(key: GlobalKey(), child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 

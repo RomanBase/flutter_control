@@ -90,7 +90,7 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   TextTheme get font => theme.textTheme;
 
   /// Instance of [BaseLocalization].
-  BaseLocalization get _localization => ControlProvider.of(FactoryKey.localization);
+  BaseLocalization get _localization => ControlProvider.of(ControlKey.localization);
 
   /// Default constructor
   ControlWidget({Key key}) : super(key: key) {

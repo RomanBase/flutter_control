@@ -95,10 +95,10 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
 
   /// returns instance of [AppControl] if available.
   /// nullable
-  AppControl get control => factory.get(FactoryKey.control);
+  AppControl get control => factory.get(ControlKey.control);
 
   /// returns instance of [BaseLocalization]
-  BaseLocalization get _localization => factory.get(FactoryKey.localization);
+  BaseLocalization get _localization => factory.get(ControlKey.localization);
 
   /// prevent calling dispose from [ControlWidget]
   bool get preventDispose => false;

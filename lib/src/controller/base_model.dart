@@ -8,10 +8,10 @@ class BaseModel implements Initializable, Disposable {
 
   /// returns instance of [AppControl] if available.
   /// nullable
-  AppControl get control => factory.get(FactoryKey.control);
+  AppControl get control => factory.get(ControlKey.control);
 
   /// returns instance of [BaseLocalization]
-  BaseLocalization get _localization => factory.get(FactoryKey.localization);
+  BaseLocalization get _localization => factory.get(ControlKey.localization);
 
   /// Default constructor.
   BaseModel();

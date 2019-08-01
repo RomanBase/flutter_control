@@ -24,5 +24,5 @@ class BasePrefs {
 }
 
 mixin PrefsProvider {
-  BasePrefs get prefs => ControlProvider.of(FactoryKey.preferences);
+  BasePrefs get prefs => ControlProvider.of(ControlKey.preferences);
 }

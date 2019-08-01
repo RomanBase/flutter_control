@@ -93,13 +93,13 @@ class BaseAppState extends State<BaseApp> {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
-    entries[FactoryKey.control] = this;
-    entries[FactoryKey.preferences] = BasePrefs();
-    entries[FactoryKey.localization] = BaseLocalization(widget.defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
+    entries[ControlKey.control] = this;
+    entries[ControlKey.preferences] = BasePrefs();
+    entries[ControlKey.localization] = BaseLocalization(widget.defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
 
     factory.initialize(items: entries, initializers: initializers);
 
-    final localization = ControlProvider.of<BaseLocalization>(FactoryKey.localization);
+    final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
 
     contextHolder.once((context) async {

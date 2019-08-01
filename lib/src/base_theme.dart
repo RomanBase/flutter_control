@@ -13,6 +13,11 @@ class BaseTheme {
   static const icon_large_size = 32.0;
   static const icon_bounds = 48.0;
 
+  static const icon_launcher = 144.0;
+  static const thumb = 96.0;
+  static const preview = 192.0;
+  static const head = 320.0;
+
   static const button_width = 256.0;
   static const button_height = 56.0;
   static const button_radius = button_height * 0.5;
