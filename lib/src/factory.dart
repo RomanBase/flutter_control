@@ -49,7 +49,7 @@ class ControlProvider {
   static T of<T>([String key]) => ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
 }
 
-class ArgProvider {
+class ArgHandler {
   static T map<T>(Map map, {dynamic key, T defaultValue}) {
     if (map == null) {
       return defaultValue;
@@ -69,6 +69,10 @@ class ArgProvider {
   }
 
   static T list<T>(List list, [T defaultValue]) {
+    if (list == null) {
+      return defaultValue;
+    }
+
     final item = list.firstWhere((item) => item is T);
 
     if (item != null) {
@@ -187,11 +191,11 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [addInitializer]
   /// nullable
-  T init<T>([Map args, forceInit = false]) {
+  T init<T>([Map args]) {
     if (_initializers.containsKey(T)) {
       final item = _initializers[T]() as T;
 
-      if (item is Initializable && (forceInit || args != null)) {
+      if (item is Initializable) {
         item.init(args);
       }
 
@@ -201,9 +205,13 @@ class ControlFactory implements Disposable {
     return null;
   }
 
-  /// Removes item of given key.
-  T remove<T>(String key) {
-    return _items.remove(key) as T;
+  /// Removes item of given key or all items of given type.
+  void remove<T>([String key]) {
+    if (key == null) {
+      _items.removeWhere((key, value) => value is T);
+    } else {
+      _items.remove(key);
+    }
   }
 
   /// Removes all items of given type

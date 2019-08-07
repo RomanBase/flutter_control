@@ -106,7 +106,7 @@ class BaseLocalization with PrefsProvider {
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale, {bool preferred: true, VoidCallback onChanged}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
-      print("localization not available: $iso2Locale");
+      print('localization not available: $iso2Locale');
       return false;
     }
 
@@ -125,7 +125,7 @@ class BaseLocalization with PrefsProvider {
   /// Loads localization from asset file for given locale.
   Future<bool> _initLocalization(String path, VoidCallback onChanged) async {
     if (path == null) {
-      print("invalid localization file path");
+      print('invalid localization file path: $path');
       return false;
     }
 
@@ -135,7 +135,7 @@ class BaseLocalization with PrefsProvider {
     if (data != null) {
       data.forEach((key, value) => _data[key] = value);
 
-      print("localization changed to: $path");
+      print('localization changed to: $path');
 
       if (onLocalizationChanged != null) {
         onLocalizationChanged();
@@ -148,7 +148,7 @@ class BaseLocalization with PrefsProvider {
       return true;
     }
 
-    print("localization failed to change: $path");
+    print('localization failed to change: $path');
 
     return false;
   }
@@ -160,12 +160,44 @@ class BaseLocalization with PrefsProvider {
       return _data[key];
     }
 
-    return debug ? "${key}_$_locale" : '';
+    return debug ? '${key}_$_locale' : '';
   }
 
-  /// Updates value in current set.
-  /// This update is only runtime and isn't stored to localization file.
-  void update(String key, String value) => _data[key] = value;
+  String localizePlural(String key, int plural) {
+    if (_data.containsKey(key) && _data[key] is Map) {
+      final nums = List<int>();
+      _data[key].forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+      nums.sort();
+
+      for (final num in nums.reversed) {
+        if (plural >= num) {
+          return _data[key][num.toString()];
+        }
+      }
+    }
+
+    return debug ? '$key[$plural]_$_locale' : '';
+  }
+
+  List<String> localizeList(String key) {
+    if (_data.containsKey(key)) {
+      if (_data[key] is List) {
+        return _data[key].cast<String>();
+      }
+
+      return [_data[key]];
+    }
+
+    return debug ? ['${key}_$_locale'] : [];
+  }
+
+  dynamic localizeDynamic(String key) {
+    if (_data.containsKey(key)) {
+      return _data[key];
+    }
+
+    return debug ? '${key}_$_locale' : '';
+  }
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
@@ -183,6 +215,30 @@ class BaseLocalization with PrefsProvider {
       }
     }
 
-    return debug ? "empty_{$iso2Locale}_$defaultLocale" : '';
+    return debug ? 'empty_{$iso2Locale}_$defaultLocale' : '';
   }
+
+  /// Updates value in current set.
+  /// This update is only runtime and isn't stored to localization file.
+  void update(String key, dynamic value) => _data[key] = value;
+}
+
+class LocalizationProvider {
+  @protected
+  BaseLocalization get localization => ControlProvider.of(ControlKey.localization);
+
+  @protected
+  String localize(String key) => localization.localize(key);
+
+  @protected
+  String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
+
+  @protected
+  List<String> localizeList(String key) => localization.localizeList(key);
+
+  @protected
+  dynamic localizeDynamic(String key) => localization.localizeDynamic(key);
+
+  @protected
+  String extractLocalization(Map field) => localization.extractLocalization(field);
 }

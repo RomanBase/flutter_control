@@ -97,9 +97,6 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// nullable
   AppControl get control => factory.get(ControlKey.control);
 
-  /// returns instance of [BaseLocalization]
-  BaseLocalization get _localization => factory.get(ControlKey.localization);
-
   /// prevent calling dispose from [ControlWidget]
   bool get preventDispose => false;
 
@@ -136,18 +133,6 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// Currently empty and is ready to override.
   void reload() {}
 
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  /// Non null.
-  @protected
-  String localize(String key) => _localization?.localize(key) ?? '';
-
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  /// Non null.
-  @protected
-  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
-
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.
   @override
@@ -168,7 +153,6 @@ class StateController extends BaseController implements StateNotifier {
 
   @override
   void notifyState([dynamic state]) => _notifier.setValue(state);
-
 
   ControlSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
 

@@ -3,5 +3,25 @@
   "card_title": "Card",
   "item_title": "Item",
   "empty_card": "card is empty",
-  "empty_list": "add new item with + button"
+  "empty_list": "add new item with + button",
+  "plural": {
+    "0": "none",
+    "1": "single",
+    "2": "few",
+    "5": "many",
+    "101": "more"
+  },
+  "array": [
+    "zero",
+    "first",
+    "second",
+    "third",
+    "fifth"
+  ],
+  "address": {
+    "name": "John Doe",
+    "city": "NF",
+    "street": "Marchall Street 89",
+    "email": "control@flutter.dev"
+  }
 }

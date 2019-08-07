@@ -29,8 +29,8 @@ class AppControl extends InheritedWidget {
     return ControlProvider.of(ControlKey.control);
   }
 
-  /// Returns current locale.
-  String get iso2Locale => ControlProvider.of(ControlKey.localization)?.locale;
+  /// Holds current locale.
+  final String locale;
 
   /// Key of root State.
   final GlobalKey rootKey;
@@ -48,24 +48,27 @@ class AppControl extends InheritedWidget {
   /// Sets new root context to [contextHolder]
   set rootContext(BuildContext context) => contextHolder.changeContext(context);
 
-  /// overrides [debugMode] to debug App in profiling and release mode.
-  final debug;
-
   /// Default constructor
   AppControl({
     @required this.rootKey,
     @required this.contextHolder,
+    this.locale,
     Widget child,
-    this.debug: true,
   }) : super(key: GlobalKey(), child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
     _accessType = this.runtimeType;
+
+    ControlFactory.of(this).add(ControlKey.control, this);
+  }
+
+  void notifyAppState([dynamic state]) {
+    //TODO; notify BaseAppState
   }
 
   @override
   bool updateShouldNotify(AppControl oldWidget) {
-    return iso2Locale != oldWidget.iso2Locale;
+    return locale != oldWidget.locale;
   }
 }

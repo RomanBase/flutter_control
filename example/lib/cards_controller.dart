@@ -2,7 +2,7 @@ import 'package:flutter_control/core.dart';
 
 import 'cards_page.dart';
 
-class CardsController extends BaseController with RouteController {
+class CardsController extends BaseController with RouteController, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
 
@@ -17,6 +17,17 @@ class CardsController extends BaseController with RouteController {
     super.onInit(args);
 
     factory.subscribe<CardModel>('remove_card', (card) => removeCard(card));
+
+    localization.onLocalizationChanged = () {
+      printDebug(localizePlural('plural', 0));
+      printDebug(localizePlural('plural', 3));
+      printDebug(localizePlural('plural', 50));
+      printDebug(localizePlural('plural', 300));
+
+      printDebug(localizeList('array')[1]);
+
+      printDebug(localizeDynamic('address')['street']);
+    };
   }
 
   void addCard() => newCard('${localize('card_title')} ${_counter++}');
@@ -46,7 +57,7 @@ class CardsController extends BaseController with RouteController {
   }
 }
 
-class DetailController extends BaseController with RouteController {
+class DetailController extends BaseController with RouteController, LocalizationProvider {
   CardModel _model;
 
   ListControl<CardItemModel> get items => _model.items;
@@ -57,7 +68,7 @@ class DetailController extends BaseController with RouteController {
   void onInit(Map args) {
     super.onInit(args);
 
-    _model = ArgProvider.map<CardModel>(args);
+    _model = ArgHandler.map<CardModel>(args);
 
     _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }
