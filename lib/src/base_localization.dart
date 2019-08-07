@@ -153,7 +153,7 @@ class BaseLocalization with PrefsProvider {
     return false;
   }
 
-  /// Tries to localize text by given key.
+  /// Tries to localize text by given [key].
   /// Enable/Disable debug mode to show/hide missing localizations.
   String localize(String key) {
     if (_data.containsKey(key)) {
@@ -163,6 +163,20 @@ class BaseLocalization with PrefsProvider {
     return debug ? '${key}_$_locale' : '';
   }
 
+  /// Tries to localize text by given [key] and [plural].
+  ///
+  /// json: {
+  ///   "0": "zero",
+  ///   "1": "single",
+  ///   "2": "few",
+  ///   "5": "many"
+  /// }
+  ///
+  /// plural: 1 returns 'single'
+  /// plural: 4 returns 'few'
+  /// plural: 9 returns 'many'
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
   String localizePlural(String key, int plural) {
     if (_data.containsKey(key) && _data[key] is Map) {
       final nums = List<int>();
@@ -179,6 +193,13 @@ class BaseLocalization with PrefsProvider {
     return debug ? '$key[$plural]_$_locale' : '';
   }
 
+  /// Tries to localize text by given [key].
+  ///
+  /// json: [
+  ///   "monday", "tuesday", "wednesday", etc..
+  /// ]
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
   List<String> localizeList(String key) {
     if (_data.containsKey(key)) {
       if (_data[key] is List) {
@@ -191,6 +212,19 @@ class BaseLocalization with PrefsProvider {
     return debug ? ['${key}_$_locale'] : [];
   }
 
+  /// Tries to localize text by given [key].
+  ///
+  /// json: {
+  ///   "address": {
+  ///     "name": "Maria De Flutter",
+  ///     "street": "St. Maria 1189",
+  ///     "city": "St. Flutter"
+  ///   }
+  /// }
+  ///
+  /// [key] 'address' returns [Map] of json data.
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
   dynamic localizeDynamic(String key) {
     if (_data.containsKey(key)) {
       return _data[key];
@@ -224,21 +258,27 @@ class BaseLocalization with PrefsProvider {
 }
 
 class LocalizationProvider {
+  ///Instance of [BaseLocalization]
   @protected
   BaseLocalization get localization => ControlProvider.of(ControlKey.localization);
 
+  ///[BaseLocalization.localize]
   @protected
   String localize(String key) => localization.localize(key);
 
+  ///[BaseLocalization.localizePlural]
   @protected
   String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
 
+  ///[BaseLocalization.localizeList]
   @protected
   List<String> localizeList(String key) => localization.localizeList(key);
 
+  ///[BaseLocalization.localizeDynamic]
   @protected
   dynamic localizeDynamic(String key) => localization.localizeDynamic(key);
 
+  ///[BaseLocalization.extractLocalization]
   @protected
   String extractLocalization(Map field) => localization.extractLocalization(field);
 }
