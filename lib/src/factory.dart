@@ -191,11 +191,11 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [addInitializer]
   /// nullable
-  T init<T>([Map args]) {
+  T init<T>([Map args, bool forceInit = false]) {
     if (_initializers.containsKey(T)) {
       final item = _initializers[T]() as T;
 
-      if (item is Initializable) {
+      if (item is Initializable && (args != null || forceInit)) {
         item.init(args);
       }
 
