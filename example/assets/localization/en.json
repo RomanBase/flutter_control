@@ -4,12 +4,12 @@
   "item_title": "Item",
   "empty_card": "card is empty",
   "empty_list": "add new item with + button",
-  "plural": {
-    "0": "none",
-    "1": "single",
-    "2": "few",
-    "5": "many",
-    "101": "more"
+  "number": {
+    "0": "",
+    "1": "st",
+    "2": "nd",
+    "3": "rd",
+    "4": "th"
   },
   "array": [
     "zero",

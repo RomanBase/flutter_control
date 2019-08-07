@@ -17,20 +17,13 @@ class CardsController extends BaseController with RouteController, LocalizationP
     super.onInit(args);
 
     factory.subscribe<CardModel>('remove_card', (card) => removeCard(card));
-
-    localization.onLocalizationChanged = () {
-      printDebug(localizePlural('plural', 0));
-      printDebug(localizePlural('plural', 3));
-      printDebug(localizePlural('plural', 50));
-      printDebug(localizePlural('plural', 300));
-
-      printDebug(localizeList('array')[1]);
-
-      printDebug(localizeDynamic('address')['street']);
-    };
   }
 
-  void addCard() => newCard('${localize('card_title')} ${_counter++}');
+  void addCard() {
+    newCard('${localize('card_title')} $_counter${localizePlural('number', _counter)}');
+
+    _counter++;
+  }
 
   CardModel newCard(String title) {
     if (title == null || title.isEmpty) {
