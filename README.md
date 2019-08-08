@@ -168,7 +168,9 @@ class TodoPage extends SingleControlWidget<TodoController> {
 - [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
 - [AppControl] Is [InheritedWidget] around whole App. Holds Factory and other important Controllers.
 - [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide communication and synchronization between separated parts of App.
-
+- [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
+- [LocalizationProvider] Mixin class to enable localization.
+- [ControlProvider] retrieves object from factory.
 ---
 
 - [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
