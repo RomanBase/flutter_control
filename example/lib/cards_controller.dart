@@ -93,7 +93,7 @@ class DetailController extends BaseController with RouteController, Localization
   }
 }
 
-class CardModel extends BaseModel {
+class CardModel extends BaseModel with LocalizationProvider {
   final String title;
   final countLabel = StringControl();
   final progress = DoubleControl();

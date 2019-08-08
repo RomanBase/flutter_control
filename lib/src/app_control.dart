@@ -1,11 +1,5 @@
 import 'package:flutter_control/core.dart';
 
-class ControlKey {
-  static const String localization = 'localization';
-  static const String preferences = 'prefs';
-  static const String control = 'control';
-}
-
 /// One of the root Widgets of App.
 /// Initializes with GlobalKey and BuildContext of root Widgets (Scaffold is recommended).
 /// AppControl can hold important objects to use them anywhere in App.
@@ -60,7 +54,7 @@ class AppControl extends InheritedWidget {
 
     _accessType = this.runtimeType;
 
-    ControlFactory.of(this).add(ControlKey.control, this);
+    ControlFactory.of(this).addItem(ControlKey.control, this);
   }
 
   void notifyAppState([dynamic state]) {

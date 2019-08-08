@@ -81,7 +81,8 @@ abstract class AnimationInitializer {
 ///
 /// [AppControl]
 /// [ControlFactory]
-/// [BaseLocalization]
+///
+/// Mixin your model with [LocalizationProvider] to enable localization.
 class BaseController implements Initializable, Subscriptionable, Disposable {
   /// init check.
   bool _isInitialized = false;

@@ -403,6 +403,9 @@ class FieldControl<T> implements Disposable {
   /// Returns [Sink] with custom [Converter].
   Sink<dynamic> sinkConverter(Converter<T> converter) => FieldSinkConverter(this, converter);
 
+  /// Sets value after [Future] finished.
+  Future ofFuture(Future<T> future) => future.then((value) => setValue(value));
+
   /// Subscribes to [Stream] of this controller.
   /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
   FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false}) {

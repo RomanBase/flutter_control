@@ -89,6 +89,14 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   TextTheme get font => theme.textTheme;
 
+  /// Instance of nearest [TextTheme].
+  @protected
+  TextTheme get fontPrimary => theme.primaryTextTheme;
+
+  /// Instance of nearest [TextTheme].
+  @protected
+  TextTheme get fontAccent => theme.accentTextTheme;
+
   /// Default constructor
   ControlWidget({Key key}) : super(key: key) {
     _initHolder();
@@ -149,7 +157,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
     });
   }
 
-  void notifyState() => holder.state.notifyState();
+  /// Notifies [State] of this [Widget].
+  void notifyState() => holder.state?.notifyState();
 
   /// Looks for [Type] in initialized controllers, then look up whole factory.
   @protected

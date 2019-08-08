@@ -46,41 +46,7 @@ class GlobalSubscription<T> implements Disposable {
 }
 
 class ControlProvider {
-  static T of<T>([String key]) => ControlFactory._instance.get(key) ?? ControlFactory._instance.getType<T>();
-}
-
-class ArgHandler {
-  static T map<T>(Map map, {dynamic key, T defaultValue}) {
-    if (map == null) {
-      return defaultValue;
-    }
-
-    if (map.containsKey(key)) {
-      return map[key];
-    }
-
-    final item = map.values.firstWhere((item) => item is T);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
-
-  static T list<T>(List list, [T defaultValue]) {
-    if (list == null) {
-      return defaultValue;
-    }
-
-    final item = list.firstWhere((item) => item is T);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
+  static T of<T>([String key]) => ControlFactory._instance.get<T>(key);
 }
 
 /// Factory for initializing and storing objects.
@@ -123,6 +89,8 @@ class ControlFactory implements Disposable {
 
     _initialized = true;
 
+    _items[ControlKey.factory] = this;
+
     if (items != null) {
       _items.addAll(items);
     }
@@ -134,36 +102,61 @@ class ControlFactory implements Disposable {
     _items.forEach((key, value) {
       if (value is Initializable) {
         value.init(null);
-        printDebug('factory init $key - ${value.hashCode}');
+        printDebug('factory init $key - $value - ${value.hashCode}');
       }
     });
   }
 
-  /// Stores initializer for later use - [init].
-  void addInitializer<T>(Initializer<T> initializer) {
-    _initializers[T] = initializer;
-  }
+  /// Stores initializer for later use - [init] or [get].
+  void addInitializer<T>(Initializer<T> initializer) => _initializers[T] = initializer;
 
-  /// Stores [object] with given [key] for later use - [get] and [getType].
+  /// Stores [object] with given [key] for later use - [get] and [getWith].
   /// Object with same [key] previously stored in factory is overridden.
-  void add(String key, dynamic object) {
+  void addItem(String key, dynamic object) {
     if (key == null || key.isEmpty) {
-      key = object.toString();
+      key = object.runtimeType.toString();
     }
 
     _items[key] = object;
   }
 
-  /// returns object of requested type by given key.
-  /// check [getType] or [getWith] for more complex getters
+  /// Stores [object] of given Type for later use.
+  /// Key is [runtimeType] of given [object].
+  /// returns key of stored object.
+  String add(dynamic object) {
+    final key = object.runtimeType.toString();
+
+    _items[key] = object;
+
+    return key;
+  }
+
+  /// returns object of requested type by given key or by Type.
+  /// check [getWith] for more complex getter
   /// nullable
-  T get<T>(String key) => _items[key] as T;
+  T get<T>([String key]) {
+    if (key != null) {
+      final item = _items[key] as T;
+
+      if (item != null) {
+        return item;
+      }
+    }
+
+    for (final item in _items.values) {
+      if (item.runtimeType == T) {
+        return item;
+      }
+    }
+
+    return init<T>();
+  }
 
   /// returns object of requested type by given key.
   /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
   /// nullable
   T getWith<T>(String key, [Map args]) {
-    final item = _items[key] as T;
+    final item = get<T>(key);
 
     if (item != null && item is Initializable && args != null) {
       item.init(args);
@@ -172,20 +165,23 @@ class ControlFactory implements Disposable {
     return item;
   }
 
-  /// returns object of requested type.
-  /// nullable
-  T getType<T>([Map args]) {
-    for (final item in _items.values) {
-      if (item.runtimeType == T) {
-        if (item is Initializable && args != null) {
-          item.init(args);
+  /// Looks for item by [Type] in collection.
+  /// [includeFactory] to search in factory too.
+  /// [defaultValue] is returned if nothing found.
+  T find<T>(Iterable collection, {bool includeFactory: true, T defaultValue}) {
+    if (collection != null) {
+      for (final item in collection) {
+        if (item.runtimeType == T) {
+          return item;
         }
-
-        return item;
       }
     }
 
-    return init<T>(args);
+    if (includeFactory) {
+      return get()<T>() ?? defaultValue;
+    }
+
+    return defaultValue;
   }
 
   /// returns new object of requested type.
@@ -278,25 +274,6 @@ class ControlFactory implements Disposable {
         sub._notify(value);
       }
     });
-  }
-
-  /// Looks for item by [Type] in collection.
-  /// [includeFactory] to search in factory too.
-  /// [defaultValue] is returned if nothing found.
-  T find<T>(Iterable collection, {bool includeFactory: true, T defaultValue}) {
-    if (collection != null) {
-      for (final item in collection) {
-        if (item.runtimeType == T) {
-          return item;
-        }
-      }
-    }
-
-    if (includeFactory) {
-      return getType<T>() ?? defaultValue;
-    }
-
-    return defaultValue;
   }
 
   @override
