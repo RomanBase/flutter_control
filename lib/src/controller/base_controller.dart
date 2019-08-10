@@ -14,7 +14,7 @@ typedef Converter<T> = T Function(dynamic);
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
   /// Is typically called right after constructor.
-  void init(Map args) {}
+  void init(Map<String, dynamic> args) {}
 }
 
 /// General subscription for controllers.
@@ -62,12 +62,15 @@ abstract class RouteNavigator {
   /// Goes back in navigation stack until first [Route].
   void backToRoot();
 
-  /// Goes back in navigation stack until [Route] with given name is found.
-  void backTo(String route);
+  /// Goes back in navigation stack until [Route] found.
+  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate});
 
   /// Pops [Route] from navigation stack.
   /// result is send back to parent.
   void close([dynamic result]);
+
+  /// Removes given [route] from navigator.
+  void closeRoute(Route route, [dynamic result]);
 }
 
 /// General class to handle with [AnimationController]s
@@ -109,7 +112,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// Set [preventMultiInit] enable multi init / re-init
   @override
   @mustCallSuper
-  BaseController init([Map args]) {
+  BaseController init([Map<String, dynamic> args]) {
     if (isInitialized && preventMultiInit) {
       printDebug('controller is already initialized: ${this.toString()}');
       return this;
@@ -124,7 +127,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// Is typically called right after constructor or when init is available.
   /// In most of times [Widget] or [State] isn't ready yet.
   /// check [init] and [preventMultiInit]
-  void onInit(Map args) {}
+  void onInit(Map<String, dynamic> args) {}
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
@@ -169,7 +172,6 @@ class StateController extends BaseController implements StateNotifier {
   @override
   void notifyState([dynamic state]) => _notifier.setValue(state);
 
-
   ControlSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
 
   @override
@@ -207,27 +209,67 @@ mixin RouteController on BaseController {
 
   /// [RouteNavigator.openRoute].
   /// [RouteHandler] -> [PageRouteProvider]
-  Future<dynamic> openPage(PageRouteProvider provider, {bool root: false, bool replacement: false, Map args}) {
-    return RouteHandler(_navigator, provider).openRoute(root: root, replacement: replacement, args: args);
+  RouteHandler openPage(
+    PageRouteProvider provider, {
+    bool root: false,
+    bool replacement: false,
+    Map<String, dynamic> args,
+    FutureOr<dynamic> result(dynamic value),
+  }) {
+    final handler = RouteHandler(_navigator, provider);
+
+    final future = handler.openRoute(root: root, replacement: replacement, args: args);
+
+    if (result != null) {
+      future.then(result);
+    }
+
+    return handler;
   }
 
   /// [RouteNavigator.openRoot].
   /// [RouteHandler] -> [PageRouteProvider]
-  Future<dynamic> openRoot(PageRouteProvider provider, {Map args}) {
-    return RouteHandler(_navigator, provider).openRoot(args: args);
+  RouteHandler openRoot(
+    PageRouteProvider provider, {
+    Map<String, dynamic> args,
+    FutureOr<dynamic> result(dynamic value),
+  }) {
+    final handler = RouteHandler(_navigator, provider);
+
+    final future = handler.openRoot(args: args);
+
+    if (result != null) {
+      future.then(result);
+    }
+
+    return handler;
   }
 
   /// [RouteNavigator.openDialog].
   /// [RouteHandler] -> [PageRouteProvider]
-  Future<dynamic> openDialog(PageRouteProvider provider, {bool root: false, DialogType type: DialogType.popup}) {
-    return RouteHandler(_navigator, provider).openDialog(root: root, type: type);
+  Future<dynamic> openDialog(
+    PageRouteProvider provider, {
+    bool root: false,
+    DialogType type: DialogType.popup,
+    Map<String, dynamic> args,
+  }) {
+    return RouteHandler(_navigator, provider).openDialog(root: root, type: type, args: args);
   }
 
   /// [RouteNavigator.close].
   void close([dynamic result]) => _navigator?.close(result);
 
   /// [RouteNavigator.backTo].
-  void backTo(String route) => _navigator?.backTo(route);
+  void backTo({
+    Route route,
+    String identifier,
+    bool Function(Route<dynamic>) predicate,
+  }) =>
+      _navigator?.backTo(
+        route: route,
+        identifier: identifier,
+        predicate: predicate,
+      );
 
   /// [RouteNavigator.openRoot].
   void backToRoot() => _navigator?.backToRoot();

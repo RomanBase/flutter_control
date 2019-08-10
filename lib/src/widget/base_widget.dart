@@ -6,6 +6,7 @@ class WidgetControlHolder implements Disposable {
   bool initialized = false;
   ControlState state;
   List<BaseController> controllers;
+  Route route;
 
   @override
   void dispose() {
@@ -120,7 +121,7 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   @override
   @protected
   @mustCallSuper
-  void init(Map args) {
+  void init(Map<String, dynamic> args) {
     controllers?.forEach((controller) {
       controller.init(args);
     });
@@ -259,24 +260,40 @@ mixin TickerControl on ControlWidget {
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
+  NavigatorState get navigator => Navigator.of(context);
+
+  NavigatorState get rootNavigator => Navigator.of(getContext(root: true));
+
+  @override
+  void init(Map<String, dynamic> args) {
+    super.init(args);
+
+    holder.route = ArgProvider.map<Route>(args);
+
+    if (holder.route != null) {
+      printDebug('${this.toString()} at route: ${holder.route.settings.name}');
+    }
+  }
+
   @override
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {
     if (replacement) {
-      return Navigator.of(context).pushReplacement(route);
+      return navigator.pushReplacement(route);
     } else {
-      return Navigator.of(getContext(root: root)).push(route);
+      return (root ? rootNavigator : navigator).push(route);
     }
   }
 
   @override
   Future<dynamic> openRoot(Route route) {
-    return Navigator.of(context).pushAndRemoveUntil(route, (pop) => false);
+    return navigator.pushAndRemoveUntil(route, (pop) => false);
   }
 
   @override
   Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup}) async {
     final dialogContext = getContext(root: root);
 
+    //TODO: dialogs
     switch (type) {
       case DialogType.popup:
         return await showDialog(context: dialogContext, builder: (context) => builder(context));
@@ -291,18 +308,42 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
     return null;
   }
 
-  @override
-  void backTo(String routeIdentifier) {
-    Navigator.of(context).popUntil((route) => route.settings.name == routeIdentifier);
+  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate}) {
+    if (route != null) {
+      navigator.popUntil((item) => item == route);
+    }
+
+    if (identifier != null) {
+      navigator.popUntil((item) => item.settings.name == identifier);
+    }
+
+    if (predicate != null) {
+      navigator.popUntil(predicate);
+    }
   }
 
   @override
   void backToRoot() {
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    navigator.popUntil((route) => route.isFirst);
   }
 
   @override
   void close([dynamic result]) {
-    Navigator.of(context).pop(result);
+    if (holder.route != null) {
+      closeRoute(holder.route, result);
+    } else {
+      navigator.pop(result);
+    }
+  }
+
+  @override
+  void closeRoute(Route route, [dynamic result]) {
+    if (route.isCurrent) {
+      navigator.pop(result);
+    } else {
+      // ignore: invalid_use_of_protected_member
+      route.didComplete(result);
+      navigator.removeRoute(route);
+    }
   }
 }

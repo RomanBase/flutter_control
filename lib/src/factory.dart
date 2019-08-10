@@ -55,17 +55,13 @@ class ArgProvider {
       return defaultValue;
     }
 
-    if (map.containsKey(key)) {
+    if (key != null && map.containsKey(key)) {
       return map[key];
     }
 
-    final item = map.values.firstWhere((item) => item is T);
+    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
 
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
+    return item ?? defaultValue;
   }
 
   static T list<T>(List list, [T defaultValue]) {

@@ -54,7 +54,7 @@ class DetailController extends BaseController with RouteController {
   final title = StringControl();
 
   @override
-  void onInit(Map args) {
+  void onInit(Map<String, dynamic> args) {
     super.onInit(args);
 
     _model = ArgProvider.map<CardModel>(args);

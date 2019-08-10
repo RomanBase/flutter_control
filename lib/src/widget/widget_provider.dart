@@ -11,6 +11,8 @@ abstract class WidgetInitializer {
   /// Current Widget.
   Widget _widget;
 
+  Object data;
+
   WidgetInitializer();
 
   factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
@@ -18,11 +20,11 @@ abstract class WidgetInitializer {
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
   @protected
-  Widget initWidget(BuildContext context, {Map args});
+  Widget initWidget(BuildContext context, {Map<String, dynamic> args});
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, Map args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
+  Widget getWidget(BuildContext context, {forceInit: false, Map<String, dynamic> args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
 
   /// Returns context of initialized [ControlWidget]
   /// nullable
@@ -32,6 +34,17 @@ abstract class WidgetInitializer {
     }
 
     return null;
+  }
+
+  Map<String, dynamic> _buildArgs(Map<String, dynamic> args) {
+    if (args != null) {
+      args['init_data'] = data;
+      return args;
+    }
+
+    return {
+      'init_data': data,
+    };
   }
 
   WidgetBuilder wrap({Map args}) => (context) => getWidget(context, args: args);
@@ -48,11 +61,11 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 
   @override
-  Widget initWidget(BuildContext context, {Map args}) {
+  Widget initWidget(BuildContext context, {Map<String, dynamic> args}) {
     final widget = builder(context);
 
     if (widget is Initializable) {
-      (widget as Initializable).init(args);
+      (widget as Initializable).init(_buildArgs(args));
     }
 
     return widget;
@@ -96,6 +109,10 @@ class RouteHandler {
   /// Implementation of provider.
   final PageRouteProvider provider;
 
+  Future<dynamic> result;
+
+  Route route;
+
   /// Default constructor.
   /// [navigator] and [provider] must be specified.
   RouteHandler(this.navigator, this.provider) {
@@ -104,30 +121,43 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openRoute]
-  Future<dynamic> openRoute({bool root: false, bool replacement: false, Map args}) {
+  Future<dynamic> openRoute({bool root: false, bool replacement: false, Map<String, dynamic> args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
-    return navigator.openRoute(
-      provider.getRoute(_initBuilder(provider.builder, args)),
+    final initializer = WidgetInitializer.of(provider.builder);
+
+    result = navigator.openRoute(
+      route = provider.getRoute(initializer.wrap(args: args)),
       root: root,
       replacement: replacement,
     );
+
+    initializer.data = route;
+
+    return result;
   }
 
   /// [RouteNavigator.openRoot]
-  Future<dynamic> openRoot({Map args}) {
+  Future<dynamic> openRoot({Map<String, dynamic> args}) {
     debugPrint("open root: ${provider.identifier} from $navigator");
 
-    return navigator.openRoot(
-      provider.getRoute(_initBuilder(provider.builder, args)),
+    final initializer = WidgetInitializer.of(provider.builder);
+
+    result = navigator.openRoot(
+      route = provider.getRoute(initializer.wrap(args: args)),
     );
+
+    initializer.data = route;
+
+    return result;
   }
 
   /// [RouteNavigator.openDialog]
-  Future<dynamic> openDialog({bool root: false, DialogType type, Map args}) {
+  Future<dynamic> openDialog({bool root: false, DialogType type, Map<String, dynamic> args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
-    return navigator.openDialog(
+    route = null;
+    return result = navigator.openDialog(
       _initBuilder(provider.builder, args),
       root: root,
       type: type,
@@ -135,7 +165,7 @@ class RouteHandler {
   }
 
   /// Wraps [builder] and init widget during build phase.
-  WidgetBuilder _initBuilder(WidgetBuilder builder, Map args) => WidgetInitializer.of(builder).wrap(args: args);
+  WidgetBuilder _initBuilder(WidgetBuilder builder, Map<String, dynamic> args) => WidgetInitializer.of(builder).wrap(args: args);
 }
 
 /// Abstract class for [PageRoute] construction with given settings.
@@ -154,6 +184,8 @@ class PageRouteProvider {
 
   /// Page/Widget builder.
   WidgetBuilder builder;
+
+  PageRouteBuilder routeBuilder;
 
   /// Default constructor.
   PageRouteProvider();
