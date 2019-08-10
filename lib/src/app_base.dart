@@ -9,6 +9,7 @@ typedef OnContextChanged = Function(BuildContext context);
 class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
+  final ThemeData darkTheme;
   final Map<String, String> locales;
   final WidgetBuilder root;
   final WidgetBuilder loader;
@@ -22,6 +23,7 @@ class BaseApp extends StatefulWidget {
   const BaseApp({
     @required this.title,
     this.theme,
+    this.darkTheme,
     this.defaultLocale,
     this.locales,
     @required this.root,
@@ -41,7 +43,7 @@ class BaseApp extends StatefulWidget {
 /// This State is used as root GlobalKey.
 /// BuildContext from Scaffold is used as root context.
 /// Structure: AppControl -> MaterialApp -> Scaffold -> Your Content (root - BaseController).
-class BaseAppState extends State<BaseApp> {
+class BaseAppState extends State<BaseApp> implements StateNotifier {
   /// Root GlobalKey of default Scaffold.
   /// Is passed into AppControl.
   final rootKey = GlobalKey<State<BaseApp>>();
@@ -50,9 +52,15 @@ class BaseAppState extends State<BaseApp> {
   /// Is passed into AppControl.
   final contextHolder = ContextHolder();
 
+  String defaultLocale;
   WidgetInitializer _rootBuilder;
 
   bool _loading = true;
+
+  @override
+  void notifyState([state]) {
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -75,6 +83,11 @@ class BaseAppState extends State<BaseApp> {
   }
 
   void _initControl(Map<String, String> locales, Map<String, dynamic> entries, Map<Type, Initializer> initializers) {
+    DelayBlock block;
+    if (widget.loaderDelay != null) {
+      block = DelayBlock(widget.loaderDelay);
+    }
+
     final factory = ControlFactory.of(this);
 
     if (factory.isInitialized) {
@@ -93,7 +106,6 @@ class BaseAppState extends State<BaseApp> {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
-    entries[ControlKey.control] = this;
     entries[ControlKey.preferences] = BasePrefs();
     entries[ControlKey.localization] = BaseLocalization(widget.defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
 
@@ -102,15 +114,18 @@ class BaseAppState extends State<BaseApp> {
     final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
 
+    defaultLocale = localization.defaultLocale;
+
     contextHolder.once((context) async {
       await localization.changeToSystemLocale(context);
 
-      if (widget.loaderDelay != null) {
-        await Future.delayed(widget.loaderDelay);
+      if (block != null) {
+        await block.finish();
       }
 
       setState(() {
         _loading = false;
+        defaultLocale = localization.locale;
       });
     });
   }
@@ -120,21 +135,21 @@ class BaseAppState extends State<BaseApp> {
     return AppControl(
       rootKey: rootKey,
       contextHolder: contextHolder,
-      debug: widget.debug ?? debugMode,
+      locale: defaultLocale,
       child: MaterialApp(
         key: rootKey,
         title: widget.title,
         theme: widget.theme,
+        darkTheme: widget.darkTheme,
         home: _loading
-            ? Builder(
-                builder: (context) {
-                  contextHolder.changeContext(context);
-                  return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
-                },
-              )
-            : Builder(
-                builder: (context) => _rootBuilder.getWidget(context),
-              ),
+            ? Builder(builder: (context) {
+                contextHolder.changeContext(context);
+                return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
+              })
+            : Builder(builder: (context) {
+                // root context is then changed via _rootBuilder
+                return _rootBuilder.getWidget(context);
+              }),
       ),
     );
   }

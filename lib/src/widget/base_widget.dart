@@ -53,7 +53,7 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [_ControlTickerState]
 /// [_ControlSingleTickerState]
 //TODO: [get] performance
-abstract class ControlWidget extends StatefulWidget implements Initializable, Disposable {
+abstract class ControlWidget extends StatefulWidget with LocalizationProvider implements Initializable, Disposable {
   /// Holder for [State] nad Controllers.
   final holder = WidgetControlHolder();
 
@@ -90,8 +90,13 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   @protected
   TextTheme get font => theme.textTheme;
 
-  /// Instance of [BaseLocalization].
-  BaseLocalization get _localization => ControlProvider.of(ControlKey.localization);
+  /// Instance of nearest [TextTheme].
+  @protected
+  TextTheme get fontPrimary => theme.primaryTextTheme;
+
+  /// Instance of nearest [TextTheme].
+  @protected
+  TextTheme get fontAccent => theme.accentTextTheme;
 
   /// Default constructor
   ControlWidget({Key key}) : super(key: key) {
@@ -153,7 +158,8 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
     });
   }
 
-  void notifyState() => holder.state.notifyState();
+  /// Notifies [State] of this [Widget].
+  void notifyState() => holder.state?.notifyState();
 
   /// Looks for [Type] in initialized controllers, then look up whole factory.
   @protected
@@ -163,16 +169,6 @@ abstract class ControlWidget extends StatefulWidget implements Initializable, Di
   /// [StatefulWidget.build]
   @protected
   Widget build(BuildContext context);
-
-  /// Tries to localize text by given key.
-  /// Localization is part of [AppControl].
-  @protected
-  String localize(String key) => _localization?.localize(key) ?? '';
-
-  /// Tries to localize text by given key.
-  /// Localization is part of [AppControl].
-  @protected
-  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
 
   /// Disposes and removes all controllers (from [initControllers]).
   /// Controller can prevent disposing [BaseController.preventDispose].

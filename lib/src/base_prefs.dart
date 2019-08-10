@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_control/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +22,10 @@ class BasePrefs {
   Future<void> setDouble(String key, double value) async => (await prefs).setDouble(key, value);
 
   Future<double> getDouble(String key, {double defaultValue: 0.0}) async => (await prefs).getDouble(key) ?? defaultValue;
+
+  Future<void> json(String key, dynamic value) async => (await prefs).setString(key, jsonEncode(value));
+
+  Future<dynamic> getJson(String key) async => jsonDecode((await prefs).getString(key));
 }
 
 mixin PrefsProvider {

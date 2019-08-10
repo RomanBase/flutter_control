@@ -1,6 +1,12 @@
 import 'package:flutter_control/core.dart';
 
+/// Helps to parse basic objects.
 class Parse {
+  /// Tries to parse value into integer.
+  ///
+  /// null, int, double, bool, String
+  ///
+  /// If none found, then [defaultValue] is returned.
   static int toInteger(dynamic value, {int defaultValue: 0}) {
     if (value is int) {
       return value;
@@ -25,6 +31,11 @@ class Parse {
     return defaultValue;
   }
 
+  /// Tries to parse value into double.
+  ///
+  /// null, int, double, bool, String.
+  ///
+  /// If none found, then [defaultValue] is returned.
   static double toDouble(dynamic value, {double defaultValue: 0.0}) {
     if (value is double) {
       return value;
@@ -49,6 +60,11 @@ class Parse {
     return defaultValue;
   }
 
+  /// Tries to parse value into bool.
+  ///
+  /// null, int, double, bool, String.
+  ///
+  /// If none found, then [defaultValue] is returned.
   static bool toBool(dynamic value, {bool defaultValue: false}) {
     if (value is bool) {
       return value;
@@ -67,6 +83,11 @@ class Parse {
     return defaultValue;
   }
 
+  /// Tries to parse value into List.
+  ///
+  /// List, Map, Iterable.
+  ///
+  /// Use [Converter] to convert values into new List.
   static List<T> toList<T>(dynamic value, {Converter<T> converter}) {
     final items = List<T>();
 
@@ -87,5 +108,44 @@ class Parse {
     }
 
     return items;
+  }
+}
+
+/// Helps to look up for object in [Map] and [List].
+class ArgHandler {
+  /// Tries to return item of given key or Type.
+  /// If none found, then [defaultValue] is returned.
+  static T map<T>(Map map, {dynamic key, T defaultValue}) {
+    if (map == null) {
+      return defaultValue;
+    }
+
+    if (map.containsKey(key)) {
+      return map[key];
+    }
+
+    final item = map.values.firstWhere((item) => item is T);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  /// Tries to return item of Type.
+  /// If none found, then [defaultValue] is returned.
+  static T list<T>(List list, [T defaultValue]) {
+    if (list == null) {
+      return defaultValue;
+    }
+
+    final item = list.firstWhere((item) => item is T);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
   }
 }

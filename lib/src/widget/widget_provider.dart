@@ -206,6 +206,7 @@ class PageRouteProvider {
     return MaterialPageRoute(builder: builder, settings: settings);
   }
 
+  /// Initializes [RouteHandler] with given [navigator] and this route provider.
   RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
 }
 

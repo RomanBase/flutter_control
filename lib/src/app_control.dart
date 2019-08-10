@@ -1,11 +1,5 @@
 import 'package:flutter_control/core.dart';
 
-class ControlKey {
-  static const String localization = 'localization';
-  static const String preferences = 'prefs';
-  static const String control = 'control';
-}
-
 /// One of the root Widgets of App.
 /// Initializes with GlobalKey and BuildContext of root Widgets (Scaffold is recommended).
 /// AppControl can hold important objects to use them anywhere in App.
@@ -29,8 +23,8 @@ class AppControl extends InheritedWidget {
     return ControlProvider.of(ControlKey.control);
   }
 
-  /// Returns current locale.
-  String get iso2Locale => ControlProvider.of(ControlKey.localization)?.locale;
+  /// Holds current locale.
+  final String locale;
 
   /// Key of root State.
   final GlobalKey rootKey;
@@ -48,24 +42,27 @@ class AppControl extends InheritedWidget {
   /// Sets new root context to [contextHolder]
   set rootContext(BuildContext context) => contextHolder.changeContext(context);
 
-  /// overrides [debugMode] to debug App in profiling and release mode.
-  final debug;
-
   /// Default constructor
   AppControl({
     @required this.rootKey,
     @required this.contextHolder,
+    this.locale,
     Widget child,
-    this.debug: true,
   }) : super(key: GlobalKey(), child: child) {
     assert(rootKey != null);
     assert(contextHolder != null);
 
     _accessType = this.runtimeType;
+
+    ControlFactory.of(this).addItem(ControlKey.control, this);
+  }
+
+  void notifyAppState([dynamic state]) {
+    //TODO; notify BaseAppState
   }
 
   @override
   bool updateShouldNotify(AppControl oldWidget) {
-    return iso2Locale != oldWidget.iso2Locale;
+    return locale != oldWidget.locale;
   }
 }

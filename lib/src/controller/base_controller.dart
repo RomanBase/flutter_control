@@ -84,7 +84,8 @@ abstract class AnimationInitializer {
 ///
 /// [AppControl]
 /// [ControlFactory]
-/// [BaseLocalization]
+///
+/// Mixin your model with [LocalizationProvider] to enable localization.
 class BaseController implements Initializable, Subscriptionable, Disposable {
   /// init check.
   bool _isInitialized = false;
@@ -99,9 +100,6 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// returns instance of [AppControl] if available.
   /// nullable
   AppControl get control => factory.get(ControlKey.control);
-
-  /// returns instance of [BaseLocalization]
-  BaseLocalization get _localization => factory.get(ControlKey.localization);
 
   /// prevent calling dispose from [ControlWidget]
   bool get preventDispose => false;
@@ -138,18 +136,6 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// Used to reload Controller.
   /// Currently empty and is ready to override.
   void reload() {}
-
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  /// Non null.
-  @protected
-  String localize(String key) => _localization?.localize(key) ?? '';
-
-  /// Tries to localize text by given key.
-  /// Localization is part of AppControl or BaseApp Widget.
-  /// Non null.
-  @protected
-  String extractLocalization(Map field) => _localization?.extractLocalization(field) ?? '';
 
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.

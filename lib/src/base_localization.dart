@@ -106,7 +106,7 @@ class BaseLocalization with PrefsProvider {
   /// It can take a while because localization is loaded from json file.
   Future<bool> changeLocale(String iso2Locale, {bool preferred: true, VoidCallback onChanged}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
-      print("localization not available: $iso2Locale");
+      print('localization not available: $iso2Locale');
       return false;
     }
 
@@ -125,7 +125,7 @@ class BaseLocalization with PrefsProvider {
   /// Loads localization from asset file for given locale.
   Future<bool> _initLocalization(String path, VoidCallback onChanged) async {
     if (path == null) {
-      print("invalid localization file path");
+      print('invalid localization file path: $path');
       return false;
     }
 
@@ -135,7 +135,7 @@ class BaseLocalization with PrefsProvider {
     if (data != null) {
       data.forEach((key, value) => _data[key] = value);
 
-      print("localization changed to: $path");
+      print('localization changed to: $path');
 
       if (onLocalizationChanged != null) {
         onLocalizationChanged();
@@ -148,24 +148,90 @@ class BaseLocalization with PrefsProvider {
       return true;
     }
 
-    print("localization failed to change: $path");
+    print('localization failed to change: $path');
 
     return false;
   }
 
-  /// Tries to localize text by given key.
+  /// Tries to localize text by given [key].
   /// Enable/Disable debug mode to show/hide missing localizations.
   String localize(String key) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
 
-    return debug ? "${key}_$_locale" : '';
+    return debug ? '${key}_$_locale' : '';
   }
 
-  /// Updates value in current set.
-  /// This update is only runtime and isn't stored to localization file.
-  void update(String key, String value) => _data[key] = value;
+  /// Tries to localize text by given [key] and [plural].
+  ///
+  /// json: {
+  ///   "0": "zero",
+  ///   "1": "single",
+  ///   "2": "few",
+  ///   "5": "many"
+  /// }
+  ///
+  /// plural: 1 returns 'single'
+  /// plural: 4 returns 'few'
+  /// plural: 9 returns 'many'
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  String localizePlural(String key, int plural) {
+    if (_data.containsKey(key) && _data[key] is Map) {
+      final nums = List<int>();
+      _data[key].forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+      nums.sort();
+
+      for (final num in nums.reversed) {
+        if (plural >= num) {
+          return _data[key][num.toString()];
+        }
+      }
+    }
+
+    return debug ? '$key[$plural]_$_locale' : '';
+  }
+
+  /// Tries to localize text by given [key].
+  ///
+  /// json: [
+  ///   "monday", "tuesday", "wednesday", etc..
+  /// ]
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  List<String> localizeList(String key) {
+    if (_data.containsKey(key)) {
+      if (_data[key] is List) {
+        return _data[key].cast<String>();
+      }
+
+      return [_data[key]];
+    }
+
+    return debug ? ['${key}_$_locale'] : [];
+  }
+
+  /// Tries to localize text by given [key].
+  ///
+  /// json: {
+  ///   "address": {
+  ///     "name": "Maria De Flutter",
+  ///     "street": "St. Maria 1189",
+  ///     "city": "St. Flutter"
+  ///   }
+  /// }
+  ///
+  /// [key] 'address' returns [Map] of json data.
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  dynamic localizeDynamic(String key) {
+    if (_data.containsKey(key)) {
+      return _data[key];
+    }
+
+    return debug ? '${key}_$_locale' : '';
+  }
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
@@ -183,6 +249,36 @@ class BaseLocalization with PrefsProvider {
       }
     }
 
-    return debug ? "empty_{$iso2Locale}_$defaultLocale" : '';
+    return debug ? 'empty_{$iso2Locale}_$defaultLocale' : '';
   }
+
+  /// Updates value in current set.
+  /// This update is only runtime and isn't stored to localization file.
+  void update(String key, dynamic value) => _data[key] = value;
+}
+
+class LocalizationProvider {
+  ///Instance of [BaseLocalization]
+  @protected
+  BaseLocalization get localization => ControlProvider.of(ControlKey.localization);
+
+  ///[BaseLocalization.localize]
+  @protected
+  String localize(String key) => localization.localize(key);
+
+  ///[BaseLocalization.localizePlural]
+  @protected
+  String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
+
+  ///[BaseLocalization.localizeList]
+  @protected
+  List<String> localizeList(String key) => localization.localizeList(key);
+
+  ///[BaseLocalization.localizeDynamic]
+  @protected
+  dynamic localizeDynamic(String key) => localization.localizeDynamic(key);
+
+  ///[BaseLocalization.extractLocalization]
+  @protected
+  String extractLocalization(Map field) => localization.extractLocalization(field);
 }
