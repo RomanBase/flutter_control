@@ -49,6 +49,10 @@ class ControlProvider {
   static T of<T>([String key]) => ControlFactory._instance.get<T>(key);
 }
 
+class BroadcastProvider {
+  static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance.subscribe(key, onData);
+}
+
 class ArgProvider {
   static T map<T>(Map map, {dynamic key, T defaultValue}) {
     if (map == null) {
