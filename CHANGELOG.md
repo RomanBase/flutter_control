@@ -1,3 +1,4 @@
+## [0.9.2] - Route navigation control
 ## [0.9.1] - Dependency update
 ## [0.9.0] - StableWidget
 - fixed NavigationStack widget.

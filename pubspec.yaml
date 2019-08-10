@@ -1,6 +1,6 @@
 name: flutter_control
 description: Flutter Control is library to simply maintain App and State management. Provides some basic Widgets and Controllers to start with.
-version: 0.9.1
+version: 0.9.2
 author: "Roman <ro.hornak@gmail.com>"
 homepage: https://github.com/romanbase/flutter_control
 

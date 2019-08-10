@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/factory.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/factory.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,7 +25,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="377">
@@ -33,6 +33,15 @@
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="30">
+              <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -73,13 +82,13 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
         <option value="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" />
-        <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/src/widget/input_field.dart" />
         <option value="$PROJECT_DIR$/example/lib/cards_controller.dart" />
         <option value="$PROJECT_DIR$/lib/src/controller/base_controller.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/base_widget.dart" />
         <option value="$PROJECT_DIR$/lib/src/factory.dart" />
+        <option value="$PROJECT_DIR$/pubspec.yaml" />
       </list>
     </option>
   </component>
@@ -276,7 +285,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565450226443</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="minor update">
+      <created>1565455262997</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1565455262997</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -320,7 +336,8 @@
     <MESSAGE value="navigator" />
     <MESSAGE value="navigation route flow" />
     <MESSAGE value="broadcast provider" />
-    <option name="LAST_COMMIT_MESSAGE" value="broadcast provider" />
+    <MESSAGE value="minor update" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor update" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/lib/src/base_theme.dart">
@@ -373,13 +390,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/.packages" />
-    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Library/Flutter/flutter/packages/flutter/lib/src/material/text_form_field.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1427">
@@ -512,6 +522,13 @@
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="30">
+          <caret line="2" column="14" selection-start-line="2" selection-start-column="14" selection-end-line="2" selection-end-column="14" />
         </state>
       </provider>
     </entry>
