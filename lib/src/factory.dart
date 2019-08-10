@@ -45,15 +45,30 @@ class GlobalSubscription<T> implements Disposable {
   }
 }
 
+/// Shortcut class to get objects from [ControlFactory]
 class ControlProvider {
+  /// returns object of requested type by given [key] or [Type] from [ControlFactory].
+  /// check [ControlFactory] for more info.
+  /// nullable
   static T of<T>([String key]) => ControlFactory._instance.get<T>(key);
 }
 
+/// Shortcut class to work with global stream of [ControlFactory].
 class BroadcastProvider {
+  /// Subscription to global stream.
   static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance.subscribe(key, onData);
+
+  /// Sets data to global stream.
+  /// Subs with same [key] and [value] type will be notified.
+  /// [store] - stores value for future subs and notifies them during [subscribe] phase.
+  static void broadcast(String key, dynamic value, {bool store: false}) => ControlFactory._instance.broadcast(key, value, store: store);
 }
 
+/// Helper class to filter expected object from iterables.
 class ArgProvider {
+
+  /// Filter out expected object by [key] or [Type]
+  /// If none found, then [defaultValue] is returned.
   static T map<T>(Map map, {dynamic key, T defaultValue}) {
     if (map == null) {
       return defaultValue;
@@ -68,8 +83,22 @@ class ArgProvider {
     return item ?? defaultValue;
   }
 
+  /// Filter out expected object by [Type]
+  /// If none found, then [defaultValue] is returned.
   static T list<T>(List list, [T defaultValue]) {
     final item = list.firstWhere((item) => item is T);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  /// Filter out expected object by [Type]
+  /// If none found, then [defaultValue] is returned.
+  static T iterable<T>(Iterable iterable, [T defaultValue]) {
+    final item = iterable.firstWhere((item) => item is T);
 
     if (item != null) {
       return item;
@@ -292,7 +321,7 @@ class ControlFactory implements Disposable {
   void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
 
   /// Sets data to global stream.
-  /// Subs with same [key] a [value] type will be notified.
+  /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores value for future subs and notifies them during [subscribe] phase.
   void broadcast(String key, dynamic value, {bool store: false}) {
     if (store) {
