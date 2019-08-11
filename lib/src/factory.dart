@@ -237,7 +237,7 @@ class ControlFactory implements Disposable {
     }
 
     if (includeFactory) {
-      return get()<T>() ?? defaultValue;
+      return get<T>() ?? defaultValue;
     }
 
     return defaultValue;
