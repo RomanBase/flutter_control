@@ -59,7 +59,12 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
 
   @override
   void notifyState([state]) {
-    setState(() {});
+    setState(() {
+      final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
+      if (localization != null) {
+        defaultLocale = localization.locale;
+      }
+    });
   }
 
   @override
@@ -136,6 +141,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
       rootKey: rootKey,
       contextHolder: contextHolder,
       locale: defaultLocale,
+      rootState: this,
       child: MaterialApp(
         key: rootKey,
         title: widget.title,

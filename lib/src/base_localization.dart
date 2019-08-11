@@ -14,7 +14,24 @@ class LocalizationAsset {
   final String assetPath;
 
   /// Default constructor
-  LocalizationAsset(this.iso2Locale, this.assetPath);
+  LocalizationAsset(
+    this.iso2Locale,
+    this.assetPath,
+  );
+}
+
+class LocalizationArgs {
+  final String locale;
+  final String source;
+  final bool isActive;
+  final bool changed;
+
+  LocalizationArgs({
+    this.locale,
+    this.source,
+    this.isActive,
+    this.changed,
+  });
 }
 
 /// Simple [Map] based localization.
@@ -45,8 +62,6 @@ class BaseLocalization with PrefsProvider {
 
   bool get isActive => _data.length > 0;
 
-  VoidCallback onLocalizationChanged;
-
   /// Default constructor
   BaseLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
     if (preloadDefaultLocalization) {
@@ -61,7 +76,7 @@ class BaseLocalization with PrefsProvider {
 
   /// changes localization to system language
   /// @preferred - true: changes localization to in app preferred language (if previously set).
-  Future<bool> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
+  Future<LocalizationArgs> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
     final pref = preferred ? await prefs.get(preference_key) : null;
 
     String locale;
@@ -76,7 +91,12 @@ class BaseLocalization with PrefsProvider {
       return await changeLocale(locale);
     }
 
-    return false;
+    return LocalizationArgs(
+      locale: locale,
+      isActive: false,
+      changed: false,
+      source: 'asset',
+    );
   }
 
   /// returns true if localization file is available and is possible to load it.
@@ -101,13 +121,33 @@ class BaseLocalization with PrefsProvider {
     return null;
   }
 
+  Future<LocalizationArgs> changeRawLocale(String iso2Locale, Map<String, dynamic> data) async {
+    data.forEach((key, value) => _data[key] = value);
+
+    final args = LocalizationArgs(
+      locale: iso2Locale,
+      isActive: true,
+      changed: true,
+      source: 'runtime',
+    );
+
+    BroadcastProvider.broadcast(ControlKey.localization, args);
+
+    return args;
+  }
+
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
-  Future<bool> changeLocale(String iso2Locale, {bool preferred: true, VoidCallback onChanged}) async {
+  Future<LocalizationArgs> changeLocale(String iso2Locale, {bool preferred: true}) async {
     if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
       print('localization not available: $iso2Locale');
-      return false;
+      return LocalizationArgs(
+        locale: iso2Locale,
+        isActive: false,
+        changed: false,
+        source: 'asset',
+      );
     }
 
     if (preferred) {
@@ -115,18 +155,27 @@ class BaseLocalization with PrefsProvider {
     }
 
     if (_locale == iso2Locale) {
-      return true;
+      return LocalizationArgs(
+        locale: locale,
+        isActive: true,
+        changed: false,
+        source: 'asset',
+      );
     }
 
     _locale = iso2Locale;
-    return await _initLocalization(getAssetPath(iso2Locale), onChanged);
+    return await _initLocalization(iso2Locale, getAssetPath(iso2Locale));
   }
 
   /// Loads localization from asset file for given locale.
-  Future<bool> _initLocalization(String path, VoidCallback onChanged) async {
+  Future<LocalizationArgs> _initLocalization(String locale, String path) async {
     if (path == null) {
-      print('invalid localization file path: $path');
-      return false;
+      return LocalizationArgs(
+        locale: locale,
+        isActive: false,
+        changed: false,
+        source: 'asset',
+      );
     }
 
     final json = await rootBundle.loadString(path, cache: false);
@@ -137,20 +186,26 @@ class BaseLocalization with PrefsProvider {
 
       print('localization changed to: $path');
 
-      if (onLocalizationChanged != null) {
-        onLocalizationChanged();
-      }
+      final args = LocalizationArgs(
+        locale: locale,
+        isActive: true,
+        changed: true,
+        source: 'asset',
+      );
 
-      if (onChanged != null) {
-        onChanged();
-      }
+      BroadcastProvider.broadcast(ControlKey.localization, args);
 
-      return true;
+      return args;
     }
 
     print('localization failed to change: $path');
 
-    return false;
+    return LocalizationArgs(
+      locale: locale,
+      isActive: false,
+      changed: false,
+      source: 'asset',
+    );
   }
 
   /// Tries to localize text by given [key].

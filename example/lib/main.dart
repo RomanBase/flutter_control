@@ -12,8 +12,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BaseApp(
       title: 'Flutter Control Example',
+      defaultLocale: 'en',
       locales: {
         'en': 'assets/localization/en.json',
+        'cs': 'assets/localization/cs.json',
       },
       entries: {
         'cards': CardsController(),
@@ -25,5 +27,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-

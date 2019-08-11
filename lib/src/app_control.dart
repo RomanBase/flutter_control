@@ -42,11 +42,14 @@ class AppControl extends InheritedWidget {
   /// Sets new root context to [contextHolder]
   set rootContext(BuildContext context) => contextHolder.changeContext(context);
 
+  final StateNotifier rootState;
+
   /// Default constructor
   AppControl({
     @required this.rootKey,
     @required this.contextHolder,
     this.locale,
+    this.rootState,
     Widget child,
   }) : super(key: GlobalKey(), child: child) {
     assert(rootKey != null);
@@ -58,7 +61,7 @@ class AppControl extends InheritedWidget {
   }
 
   void notifyAppState([dynamic state]) {
-    //TODO; notify BaseAppState
+    rootState?.notifyState(state);
   }
 
   @override

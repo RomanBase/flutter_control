@@ -14,6 +14,10 @@ class InitHolder<T> {
   /// Checks if value is build.
   bool get isBuild => _value != null;
 
+  bool _isDirty = true;
+
+  bool get isDirty => _isDirty || !isActive || !isBuild;
+
   /// Default constructor
   InitHolder({ValueGetter<T> builder}) {
     _builder = builder;
@@ -22,8 +26,9 @@ class InitHolder<T> {
   /// Sets builder if none [isActive].
   /// [override] to override current builder even if [isActive] and clears current value.
   bool set({@required ValueGetter<T> builder, bool override: false}) {
-    if (_builder == null || override) {
+    if (_builder == null || isDirty || override) {
       _value = null;
+      _isDirty = false;
       _builder = builder;
       return true;
     }
@@ -33,4 +38,6 @@ class InitHolder<T> {
 
   /// Returns current value or build new one and store it for later get.
   T get() => _value ?? (_value = _builder());
+
+  void martToOverride() => _isDirty = true;
 }

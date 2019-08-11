@@ -1,20 +1,21 @@
 import 'package:flutter_control/core.dart';
 
 import 'cards_controller.dart';
+import 'settings_page.dart';
 
 class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(localize('title')),
+        title: FieldBuilder<String>(
+          controller: controller.countLabel,
+          builder: (context, value) => Text('${localize('title')} - $value'),
+        ),
         actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: FieldBuilder<String>(
-              controller: controller.countLabel,
-              builder: (context, value) => Center(child: Text(value)),
-            ),
+          IconButton(
+            icon: Icon(Icons.settings),
+            onPressed: () => SettingsPage.route().navigator(this).openRoute(),
           ),
         ],
       ),
@@ -27,8 +28,8 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
           );
         },
         noData: (context) => Center(
-              child: Text(localize('empty_list')),
-            ),
+          child: Text(localize('empty_list')),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addCard,
@@ -83,7 +84,7 @@ class CardWidget extends BaseControlWidget {
 
 class DetailPage extends SingleControlWidget<DetailController> with RouteControl {
   static PageRouteProvider route() => PageRouteProvider.of(
-        identifier: 'card_detail',
+        identifier: '/card_detail',
         builder: (context) => DetailPage(),
       );
 
@@ -111,8 +112,8 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
           );
         },
         noData: (context) => Center(
-              child: Text(localize('empty_list')),
-            ),
+          child: Text(localize('empty_list')),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addItem,

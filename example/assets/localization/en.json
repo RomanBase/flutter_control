@@ -4,6 +4,9 @@
   "item_title": "Item",
   "empty_card": "card is empty",
   "empty_list": "add new item with + button",
+  "settings": "Settings",
+  "lorem_ipsum": "Change localization of entire app in runtime. Title text of cards and items are localized during their construction, so old cards/items are not localized backwards.",
+  "localization_info": "This widget will not respond to localization changes..",
   "number": {
     "0": "",
     "1": "st",

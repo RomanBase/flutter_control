@@ -1,0 +1,20 @@
+{
+  "title": "Control Kartičky",
+  "card_title": "Karta",
+  "item_title": "Položka",
+  "empty_card": "karta je prázdná",
+  "empty_list": "přidej novou kartu tlačítkem +",
+  "settings": "Nastavení",
+  "lorem_ipsum": "cs info ...",
+  "localization_info": "Tento widget nebude reagovat na změnu lokalizace..",
+  "number": {
+    "0": "."
+  },
+  "array": [
+    "nula",
+    "prvni",
+    "druhy",
+    "treti",
+    "ctvrty"
+  ]
+}
