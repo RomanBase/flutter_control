@@ -3,15 +3,21 @@ import 'dart:async';
 import 'package:flutter_control/core.dart';
 
 class WidgetControlHolder implements Disposable {
-  bool initialized = false;
   ControlState state;
-  List<BaseController> controllers;
   Route route;
+  Map<String, dynamic> args;
+
+  bool get initialized => state != null;
+
+  WidgetControlHolder copy() => WidgetControlHolder()
+    ..state = state
+    ..route = route
+    ..args = args;
 
   @override
   void dispose() {
     state = null;
-    controllers = null;
+    args = null;
   }
 }
 
@@ -64,7 +70,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
-  List<BaseController> get controllers => holder?.controllers;
+  List<BaseController> get controllers => holder?.state?.controllers;
 
   /// Context of Widget's [State]
   BuildContext get context => state?.context;
@@ -99,16 +105,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   TextTheme get fontAccent => theme.accentTextTheme;
 
   /// Default constructor
-  ControlWidget({Key key}) : super(key: key) {
-    _initHolder();
-  }
-
-  void _initHolder() {
-    if (!holder.initialized) {
-      holder.initialized = true;
-      holder.controllers = initControllers()?.where((item) => item != null)?.toList();
-    }
-  }
+  ControlWidget({Key key}) : super(key: key);
 
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
@@ -118,44 +115,53 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @override
   ControlState<ControlWidget> createState() => ControlState();
 
-  /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
-
   /// When [RouteHandler] is used, then this function is called right after Widget construction. +
   /// All controllers (from [initControllers]) are initialized too.
   @override
   @protected
   @mustCallSuper
-  void init(Map<String, dynamic> args) {
-    controllers?.forEach((controller) {
-      controller.init(args);
-    });
-  }
+  void init(Map<String, dynamic> args) => holder.args = args;
 
   /// Called during State initialization.
   /// All controllers (from [initControllers]) are subscribed to this Widget and given State.
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
-    if (this.state == state) {
-      return;
-    }
-
-    holder.state = state;
+    notifyWidget(state);
 
     controllers?.forEach((controller) {
+      controller.init(holder.args);
       controller.subscribe(this);
-      controller.subscribe(state);
 
       if (controller is AnimationInitializer && state is TickerProvider) {
         (controller as AnimationInitializer).onTickerInitialized(state as TickerProvider);
       }
 
       if (controller is StateController) {
+        controller.subscribe(state);
         state._createSub(controller);
         controller.onStateInitialized();
       }
     });
+  }
+
+  /// Called by State whenever [holder] isn't initialized or when something has dramatically changed in Widget - State relationship.
+  @protected
+  void notifyWidget(ControlState state) {
+    assert(() {
+      if (holder.initialized) {
+        printDebug('something is maybe wrong, state reinitialized...');
+        printDebug('old state: ${this.state}');
+        printDebug('new state: $state');
+      }
+      return true;
+    }());
+
+    if (this.state == state) {
+      return;
+    }
+
+    holder.state = state;
   }
 
   /// Notifies [State] of this [Widget].
@@ -165,25 +171,20 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   T getControl<T>() => factory.find<T>(controllers);
 
+  /// Returns context of this widget or [root] context that is stored in [AppControl]
+  BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
+
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected
   Widget build(BuildContext context);
 
-  /// Disposes and removes all controllers (from [initControllers]).
+  /// Disposes and removes all [controllers].
   /// Controller can prevent disposing [BaseController.preventDispose].
   @override
   @mustCallSuper
   void dispose() {
-    printDebug("dispose ${this.toString()}");
-
-    controllers?.forEach((controller) {
-      if (!controller.preventDispose) {
-        controller.dispose();
-      }
-    });
-
-    holder.dispose();
+    printDebug('dispose ${this.toString()}');
   }
 }
 
@@ -193,10 +194,13 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   /// List of Subscriptions from [StateController]s
   List<ControlSubscription> _stateSubs;
 
+  List<BaseController> controllers;
+
   @override
   void initState() {
     super.initState();
 
+    controllers = widget.initControllers();
     widget.onInitState(this);
   }
 
@@ -205,9 +209,16 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     setState(() {});
   }
 
+  @protected
+  void notifyWidget() {
+    if (!widget.holder.initialized) {
+      widget.notifyWidget(this);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    widget.onInitState(this);
+    notifyWidget(); //TODO: I don't like it here :(
 
     return widget.build(context);
   }
@@ -220,7 +231,9 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     _stateSubs.add(controller.subscribeStateNotifier(notifyState));
   }
 
-  /// Disposes Widget.
+  /// Disposes and removes all [controllers].
+  /// Controller can prevent disposing [BaseController.preventDispose].
+  /// Then disposes Widget.
   @override
   @mustCallSuper
   void dispose() {
@@ -230,6 +243,14 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       _stateSubs.forEach((sub) => sub.cancel());
       _stateSubs.clear();
     }
+
+    controllers?.forEach((controller) {
+      if (!controller.preventDispose) {
+        controller.dispose();
+      }
+    });
+
+    widget.holder.dispose();
 
     widget.dispose();
   }

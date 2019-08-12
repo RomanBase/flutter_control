@@ -42,7 +42,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
 class CardWidget extends BaseControlWidget {
   final CardModel item;
 
-  CardWidget(this.item);
+  CardWidget(this.item) : super(key: ObjectKey(item));
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +126,7 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
 class ItemWidget extends BaseControlWidget {
   final CardItemModel item;
 
-  ItemWidget(this.item);
+  ItemWidget(this.item) : super(key: ObjectKey(item));
 
   @override
   Widget build(BuildContext context) {

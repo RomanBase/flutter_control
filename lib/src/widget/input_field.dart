@@ -428,15 +428,15 @@ class InputField extends ControlWidget {
   }
 
   @override
-  void onInitState(ControlState<ControlWidget> state) {
-    super.onInitState(state);
+  void notifyWidget(ControlState state) {
+    super.notifyWidget(state);
+
+    controller._initControllers();
+    controller._focusController.setContext(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    controller._initControllers();
-    controller._focusController.setContext(context);
-
     final cursor = cursorColor ?? theme.cursorColor;
 
     return TextField(
