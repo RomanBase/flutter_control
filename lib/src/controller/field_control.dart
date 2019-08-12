@@ -42,6 +42,11 @@ class ControlSubscription<T> implements Disposable {
     _clear();
   }
 
+  void softDispose() {
+    _parent?.cancel(this);
+    _action = null;
+  }
+
   @override
   void dispose() {
     cancel();
@@ -284,10 +289,6 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   FieldSubscription(this.control, this._sub);
 
-  void _dispose() {
-    _sub.cancel();
-  }
-
   @override
   bool get isPaused => _sub.isPaused;
 
@@ -326,6 +327,10 @@ class FieldSubscription<T> implements StreamSubscription<T> {
   @override
   void resume() {
     _sub.resume();
+  }
+
+  void disposeSubscription() {
+    _sub.cancel();
   }
 }
 
@@ -457,18 +462,23 @@ class FieldControl<T> implements Disposable {
     );
   }
 
+  /// Clears subscribers, but didn't close Stream entirely.
+  void softDispose() {
+    _clearSubscriptions();
+  }
+
   @override
   void dispose() {
     _stream.close();
 
-    clearSubscriptions();
+    _clearSubscriptions();
   }
 
   /// Manually cancels and clears all subscriptions.
-  void clearSubscriptions() {
+  void _clearSubscriptions() {
     if (_subscriptions != null) {
       for (final sub in _subscriptions) {
-        sub._dispose();
+        sub.disposeSubscription();
       }
 
       _subscriptions = null;
@@ -481,7 +491,7 @@ class FieldControl<T> implements Disposable {
       _subscriptions.remove(subscription);
 
       if (dispose) {
-        subscription._dispose();
+        subscription.disposeSubscription();
       }
 
       if (_subscriptions.isEmpty) {

@@ -242,6 +242,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     if (_stateSubs != null) {
       _stateSubs.forEach((sub) => sub.cancel());
       _stateSubs.clear();
+      _stateSubs = null;
     }
 
     controllers?.forEach((controller) {
@@ -251,7 +252,6 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     });
 
     widget.holder.dispose();
-
     widget.dispose();
   }
 }

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="dynamic localization">
+    <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/cards_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/cards_page.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/settings_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/controller/field_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/field_control.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/input_field.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/input_field.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,23 +14,24 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/widget/input_field.dart">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/lib/src/controller/field_control.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="427" column="3" lean-forward="true" selection-start-line="427" selection-start-column="3" selection-end-line="427" selection-end-column="3" />
+            <state relative-caret-position="374">
+              <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
               <folding>
-                <element signature="e#0#39#0" expanded="true" />
+                <element signature="e#0#20#0" expanded="true" />
+                <element signature="e#6466#6938#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="302">
-              <caret line="234" column="14" selection-start-line="234" selection-start-column="14" selection-end-line="234" selection-end-column="14" />
+            <state relative-caret-position="17">
+              <caret line="251" column="7" selection-start-line="251" selection-start-column="7" selection-end-line="251" selection-end-column="7" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -80,6 +79,7 @@
         <option value="$PROJECT_DIR$/example/lib/cards_page.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/input_field.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/base_widget.dart" />
+        <option value="$PROJECT_DIR$/lib/src/controller/field_control.dart" />
       </list>
     </option>
   </component>
@@ -126,6 +126,13 @@
               <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
+              <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="controller" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
@@ -290,7 +297,14 @@
       <option name="project" value="LOCAL" />
       <updated>1565548391669</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="update state flow">
+      <created>1565638549703</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1565638549703</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -338,7 +352,8 @@
     <MESSAGE value="minor update" />
     <MESSAGE value="hotfix" />
     <MESSAGE value="dynamic localization" />
-    <option name="LAST_COMMIT_MESSAGE" value="dynamic localization" />
+    <MESSAGE value="update state flow" />
+    <option name="LAST_COMMIT_MESSAGE" value="update state flow" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/lib/src/base_theme.dart">
@@ -548,7 +563,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/input_field.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
+        <state relative-caret-position="141">
           <caret line="427" column="3" lean-forward="true" selection-start-line="427" selection-start-column="3" selection-end-line="427" selection-end-column="3" />
           <folding>
             <element signature="e#0#39#0" expanded="true" />
@@ -556,12 +571,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
+    <entry file="file://C:/Apps/Flutter/bin/cache/pkg/sky_engine/lib/async/stream_controller.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="302">
-          <caret line="234" column="14" selection-start-line="234" selection-start-column="14" selection-end-line="234" selection-end-column="14" />
+          <caret line="254" column="9" selection-start-line="254" selection-start-column="9" selection-end-line="254" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/async.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-922">
+          <caret line="46" column="15" selection-start-line="46" selection-start-column="15" selection-end-line="46" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="251" column="7" selection-start-line="251" selection-start-column="7" selection-end-line="251" selection-end-column="7" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/controller/field_control.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="545" column="1" selection-start-line="545" selection-start-column="1" selection-end-line="545" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#6466#6938#0" />
           </folding>
         </state>
       </provider>
