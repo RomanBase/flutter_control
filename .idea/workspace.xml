@@ -2,15 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/src/controller/route_control.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/controller/field_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/field_control.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/util/device.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/device.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/util/init_holder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/init_holder.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/util/parser.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/parser.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/controller/route_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/route_control.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/controller/route_control.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="583">
-              <caret line="112" lean-forward="true" selection-start-line="112" selection-end-line="112" />
+            <state relative-caret-position="476">
+              <caret line="37" column="6" lean-forward="true" selection-start-line="37" selection-start-column="6" selection-end-line="37" selection-end-column="6" />
               <folding>
                 <element signature="e#0#17#0" expanded="true" />
               </folding>
@@ -343,7 +336,14 @@
       <option name="project" value="LOCAL" />
       <updated>1566233135495</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="separate route handler, few minor changes">
+      <created>1566237321050</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1566237321050</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -394,12 +394,10 @@
     <MESSAGE value="update state flow" />
     <MESSAGE value="soft dispose" />
     <MESSAGE value="navigation stack and menu item upgrade" />
-    <option name="LAST_COMMIT_MESSAGE" value="navigation stack and menu item upgrade" />
+    <MESSAGE value="separate route handler, few minor changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="separate route handler, few minor changes" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Library/Flutter/flutter/packages/flutter/lib/src/widgets/pages.dart" />
-    <entry file="file://$USER_HOME$/Library/Flutter/flutter/bin/cache/pkg/sky_engine/lib/async/future_impl.dart" />
-    <entry file="file://$USER_HOME$/Library/Flutter/flutter/bin/cache/pkg/sky_engine/lib/async/future.dart" />
     <entry file="file://$USER_HOME$/Library/Flutter/flutter/bin/cache/dart-sdk/lib/async/zone.dart" />
     <entry file="file://$USER_HOME$/Library/Flutter/flutter/packages/flutter/lib/src/widgets/framework.dart" />
     <entry file="file://$USER_HOME$/Library/Flutter/flutter/packages/flutter/lib/src/widgets/navigator.dart" />
@@ -723,10 +721,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/navigator.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="291" column="8" selection-start-line="291" selection-start-column="8" selection-end-line="291" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/routes.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="302">
+          <caret line="690" column="15" selection-start-line="690" selection-start-column="15" selection-end-line="690" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/pages.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="10" column="38" lean-forward="true" selection-start-line="10" selection-start-column="38" selection-end-line="10" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/controller/route_control.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="583">
-          <caret line="112" lean-forward="true" selection-start-line="112" selection-end-line="112" />
+        <state relative-caret-position="476">
+          <caret line="37" column="6" lean-forward="true" selection-start-line="37" selection-start-column="6" selection-end-line="37" selection-end-column="6" />
           <folding>
             <element signature="e#0#17#0" expanded="true" />
           </folding>

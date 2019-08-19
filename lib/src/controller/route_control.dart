@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteGetter = Route Function(WidgetBuilder builder, RouteSettings settings);
+typedef RouteGetter = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
 /// Ties up [RouteNavigator] and [PageRouteProvider].
 /// [PageRouteProvider.builder] is wrapped and Widget is initialized during build phase.
@@ -16,7 +16,7 @@ class RouteHandler {
 
   Future<dynamic> result;
 
-  Route route;
+  PageRoute route;
 
   /// Default constructor.
   /// [navigator] and [provider] must be specified.
