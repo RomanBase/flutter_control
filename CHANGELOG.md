@@ -1,7 +1,5 @@
-## [0.9.2] - Route navigation control
+## [0.9.3] - RouteControl, NavigatorStack
 ## [0.9.1] - Dependency update
-## [0.9.0] - StableWidget
-- fixed NavigationStack widget.
 ## [0.8.98] - Control Group Builders
 ## [0.8.96] - Flutter 1.7 support
 ## [0.8.5] - Alpha version
@@ -33,6 +31,7 @@
 - [SingleControlWidget] Widget with just one generic Controller.
 - [RouteControl] Mixin for [ControlWidget] to enable Control Route Navigation. ([BaseController] must implement [RouteController])
 - [TickerControl] Mixin for [ControlWidget] to provide TickerProvider for AnimationControllers.
+- [PageRouteProvider] PageRoute provider with [RouteHandler] for navigation and Widget initialization.
 
 ---
 

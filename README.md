@@ -190,6 +190,7 @@ class TodoPage extends SingleControlWidget<TodoController> {
 - [SingleControlWidget] Widget with just one generic Controller.
 - [RouteControl] Mixin for [ControlWidget] to enable Control Route Navigation. ([BaseController] must implement [RouteController])
 - [TickerControl] Mixin for [ControlWidget] to provide TickerProvider for AnimationControllers.
+- [PageRouteProvider] PageRoute provider with [RouteHandler] for navigation and Widget initialization.
 
 ---
 
