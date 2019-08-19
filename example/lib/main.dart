@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 
 import 'cards_controller.dart';
-import 'cards_page.dart';
+import 'menu_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
       initializers: {
         DetailController: () => DetailController(),
       },
-      root: (context) => CardsPage(),
+      root: (context) => MenuPage(),
     );
   }
 }

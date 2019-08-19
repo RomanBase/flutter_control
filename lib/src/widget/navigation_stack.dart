@@ -20,7 +20,7 @@ abstract class _StackNavigator {
 class NavigatorController extends BaseController implements _StackNavigator {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackController]
-  MenuItem menu;
+  MenuItem menu = MenuItem();
 
   /// Implementation of StackNavigator.
   _StackNavigator _navigator;
@@ -29,18 +29,15 @@ class NavigatorController extends BaseController implements _StackNavigator {
   bool get isNavigatorAvailable => _navigator != null;
 
   /// Data for menu item.
-  bool _isSelected = false;
-
-  /// Data for menu item.
   /// Returns if this controller is selected.
   /// Mostly used in combination with [NavigatorStackController]
-  bool get isSelected => _isSelected;
+  bool get selected => menu.selected;
 
   /// Data for menu item.
   /// Sets selection for this controller.
   /// Mostly used in combination with [NavigatorStackController]
-  set isSelected(value) {
-    _isSelected = value;
+  set selected(value) {
+    menu = menu.copyWith(selected: value);
     if (onSelectionChanged != null) {
       onSelectionChanged(value);
     }
@@ -83,17 +80,17 @@ class NavigatorController extends BaseController implements _StackNavigator {
 /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
 ///
 /// [RouteHandler] [RouteController]
-class NavigatorStack extends ControlWidget implements _StackNavigator {
+class NavigatorStack extends StatelessWidget implements _StackNavigator {
   final ContextHolder _ctx = ContextHolder();
 
   final NavigatorController controller;
-  final WidgetBuilder builder;
+  final WidgetInitializer initializer;
   final bool overrideNavigation;
 
   BuildContext get navContext => _ctx.context;
 
   /// Default constructor
-  NavigatorStack._({@required this.controller, @required this.builder, this.overrideNavigation: false}) : super(key: ObjectKey(controller));
+  NavigatorStack._({@required this.controller, @required this.initializer, this.overrideNavigation: false}) : super(key: ObjectKey(controller));
 
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
   /// With [overrideNavigation] Widget will create [WillPopScope] and handles back button.
@@ -101,14 +98,11 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static StableWidget single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
-    return StableWidget(
-      forceOverride: !stable,
-      builder: (context) => NavigatorStack._(
-        controller: controller ?? NavigatorController(),
-        builder: builder,
-        overrideNavigation: overrideNavigation,
-      ),
+  static Widget single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
+    return NavigatorStack._(
+      controller: controller ?? NavigatorController(),
+      initializer: WidgetInitializer.of(builder),
+      overrideNavigation: overrideNavigation,
     );
   }
 
@@ -122,14 +116,11 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static StableWidget pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true, bool stable: true}) {
-    return StableWidget(
-      forceOverride: !stable,
-      builder: (context) => _NavigatorStackOffstage(
-        pages: pages,
-        controller: controller ?? NavigatorStackController(),
-        overrideNavigation: overrideNavigation,
-      ),
+  static Widget pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true, bool stable: true}) {
+    return _NavigatorStackOffstage(
+      pages: pages,
+      controller: controller ?? NavigatorStackController(),
+      overrideNavigation: overrideNavigation,
     );
   }
 
@@ -143,61 +134,48 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static StableWidget menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool stable: true}) {
-    return StableWidget(
-      forceOverride: !stable,
-      builder: (context) {
-        final items = List<NavigatorStack>();
+  static Widget menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool stable: true}) {
+    final items = List<NavigatorStack>();
 
-        pages.forEach((key, value) => items.add(NavigatorStack._(
-              controller: NavigatorController(menu: key),
-              builder: value,
-              overrideNavigation: false,
-            )));
+    pages.forEach((key, value) => items.add(NavigatorStack._(
+          controller: NavigatorController(menu: key),
+          initializer: WidgetInitializer.of(value),
+          overrideNavigation: false,
+        )));
 
-        return _NavigatorStackOffstage(
-          pages: items,
-          controller: controller ?? NavigatorStackController(),
-          overrideNavigation: overrideNavigation,
-        );
-      },
+    return _NavigatorStackOffstage(
+      pages: items,
+      controller: controller ?? NavigatorStackController(),
+      overrideNavigation: overrideNavigation,
     );
-  }
-
-  @override
-  List<BaseController> initControllers() {
-    return [controller];
   }
 
   @override
   Widget build(BuildContext context) {
-    return StableWidget(
-      builder: (context) {
-        final navigator = Navigator(
-          onGenerateRoute: (routeSettings) {
-            return MaterialPageRoute(builder: (context) {
-              _ctx.changeContext(context);
+    final navigator = Navigator(
+      onGenerateRoute: (routeSettings) {
+        return MaterialPageRoute(builder: (context) {
+          _ctx.changeContext(context);
 
-              final widget = builder(context);
+          final widget = initializer.getWidget(context);
 
-              if (widget is Initializable) {
-                (widget as Initializable).init({});
-              }
-              return widget;
-            });
-          },
-        );
+          if (widget is Initializable) {
+            (widget as Initializable).init({});
+          }
 
-        if (overrideNavigation) {
-          return WillPopScope(
-            onWillPop: controller.popScope,
-            child: navigator,
-          );
-        }
-
-        return navigator;
+          return widget;
+        });
       },
     );
+
+    if (overrideNavigation) {
+      return WillPopScope(
+        onWillPop: controller.popScope,
+        child: navigator,
+      );
+    }
+
+    return navigator;
   }
 
   @override
@@ -227,7 +205,7 @@ class NavigatorStack extends ControlWidget implements _StackNavigator {
 /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.pages], can be used if access to [NavigatorController]s is not required.
 ///
 /// [NavigatorStack]
-class NavigatorStackController extends StateController {
+class NavigatorStackController extends BaseController {
   /// List of Controllers set in Widget construct phase.
   List<NavigatorController> _items;
 
@@ -242,7 +220,7 @@ class NavigatorStackController extends StateController {
 
   /// Returns current page index.
   /// Use [setPageIndex] to change active controller.
-  /// Use [onPageChanged] to be notified about changes.
+  /// Use [pageIndex] to be notified about changes.
   int get currentPageIndex => _pageIndex;
 
   /// Returns current controller - based on [currentPageIndex].
@@ -250,23 +228,19 @@ class NavigatorStackController extends StateController {
 
   /// Notifies about page changes.
   /// Can be used with [ControlBuilder] to rebuild menu or highlight active widget.
-  final onPageChanged = ActionControl<int>.broadcast(0);
+  final pageIndex = ActionControl<int>.broadcast(0);
 
-  /// Sets page index and notifies [onPageChanged]
+  /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
   /// Notifies [State] to switch [Offstage] of old/new active controller.
   void setPageIndex(int index) {
-    currentController.isSelected = false;
+    currentController.selected = false;
 
     _pageIndex = index.clamp(0, _items.length - 1);
 
-    currentController.isSelected = true;
+    currentController.selected = true;
 
-    if (onPageChanged != null) {
-      onPageChanged.setValue(currentPageIndex);
-    }
-
-    notifyState();
+    pageIndex.setValue(currentPageIndex);
   }
 
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
@@ -292,7 +266,7 @@ class NavigatorStackController extends StateController {
 /// [NavigatorStack]
 /// [NavigatorController]
 /// [NavigatorStackController]
-class _NavigatorStackOffstage extends ControlWidget {
+class _NavigatorStackOffstage extends StatelessWidget {
   final NavigatorStackController controller;
   final List<NavigatorStack> pages;
   final bool overrideNavigation;
@@ -303,39 +277,35 @@ class _NavigatorStackOffstage extends ControlWidget {
     this.overrideNavigation: true,
   }) : super(key: ObjectKey(controller)) {
     assert(pages.length > 0);
-  }
 
-  @override
-  List<BaseController> initControllers() {
     controller._items = pages.map((page) => page.controller).toList(growable: false);
-    controller.currentController.isSelected = true;
-
-    return [controller];
+    controller.currentController.selected = true;
   }
 
   @override
   Widget build(BuildContext context) {
-    final list = List<Offstage>();
+    return ControlBuilder(
+      controller: controller.pageIndex,
+      builder: (context, index) {
+        final list = List<Widget>();
 
-    pages.forEach((page) {
-      list.add(Offstage(
-        key: ObjectKey(page.controller),
-        offstage: !page.controller.isSelected,
-        child: page,
-      ));
-    });
+        pages.forEach((item) => list.add(item.initializer.getWidget(context)));
 
-    if (overrideNavigation) {
-      return WillPopScope(
-        onWillPop: controller.popScope,
-        child: Stack(
+        if (overrideNavigation) {
+          return WillPopScope(
+            onWillPop: controller.popScope,
+            child: IndexedStack(
+              index: index,
+              children: list,
+            ),
+          );
+        }
+
+        return IndexedStack(
+          index: index,
           children: list,
-        ),
-      );
-    }
-
-    return Stack(
-      children: list,
+        );
+      },
     );
   }
 }
