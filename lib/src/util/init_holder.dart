@@ -39,5 +39,6 @@ class InitHolder<T> {
   /// Returns current value or build new one and store it for later get.
   T get() => _value ?? (_value = _builder());
 
+  /// Marks holder as dirty, so next [set] call will override builder.
   void martToOverride() => _isDirty = true;
 }

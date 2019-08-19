@@ -101,6 +101,10 @@ class Parse {
       }
 
       if (converter == null) {
+        if (value is List) {
+          return value.cast<T>();
+        }
+
         value.forEach((item) => items.add(item));
       } else {
         value.forEach((item) => items.add(converter(item)));

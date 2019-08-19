@@ -14,6 +14,7 @@ export './src/base_theme.dart';
 export './src/controller/base_controller.dart';
 export './src/controller/base_model.dart';
 export './src/controller/field_control.dart';
+export './src/controller/route_control.dart';
 export './src/entity/menu.dart';
 export './src/factory.dart';
 export './src/util/device.dart';
@@ -31,6 +32,7 @@ class ControlKey {
   static const String localization = 'localization';
   static const String preferences = 'prefs';
   static const String control = 'control';
+  static const String initData = 'init_data';
 }
 
 bool get debugMode => !inRelease();

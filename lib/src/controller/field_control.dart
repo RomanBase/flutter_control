@@ -66,6 +66,9 @@ class ActionControl<T> implements Disposable {
   /// Current subscription.
   ControlSubscription<T> _sub;
 
+  /// Global subscription.
+  GlobalSubscription<T> _globalSub;
+
   ///Default constructor.
   ActionControl._([T value]) {
     _value = value;
@@ -78,6 +81,17 @@ class ActionControl<T> implements Disposable {
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
   factory ActionControl.broadcast([T value]) => _ActionControlBroadcast<T>._(value);
+
+  /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
+  /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
+  /// Defaultly [broadcast] version of [ActionControl] is created.
+  factory ActionControl.globalSubscription(String key, {bool single: false}) {
+    ActionControl control = single ? ActionControl<T>._() : _ActionControlBroadcast._();
+
+    control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
+
+    return control;
+  }
 
   /// Subscribes event for changes.
   /// Returns [ControlSubscription] for later cancellation.
@@ -132,13 +146,20 @@ class ActionControl<T> implements Disposable {
   /// Removes specified sub from listeners.
   /// If no sub is specified then removes all.
   void cancel([ControlSubscription<T> subscription]) {
-    _sub?._clear();
-    _sub = null;
+    if (_sub != null) {
+      _sub._clear();
+      _sub = null;
+    }
   }
 
   @override
   void dispose() {
     cancel();
+
+    if (_globalSub != null) {
+      _globalSub.dispose();
+      _globalSub = null;
+    }
   }
 }
 
@@ -361,11 +382,27 @@ class FieldControl<T> implements Disposable {
   /// Checks if any value is available.
   bool get hasData => _value != null;
 
-  /// Initialize controller and [Stream] with default value.
+  /// Initializes controller and [Stream] with default value.
   FieldControl([T value]) {
     if (value != null) {
       setValue(value);
     }
+  }
+
+  /// Initializes [FieldControl] and subscribes it to given [stream].
+  /// Check [subscribeTo] function for more info.
+  factory FieldControl.of(Stream stream, {T initValue, Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+    final control = FieldControl(initValue);
+
+    control.subscribeTo(
+      stream,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+      converter: converter,
+    );
+
+    return control;
   }
 
   /// Sets the value and adds it to the stream.

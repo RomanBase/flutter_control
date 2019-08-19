@@ -285,7 +285,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   void init(Map<String, dynamic> args) {
     super.init(args);
 
-    holder.route = ArgProvider.map<Route>(args);
+    holder.route = ArgProvider.map<Route>(args, key: ControlKey.initData);
 
     if (holder.route != null) {
       printDebug('${this.toString()} at route: ${holder.route.settings.name}');

@@ -20,6 +20,12 @@ class Device {
 
   double get ratio => 1.0 / data.devicePixelRatio;
 
+  double get revertRatio => 1.0 - ratio;
+
+  double get screenRatio => width / height;
+
+  double get landscapeScreenRatio => height / width;
+
   @deprecated
   bool get hasNotch => data.padding.top > 20.0;
 
