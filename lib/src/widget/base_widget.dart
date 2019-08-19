@@ -22,13 +22,13 @@ class WidgetControlHolder implements Disposable {
 }
 
 /// [ControlWidget] with just one init Controller.
-abstract class SingleControlWidget<T extends BaseController> extends ControlWidget {
+abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWidget {
   T get controller => controllers[0];
 
   SingleControlWidget({Key key}) : super(key: key);
 
   @override
-  List<BaseController> initControllers() {
+  List<BaseControlModel> initControllers() {
     return [initController()];
   }
 
@@ -41,7 +41,7 @@ abstract class BaseControlWidget extends ControlWidget {
   BaseControlWidget({Key key}) : super(key: key);
 
   @override
-  List<BaseController> initControllers() => null;
+  List<BaseControlModel> initControllers() => null;
 }
 
 /// Base [StatefulWidget] to cooperate with [BaseController].
@@ -70,7 +70,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
-  List<BaseController> get controllers => holder?.state?.controllers;
+  List<BaseControlModel> get controllers => holder?.state?.controllers;
 
   /// Context of Widget's [State]
   BuildContext get context => state?.context;
@@ -110,7 +110,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
   @protected
-  List<BaseController> initControllers();
+  List<BaseControlModel> initControllers();
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
@@ -194,13 +194,14 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   /// List of Subscriptions from [StateController]s
   List<ControlSubscription> _stateSubs;
 
-  List<BaseController> controllers;
+  List<BaseControlModel> controllers;
 
   @override
   void initState() {
     super.initState();
 
     controllers = widget.initControllers();
+
     widget.onInitState(this);
   }
 
@@ -245,11 +246,11 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       _stateSubs = null;
     }
 
-    controllers?.forEach((controller) {
-      if (!controller.preventDispose) {
-        controller.dispose();
-      }
-    });
+    if (controllers != null) {
+      controllers.forEach((controller) => controller.requestDispose());
+      controllers.clear();
+      controllers = null;
+    }
 
     widget.holder.dispose();
     widget.dispose();

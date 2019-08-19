@@ -39,43 +39,25 @@ abstract class StateNotifier {
   void notifyState([dynamic state]);
 }
 
-/// Abstract class for basic type of navigation.
-abstract class RouteNavigator {
-  /// Pushes route into current Navigator.
-  /// [route] - specific route: type, settings, transition etc.
-  /// [root] - pushes route into root Navigator - onto top of everything.
-  /// [replacement] - pushes route as replacement of current route.
-  ///
-  /// [Scaffold] as root context for [Navigator] is part of [BaseApp] Widget.
-  /// As well [AppControl] can be initialized with custom root context and root Key.
-  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
-
-  /// Clears current [Navigator] and opens new [Route].
-  Future<dynamic> openRoot(Route route);
-
-  /// Opens Dialog/ModalSheet/BottomSheet etc. as custom Widget Dialog via Controller.
-  ///
-  /// Scaffold as root context for [Navigator] is part of [BaseApp] Widget.
-  /// As well [AppControl] can be initialized with custom root context and root Key.
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
-
-  /// Goes back in navigation stack until first [Route].
-  void backToRoot();
-
-  /// Goes back in navigation stack until [Route] found.
-  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate});
-
-  /// Pops [Route] from navigation stack.
-  /// result is send back to parent.
-  void close([dynamic result]);
-
-  /// Removes given [route] from navigator.
-  void closeRoute(Route route, [dynamic result]);
-}
-
 /// General class to handle with [AnimationController]s
 abstract class AnimationInitializer {
   void onTickerInitialized(TickerProvider ticker);
+}
+
+/// Super base model to use with [ControlWidget]
+/// [init] -> [onInit] is called during Widget's construction phase.
+/// [subscribe] is called during State's init phase.
+///
+/// [BaseController]
+/// [BaseModel]
+///
+/// Extend this class to create custom controllers and models.
+class BaseControlModel with DisposeHandler implements Initializable, Subscriptionable {
+  @override
+  void init(Map<String, dynamic> args) {}
+
+  @override
+  void subscribe(object) {}
 }
 
 /// Base controller to use with [ControlWidget]
@@ -86,7 +68,7 @@ abstract class AnimationInitializer {
 /// [ControlFactory]
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class BaseController implements Initializable, Subscriptionable, Disposable {
+class BaseController extends BaseControlModel {
   /// init check.
   bool _isInitialized = false;
 
@@ -100,9 +82,6 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
   /// returns instance of [AppControl] if available.
   /// nullable
   AppControl get control => factory.get(ControlKey.control);
-
-  /// prevent calling dispose from [ControlWidget]
-  bool get preventDispose => false;
 
   /// prevent multiple times init and [onInit] will be called just once
   bool get preventMultiInit => true;
@@ -135,7 +114,7 @@ class BaseController implements Initializable, Subscriptionable, Disposable {
 
   /// Used to reload Controller.
   /// Currently empty and is ready to override.
-  void reload() {}
+  Future<void> reload() async {}
 
   /// Typically is this method called during State disable phase.
   /// Disables linking between Controller and State.
@@ -267,4 +246,27 @@ mixin RouteController on BaseController {
 
     _navigator = null;
   }
+}
+
+mixin DisposeHandler implements Disposable {
+  bool get preventDispose => false;
+
+  bool get preferSoftDispose => false;
+
+  void requestDispose() {
+    if (preventDispose) {
+      return;
+    }
+
+    if (preferSoftDispose) {
+      softDispose();
+    } else {
+      dispose();
+    }
+  }
+
+  void softDispose() {}
+
+  @override
+  void dispose() {}
 }

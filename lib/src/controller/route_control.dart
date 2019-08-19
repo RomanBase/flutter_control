@@ -5,6 +5,40 @@ import 'package:flutter_control/core.dart';
 
 typedef RouteGetter = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
+/// Abstract class for basic type of navigation.
+abstract class RouteNavigator {
+  /// Pushes route into current Navigator.
+  /// [route] - specific route: type, settings, transition etc.
+  /// [root] - pushes route into root Navigator - onto top of everything.
+  /// [replacement] - pushes route as replacement of current route.
+  ///
+  /// [Scaffold] as root context for [Navigator] is part of [BaseApp] Widget.
+  /// As well [AppControl] can be initialized with custom root context and root Key.
+  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
+
+  /// Clears current [Navigator] and opens new [Route].
+  Future<dynamic> openRoot(Route route);
+
+  /// Opens Dialog/ModalSheet/BottomSheet etc. as custom Widget Dialog via Controller.
+  ///
+  /// Scaffold as root context for [Navigator] is part of [BaseApp] Widget.
+  /// As well [AppControl] can be initialized with custom root context and root Key.
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
+
+  /// Goes back in navigation stack until first [Route].
+  void backToRoot();
+
+  /// Goes back in navigation stack until [Route] found.
+  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate});
+
+  /// Pops [Route] from navigation stack.
+  /// result is send back to parent.
+  void close([dynamic result]);
+
+  /// Removes given [route] from navigator.
+  void closeRoute(Route route, [dynamic result]);
+}
+
 /// Ties up [RouteNavigator] and [PageRouteProvider].
 /// [PageRouteProvider.builder] is wrapped and Widget is initialized during build phase.
 class RouteHandler {

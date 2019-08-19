@@ -606,16 +606,19 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
 /// [FieldControl]
 /// [FieldStreamBuilder]
 class FieldBuilder<T> extends FieldStreamBuilder<T> {
+  final bool nullOk;
+
   FieldBuilder({
     Key key,
     @required FieldControl<T> controller,
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
+    this.nullOk: false,
   }) : super(
             key: key,
             controller: controller,
             builder: (context, snapshot) {
-              if (snapshot.hasData) {
+              if (snapshot.hasData || nullOk) {
                 return builder(context, snapshot.data);
               }
 
@@ -887,6 +890,39 @@ class LoadingControl extends FieldControl<LoadingStatus> {
 /// Builder for [LoadingControl].
 /// [LoadingStatus]
 /// [FieldStreamBuilder]
+class LoadingStackBuilder extends FieldStreamBuilder<LoadingStatus> {
+  final Map<LoadingStatus, Widget> children;
+
+  LoadingStackBuilder({
+    Key key,
+    @required LoadingControl controller,
+    @required this.children,
+  }) : super(
+            key: key,
+            controller: controller,
+            builder: (context, snapshot) {
+              if (children == null || children.length == 0) {
+                return null;
+              }
+
+              final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
+
+              int index = 0;
+
+              if (children.containsKey(state)) {
+                index = children.keys.toList(growable: false).indexOf(state);
+              }
+
+              return IndexedStack(
+                index: index,
+                children: children.values.toList(growable: false),
+              );
+            });
+}
+
+/// Builder for [LoadingControl].
+/// [LoadingStatus]
+/// [FieldStreamBuilder]
 class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
   final WidgetBuilder progress;
   final WidgetBuilder done;
@@ -912,8 +948,8 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
               case LoadingStatus.progress:
                 return progress != null
                     ? progress(context)
-                    : Column(
-                        children: <Widget>[CircularProgressIndicator()],
+                    : Center(
+                        child: CircularProgressIndicator(),
                       );
               case LoadingStatus.done:
                 return done != null ? done(context) : null;
@@ -921,8 +957,8 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
                 return error != null
                     ? error(context)
                     : controller.hasMessage
-                        ? Column(
-                            children: <Widget>[Text(controller.message)],
+                        ? Center(
+                            child: Text(controller.message),
                           )
                         : null;
               case LoadingStatus.outdated:
