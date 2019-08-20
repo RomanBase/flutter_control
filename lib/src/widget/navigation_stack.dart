@@ -59,7 +59,7 @@ class NavigatorController extends BaseController implements _StackNavigator {
   }
 
   @override
-  bool navigateBack() => _navigator?.navigateBack();
+  bool navigateBack() => _navigator != null ? _navigator.navigateBack() : false;
 
   @override
   void navigateToRoot() => _navigator?.navigateToRoot();
@@ -246,6 +246,8 @@ class NavigatorStackController extends BaseController {
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack() {
+    printDebug('navigate back - ' + currentPageIndex.toString());
+
     if (currentPageIndex > 0) {
       if (!currentController.navigateBack()) {
         setPageIndex(0);

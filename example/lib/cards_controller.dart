@@ -123,6 +123,7 @@ class CardModel extends BaseModel with LocalizationProvider {
 
     countLabel.dispose();
     progress.dispose();
+
     items.clear(disposeItems: true);
     items.dispose();
   }

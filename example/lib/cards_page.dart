@@ -45,6 +45,9 @@ class CardWidget extends BaseControlWidget {
   CardWidget(this.item) : super(key: ObjectKey(item));
 
   @override
+  List<BaseControlModel> initControllers() => [item];
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16.0),
@@ -127,6 +130,9 @@ class ItemWidget extends BaseControlWidget {
   final CardItemModel item;
 
   ItemWidget(this.item) : super(key: ObjectKey(item));
+
+  @override
+  List<BaseControlModel> initControllers() => [item];
 
   @override
   Widget build(BuildContext context) {

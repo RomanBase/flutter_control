@@ -51,10 +51,6 @@ class SettingsPage extends ControlWidget {
                 ),
               ),
             ),
-            Text(
-              holder.state.toString(),
-              textAlign: TextAlign.center,
-            ),
           ],
         ),
       ),

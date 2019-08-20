@@ -61,7 +61,11 @@ class AppControl extends InheritedWidget {
   }
 
   void notifyAppState([dynamic state]) {
-    rootState?.notifyState(state);
+    if (rootState != null) {
+      rootState.notifyState(state);
+    } else {
+      printDebug('no root state specified');
+    }
   }
 
   @override
