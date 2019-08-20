@@ -246,8 +246,6 @@ class NavigatorStackController extends BaseController {
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack() {
-    printDebug('navigate back - ' + currentPageIndex.toString());
-
     if (currentPageIndex > 0) {
       if (!currentController.navigateBack()) {
         setPageIndex(0);
