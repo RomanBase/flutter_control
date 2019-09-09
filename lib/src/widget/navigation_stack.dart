@@ -98,7 +98,7 @@ class NavigatorStack extends StatelessWidget implements _StackNavigator {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static Widget single({NavigatorStack controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
+  static Widget single({NavigatorController controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
     return NavigatorStack._(
       controller: controller ?? NavigatorController(),
       initializer: WidgetInitializer.of(builder),
