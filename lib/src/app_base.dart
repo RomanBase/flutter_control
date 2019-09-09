@@ -10,14 +10,15 @@ class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
   final ThemeData darkTheme;
+  final String defaultLocale;
   final Map<String, String> locales;
-  final WidgetBuilder root;
-  final WidgetBuilder loader;
+  final bool loadLocalization;
   final Map<String, dynamic> entries;
   final Map<Type, Initializer> initializers;
-  final String defaultLocale;
   final bool debug;
   final Duration loaderDelay;
+  final WidgetBuilder loader;
+  final WidgetBuilder root;
 
   /// Default constructor
   const BaseApp({
@@ -26,12 +27,13 @@ class BaseApp extends StatefulWidget {
     this.darkTheme,
     this.defaultLocale,
     this.locales,
-    @required this.root,
-    this.loader,
+    this.loadLocalization: true,
     this.entries,
     this.initializers,
     this.debug,
     this.loaderDelay,
+    this.loader,
+    @required this.root,
   });
 
   @override
@@ -112,7 +114,11 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
     entries[ControlKey.preferences] = BasePrefs();
-    entries[ControlKey.localization] = BaseLocalization(widget.defaultLocale ?? localizationAssets[0].iso2Locale, localizationAssets);
+    entries[ControlKey.localization] = BaseLocalization(
+      widget.defaultLocale ?? localizationAssets[0].iso2Locale,
+      localizationAssets,
+      preloadDefaultLocalization: widget.loadLocalization,
+    );
 
     factory.initialize(items: entries, initializers: initializers);
 
@@ -122,7 +128,9 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     defaultLocale = localization.defaultLocale;
 
     contextHolder.once((context) async {
-      await localization.changeToSystemLocale(context);
+      if (widget.loadLocalization) {
+        await localization.changeToSystemLocale(context);
+      }
 
       if (block != null) {
         await block.finish();
