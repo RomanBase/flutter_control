@@ -21,7 +21,7 @@ class GlobalSubscription<T> implements Disposable {
   GlobalSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) => _active && value is T && (key == null || key == this.key);
+  bool isValidForBroadcast(String key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
 
   /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
   void pause() => _active = false;
@@ -58,15 +58,21 @@ class BroadcastProvider {
   /// Subscription to global stream.
   static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance.subscribe(key, onData);
 
+  /// Subscription to global stream.
+  static GlobalSubscription subscribeEvent(String key, VoidCallback callback) => ControlFactory._instance.subscribeEvent(key, callback);
+
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores value for future subs and notifies them during [subscribe] phase.
   static void broadcast(String key, dynamic value, {bool store: false}) => ControlFactory._instance.broadcast(key, value, store: store);
+
+  /// Sets data to global stream.
+  /// Subs with same [key] will be notified.
+  static void broadcastEvent(String key) => ControlFactory._instance.broadcastEvent(key);
 }
 
 /// Helper class to filter expected object from iterables.
 class ArgProvider {
-
   /// Filter out expected object by [key] or [Type]
   /// If none found, then [defaultValue] is returned.
   static T map<T>(Map map, {dynamic key, T defaultValue}) {
@@ -317,6 +323,11 @@ class ControlFactory implements Disposable {
     return sub;
   }
 
+  /// Subscription to global stream
+  GlobalSubscription subscribeEvent(String key, VoidCallback callback) {
+    return subscribe(key, (_) => callback());
+  }
+
   /// Cancels subscriptions to global stream
   void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
 
@@ -331,6 +342,16 @@ class ControlFactory implements Disposable {
     _globalSubscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
         sub._notify(value);
+      }
+    });
+  }
+
+  /// Sets data to global stream.
+  /// Subs with same [key] will be notified.
+  void broadcastEvent(String key) {
+    _globalSubscriptions.forEach((sub) {
+      if (sub.isValidForBroadcast(key, null)) {
+        sub._notify(null);
       }
     });
   }
