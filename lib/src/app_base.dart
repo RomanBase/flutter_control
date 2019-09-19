@@ -2,10 +2,6 @@ import 'package:flutter_control/core.dart';
 
 typedef OnContextChanged = Function(BuildContext context);
 
-/// Main - root - [Widget] for whole app.
-/// [AppControl] is build on top of everything.
-/// This Widget helps easily integrate [AppControl] as [InheritedWidget] for descendant widgets.
-/// Currently supports only MaterialApp.
 class BaseApp extends StatefulWidget {
   final String title;
   final ThemeData theme;
@@ -20,7 +16,10 @@ class BaseApp extends StatefulWidget {
   final WidgetBuilder loader;
   final WidgetBuilder root;
 
-  /// Default constructor
+  /// Main - root - [Widget] for whole app.
+  /// [AppControl] with [MaterialApp] is build on top of everything.
+  /// This Widget helps easily integrate [AppControl] as [InheritedWidget] for descendant widgets.
+  /// Currently supports only [MaterialApp].
   const BaseApp({
     @required this.title,
     this.theme,
@@ -41,10 +40,9 @@ class BaseApp extends StatefulWidget {
 }
 
 /// Creates State for BaseApp.
-/// AppControl and root Scaffold is build here.
-/// This State is used as root GlobalKey.
-/// BuildContext from Scaffold is used as root context.
-/// Structure: AppControl -> MaterialApp -> Scaffold -> Your Content (root - BaseController).
+/// AppControl and MaterialApp is build here.
+/// This State is meant to be used as root.
+/// BuildContext from local Builder is used as root context.
 class BaseAppState extends State<BaseApp> implements StateNotifier {
   /// Root GlobalKey of default Scaffold.
   /// Is passed into AppControl.

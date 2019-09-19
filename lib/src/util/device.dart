@@ -33,6 +33,10 @@ class Device {
 
   double get bottomBorderSize => data.padding.bottom;
 
+  Size get toolbarAreaSize => Size(width, topBorderSize + BaseTheme.button_height);
+
+  Size get menuAreaSize => Size(width, bottomBorderSize + BaseTheme.button_height);
+
   double px(double value) => value * ratio;
 
   double dp(double value) => value / ratio;

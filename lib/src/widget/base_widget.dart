@@ -174,6 +174,10 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Returns context of this widget or [root] context that is stored in [AppControl]
   BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
 
+  /// Returns value by given key or type.
+  /// Args are passed to Widget during [init] phase.
+  T getArg<T>({String key, T defaultValue}) => ArgHandler.map<T>(holder.args, key: key, defaultValue: defaultValue);
+
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected

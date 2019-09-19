@@ -1,9 +1,5 @@
 import 'package:flutter_control/core.dart';
 
-/// One of the root Widgets of App.
-/// Initializes with GlobalKey and BuildContext of root Widgets (Scaffold is recommended).
-/// AppControl can hold important objects to use them anywhere in App.
-/// Custom localization is used here. For more info check AppLocalization class.
 class AppControl extends InheritedWidget {
   /// Runtime Type of class.
   /// Used for custom class integration.
@@ -44,7 +40,8 @@ class AppControl extends InheritedWidget {
 
   final StateNotifier rootState;
 
-  /// Default constructor
+  /// Holds global [State] and root [BuildContext].
+  /// Root context can be changed via [rootContext].
   AppControl({
     @required this.rootKey,
     @required this.contextHolder,

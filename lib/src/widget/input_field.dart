@@ -21,7 +21,7 @@ class FocusController extends FocusNode {
 /// Can chain multiple Controllers for submissions.
 class InputController extends StateController {
   @override
-  bool get preventDispose => true;
+  bool get preferSoftDispose => true;
 
   /// Regex to check value validity.
   final String regex;
