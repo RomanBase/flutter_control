@@ -88,7 +88,7 @@ class Parse {
   /// List, Map, Iterable.
   ///
   /// Use [Converter] to convert values into new List.
-  static List<T> toList<T>(dynamic value, {Converter<T> converter}) {
+  static List<T> toList<T>(dynamic value, {Converter<T> converter, bool hardCast: true}) {
     final items = List<T>();
 
     if (value == null) {
@@ -101,13 +101,23 @@ class Parse {
       }
 
       if (converter == null) {
-        if (value is List) {
+        if (value is List && hardCast) {
           return value.cast<T>();
         }
 
-        value.forEach((item) => items.add(item));
+        value.forEach((item) {
+          if (item is T) {
+            items.add(item);
+          }
+        });
       } else {
-        value.forEach((item) => items.add(converter(item)));
+        value.forEach((item) {
+          final listItem = converter(item);
+
+          if (listItem != null && listItem is T) {
+            items.add(listItem);
+          }
+        });
       }
     }
 
@@ -128,7 +138,7 @@ class ArgHandler {
       return map[key];
     }
 
-    final item = map.values.firstWhere((item) => item is T);
+    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
 
     if (item != null) {
       return item;
@@ -144,7 +154,7 @@ class ArgHandler {
       return defaultValue;
     }
 
-    final item = list.firstWhere((item) => item is T);
+    final item = list.firstWhere((item) => item is T, orElse: () => null);
 
     if (item != null) {
       return item;
