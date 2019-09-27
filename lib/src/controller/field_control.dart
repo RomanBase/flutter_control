@@ -391,7 +391,7 @@ class FieldControl<T> implements Disposable {
 
   /// Initializes [FieldControl] and subscribes it to given [stream].
   /// Check [subscribeTo] function for more info.
-  factory FieldControl.of(Stream stream, {T initValue, Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+  factory FieldControl.of(Stream stream, {T initValue, Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
     final control = FieldControl(initValue);
 
     control.subscribeTo(
@@ -442,8 +442,8 @@ class FieldControl<T> implements Disposable {
   /// Copy last value to given controller.
   void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
 
-  /// Returns [Sink] with custom [Converter].
-  Sink<dynamic> sinkConverter(Converter<T> converter) => FieldSinkConverter(this, converter);
+  /// Returns [Sink] with custom [ValueConverter].
+  Sink<dynamic> sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
 
   /// Sets value after [Future] finished.
   Future ofFuture(Future<T> future) => future.then((value) => setValue(value));
@@ -466,9 +466,9 @@ class FieldControl<T> implements Disposable {
 
   /// Subscribes this controller to given [Stream].
   /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
-  /// Via [Converter] is possible to convert value from input stream type to own stream value.
+  /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
-  FieldSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+  FieldSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
     // ignore: cancel_subscriptions
     final subscription = stream.listen(
       (data) {
@@ -484,10 +484,10 @@ class FieldControl<T> implements Disposable {
 
   /// Given [controller] will subscribe to [Stream] of this [FieldControl].
   /// Whenever value in [Stream] is changed [controller] will be notified.
-  /// Via [Converter] is possible to convert value from input stream type to own stream value.
+  /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [controller].
   /// [subscribeTo]
-  FieldSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter}) {
+  FieldSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
     controller.setValue(converter != null ? converter(value) : value);
 
     return controller.subscribeTo(
@@ -567,7 +567,7 @@ class FieldSink<T> extends Sink<T> {
 /// Converts value and then sends it to controller.
 class FieldSinkConverter<T> extends FieldSink<dynamic> {
   /// Value Converter - initialized in constructor
-  final Converter<T> converter;
+  final ValueConverter<T> converter;
 
   /// Initialize Sink with target controller and value converter.
   FieldSinkConverter(FieldControl<T> target, this.converter) : super(target) {
@@ -793,7 +793,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   List<T> sublist(int start, [int end]) => value.sublist(start, end);
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, Converter<T> converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
