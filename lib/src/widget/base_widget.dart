@@ -68,6 +68,11 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   ControlState get state => holder?.state;
 
+  /// Widget's init arguments
+  /// [holder] - [onInitState]
+  @protected
+  Map<String, dynamic> get args => holder?.args;
+
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
   List<BaseControlModel> get controllers => holder?.state?.controllers;
@@ -176,7 +181,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Returns value by given key or type.
   /// Args are passed to Widget during [init] phase.
-  T getArg<T>({String key, T defaultValue}) => ArgHandler.map<T>(holder.args, key: key, defaultValue: defaultValue);
+  T getArg<T>({String key, T defaultValue}) => ArgHandler.map<T>(args, key: key, defaultValue: defaultValue);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
@@ -223,7 +228,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   @override
   Widget build(BuildContext context) {
-    notifyWidget(); //TODO: I don't like it here :(
+    notifyWidget(); //TODO: I don't like it here - but hot reload messes with holder.
 
     return widget.build(context);
   }
@@ -268,16 +273,23 @@ class _ControlTickerState<U extends ControlWidget> extends ControlState<U> with 
 class _ControlSingleTickerState<U extends ControlWidget> extends ControlState<U> with SingleTickerProviderStateMixin {}
 
 /// Helps [ControlWidget] to create State with [TickerProviderStateMixin]
-/// Override [singleTicker] to create State with [SingleTickerProviderStateMixin].
+/// Use [SingleTickerControl] to create State with [SingleTickerProviderStateMixin].
 mixin TickerControl on ControlWidget {
-  @protected
-  bool get singleTicker => false;
-
   @protected
   TickerProvider get ticker => holder.state as TickerProvider;
 
   @override
-  ControlState<ControlWidget> createState() => singleTicker ? _ControlSingleTickerState() : _ControlTickerState();
+  ControlState<ControlWidget> createState() => _ControlTickerState();
+}
+
+/// Helps [ControlWidget] to create State with [SingleTickerProviderStateMixin]
+/// Use [TickerControl] to create State with [TickerProviderStateMixin].
+mixin SingleTickerControl on ControlWidget {
+  @protected
+  TickerProvider get ticker => holder.state as TickerProvider;
+
+  @override
+  ControlState<ControlWidget> createState() => _ControlSingleTickerState();
 }
 
 /// Mixin class to enable navigation for [ControlWidget]
@@ -290,7 +302,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   void init(Map<String, dynamic> args) {
     super.init(args);
 
-    holder.route = ArgProvider.map<Route>(args, key: ControlKey.initData);
+    holder.route = ArgHandler.map<Route>(args, key: ControlKey.initData);
 
     if (holder.route != null) {
       printDebug('${this.toString()} at route: ${holder.route.settings.name}');

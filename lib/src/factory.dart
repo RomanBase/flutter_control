@@ -71,49 +71,6 @@ class BroadcastProvider {
   static void broadcastEvent(String key) => ControlFactory._instance.broadcastEvent(key);
 }
 
-/// Helper class to filter expected object from iterables.
-class ArgProvider {
-  /// Filter out expected object by [key] or [Type]
-  /// If none found, then [defaultValue] is returned.
-  static T map<T>(Map map, {dynamic key, T defaultValue}) {
-    if (map == null) {
-      return defaultValue;
-    }
-
-    if (key != null && map.containsKey(key)) {
-      return map[key];
-    }
-
-    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
-
-    return item ?? defaultValue;
-  }
-
-  /// Filter out expected object by [Type]
-  /// If none found, then [defaultValue] is returned.
-  static T list<T>(List list, [T defaultValue]) {
-    final item = list.firstWhere((item) => item is T);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
-
-  /// Filter out expected object by [Type]
-  /// If none found, then [defaultValue] is returned.
-  static T iterable<T>(Iterable iterable, [T defaultValue]) {
-    final item = iterable.firstWhere((item) => item is T);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
-}
-
 /// Factory for initializing and storing objects.
 /// Factory also creates global subscription stream driven by keys.
 ///

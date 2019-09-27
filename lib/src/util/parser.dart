@@ -147,14 +147,30 @@ class ArgHandler {
     return defaultValue;
   }
 
-  /// Tries to return item of Type.
+  /// Tries to return object of given Type.
   /// If none found, then [defaultValue] is returned.
-  static T list<T>(List list, [T defaultValue]) {
+  static T list<T>(List list, {T defaultValue}) {
     if (list == null) {
       return defaultValue;
     }
 
     final item = list.firstWhere((item) => item is T, orElse: () => null);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  /// Tries to return object of given Type.
+  /// If none found, then [defaultValue] is returned.
+  static T iterable<T>(Iterable iterable, {T defaultValue}) {
+    if (iterable == null) {
+      return defaultValue;
+    }
+
+    final item = iterable.firstWhere((item) => item is T, orElse: () => null);
 
     if (item != null) {
       return item;
