@@ -87,19 +87,19 @@ class Parse {
   ///
   /// List, Map, Iterable.
   ///
-  /// Use [Converter] to convert values into new List.
-  static List<T> toList<T>(dynamic value, {Converter<T> converter, bool hardCast: true}) {
+  /// Use [ValueConverter] to convert values into new List.
+  static List<T> toList<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
     final items = List<T>();
 
     if (value == null) {
       return items;
     }
 
-    if (value is Iterable) {
-      if (value is Map) {
-        value = value.values;
-      }
+    if (value is Map) {
+      value = value.values;
+    }
 
+    if (value is Iterable) {
       if (converter == null) {
         if (value is List && hardCast) {
           return value.cast<T>();
@@ -119,6 +119,98 @@ class Parse {
           }
         });
       }
+    }
+
+    return items;
+  }
+
+  static List<T> toListPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
+    final items = List<T>();
+
+    if (converter == null) {
+      return toList<T>(value, hardCast: hardCast);
+    }
+
+    if (value == null) {
+      return items;
+    }
+
+    if (value is Iterable) {
+      value = value.toList().asMap();
+    }
+
+    if (value is Map) {
+      value.forEach((key, item) {
+        final listItem = converter(key, item);
+
+        if (listItem != null && listItem is T) {
+          items.add(listItem);
+        }
+      });
+    }
+
+    return items;
+  }
+
+  static Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
+    final items = Map<String, T>();
+
+    if (value == null) {
+      return items;
+    }
+
+    if (value is Iterable) {
+      value = value.toList().asMap();
+    }
+
+    if (value is Map) {
+      if (converter == null) {
+        if (hardCast) {
+          return value.cast<String, T>();
+        }
+
+        value.forEach((key, item) {
+          if (item is T) {
+            items[key.toString()] = item;
+          }
+        });
+      } else {
+        value.forEach((key, item) {
+          final mapItem = converter(item);
+
+          if (mapItem != null && mapItem is T) {
+            items[key.toString()] = mapItem;
+          }
+        });
+      }
+    }
+
+    return items;
+  }
+
+  static Map<String, T> toMapPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
+    final items = Map<String, T>();
+
+    if (converter == null) {
+      return toMap<T>(value, hardCast: hardCast);
+    }
+
+    if (value == null) {
+      return items;
+    }
+
+    if (value is Iterable) {
+      value = value.toList().asMap();
+    }
+
+    if (value is Map) {
+      value.forEach((key, item) {
+        final mapItem = converter(key, item);
+
+        if (mapItem != null && mapItem is T) {
+          items[key.toString()] = mapItem;
+        }
+      });
     }
 
     return items;

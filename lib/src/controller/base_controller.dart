@@ -9,7 +9,8 @@ enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
 typedef Initializer<T> = T Function();
 typedef ValueCallback<T> = void Function(T);
-typedef Converter<T> = T Function(dynamic);
+typedef ValueConverter<T> = T Function(dynamic);
+typedef PairConverter<T> = T Function(dynamic, dynamic);
 
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
