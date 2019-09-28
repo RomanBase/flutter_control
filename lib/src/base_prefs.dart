@@ -25,7 +25,7 @@ class BasePrefs {
 
   Future<void> json(String key, dynamic value) async => (await prefs).setString(key, jsonEncode(value));
 
-  Future<dynamic> getJson(String key) async => jsonDecode((await prefs).getString(key));
+  Future<dynamic> getJson(String key) async => jsonDecode((await get(key, defaultValue: '{}')));
 }
 
 mixin PrefsProvider {
