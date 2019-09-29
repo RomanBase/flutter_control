@@ -1,6 +1,23 @@
 - Documentation
+  All, mainly Factory, BaseApp, BaseController, ControlWidget, FieldControl
 
 - Tests
+  Factory.
+  BaseController.
+  FieldControl.
+  ControlWidget.
+  BaseLocalization.
+  RouteHandler.
+  WidgetInitializer.
+
+- Examples
+  Default Flutter template.
+  Login Form with API call.
+  TODO List.
+  Localization example.
+
+- [Core] 'minor update'
+  Add more platforms to 'onPlatform' function.
 
 - [BaseApp] 'semi-major update'
   Support for CupertinoApp.
@@ -9,6 +26,13 @@
 - [AppControl] 'new purpose update'
   Is not currently used well and is mostly cleared.
   Try to find new purpose for this class..
+  
+- [BaseFactory] 'semi-major update'
+  Merge or clean up some shady functions.
+  add vs. addItem functions - 'object' to store is required and 'key' can be empty.
+  get vs. getWith - can be merged.
+  find - make it more generic and use Parse/ArgHandler to help find object from input collection.
+  removeType - just rename to removeAll
 
 - [ControlWidget] 'semi-major update'
   Better support for custom State
@@ -58,5 +82,5 @@
   Combine with [Device] to provide more runtime numbers based on physical device.
   
 - [UnitId] 'new class'
-  Random ids.
-  Sequenced ids based on index (0 = a, 1 = b, 25 = z, 26 = aa).
+  Random id.
+  Sequenced id based on index and given string sequence (0 = a, 1 = b, 25 = z, 26 = aa).

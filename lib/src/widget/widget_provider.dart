@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteBuilder = Route Function(WidgetBuilder builder, RouteSettings settings);
 
 /// Abstract implementation of simple widget initializer and holder.
 abstract class WidgetInitializer {

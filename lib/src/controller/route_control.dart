@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteGetter = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
+typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
 /// Abstract class for basic type of navigation.
 abstract class RouteNavigator {
@@ -114,7 +114,7 @@ class PageRouteProvider {
     String identifier,
     dynamic type,
     @required WidgetBuilder builder,
-    RouteGetter routeBuilder,
+    RouteBuilder routeBuilder,
   }) =>
       PageRouteProvider()
         ..identifier = identifier
@@ -132,7 +132,7 @@ class PageRouteProvider {
   WidgetBuilder builder;
 
   /// Route builder.
-  RouteGetter routeBuilder;
+  RouteBuilder routeBuilder;
 
   /// Default constructor.
   PageRouteProvider();

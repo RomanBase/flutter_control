@@ -40,11 +40,6 @@ abstract class StateNotifier {
   void notifyState([dynamic state]);
 }
 
-/// General class to handle with [AnimationController]s
-abstract class AnimationInitializer {
-  void onTickerInitialized(TickerProvider ticker);
-}
-
 /// Super base model to use with [ControlWidget]
 /// [init] -> [onInit] is called during Widget's construction phase.
 /// [subscribe] is called during State's init phase.
@@ -58,7 +53,7 @@ class BaseControlModel with DisposeHandler implements Initializable, Subscriptio
   void init(Map<String, dynamic> args) {}
 
   @override
-  void subscribe(object) {}
+  void subscribe(dynamic object) {}
 }
 
 /// Base controller to use with [ControlWidget]
@@ -106,6 +101,10 @@ class BaseController extends BaseControlModel {
   /// In most of times [Widget] or [State] isn't ready yet.
   /// check [init] and [preventMultiInit]
   void onInit(Map<String, dynamic> args) {}
+
+  /// Called during State initialization.
+  /// Check [TickerControl] mixin.
+  void onTickerInitialized(TickerProvider ticker) {}
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!

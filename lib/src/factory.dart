@@ -76,6 +76,7 @@ class BroadcastProvider {
 ///
 /// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [BaseLocalization] and [BasePrefs].
 /// Fill [BaseApp.entries] for initial items to store inside factory.
+/// Fill [BaseApp.initializers] for initial builders to store inside factory.
 class ControlFactory implements Disposable {
   /// Instance of AppFactory.
   static final ControlFactory _instance = ControlFactory._();

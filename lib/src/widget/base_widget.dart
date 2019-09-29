@@ -138,8 +138,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
       controller.init(holder.args);
       controller.subscribe(this);
 
-      if (controller is AnimationInitializer && state is TickerProvider) {
-        (controller as AnimationInitializer).onTickerInitialized(state as TickerProvider);
+      if (state is TickerProvider) {
+        (controller as BaseController).onTickerInitialized(state as TickerProvider);
       }
 
       if (controller is StateController) {
