@@ -15,6 +15,10 @@
   Login Form with API call.
   TODO List.
   Localization example.
+  ListView and detail page.
+  Menu page.
+  Dialogs.
+  Navigation and custom Route/Transition.
 
 - [Core] 'minor update'
   Add more platforms to 'onPlatform' function.
