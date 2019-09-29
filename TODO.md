@@ -1,14 +1,14 @@
 - Documentation
-  All, mainly Factory, BaseApp, BaseController, ControlWidget, FieldControl
+  + All, mainly Factory, BaseApp, BaseController, ControlWidget, FieldControl
 
 - Tests
-  Factory.
-  BaseController.
-  FieldControl.
-  ControlWidget.
-  BaseLocalization.
-  RouteHandler.
-  WidgetInitializer.
+  + Factory.
+  + BaseController.
+  + FieldControl.
+  + ControlWidget.
+  + BaseLocalization.
+  + RouteHandler.
+  + WidgetInitializer.
 
 - Examples
   Default Flutter template.
