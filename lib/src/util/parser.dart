@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_control/core.dart';
 
 /// Helps to parse basic objects.
@@ -215,12 +217,101 @@ class Parse {
 
     return items;
   }
+
+  /// Tries to return item of given [key] or [Type].
+  /// If none found, then [defaultValue] is returned.
+  /// Currently supports [Parse.getArgFromMap], [Parse.getArgFromList] and [Parse.getArgFromString]
+  static T getArg<T>(dynamic value, {dynamic key, T defaultValue}) {
+    if (value is Map) {
+      return getArgFromMap<T>(value, key: key, defaultValue: defaultValue);
+    }
+
+    if (value is Iterable) {
+      return getArgFromList<T>(value, defaultValue: defaultValue);
+    }
+
+    if (value is String) {
+      return getArgFromString<T>(value, key: key, defaultValue: defaultValue);
+    }
+
+    return defaultValue;
+  }
+
+  /// Tries to return item of given [key] or [Type].
+  /// If none found, then [defaultValue] is returned.
+  static T getArgFromMap<T>(Map map, {dynamic key, T defaultValue}) {
+    if (map == null) {
+      return defaultValue;
+    }
+
+    if (key != null) {
+      if (map.containsKey(key)) {
+        return map[key];
+      }
+
+      if (key is Type) {
+        final item = map.values.firstWhere((item) => item.runtimeType == key, orElse: () => null);
+
+        if (item != null) {
+          return item;
+        }
+      }
+    }
+
+    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  /// Tries to return object of given [Type].
+  /// If none found, then [defaultValue] is returned.
+  static T getArgFromList<T>(Iterable iterable, {T defaultValue}) {
+    if (iterable == null) {
+      return defaultValue;
+    }
+
+    final item = iterable.firstWhere((item) => item is T, orElse: () => null);
+
+    if (item != null) {
+      return item;
+    }
+
+    return defaultValue;
+  }
+
+  /// Converts input [value] to json, then tries to return object of given [key] or [Type].
+  /// If none found, then [defaultValue] is returned.
+  static T getArgFromString<T>(String value, {dynamic key, T defaultValue}) {
+    if (value == null || value.isEmpty) {
+      return defaultValue;
+    }
+
+    final json = jsonDecode(value);
+
+    if (json is Map) {
+      return getArgFromMap<T>(json, key: key, defaultValue: defaultValue);
+    }
+
+    if (json is Iterable) {
+      return getArgFromList<T>(json, defaultValue: defaultValue);
+    }
+
+    return defaultValue;
+  }
 }
 
 /// Helps to look up for object in [Map] and [List].
+/// deprecated now - user [Parse.getArg]
+@deprecated
 class ArgHandler {
   /// Tries to return item of given key or Type.
   /// If none found, then [defaultValue] is returned.
+  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromMap]
+  @deprecated
   static T map<T>(Map map, {dynamic key, T defaultValue}) {
     if (map == null) {
       return defaultValue;
@@ -241,6 +332,8 @@ class ArgHandler {
 
   /// Tries to return object of given Type.
   /// If none found, then [defaultValue] is returned.
+  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromList]
+  @deprecated
   static T list<T>(List list, {T defaultValue}) {
     if (list == null) {
       return defaultValue;
@@ -257,6 +350,8 @@ class ArgHandler {
 
   /// Tries to return object of given Type.
   /// If none found, then [defaultValue] is returned.
+  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromList]
+  @deprecated
   static T iterable<T>(Iterable iterable, {T defaultValue}) {
     if (iterable == null) {
       return defaultValue;
