@@ -58,7 +58,7 @@
   + **done** Provide save access to Stream or to major Stream functions.
 
 - [ListControl] 'semi-major update'
-  + Implement whole Iterable or just major functions from there..
+  + **done** Implement whole Iterable or just major functions from there..
   
 - [StringControl] 'minor update'
   + **done** Add regex validation
@@ -94,5 +94,6 @@
   + Combine with [Device] to provide more runtime numbers based on physical device.
   
 - [UnitId] 'new class'
-  + Random id generator.
-  + Sequenced id based generator on index and given string sequence (0 = a, 1 = b, 25 = z, 26 = aa).
+  + **done**  Random id generator.
+  + **done**  Sequence id generator on index and given string sequence (0 = a, 1 = b, 25 = z, 26 = aa).
+  + **done**  Next id generator - based on timestamp.
