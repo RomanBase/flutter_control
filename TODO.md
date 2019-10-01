@@ -21,10 +21,10 @@
   + Navigation and custom Route/Transition.
 
 - [Core] 'minor update'
-  + Add more platforms to 'onPlatform' function.
+  + **done** Add more platforms to 'onPlatform' function.
 
 - [BaseApp] 'semi-major update'
-  + Support for CupertinoApp.
+  + Support for CupertinoApp. Currently everything is based on 'package:flutter/material.dart' from [Core] export.
   + Add more params from MaterialApp.
   
 - [AppControl] 'new purpose update'
@@ -32,11 +32,10 @@
   + Try to find new purpose for this class..
   
 - [BaseFactory] 'semi-major update'
-  + Merge or clean up some shady functions.
-  + 'add' vs. 'addItem' functions - 'object' to store is required and 'key' can be empty.
-  + 'get' vs. 'getWith' - can be merged.
-  + 'find' - make it more generic and use Parse/ArgHandler to help find object from input collection.
-  + 'removeType' - just rename to removeAll
+  + **done** Merge or clean up some shady functions.
+  + **done** 'add' vs. 'addItem' functions - 'object' to store is required and 'key' can be empty.
+  + **done** 'get' vs. 'getWith' - can be merged.
+  + **done** 'find' - make it more generic and use Parse/ArgHandler to help find object from input collection.
 
 - [ControlWidget] 'semi-major update'
   + Better support for custom State
@@ -46,10 +45,11 @@
   + [RouteControl] - more dialog options and custom Transitions
 
 - [ArgHandler] x [Parse] 'minor update'
-  + Deprecate ArgHandler and upgrade Parse with functions from ArgHandler.
-  + 'getArg' - accepts dynamic at input and decides what to do next - use getArgFrom List/Map or cast, use other parse method or return default..
-  + 'getArgFromList' - based on ArgHandler.list/ArgHandler.iterable
-  + 'getArgFromMap' - based on ArgHandler.map
+  + **done** Deprecate ArgHandler and upgrade Parse with functions from ArgHandler.
+  + **done** 'getArg' - accepts dynamic at input and decides what to do next - use getArgFrom List/Map or cast, use other parse method or return default..
+  + **done** 'getArgFromList' - based on ArgHandler.list/ArgHandler.iterable
+  + **done** 'getArgFromMap' - based on ArgHandler.map
+  + **done** 'getArgFromString' - parse input to json and then return object.
 
 - [GlobalSubscription] x [ControlSubscription] x [FieldSubscription] 'major update'
   + Compare these and maybe merge them or create interface/abstract class.
@@ -61,10 +61,16 @@
   + Implement whole Iterable or just major functions from there..
   
 - [StringControl] 'minor update'
-  + Add regex validation
+  + **done** Add regex validation
+
+- [IntegerControl] and [DoubleControl] 'minor update'
+  + **done** Update 'inRange' functionality to work within 'setValue'.
+  
+- [FieldBuilderGroup] 'minor update'
+  + **done** Cancel subscriptions on dispose.
   
 - [InputField] 'minor update'
-  + Check/correct params or default values for latest Flutter version.
+  + **done** Check/correct params or default values for latest Flutter version.
   
 - [NavigatorController] and [NavigatorStackController] 'minor update'
   + Provide functions to Controllers of child Widgets.
@@ -76,7 +82,9 @@
   + Add more platform specific props and helpers.
   
 - [BaseLocalization] 'minor update'
-  + Custom/dynamic localization extractor for multi language API data.
+  + **done** Custom/dynamic localization extractor for multi language API data.
+  + **done** localizeDynamic - add custom parser param.
+  + **done** localizePlural - add 'other' option.
   
 - [BasePrefs] 'minor update'
   + Json - get/set is quit unstable right now. Add some safety checks..
