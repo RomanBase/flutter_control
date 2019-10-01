@@ -450,7 +450,7 @@ class FieldControl<T> implements Disposable {
 
   /// Subscribes to [Stream] of this controller.
   /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
-  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false}) {
+  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool notifyNow: true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
@@ -459,7 +459,9 @@ class FieldControl<T> implements Disposable {
       cancelOnError: cancelOnError,
     );
 
-    onData(value);
+    if (value != null && notifyNow) {
+      onData(value);
+    }
 
     return _addSub(subscription);
   }
@@ -1000,7 +1002,32 @@ class StringControl extends FieldControl<String> {
   /// [String.isEmpty]
   bool get isEmpty => value?.isEmpty ?? true;
 
+  String regex;
+
+  bool get validRegex => regex != null;
+
   StringControl([String value]) : super(value);
+
+  StringControl.withRegex({String value, this.regex}) {
+    setWithRegex(value);
+  }
+
+  @override
+  void setValue(String value) {
+    if (validRegex) {
+      setWithRegex(value);
+    } else {
+      super.setValue(value);
+    }
+  }
+
+  void setWithRegex(String value, {String regex}) {
+    regex ??= this.regex;
+
+    if (RegExp(regex).hasMatch(value ?? '')) {
+      super.setValue(value);
+    }
+  }
 }
 
 /// Double controller
@@ -1008,16 +1035,33 @@ class StringControl extends FieldControl<String> {
 /// [FieldBuilder]
 class DoubleControl extends FieldControl<double> {
   double min = 0.0;
-  double max = 1.0;
+  double max = 0.0;
+  bool clamp = true;
+
+  bool get validRange => min + max != 0.0;
 
   DoubleControl([double value = 0.0]) : super(value);
 
-  DoubleControl.inRange({double value: 0.0, this.min: 0.0, this.max: 1.0}) {
+  DoubleControl.inRange({double value: 0.0, this.min: 0.0, this.max: 1.0, this.clamp: true}) {
     setInRange(value);
   }
 
-  setInRange(double value, {double min, double max}) {
-    setValue((value ?? 0.0).clamp(min ?? this.min, max ?? this.max));
+  void setValue(double value) {
+    if (validRange) {
+      setInRange(value);
+    } else {
+      super.setValue(value);
+    }
+  }
+
+  void setInRange(double value, {double min, double max}) {
+    if (clamp) {
+      super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+    } else {
+      if (value >= min && value <= max) {
+        super.setValue(value);
+      }
+    }
   }
 }
 
@@ -1026,16 +1070,33 @@ class DoubleControl extends FieldControl<double> {
 /// [FieldBuilder]
 class IntegerControl extends FieldControl<int> {
   int min = 0;
-  int max = 100;
+  int max = 0;
+  bool clamp = true;
+
+  bool get validRange => min + max != 0;
 
   IntegerControl([int value = 0]) : super(value);
 
-  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100}) {
+  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp}) {
     setInRange(value);
   }
 
-  setInRange(int value, {int min, int max}) {
-    setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+  void setValue(int value) {
+    if (validRange) {
+      setInRange(value);
+    } else {
+      super.setValue(value);
+    }
+  }
+
+  void setInRange(int value, {int min, int max}) {
+    if (clamp) {
+      super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+    } else {
+      if (value >= min && value <= max) {
+        super.setValue(value);
+      }
+    }
   }
 }
 
@@ -1055,20 +1116,34 @@ class FieldBuilderGroup extends StatefulWidget {
 
 class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
   List<dynamic> _values;
+  final _subs = List<FieldSubscription>();
+
+  List<dynamic> mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
     super.initState();
 
-    _values = widget.controllers.map((item) => item.value).toList(growable: false);
+    _values = mapValues();
 
-    widget.controllers.forEach((controller) => controller.subscribe((data) => setState(() {
-          _values = widget.controllers.map((item) => item.value).toList(growable: false);
-        })));
+    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
+          (data) => setState(() {
+            _values = mapValues();
+          }),
+          notifyNow: false,
+        )));
   }
 
   @override
   Widget build(BuildContext context) {
     return widget.builder(context, _values);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _subs.forEach((sub) => sub.cancel());
+    _subs.clear();
   }
 }
