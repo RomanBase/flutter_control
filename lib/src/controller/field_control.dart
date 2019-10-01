@@ -370,6 +370,9 @@ class FieldControl<T> implements Disposable {
   /// Use [sinkConverter] to convert input data.
   Sink<T> get sink => FieldSink<T>(this);
 
+  /// Default stream of this control.
+  Stream<T> get stream => _stream.stream;
+
   /// Returns true if current stream is closed.
   bool get isClosed => _stream.isClosed;
 
@@ -594,7 +597,7 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
   }) : super(
           key: key,
           initialData: controller._value,
-          stream: controller._stream.stream,
+          stream: controller.stream,
           builder: builder,
         );
 
@@ -659,6 +662,22 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Returns the object at given index.
   T operator [](int index) => value[index];
+
+  /// Filters data into given [controller].
+  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
+    return subscribe(
+          (data) {
+        if (filter != null) {
+          data = data.where(filter).toList();
+        }
+
+        controller.setValue(converter != null ? converter(data) : data);
+      },
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
 
   @override
   void notify() {
@@ -754,18 +773,6 @@ class ListControl<T> extends FieldControl<List<T>> {
     notify();
   }
 
-  /// [List.firstWhere].
-  T firstWhere(Predicate<T> test) => value.firstWhere(test);
-
-  /// [List.where].
-  Iterable<T> where(Predicate<T> test) => value.where(test);
-
-  /// [Iterable.indexWhere]
-  int indexWhere(Predicate<T> test, [int start = 0]) => value.indexWhere(test, start);
-
-  /// [Iterable.indexOf]
-  int indexOf(T object) => value.indexOf(object);
-
   /// [Iterable.clear].
   void clear({bool disposeItems: false}) {
     if (disposeItems) {
@@ -791,24 +798,79 @@ class ListControl<T> extends FieldControl<List<T>> {
     notify();
   }
 
+  /// [Iterable.map].
+  Iterable<E> map<E>(E f(T item)) => value.map(f);
+
+  /// [Iterable.contains].
+  bool contains(Object object) => value.contains(object);
+
+  /// [Iterable.forEach].
+  void forEach(void f(T item)) => value.forEach(f);
+
+  /// [Iterable.reduce].
+  T reduce(T combine(T value, T element)) => value.reduce(combine);
+
+  /// [Iterable.fold].
+  E fold<E>(E initialValue, E combine(E previousValue, T element)) => value.fold(initialValue, combine);
+
+  /// [Iterable.every].
+  bool every(bool test(T element)) => value.every(test);
+
+  /// [Iterable.join].
+  String join([String separator = ""]) => value.join(separator);
+
+  /// [Iterable.any].
+  bool any(bool test(T element)) => value.any(test);
+
+  /// [Iterable.toList].
+  List<T> toList({bool growable = true}) => value.toList(growable: growable);
+
+  /// [Iterable.toSet].
+  Set<T> toSet() => value.toSet();
+
+  /// [Iterable.take].
+  Iterable<T> take(int count) => value.take(count);
+
+  /// [Iterable.takeWhile].
+  Iterable<T> takeWhile(bool test(T value)) => value.takeWhile(test);
+
+  /// [Iterable.skip].
+  Iterable<T> skip(int count) => value.skip(count);
+
+  /// [Iterable.skipWhile].
+  Iterable<T> skipWhile(bool test(T value)) => value.skipWhile(test);
+
+  /// [Iterable.firstWhere].
+  /// If no element satisfies [test], then return null.
+  T firstWhere(Predicate<T> test) => value.firstWhere(test, orElse: () => null);
+
+  /// [Iterable.firstWhere].
+  /// If no element satisfies [test], then return null.
+  T lastWhere(Predicate<T> test) => value.lastWhere(test, orElse: () => null);
+
+  /// [Iterable.where].
+  Iterable<T> where(Predicate<T> test) => value.where(test);
+
+  /// [Iterable.indexWhere]
+  int indexWhere(Predicate<T> test, [int start = 0]) => value.indexWhere(test, start);
+
+  /// [List.lastIndexWhere].
+  int lastIndexWhere(bool test(T element), [int start]) => value.lastIndexWhere(test, start);
+
+  /// [Iterable.indexOf]
+  int indexOf(T object) => value.indexOf(object);
+
+  /// [List.lastIndexOf].
+  int lastIndexOf(T element, [int start]) => value.lastIndexOf(element, start);
+
   /// [List.sublist].
   List<T> sublist(int start, [int end]) => value.sublist(start, end);
 
-  /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
-    return subscribe(
-      (data) {
-        if (filter != null) {
-          data = data.where(filter).toList();
-        }
+  /// [List.getRange].
+  Iterable<T> getRange(int start, int end) => value.getRange(start, end);
 
-        controller.setValue(converter != null ? converter(data) : data);
-      },
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
-    );
-  }
+  /// [List.asMap].
+  Map<int, T> asMap() => value.asMap();
 
   @override
   void dispose() {

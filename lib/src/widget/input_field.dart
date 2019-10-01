@@ -387,6 +387,18 @@ class InputField extends ControlWidget {
   /// {@macro flutter.widgets.edtiableText.scrollPhysics}
   final ScrollPhysics scrollPhysics;
 
+  final bool readOnly;
+
+  final ToolbarOptions toolbarOptions;
+
+  final bool showCursor;
+
+  final VoidCallback onTap;
+
+  final InputCounterWidgetBuilder buildCounter;
+
+  final ScrollController scrollController;
+
   InputField({
     Key key,
     @required this.controller,
@@ -395,28 +407,34 @@ class InputField extends ControlWidget {
     this.decoration,
     this.keyboardType,
     this.textInputAction,
-    this.textCapitalization = TextCapitalization.none,
+    this.textCapitalization: TextCapitalization.none,
     this.style,
     this.strutStyle,
-    this.textAlign = TextAlign.start,
+    this.textAlign: TextAlign.start,
     this.textDirection,
-    this.autofocus = false,
-    this.obscureText = false,
-    this.autocorrect = true,
-    this.maxLines = 1,
+    this.readOnly: false,
+    this.toolbarOptions,
+    this.showCursor,
+    this.autofocus: false,
+    this.obscureText: false,
+    this.autocorrect: true,
+    this.maxLines: 1,
     this.minLines,
-    this.expands = false,
+    this.expands: false,
     this.maxLength,
-    this.maxLengthEnforced = true,
+    this.maxLengthEnforced: true,
     this.inputFormatters,
     this.enabled,
-    this.cursorWidth = 2.0,
+    this.cursorWidth: 2.0,
     this.cursorRadius,
     this.cursorColor,
     this.keyboardAppearance,
-    this.scrollPadding = const EdgeInsets.all(20.0),
-    this.dragStartBehavior = DragStartBehavior.start,
-    this.enableInteractiveSelection,
+    this.scrollPadding: const EdgeInsets.all(20.0),
+    this.dragStartBehavior: DragStartBehavior.start,
+    this.enableInteractiveSelection: true,
+    this.onTap,
+    this.buildCounter,
+    this.scrollController,
     this.scrollPhysics,
   }) : super(key: key);
 
@@ -464,6 +482,9 @@ class InputField extends ControlWidget {
       strutStyle: strutStyle,
       textAlign: textAlign,
       textDirection: textDirection,
+      toolbarOptions: toolbarOptions,
+      showCursor: showCursor,
+      readOnly: readOnly,
       autofocus: autofocus,
       obscureText: controller._obscure,
       autocorrect: autocorrect,
@@ -481,6 +502,9 @@ class InputField extends ControlWidget {
       scrollPadding: scrollPadding,
       dragStartBehavior: dragStartBehavior,
       enableInteractiveSelection: enableInteractiveSelection,
+      onTap: onTap,
+      buildCounter: buildCounter,
+      scrollController: scrollController,
       scrollPhysics: scrollPhysics,
     );
   }

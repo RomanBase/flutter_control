@@ -55,7 +55,7 @@
   + Compare these and maybe merge them or create interface/abstract class.
 
 - [FieldControl] 'minor update'
-  + Provide save access to Stream or to major Stream functions.
+  + **done** Provide save access to Stream or to major Stream functions.
 
 - [ListControl] 'semi-major update'
   + Implement whole Iterable or just major functions from there..
