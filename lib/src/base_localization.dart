@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
+typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationParser = dynamic Function(dynamic data, String locale);
+
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
   /// Locale key in iso2 standard (en, es, etc.).
@@ -60,7 +63,11 @@ class BaseLocalization with PrefsProvider {
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
+  /// Checks if any data are stored in localization.
   bool get isActive => _data.length > 0;
+
+  /// Custom func for [extractLocalization].
+  LocalizationExtractor _mapExtractor;
 
   /// Default constructor
   BaseLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
@@ -225,23 +232,31 @@ class BaseLocalization with PrefsProvider {
   ///   "1": "single",
   ///   "2": "few",
   ///   "5": "many"
+  ///   "other": "none of above"
   /// }
   ///
   /// plural: 1 returns 'single'
   /// plural: 4 returns 'few'
   /// plural: 9 returns 'many'
+  /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
   String localizePlural(String key, int plural) {
     if (_data.containsKey(key) && _data[key] is Map) {
+      final data = _data[key];
       final nums = List<int>();
-      _data[key].forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+
+      data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
       nums.sort();
 
       for (final num in nums.reversed) {
         if (plural >= num) {
-          return _data[key][num.toString()];
+          return data[num.toString()];
         }
+      }
+
+      if (data.contains['other']) {
+        return data['other'];
       }
     }
 
@@ -269,7 +284,7 @@ class BaseLocalization with PrefsProvider {
 
   /// Tries to localize text by given [key].
   ///
-  /// json: {
+  /// {
   ///   "address": {
   ///     "name": "Maria De Flutter",
   ///     "street": "St. Maria 1189",
@@ -278,10 +293,15 @@ class BaseLocalization with PrefsProvider {
   /// }
   ///
   /// [key] 'address' returns [Map] of json data.
+  /// [parser] custom parser of returned data.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  dynamic localizeDynamic(String key) {
+  dynamic localizeDynamic(String key, {LocalizationParser parser}) {
     if (_data.containsKey(key)) {
+      if (parser != null) {
+        return parser(_data[key], locale);
+      }
+
       return _data[key];
     }
 
@@ -293,6 +313,10 @@ class BaseLocalization with PrefsProvider {
   String extractLocalization(Map map, {String iso2Locale, String defaultLocale}) {
     iso2Locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
+
+    if (_mapExtractor != null) {
+      return _mapExtractor(map, iso2Locale, defaultLocale);
+    }
 
     if (map != null) {
       if (map.containsKey(iso2Locale)) {
@@ -331,7 +355,7 @@ class LocalizationProvider {
 
   ///[BaseLocalization.localizeDynamic]
   @protected
-  dynamic localizeDynamic(String key) => localization.localizeDynamic(key);
+  dynamic localizeDynamic(String key, {LocalizationParser parser}) => localization.localizeDynamic(key, parser: parser);
 
   ///[BaseLocalization.extractLocalization]
   @protected

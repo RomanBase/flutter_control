@@ -54,7 +54,7 @@ class AppControl extends InheritedWidget {
 
     _accessType = this.runtimeType;
 
-    ControlFactory.of(this).addItem(ControlKey.control, this);
+    ControlFactory.of(this).add(key: ControlKey.control, value: this);
   }
 
   void notifyAppState([dynamic state]) {
