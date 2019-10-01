@@ -133,41 +133,45 @@ class ControlFactory implements Disposable {
   /// Stores initializer for later use - [init] or [get].
   void addInitializer<T>(Initializer<T> initializer) => _initializers[T] = initializer;
 
-  /// Stores [object] with given [key] for later use - [get] and [getWith].
-  /// Object with same [key] previously stored in factory is overridden.
-  void addItem(String key, dynamic object) {
-    if (key == null || key.isEmpty) {
-      key = object.runtimeType.toString();
+  /// returns new object of requested type.
+  /// initializer must be specified - [addInitializer]
+  /// nullable
+  void _initItem(dynamic item, {Map args, bool forceInit: false}) {
+    if (item is Initializable && (args != null || forceInit)) {
+      item.init(args);
     }
-
-    _items[key] = object;
   }
 
-  /// Stores [object] of given Type for later use.
-  /// Key is [runtimeType] of given [object].
+  /// Stores [value] with given [key] for later use - [get] and [getWith].
+  /// Object with same [key] previously stored in factory is overridden.
+  /// When given [key] is null, then key is generated from [runtimeType] of given [value].
   /// returns key of stored object.
-  String add(dynamic object) {
-    final key = object.runtimeType.toString();
+  String add({String key, @required dynamic value}) {
+    if (key == null || key.isEmpty) {
+      key = value.runtimeType.toString();
+    }
 
-    _items[key] = object;
+    _items[key] = value;
 
     return key;
   }
 
   /// returns object of requested type by given key or by Type.
-  /// check [getWith] for more complex getter
+  /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
   /// nullable
-  T get<T>([String key]) {
+  T get<T>([String key, Map args]) {
     if (key != null) {
       final item = _items[key] as T;
 
       if (item != null) {
+        _initItem(item, args: args, forceInit: false);
         return item;
       }
     }
 
     for (final item in _items.values) {
       if (item.runtimeType == T) {
+        _initItem(item, args: args, forceInit: false);
         return item;
       }
     }
@@ -175,29 +179,14 @@ class ControlFactory implements Disposable {
     return init<T>();
   }
 
-  /// returns object of requested type by given key.
-  /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
-  /// nullable
-  T getWith<T>(String key, [Map args]) {
-    final item = get<T>(key);
-
-    if (item != null && item is Initializable && args != null) {
-      item.init(args);
-    }
-
-    return item;
-  }
-
   /// Looks for item by [Type] in collection.
   /// [includeFactory] to search in factory too.
   /// [defaultValue] is returned if nothing found.
-  T find<T>(Iterable collection, {bool includeFactory: true, T defaultValue}) {
-    if (collection != null) {
-      for (final item in collection) {
-        if (item.runtimeType == T) {
-          return item;
-        }
-      }
+  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue}) {
+    final item = Parse.getArg(collection);
+
+    if (item != null) {
+      return item;
     }
 
     if (includeFactory) {
@@ -214,9 +203,7 @@ class ControlFactory implements Disposable {
     if (_initializers.containsKey(T)) {
       final item = _initializers[T]() as T;
 
-      if (item is Initializable && (args != null || forceInit)) {
-        item.init(args);
-      }
+      _initItem(item, args: args, forceInit: forceInit);
 
       return item;
     }
@@ -233,8 +220,13 @@ class ControlFactory implements Disposable {
     }
   }
 
+  /// Removes initializer of given Type.
+  void removeInitializer(Type type) {
+    _initializers.remove(type);
+  }
+
   /// Removes all items of given type
-  void removeType(Type type, {bool includeInitializers: false}) {
+  void removeAll(Type type, {bool includeInitializers: false}) {
     _items.removeWhere((key, item) => item.runtimeType == type);
 
     if (includeInitializers) {
@@ -242,13 +234,26 @@ class ControlFactory implements Disposable {
     }
   }
 
-  /// Removes initializer of given Type.
-  void removeInitializer(Type type) {
-    _initializers.remove(type);
+  /// Checks if key/type/object is in Factory.
+  bool contains(dynamic value) {
+    if (value is String && containsKey(value)) {
+      return true;
+    }
+
+    if (value is Type) {
+      if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null ||
+          _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
+        return true;
+      }
+    } else if (containsKey(value.runtimeType.toString())) {
+      return true;
+    }
+
+    return _items.values.contains(value);
   }
 
   /// Checks if key is in Factory.
-  bool contains(String key) => _items.containsKey(key);
+  bool containsKey(String key) => _items.containsKey(key);
 
   /// Checks if Type is in Factory.
   bool containsType<T>({bool includeInitializers: true}) {

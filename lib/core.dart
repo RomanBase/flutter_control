@@ -48,15 +48,47 @@ bool inRelease({bool profileModeAsRelease: true}) {
   return result;
 }
 
-T onPlatform<T>({Initializer<T> android, Initializer<T> ios, Initializer<T> all}) {
+T onPlatform<T>({
+  Initializer<T> android,
+  Initializer<T> ios,
+  Initializer<T> mobile,
+  Initializer<T> mac,
+  Initializer<T> win,
+  Initializer<T> desktop,
+  Initializer<T> all,
+}) {
   switch (Platform.operatingSystem) {
     case 'android':
-      return android == null ? (all == null ? null : all()) : android();
+      return _platformFuncSwitch(android, mobile, all);
     case 'ios':
-      return ios == null ? (all == null ? null : all()) : ios();
+      return _platformFuncSwitch(ios, mobile, all);
+    case 'macos':
+      return _platformFuncSwitch(mac, desktop, all);
+    case 'windows':
+      return _platformFuncSwitch(win, desktop, all);
+    case 'linux':
+      return _platformFuncSwitch(null, desktop, all);
+    case 'fuchsia':
+      return _platformFuncSwitch(null, desktop, all);
     default:
       return all == null ? null : all();
   }
+}
+
+T _platformFuncSwitch<T>(Initializer<T> platform, Initializer<T> alter, Initializer<T> all) {
+  if (platform != null) {
+    return platform();
+  }
+
+  if (alter != null) {
+    return alter();
+  }
+
+  if (all != null) {
+    return all();
+  }
+
+  return null;
 }
 
 void printDebug(Object object) {
