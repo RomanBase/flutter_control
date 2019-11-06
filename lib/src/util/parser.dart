@@ -90,6 +90,7 @@ class Parse {
   /// List, Map, Iterable.
   ///
   /// Use [ValueConverter] to convert values into new List.
+  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static List<T> toList<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
     final items = List<T>();
 
@@ -126,6 +127,13 @@ class Parse {
     return items;
   }
 
+  /// Tries to parse value into List.
+  /// If converter is not specified [Parse.toList] is used instead.
+  ///
+  /// List, Map, Iterable.
+  ///
+  /// Use [PairConverter] to convert values into new List.
+  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static List<T> toListPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
     final items = List<T>();
 
@@ -154,6 +162,12 @@ class Parse {
     return items;
   }
 
+  /// Tries to parse value into Map.
+  ///
+  /// List, Map, Iterable.
+  ///
+  /// Use [ValueConverter] to convert values into new List.
+  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
     final items = Map<String, T>();
 
@@ -190,6 +204,13 @@ class Parse {
     return items;
   }
 
+  /// Tries to parse value into Map.
+  /// If converter is not specified [Parse.toMap] is used instead.
+  ///
+  /// List, Map, Iterable.
+  ///
+  /// Use [PairConverter] to convert values into new Map.
+  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static Map<String, T> toMapPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
     final items = Map<String, T>();
 
@@ -221,25 +242,26 @@ class Parse {
   /// Tries to return item of given [key] or [Type].
   /// If none found, then [defaultValue] is returned.
   /// Currently supports [Parse.getArgFromMap], [Parse.getArgFromList] and [Parse.getArgFromString]
-  static T getArg<T>(dynamic value, {dynamic key, T defaultValue}) {
+  static T getArg<T>(dynamic value, {dynamic key, bool Function(dynamic) predicate, T defaultValue}) {
     if (value is Map) {
-      return getArgFromMap<T>(value, key: key, defaultValue: defaultValue);
+      return getArgFromMap<T>(value, key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     if (value is Iterable) {
-      return getArgFromList<T>(value, defaultValue: defaultValue);
+      return getArgFromList<T>(value, predicate: predicate, defaultValue: defaultValue);
     }
 
     if (value is String) {
-      return getArgFromString<T>(value, key: key, defaultValue: defaultValue);
+      return getArgFromString<T>(value, key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     return defaultValue;
   }
 
-  /// Tries to return item of given [key] or [Type].
+  /// Tries to return item of given [key], [Type] or [predicate].
+  /// If [key] is not specified, then [Parse.getArgFromList] is used.
   /// If none found, then [defaultValue] is returned.
-  static T getArgFromMap<T>(Map map, {dynamic key, T defaultValue}) {
+  static T getArgFromMap<T>(Map map, {dynamic key, bool Function(dynamic) predicate, T defaultValue}) {
     if (map == null) {
       return defaultValue;
     }
@@ -258,34 +280,36 @@ class Parse {
       }
     }
 
-    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
+    return getArgFromList(map.values, predicate: predicate, defaultValue: defaultValue);
   }
 
-  /// Tries to return object of given [Type].
+  /// Tries to return object of given [Type] or [predicate].
   /// If none found, then [defaultValue] is returned.
-  static T getArgFromList<T>(Iterable iterable, {T defaultValue}) {
+  static T getArgFromList<T>(Iterable iterable, {bool Function(dynamic) predicate, T defaultValue}) {
     if (iterable == null) {
       return defaultValue;
     }
 
-    final item = iterable.firstWhere((item) => item is T, orElse: () => null);
+    if (predicate != null) {
+      final testItem = iterable.firstWhere(predicate, orElse: () => null);
 
-    if (item != null) {
-      return item;
+      if (testItem != null) {
+        return testItem;
+      }
+    }
+
+    final typeItem = iterable.firstWhere((item) => item is T, orElse: () => null);
+
+    if (typeItem != null) {
+      return typeItem;
     }
 
     return defaultValue;
   }
 
-  /// Converts input [value] to json, then tries to return object of given [key] or [Type].
+  /// Converts input [value] to json, then tries to return object of given [key], [Type] or [predicate].
   /// If none found, then [defaultValue] is returned.
-  static T getArgFromString<T>(String value, {dynamic key, T defaultValue}) {
+  static T getArgFromString<T>(String value, {dynamic key, bool Function(dynamic) predicate, T defaultValue}) {
     if (value == null || value.isEmpty) {
       return defaultValue;
     }
@@ -293,11 +317,11 @@ class Parse {
     final json = jsonDecode(value);
 
     if (json is Map) {
-      return getArgFromMap<T>(json, key: key, defaultValue: defaultValue);
+      return getArgFromMap<T>(json, key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     if (json is Iterable) {
-      return getArgFromList<T>(json, defaultValue: defaultValue);
+      return getArgFromList<T>(json, predicate: predicate, defaultValue: defaultValue);
     }
 
     return defaultValue;
@@ -305,7 +329,7 @@ class Parse {
 }
 
 /// Helps to look up for object in [Map] and [List].
-/// deprecated now - user [Parse.getArg]
+/// deprecated now - use [Parse.getArg] instead.
 @deprecated
 class ArgHandler {
   /// Tries to return item of given key or Type.
