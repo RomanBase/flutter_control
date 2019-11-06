@@ -7,6 +7,13 @@ class UnitId {
   static const aZn = 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789';
   static const hex = '0123456789ABCDEF';
 
+  /// Cycles through given [sequence] and builds String based on given [index] number.
+  ///
+  /// For [UnitId.aZ] sequence results are:
+  /// 0 - a
+  /// 1 - b
+  /// 26 - aa
+  /// 27 - ab
   static String cycleId(int index, String sequence) {
     if (index > sequence.length - 1) {
       final count = sequence.length;
@@ -18,38 +25,36 @@ class UnitId {
     return sequence[index];
   }
 
-  static String randomFromSequence(int count, String sequence) {
-    final output = StringBuffer();
+  /// Returns [UnitId.cycleId] of given [index].
+  /// [UnitId.az] is used as input - so result is not case sensitive and without numbers.
+  /// Set [digitOffset] to specify minimum length of final result.
+  static String charId(int index, {int digitOffset: 0}) => cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
 
-    final rnd = Random();
-
-    for (int i = 0; i < count; i++) {
-      output.write(sequence[rnd.nextInt(sequence.length)]);
-    }
-
-    return output.toString();
-  }
-
-  static String charId(int index, {int digitOffset: 0}) => cycleId(index + digitCycleOffset(digitOffset, az.length), az);
-
+  /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds 4 random chars to end of String.
+  /// [UnitId.aZn] is used as input - so result is case sensitive and with numbers.
   static String nextId() {
     final stamp = DateTime.now().toUtc().microsecondsSinceEpoch;
 
     return cycleId(stamp, aZn) + randomId(length: 4, includeNums: true);
   }
 
-  static String randomId({int length: 8, bool includeNums: false, bool toUpper: false, bool toLower: false}) {
+  /// Returns random String with given [length] and settings.
+  static String randomId({int length: 8, bool includeNums: false, bool toLower: false, bool toUpper: false}) {
     String sequence = az;
 
     if (includeNums) {
-      if (toUpper || toLower) {
+      if (toLower) {
         sequence = azn;
+      } else if (toUpper) {
+        sequence = azn.toUpperCase();
       } else {
         sequence = aZn;
       }
     } else {
-      if (toUpper || toLower) {
+      if (toLower) {
         sequence = az;
+      } else if (toUpper) {
+        sequence = az.toUpperCase();
       } else {
         sequence = aZ;
       }
@@ -57,10 +62,30 @@ class UnitId {
 
     final output = randomFromSequence(length, sequence);
 
-    return toUpper ? output.toUpperCase() : output;
+    return output;
   }
 
-  static int digitCycleOffset(int digits, int count) {
+  /// Returns random String with given [length] of chars form [sequence].
+  static String randomFromSequence(int length, String sequence) {
+    final output = StringBuffer();
+
+    final rnd = Random();
+
+    for (int i = 0; i < length; i++) {
+      output.write(sequence[rnd.nextInt(sequence.length)]);
+    }
+
+    return output.toString();
+  }
+
+  /// Returns offset for given sequence length
+  ///
+  /// for 10 char sequence offsets are:
+  /// (1)a - offset 0
+  /// (2)aa - offset 10
+  /// (3)aaa - offset 110
+  /// (4)aaaa - offset 1110
+  static int _digitCycleOffset(int digits, int count) {
     if (digits < 2) {
       return 0;
     }
