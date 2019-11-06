@@ -98,7 +98,7 @@ class NavigatorStack extends StatelessWidget implements _StackNavigator {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static Widget single({NavigatorController controller, @required WidgetBuilder builder, bool overrideNavigation: false, bool stable: true}) {
+  static Widget single({NavigatorController controller, @required WidgetBuilder builder, bool overrideNavigation: false}) {
     return NavigatorStack._(
       controller: controller ?? NavigatorController(),
       initializer: WidgetInitializer.of(builder),
@@ -116,7 +116,7 @@ class NavigatorStack extends StatelessWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static Widget pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true, bool stable: true}) {
+  static Widget pages({Key key, NavigatorStackController controller, @required List<NavigatorStack> pages, bool overrideNavigation: true}) {
     return _NavigatorStackOffstage(
       pages: pages,
       controller: controller ?? NavigatorStackController(),
@@ -134,7 +134,7 @@ class NavigatorStack extends StatelessWidget implements _StackNavigator {
   /// [NavigatorStackController] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static Widget menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true, bool stable: true}) {
+  static Widget menu({NavigatorStackController controller, @required Map<MenuItem, WidgetBuilder> pages, bool overrideNavigation: true}) {
     final items = List<NavigatorStack>();
 
     pages.forEach((key, value) => items.add(NavigatorStack._(
