@@ -181,7 +181,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Returns value by given key or type.
   /// Args are passed to Widget during [init] phase.
-  T getArg<T>({String key, T defaultValue}) => ArgHandler.map<T>(args, key: key, defaultValue: defaultValue);
+  T getArg<T>({String key, T defaultValue}) => Parse.getArgFromMap<T>(args, key: key, defaultValue: defaultValue);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
@@ -302,7 +302,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   void init(Map<String, dynamic> args) {
     super.init(args);
 
-    holder.route = ArgHandler.map<Route>(args, key: ControlKey.initData);
+    holder.route = Parse.getArg<Route>(args, key: ControlKey.initData);
 
     if (holder.route != null) {
       printDebug('${this.toString()} at route: ${holder.route.settings.name}');

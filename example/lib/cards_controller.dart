@@ -61,7 +61,7 @@ class DetailController extends BaseController with RouteController, Localization
   void onInit(Map<String, dynamic> args) {
     super.onInit(args);
 
-    _model = ArgHandler.map<CardModel>(args);
+    _model = args.getArg<CardModel>();
 
     _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }

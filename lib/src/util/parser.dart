@@ -122,6 +122,18 @@ class Parse {
           }
         });
       }
+    } else {
+      if (converter == null) {
+        if (value is T) {
+          items.add(value);
+        } else {
+          final listItem = converter(value);
+
+          if (listItem != null && listItem is T) {
+            items.add(listItem);
+          }
+        }
+      }
     }
 
     return items;
@@ -157,6 +169,18 @@ class Parse {
           items.add(listItem);
         }
       });
+    } else {
+      if (converter == null) {
+        if (value is T) {
+          items.add(value);
+        } else {
+          final listItem = converter('0', value);
+
+          if (listItem != null && listItem is T) {
+            items.add(listItem);
+          }
+        }
+      }
     }
 
     return items;
@@ -199,6 +223,18 @@ class Parse {
           }
         });
       }
+    } else {
+      if (converter == null) {
+        if (value is T) {
+          items['0'] = value;
+        } else {
+          final listItem = converter(value);
+
+          if (listItem != null && listItem is T) {
+            items['0'] = value;
+          }
+        }
+      }
     }
 
     return items;
@@ -234,6 +270,18 @@ class Parse {
           items[key.toString()] = mapItem;
         }
       });
+    } else {
+      if (converter == null) {
+        if (value is T) {
+          items['0'] = value;
+        } else {
+          final listItem = converter('0', value);
+
+          if (listItem != null && listItem is T) {
+            items['0'] = listItem;
+          }
+        }
+      }
     }
 
     return items;
@@ -328,65 +376,14 @@ class Parse {
   }
 }
 
-/// Helps to look up for object in [Map] and [List].
-/// deprecated now - use [Parse.getArg] instead.
-@deprecated
-class ArgHandler {
-  /// Tries to return item of given key or Type.
-  /// If none found, then [defaultValue] is returned.
-  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromMap]
-  @deprecated
-  static T map<T>(Map map, {dynamic key, T defaultValue}) {
-    if (map == null) {
-      return defaultValue;
-    }
+extension ObjectExtension on String {
+  T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromString<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
+}
 
-    if (map.containsKey(key)) {
-      return map[key];
-    }
+extension MapExtension on Map {
+  T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromMap<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
+}
 
-    final item = map.values.firstWhere((item) => item is T, orElse: () => null);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
-
-  /// Tries to return object of given Type.
-  /// If none found, then [defaultValue] is returned.
-  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromList]
-  @deprecated
-  static T list<T>(List list, {T defaultValue}) {
-    if (list == null) {
-      return defaultValue;
-    }
-
-    final item = list.firstWhere((item) => item is T, orElse: () => null);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
-
-  /// Tries to return object of given Type.
-  /// If none found, then [defaultValue] is returned.
-  /// deprecated now - user [Parse.getArg] or [Parse.getArgFromList]
-  @deprecated
-  static T iterable<T>(Iterable iterable, {T defaultValue}) {
-    if (iterable == null) {
-      return defaultValue;
-    }
-
-    final item = iterable.firstWhere((item) => item is T, orElse: () => null);
-
-    if (item != null) {
-      return item;
-    }
-
-    return defaultValue;
-  }
+extension IterableExtension on List {
+  T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
 }
