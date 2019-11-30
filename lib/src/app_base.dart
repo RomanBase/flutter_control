@@ -52,7 +52,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
   /// Is passed into AppControl.
   final contextHolder = ContextHolder();
 
-  String defaultLocale;
+  String locale;
   WidgetInitializer _rootBuilder;
 
   bool _loading = true;
@@ -62,7 +62,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     setState(() {
       final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
       if (localization != null) {
-        defaultLocale = localization.locale;
+        locale = localization.locale;
       }
     });
   }
@@ -123,7 +123,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
 
-    defaultLocale = localization.defaultLocale;
+    locale = localization.defaultLocale;
 
     contextHolder.once((context) async {
       if (widget.loadLocalization) {
@@ -136,7 +136,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
 
       setState(() {
         _loading = false;
-        defaultLocale = localization.locale;
+        locale = localization.locale;
       });
     });
   }
@@ -146,7 +146,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     return AppControl(
       rootKey: rootKey,
       contextHolder: contextHolder,
-      locale: defaultLocale,
+      locale: locale,
       rootState: this,
       child: MaterialApp(
         key: rootKey,
