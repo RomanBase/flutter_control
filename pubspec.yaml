@@ -5,7 +5,7 @@ author: "Roman <ro.hornak@gmail.com>"
 homepage: https://github.com/romanbase/flutter_control
 
 environment:
-  sdk: ">=2.6.0 <3.0.0"
+  sdk: ">=2.5.0 <3.0.0"
 
 dev_dependencies:
   flutter_test:
@@ -14,7 +14,6 @@ dev_dependencies:
 dependencies:
   flutter:
     sdk: flutter
-
 
   # https://pub.dartlang.org/packages/shared_preferences
   shared_preferences: ">=0.1.0 <1.0.0"

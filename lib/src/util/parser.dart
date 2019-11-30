@@ -375,7 +375,7 @@ class Parse {
     return defaultValue;
   }
 }
-
+/*
 extension ObjectExtension on String {
   T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromString<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
 }
@@ -387,3 +387,4 @@ extension MapExtension on Map {
 extension IterableExtension on List {
   T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
 }
+*/
