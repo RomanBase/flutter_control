@@ -245,3 +245,9 @@ class TodoPage extends SingleControlWidget<TodoController> {
   }
 }
 ```
+
+---
+
+**Full Structure**
+
+![Structure](/docs/structure.png)
