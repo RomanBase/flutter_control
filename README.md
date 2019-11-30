@@ -7,13 +7,15 @@ Stable but needs more testing and little care..
 Flutter Control helps to separate Business Logic from UI and works based on BLoC and Provider patterns, but with little twist.
 Whole Logic is based in Controller or Model classes and Widgets are notified about changes via Streams.
 
+![Structure](/docs/structure_simple.png)
+
 ---
 
 **Base classes**
 
 - [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
-- [AppControl] Is [InheritedWidget] around whole App. Holds Factory and other important Controllers.
-- [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide communication and synchronization between separated parts of App.
+- [AppControl] Is [InheritedWidget] around whole App.
+- [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide easy communication and synchronization between separated parts of App.
 - [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
 - [RouteHandler] Initializes Widget and handles Navigation.
 
@@ -23,16 +25,16 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 - [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
 - [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets.
-- [ListControl] Extended FieldControl to work with [List]
-- [RxControl] under construction..
+- [ListControl] Extended FieldControl to work with [Iterable]. And with [ListBuilder] to dynamically build list of Widgets.
+- [LoadingControl], [StringControl], [BoolControl], etc. with builders..
 
 ---
 
 **Controllers**
 
-- [BaseController] Stores all Business Logic and initializes self during Widget construction. Have native access to Factory and Control.
-- [StateController] Adds functionality to notify State of [ControlWidget].
-- [BaseModel] Lightweight version of Controller. Mainly used for Items in dynamic List or to separate/reuse Logic.
+- [BaseControlModel] Stores all Business Logic and initializes self during Widget construction.
+- [BaseController] Extended version of [BaseControlModel] with more functionality.
+- [BaseModel] Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic.
 - [InputController] Controller for [InputField] to control text, changes, validity, focus, etc. Controllers can be chained via 'next' and 'done' events.
 - [NavigatorController] Controller for [NavigatorStack.single] to control navigation inside Widget.
 - [NavigatorStackController] Controller for [NavigatorStack.pages] or [NavigatorStack.menu] to control navigation between Widgets.
@@ -41,11 +43,11 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 **Widgets**
 
-- [ControlWidget] Base Widget to work with Controllers. Have native access to Factory and Control. 
-- [BaseControlWidget] Widget with no init Controllers, but still have access to Factory etc. so Controllers can be get from there.
-- [SingleControlWidget] Widget with just one generic Controller.
+- [ControlWidget] Base Widget to work with ControlModel. 
+- [BaseControlWidget] Widget with no init ControlModel, but still have access to Factory etc. so Controllers can be get from there.
+- [SingleControlWidget] Widget with just one ControlModel.
 
-- [InputField] Wrapped [TextField] to provide more functionality and control via [InputController].
+- [InputField] Wrapper of [TextField] to provide more functionality and control via [InputController].
 - [FieldBuilder] Dynamic Widget builder controlled by [FieldControl].
 - [FieldBuilderGroup] Dynamic Widget builder controlled by multiple [FieldControl]s. 
 - [ListBuilder] Wrapper of [FieldBuilder] to easily work with Lists.
@@ -69,8 +71,9 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 **Mixins**
 
 - [LocalizationProvider] - mixin for any class, enables [BaseLocalization] for given object.
+- [StateController] - mixin for [BaseControlModel] to notify State of Widget.
 - [RouteControl] - mixin for [ControlWidget], enables route navigation.
-- [RouteController] - mixin for [BaseController], enables route navigation bridge to [ControlWidget] with [RouteControl]. 
+- [RouteController] - mixin for [BaseControlModel], enables route navigation bridge to [ControlWidget] with [RouteControl]. 
 - [TickerControl] - mixin for [ControlWidget], enables Ticker for given Widget.
 
 - [DisposeHandler] - mixin for any class, helps with object disposing.
@@ -83,7 +86,6 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 - [FutureBlock] Retriggerable delay.
 - [DelayBlock] Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
 - [Parse] Helps to parse json primitives and Iterables. Provides default values if parsing fails.
-- [ArgProvider] Helps to retrieve object form List or Map.
 - [Device] Wrapper over [MediaQuery].
 - [WidgetInitializer] Helps to initialize Widgets with init data.
 - [BaseTheme] Some basic values to work with during Widget composition.
