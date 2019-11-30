@@ -84,9 +84,8 @@ class ActionControl<T> implements Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  /// Defaultly [broadcast] version of [ActionControl] is created.
-  factory ActionControl.globalSubscription(String key, {bool single: false}) {
-    ActionControl control = single ? ActionControl<T>._() : _ActionControlBroadcast._();
+  factory ActionControl.globalSubscription(String key, {bool broadcast: false}) {
+    ActionControl control = broadcast ? ActionControl<T>._() : _ActionControlBroadcast._();
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
 
@@ -270,6 +269,7 @@ class _ControlBuilderState<T> extends State<ControlBuilder> {
   }
 }
 
+/// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ControlBuilderGroup extends StatefulWidget {
   final List<ActionControl> controllers;
   final ControlWidgetBuilder<List<dynamic>> builder;
@@ -635,6 +635,51 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
             });
 }
 
+/// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
+class FieldBuilderGroup extends StatefulWidget {
+  final List<FieldControl> controllers;
+  final ControlWidgetBuilder<List<dynamic>> builder;
+
+  const FieldBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
+
+  @override
+  _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
+}
+
+class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
+  List<dynamic> _values;
+  final _subs = List<FieldSubscription>();
+
+  List<dynamic> mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
+
+  @override
+  void initState() {
+    super.initState();
+
+    _values = mapValues();
+
+    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
+          (data) => setState(() {
+            _values = mapValues();
+          }),
+          notifyNow: false,
+        )));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _values);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _subs.forEach((sub) => sub.cancel());
+    _subs.clear();
+  }
+}
+
 //########################################################################################
 //########################################################################################
 //########################################################################################
@@ -666,7 +711,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// Filters data into given [controller].
   StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
     return subscribe(
-          (data) {
+      (data) {
         if (filter != null) {
           data = data.where(filter).toList();
         }
@@ -1159,53 +1204,5 @@ class IntegerControl extends FieldControl<int> {
         super.setValue(value);
       }
     }
-  }
-}
-
-//########################################################################################
-//########################################################################################
-//########################################################################################
-
-class FieldBuilderGroup extends StatefulWidget {
-  final List<FieldControl> controllers;
-  final ControlWidgetBuilder<List<dynamic>> builder;
-
-  const FieldBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
-
-  @override
-  _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
-}
-
-class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
-  List<dynamic> _values;
-  final _subs = List<FieldSubscription>();
-
-  List<dynamic> mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
-
-  @override
-  void initState() {
-    super.initState();
-
-    _values = mapValues();
-
-    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
-          (data) => setState(() {
-            _values = mapValues();
-          }),
-          notifyNow: false,
-        )));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(context, _values);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _subs.forEach((sub) => sub.cancel());
-    _subs.clear();
   }
 }

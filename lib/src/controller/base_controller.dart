@@ -48,12 +48,26 @@ abstract class StateNotifier {
 /// [BaseModel]
 ///
 /// Extend this class to create custom controllers and models.
+///
+/// Mixin your model with [LocalizationProvider] to enable localization.
 class BaseControlModel with DisposeHandler implements Initializable, Subscriptionable {
+  /// returns instance of [ControlFactory] if available.
+  /// nullable
+  ControlFactory get factory => ControlFactory.of(this);
+
+  /// returns instance of [AppControl] if available.
+  /// nullable
+  AppControl get control => factory.get(ControlKey.control);
+
   @override
   void init(Map<String, dynamic> args) {}
 
   @override
   void subscribe(dynamic object) {}
+
+  /// Called during State initialization.
+  /// Check [TickerControl] mixin.
+  void onTickerInitialized(TickerProvider ticker) {}
 }
 
 /// Base controller to use with [ControlWidget]
@@ -70,14 +84,6 @@ class BaseController extends BaseControlModel {
 
   /// return true if init function was called before.
   bool get isInitialized => _isInitialized;
-
-  /// returns instance of [ControlFactory] if available.
-  /// nullable
-  ControlFactory get factory => ControlFactory.of(this);
-
-  /// returns instance of [AppControl] if available.
-  /// nullable
-  AppControl get control => factory.get(ControlKey.control);
 
   /// prevent multiple times init and [onInit] will be called just once
   bool get preventMultiInit => true;
@@ -102,10 +108,6 @@ class BaseController extends BaseControlModel {
   /// check [init] and [preventMultiInit]
   void onInit(Map<String, dynamic> args) {}
 
-  /// Called during State initialization.
-  /// Check [TickerControl] mixin.
-  void onTickerInitialized(TickerProvider ticker) {}
-
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
   @mustCallSuper
@@ -127,7 +129,7 @@ class BaseController extends BaseControlModel {
 
 /// [State] must implement [StateNotifier] for proper functionality.
 /// Typically [ControlState] is used on the other side.
-class StateController extends BaseController implements StateNotifier {
+mixin StateController on BaseControlModel implements StateNotifier {
   /// Notify listeners.
   final _notifier = ActionControl.broadcast();
 
@@ -138,6 +140,8 @@ class StateController extends BaseController implements StateNotifier {
   void notifyState([dynamic state]) => _notifier.setValue(state);
 
   ControlSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
+
+  void cancelStateNotifier(ControlSubscription sub) => _notifier.cancel(sub);
 
   @override
   @mustCallSuper
@@ -154,7 +158,7 @@ class StateController extends BaseController implements StateNotifier {
 /// [ControlWidget] with [RouteControl]
 /// [RouteNavigator]
 /// [RouteHandler] & [PageRouteProvider]
-mixin RouteController on BaseController {
+mixin RouteController on BaseControlModel {
   /// Implementation of [RouteNavigator] where [Navigator] is used.
   RouteNavigator _navigator;
 
