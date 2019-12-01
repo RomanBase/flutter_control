@@ -115,7 +115,6 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     entries[ControlKey.localization] = BaseLocalization(
       widget.defaultLocale ?? localizationAssets[0].iso2Locale,
       localizationAssets,
-      preloadDefaultLocalization: widget.loadLocalization,
     );
 
     factory.initialize(items: entries, initializers: initializers);
