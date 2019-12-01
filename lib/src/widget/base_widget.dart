@@ -170,9 +170,14 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   }
 
   /// Notifies [State] of this [Widget].
-  void notifyState() => holder.state?.notifyState();
+  void notifyState(dynamic state) => holder.state?.notifyState(state);
+
+  /// Callback from [State] when state is notified.
+  @protected
+  void onStateChanged(dynamic state) {}
 
   /// Looks for [Type] in initialized controllers, then look up whole factory.
+  /// [ControlFactory.find]
   @protected
   T getControl<T>() => factory.find<T>(controllers);
 
@@ -215,8 +220,10 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   }
 
   @override
-  void notifyState([state]) {
-    setState(() {});
+  void notifyState([dynamic state]) {
+    setState(() {
+      widget.onStateChanged(state);
+    });
   }
 
   @protected

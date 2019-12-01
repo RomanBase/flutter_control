@@ -23,6 +23,7 @@ class LocalizationAsset {
   );
 }
 
+/// Defines result of localization change.
 class LocalizationArgs {
   final String locale;
   final String source;
@@ -70,19 +71,18 @@ class BaseLocalization with PrefsProvider {
   LocalizationExtractor _mapExtractor;
 
   /// Default constructor
-  BaseLocalization(this.defaultLocale, this.assets, {bool preloadDefaultLocalization: true}) {
-    if (preloadDefaultLocalization) {
-      changeLocale(defaultLocale, preferred: false);
-    }
-  }
+  BaseLocalization(this.defaultLocale, this.assets);
 
-  /// returns current Locale of device.
+  /// Returns current Locale of device.
   Locale deviceLocale(BuildContext context) {
     return Localizations.localeOf(context, nullOk: true);
   }
 
-  /// changes localization to system language
-  /// @preferred - true: changes localization to in app preferred language (if previously set).
+  /// Changes localization to [defaultLocale].
+  Future<LocalizationArgs> loadDefaultLocalization() => changeLocale(defaultLocale);
+
+  /// Changes localization to system language
+  /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
   Future<LocalizationArgs> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
     final pref = preferred ? await prefs.get(preference_key) : null;
 
@@ -106,7 +106,7 @@ class BaseLocalization with PrefsProvider {
     );
   }
 
-  /// returns true if localization file is available and is possible to load it.
+  /// Returns true if localization file is available and is possible to load it.
   bool isLocalizationAvailable(String iso2Locale) {
     for (final asset in assets) {
       if (asset.iso2Locale == iso2Locale) {
@@ -117,7 +117,7 @@ class BaseLocalization with PrefsProvider {
     return false;
   }
 
-  /// returns asset path for given locale or null if localization asset is not available.
+  /// Returns asset path for given locale or null if localization asset is not available.
   String getAssetPath(String iso2Locale) {
     for (final asset in assets) {
       if (asset.iso2Locale == iso2Locale) {
@@ -128,11 +128,12 @@ class BaseLocalization with PrefsProvider {
     return null;
   }
 
-  Future<LocalizationArgs> changeRawLocale(String iso2Locale, Map<String, dynamic> data) async {
+  /// Changes manually localization data, but only for current app session.
+  Future<LocalizationArgs> changeRawLocale(Map<String, dynamic> data) async {
     data.forEach((key, value) => _data[key] = value);
 
     final args = LocalizationArgs(
-      locale: iso2Locale,
+      locale: locale,
       isActive: true,
       changed: true,
       source: 'runtime',
@@ -310,26 +311,31 @@ class BaseLocalization with PrefsProvider {
 
   /// Tries to localize text by given key.
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(Map map, {String iso2Locale, String defaultLocale}) {
+  /// [BaseLocalization.setCustomExtractor] to provide custom parsing.
+  /// Default extractor works only with locale map {'locale' : 'value'}
+  String extractLocalization(dynamic data, {String iso2Locale, String defaultLocale}) {
     iso2Locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 
     if (_mapExtractor != null) {
-      return _mapExtractor(map, iso2Locale, defaultLocale);
+      return _mapExtractor(data, iso2Locale, defaultLocale);
     }
 
-    if (map != null) {
-      if (map.containsKey(iso2Locale)) {
-        return map[iso2Locale];
+    if (data is Map) {
+      if (data.containsKey(iso2Locale)) {
+        return data[iso2Locale];
       }
 
-      if (map.containsKey(defaultLocale)) {
-        return map[defaultLocale];
+      if (data.containsKey(defaultLocale)) {
+        return data[defaultLocale];
       }
     }
 
     return debug ? 'empty_{$iso2Locale}_$defaultLocale' : '';
   }
+
+  ///This extractor will be used in [BaseLocalization.extractLocalization] function.
+  void setCustomExtractor(LocalizationExtractor extractor) => _mapExtractor = extractor;
 
   /// Updates value in current set.
   /// This update is only runtime and isn't stored to localization file.
@@ -359,5 +365,5 @@ class LocalizationProvider {
 
   ///[BaseLocalization.extractLocalization]
   @protected
-  String extractLocalization(Map field) => localization.extractLocalization(field);
+  String extractLocalization(dynamic data, {String iso2Locale, String defaultLocale}) => localization.extractLocalization(data, iso2Locale: iso2Locale, defaultLocale: defaultLocale);
 }

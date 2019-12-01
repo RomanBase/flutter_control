@@ -30,6 +30,7 @@ class AppControl extends InheritedWidget {
 
   /// Holder of current root context.
   /// Don't get/set context directly - use [rootContext] instead.
+  @protected
   final ContextHolder contextHolder;
 
   /// Returns current context from [contextHolder]
