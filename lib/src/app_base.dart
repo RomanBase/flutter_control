@@ -44,27 +44,19 @@ class BaseApp extends StatefulWidget {
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
 class BaseAppState extends State<BaseApp> implements StateNotifier {
-  /// Root GlobalKey of default Scaffold.
-  /// Is passed into AppControl.
-  final rootKey = GlobalKey<State<BaseApp>>();
+  /// Root GlobalKey is passed into AppControl.
+  final _rootKey = GlobalObjectKey('root');
 
-  /// Root BuildContext of default Scaffold.
-  /// Is passed into AppControl.
-  final contextHolder = ContextHolder();
+  /// Root BuildContext holder is passed into AppControl.
+  final _contextHolder = ContextHolder();
 
-  String locale;
   WidgetInitializer _rootBuilder;
 
   bool _loading = true;
 
   @override
   void notifyState([state]) {
-    setState(() {
-      final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
-      if (localization != null) {
-        locale = localization.locale;
-      }
-    });
+    setState(() {});
   }
 
   @override
@@ -74,7 +66,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     _initControl(widget.locales, widget.entries, widget.initializers);
 
     _rootBuilder = WidgetInitializer.of((context) {
-      contextHolder.changeContext(context);
+      _contextHolder.changeContext(context);
       final root = widget.root(context);
 
       if (root is Initializable) {
@@ -122,9 +114,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
     final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
 
-    locale = localization.defaultLocale;
-
-    contextHolder.once((context) async {
+    _contextHolder.once((context) async {
       if (widget.loadLocalization) {
         await localization.changeToSystemLocale(context);
       }
@@ -135,26 +125,24 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
 
       setState(() {
         _loading = false;
-        locale = localization.locale;
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return AppControl(
-      rootKey: rootKey,
-      contextHolder: contextHolder,
-      locale: locale,
-      rootState: this,
+    return AppControl.init(
+      rootKey: _rootKey,
+      contextHolder: _contextHolder,
+      rootStateNotifier: this,
       child: MaterialApp(
-        key: rootKey,
+        key: _rootKey,
         title: widget.title,
         theme: widget.theme,
         darkTheme: widget.darkTheme,
         home: _loading
             ? Builder(builder: (context) {
-                contextHolder.changeContext(context);
+                _contextHolder.changeContext(context);
                 return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
               })
             : Builder(builder: (context) {
@@ -168,7 +156,7 @@ class BaseAppState extends State<BaseApp> implements StateNotifier {
   @override
   void dispose() {
     super.dispose();
-    contextHolder.dispose();
+    _contextHolder.dispose();
   }
 }
 

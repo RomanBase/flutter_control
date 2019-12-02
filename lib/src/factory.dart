@@ -89,7 +89,7 @@ class ControlFactory implements Disposable {
   static ControlFactory of([dynamic context]) => _instance;
 
   /// Stored objects for global use.
-  final _items = Map<String, dynamic>();
+  final _items = Map<String, dynamic>(); //TODO: dynamic key ? For faster Type access..
 
   /// Stored Getters for object initialization.
   final _initializers = Map<Type, Initializer>();
@@ -146,7 +146,7 @@ class ControlFactory implements Disposable {
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is generated from [runtimeType] of given [value].
   /// returns key of stored object.
-  String add({String key, @required dynamic value}) {
+  String set({String key, @required dynamic value}) {
     if (key == null || key.isEmpty) {
       key = value.runtimeType.toString();
     }
@@ -241,8 +241,7 @@ class ControlFactory implements Disposable {
     }
 
     if (value is Type) {
-      if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null ||
-          _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
+      if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null || _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
         return true;
       }
     } else if (containsKey(value.runtimeType.toString())) {

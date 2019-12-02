@@ -5,6 +5,7 @@ import 'cards_page.dart';
 class CardsController extends BaseController with RouteController, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
+  final input = InputController();
 
   int _counter = 0;
 
@@ -20,7 +21,11 @@ class CardsController extends BaseController with RouteController, LocalizationP
   }
 
   void addCard() {
-    newCard('${localize('card_title')} $_counter${localizePlural('number', _counter)}');
+    String title = input.isEmpty ? '${localize('card_title')} $_counter${localizePlural('number', _counter)}' : input.value;
+
+    newCard(title);
+
+    input.clear();
 
     _counter++;
   }
@@ -47,6 +52,9 @@ class CardsController extends BaseController with RouteController, LocalizationP
 
     cards.clear(disposeItems: true);
     cards.dispose();
+
+    countLabel.dispose();
+    input.dispose();
   }
 }
 
@@ -108,7 +116,7 @@ class CardModel extends BaseModel with LocalizationProvider {
     final num = items.where((item) => item.done.isTrue).length;
 
     if (sum == 0) {
-      countLabel.setValue(localize('empty_card'));
+      countLabel.setValue(null);
       progress.setValue(0.0);
       return;
     }

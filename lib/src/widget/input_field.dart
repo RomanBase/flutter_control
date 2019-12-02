@@ -52,6 +52,9 @@ class InputController extends BaseControlModel with StateController {
   /// Validity is checked right after text submit.
   bool get isValid => _isValid;
 
+  /// returns true if String [value] is empty.
+  bool get isEmpty => value.isEmpty;
+
   /// returns true if Field is focused.
   bool get hasFocus => _focusController?.hasFocus ?? false;
 

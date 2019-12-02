@@ -19,17 +19,30 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
           ),
         ],
       ),
-      body: ListBuilder<CardModel>(
-        controller: controller.cards,
-        builder: (context, items) {
-          return ListView.builder(
-            itemCount: controller.cards.length,
-            itemBuilder: (context, index) => CardWidget(controller.cards[index]),
-          );
-        },
-        noData: (context) => Center(
-          child: Text(localize('empty_list')),
-        ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: ListBuilder<CardModel>(
+              controller: controller.cards,
+              builder: (context, items) {
+                return ListView.builder(
+                  itemCount: controller.cards.length,
+                  itemBuilder: (context, index) => CardWidget(controller.cards[index]),
+                );
+              },
+              noData: (context) => Center(
+                child: Text(localize('empty_list')),
+              ),
+            ),
+          ),
+          Container(
+            color: Colors.grey,
+            padding: const EdgeInsets.symmetric(horizontal: BaseTheme.padding, vertical: BaseTheme.padding_half),
+            child: InputField(
+              controller: controller.input,
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: controller.addCard,
@@ -71,7 +84,8 @@ class CardWidget extends BaseControlWidget {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: FieldBuilder<String>(
                 controller: item.countLabel,
-                builder: (context, label) => Text(label),
+                builder: (context, text) => Text(text),
+                noData: (context) => Text(localize('empty_card')),
               ),
             ),
             FieldBuilder<double>(

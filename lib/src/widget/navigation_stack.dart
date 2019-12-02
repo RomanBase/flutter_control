@@ -230,6 +230,10 @@ class NavigatorStackController extends BaseController {
   /// Can be used with [ControlBuilder] to rebuild menu or highlight active widget.
   final pageIndex = ActionControl<int>.broadcast(0);
 
+  final int initialPageIndex;
+
+  NavigatorStackController({this.initialPageIndex: 0});
+
   /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
   /// Notifies [State] to switch [Offstage] of old/new active controller.
@@ -279,6 +283,7 @@ class _NavigatorStackOffstage extends StatelessWidget {
     assert(pages.length > 0);
 
     controller._items = pages.map((page) => page.controller).toList(growable: false);
+    controller.setPageIndex(controller.initialPageIndex);
     controller.currentController.selected = true;
   }
 

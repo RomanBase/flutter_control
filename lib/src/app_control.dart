@@ -19,9 +19,6 @@ class AppControl extends InheritedWidget {
     return ControlProvider.of(ControlKey.control);
   }
 
-  /// Holds current locale.
-  final String locale;
-
   /// Key of root State.
   final GlobalKey rootKey;
 
@@ -30,44 +27,72 @@ class AppControl extends InheritedWidget {
 
   /// Holder of current root context.
   /// Don't get/set context directly - use [rootContext] instead.
-  @protected
-  final ContextHolder contextHolder;
+  final ContextHolder _contextHolder;
 
   /// Returns current context from [contextHolder]
-  BuildContext get rootContext => contextHolder.context;
+  BuildContext get rootContext => _contextHolder.context;
 
   /// Sets new root context to [contextHolder]
-  set rootContext(BuildContext context) => contextHolder.changeContext(context);
+  set rootContext(BuildContext context) => _contextHolder.changeContext(context);
 
-  final StateNotifier rootState;
+  final StateNotifier _rootStateNotifier;
 
+  final _context = ActionControl<BuildContext>.broadcast();
+
+  /// [rootKey] is passed just like reference.
   /// Holds global [State] and root [BuildContext].
   /// Root context can be changed via [rootContext].
-  AppControl({
-    @required this.rootKey,
-    @required this.contextHolder,
-    this.locale,
-    this.rootState,
+  AppControl._(
+    this.rootKey,
+    this._contextHolder,
+    this._rootStateNotifier,
     Widget child,
-  }) : super(key: GlobalKey(), child: child) {
+  ) : super(key: GlobalObjectKey(child), child: child) {
     assert(rootKey != null);
-    assert(contextHolder != null);
+    assert(_contextHolder != null);
 
     _accessType = this.runtimeType;
 
-    ControlFactory.of(this).add(key: ControlKey.control, value: this);
+    _contextHolder.subscribe(_context.setValue);
+
+    ControlFactory.of(this).set(key: ControlKey.control, value: this);
+  }
+
+  ControlSubscription<BuildContext> subscribeContextChanges(ValueCallback<BuildContext> callback) => _context.subscribe(callback);
+
+  ControlSubscription<BuildContext> subscribeNextContextChange(ValueCallback<BuildContext> callback) => _context.once(callback);
+
+  factory AppControl.init({
+    GlobalKey rootKey,
+    @required ContextHolder contextHolder,
+    StateNotifier rootStateNotifier,
+    Widget child,
+  }) {
+    rootKey ??= child?.key as GlobalKey;
+    rootStateNotifier ??= rootKey?.currentState as StateNotifier;
+
+    return AppControl._(
+      rootKey,
+      contextHolder,
+      rootStateNotifier,
+      child,
+    );
   }
 
   void notifyAppState([dynamic state]) {
-    if (rootState != null) {
-      rootState.notifyState(state);
+    if (_rootStateNotifier != null) {
+      _rootStateNotifier.notifyState(state);
+    } else if (rootKey?.currentState is StateNotifier) {
+      (rootKey.currentState as StateNotifier).notifyState(state);
+    } else if ((child?.key as GlobalKey)?.currentState is StateNotifier) {
+      ((child.key as GlobalKey).currentState as StateNotifier).notifyState(state);
     } else {
-      printDebug('no root state specified');
+      printDebug('No notifier found. Set "rootStateNotifier" or "rootKey.currentState" or "child.key.currentState" with StateNotifier');
     }
   }
 
   @override
   bool updateShouldNotify(AppControl oldWidget) {
-    return locale != oldWidget.locale;
+    return false;
   }
 }
