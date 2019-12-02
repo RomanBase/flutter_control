@@ -1,8 +1,9 @@
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control/src/base_control.dart';
 
 typedef OnContextChanged = Function(BuildContext context);
 
-class BaseApp extends StatefulWidget {
+class BaseApp extends StatelessWidget {
   final String title;
   final ThemeData theme;
   final ThemeData darkTheme;
@@ -36,127 +37,25 @@ class BaseApp extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => BaseAppState();
-}
-
-/// Creates State for BaseApp.
-/// AppControl and MaterialApp is build here.
-/// This State is meant to be used as root.
-/// BuildContext from local Builder is used as root context.
-class BaseAppState extends State<BaseApp> implements StateNotifier {
-  /// Root GlobalKey is passed into AppControl.
-  final _rootKey = GlobalObjectKey('root');
-
-  /// Root BuildContext holder is passed into AppControl.
-  final _contextHolder = ContextHolder();
-
-  WidgetInitializer _rootBuilder;
-
-  bool _loading = true;
-
-  @override
-  void notifyState([state]) {
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _initControl(widget.locales, widget.entries, widget.initializers);
-
-    _rootBuilder = WidgetInitializer.of((context) {
-      _contextHolder.changeContext(context);
-      final root = widget.root(context);
-
-      if (root is Initializable) {
-        (root as Initializable).init({});
-      }
-
-      debugPrint('build root');
-
-      return root;
-    });
-  }
-
-  void _initControl(Map<String, String> locales, Map<String, dynamic> entries, Map<Type, Initializer> initializers) {
-    DelayBlock block;
-    if (widget.loaderDelay != null) {
-      block = DelayBlock(widget.loaderDelay);
-    }
-
-    final factory = ControlFactory.of(this);
-
-    if (factory.isInitialized) {
-      return; //TODO: solve this for hot reload
-    }
-
-    if (entries == null) {
-      entries = Map<String, dynamic>();
-    }
-
-    if (locales == null || locales.isEmpty) {
-      locales = Map<String, String>();
-      locales['en'] = null;
-    }
-
-    final localizationAssets = List<LocalizationAsset>();
-    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
-
-    entries[ControlKey.preferences] = BasePrefs();
-    entries[ControlKey.localization] = BaseLocalization(
-      widget.defaultLocale ?? localizationAssets[0].iso2Locale,
-      localizationAssets,
-    );
-
-    factory.initialize(items: entries, initializers: initializers);
-
-    final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
-    localization.debug = widget.debug ?? debugMode;
-
-    _contextHolder.once((context) async {
-      if (widget.loadLocalization) {
-        await localization.changeToSystemLocale(context);
-      }
-
-      if (block != null) {
-        await block.finish();
-      }
-
-      setState(() {
-        _loading = false;
-      });
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return AppControl.init(
-      rootKey: _rootKey,
-      contextHolder: _contextHolder,
-      rootStateNotifier: this,
-      child: MaterialApp(
-        key: _rootKey,
-        title: widget.title,
-        theme: widget.theme,
-        darkTheme: widget.darkTheme,
-        home: _loading
-            ? Builder(builder: (context) {
-                _contextHolder.changeContext(context);
-                return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
-              })
-            : Builder(builder: (context) {
-                // root context is then changed via _rootBuilder
-                return _rootBuilder.getWidget(context);
-              }),
+    return ControlBase(
+      debug: debug,
+      defaultLocale: defaultLocale,
+      locales: locales,
+      loadLocalization: loadLocalization,
+      entries: entries,
+      initializers: initializers,
+      loaderDelay: loaderDelay,
+      loader: loader,
+      root: root,
+      app: (context, key, home) => MaterialApp(
+        key: key,
+        home: home,
+        title: title,
+        theme: theme,
+        darkTheme: darkTheme,
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _contextHolder.dispose();
   }
 }
 

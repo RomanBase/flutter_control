@@ -8,6 +8,7 @@ export 'package:flutter/material.dart';
 
 export './src/app_base.dart';
 export './src/app_control.dart';
+export './src/base_control.dart';
 export './src/base_localization.dart';
 export './src/base_prefs.dart';
 export './src/base_theme.dart';

@@ -10,8 +10,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BaseApp(
-      title: 'Flutter Control Example',
+    return ControlBase(
       defaultLocale: 'en',
       locales: {
         'en': 'assets/localization/en.json',
@@ -24,6 +23,13 @@ class MyApp extends StatelessWidget {
         DetailController: () => DetailController(),
       },
       root: (context) => MenuPage(),
+      app: (BuildContext context, Key key, Widget home) {
+        return MaterialApp(
+          key: key,
+          home: home,
+          title: 'Flutter Control Example',
+        );
+      },
     );
   }
 }
