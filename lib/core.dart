@@ -31,6 +31,7 @@ export './src/widget/widget_provider.dart';
 
 class ControlKey {
   static const String factory = 'factory';
+  static const String broadcast = 'broadcast';
   static const String localization = 'localization';
   static const String preferences = 'prefs';
   static const String control = 'control';

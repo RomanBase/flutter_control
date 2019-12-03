@@ -17,7 +17,7 @@ class CardsController extends BaseController with RouteController, LocalizationP
   void onInit(Map args) {
     super.onInit(args);
 
-    factory.subscribe<CardModel>('remove_card', (card) => removeCard(card));
+    BroadcastProvider.subscribe<CardModel>('remove_card', (card) => removeCard(card));
   }
 
   void addCard() {
@@ -89,7 +89,7 @@ class DetailController extends BaseController with RouteController, Localization
   }
 
   void deleteSelf() {
-    factory.broadcast('remove_card', _model);
+    BroadcastProvider.broadcast('remove_card', _model);
     close();
   }
 

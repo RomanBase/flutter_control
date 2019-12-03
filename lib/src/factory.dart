@@ -6,7 +6,7 @@ class GlobalSubscription<T> implements Disposable {
   final String key;
 
   /// Parent of this sub - who creates and setup this sub.
-  ControlFactory _parent;
+  ControlBroadcast _parent;
 
   /// Callback from sub.
   /// [ControlFactory.broadcast]
@@ -56,23 +56,23 @@ class ControlProvider {
 /// Shortcut class to work with global stream of [ControlFactory].
 class BroadcastProvider {
   /// Subscription to global stream.
-  static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance.subscribe(key, onData);
+  static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
 
   /// Subscription to global stream.
-  static GlobalSubscription subscribeEvent(String key, VoidCallback callback) => ControlFactory._instance.subscribeEvent(key, callback);
+  static GlobalSubscription subscribeEvent(String key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
 
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores value for future subs and notifies them during [subscribe] phase.
-  static void broadcast(String key, dynamic value, {bool store: false}) => ControlFactory._instance.broadcast(key, value, store: store);
+  static void broadcast(String key, dynamic value, {bool store: false}) => ControlFactory._instance._broadcast.broadcast(key, value, store: store);
 
   /// Sets data to global stream.
   /// Subs with same [key] will be notified.
-  static void broadcastEvent(String key) => ControlFactory._instance.broadcastEvent(key);
+  static void broadcastEvent(String key) => ControlFactory._instance._broadcast.broadcastEvent(key);
 }
 
 /// Factory for initializing and storing objects.
-/// Factory also creates global subscription stream driven by keys.
+/// Factory also creates global subscription stream driven by keys. Access this stream via [BroadcastProvider].
 ///
 /// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [BaseLocalization] and [BasePrefs].
 /// Fill [BaseApp.entries] for initial items to store inside factory.
@@ -89,16 +89,12 @@ class ControlFactory implements Disposable {
   static ControlFactory of([dynamic context]) => _instance;
 
   /// Stored objects for global use.
-  final _items = Map(); //TODO: dynamic key ? For faster Type access..
+  final _items = Map();
 
   /// Stored Getters for object initialization.
   final _initializers = Map<Type, Initializer>();
 
-  /// List of active subs.
-  final _globalSubscriptions = List<GlobalSubscription>();
-
-  /// Last available value for subs.
-  final _globalValue = Map<String, dynamic>();
+  final _broadcast = ControlBroadcast();
 
   bool _initialized = false;
 
@@ -113,6 +109,7 @@ class ControlFactory implements Disposable {
     _initialized = true;
 
     _items[ControlKey.factory] = this;
+    _items[ControlKey.broadcast] = _broadcast;
 
     if (items != null) {
       _items.addAll(items);
@@ -274,9 +271,36 @@ class ControlFactory implements Disposable {
     return _initializers.containsKey(T);
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////
+  @override
+  String toString() {
+    final buffer = StringBuffer();
+
+    buffer.writeln('--- Items ---');
+    _items.forEach((key, value) => buffer.writeln('$key - $value'));
+
+    buffer.writeln('--- Initializers ---');
+    _initializers.forEach((key, value) => buffer.writeln('$key - $value'));
+
+    buffer.writeln('--- Subscriptions ---');
+    _broadcast._globalSubscriptions.forEach((item) => buffer.writeln('${item.key} - ${_broadcast._globalValue[item.key]}'));
+
+    return buffer.toString();
+  }
+
+  @override
+  void dispose() {
+    _items.clear();
+    _initializers.clear();
+  }
+}
+
+/// Global stream to broadcast data and events.
+class ControlBroadcast implements Disposable {
+  /// List of active subs.
+  final _globalSubscriptions = List<GlobalSubscription>();
+
+  /// Last available value for subs.
+  final _globalValue = Map<String, dynamic>();
 
   /// Subscription to global stream
   GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) {
@@ -331,30 +355,8 @@ class ControlFactory implements Disposable {
     });
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////
-  ///////////////////////////////////////////////////////////////////////////
-
-  @override
-  String toString() {
-    final buffer = StringBuffer();
-
-    buffer.writeln('--- Items ---');
-    _items.forEach((key, value) => buffer.writeln('$key - $value'));
-
-    buffer.writeln('--- Initializers ---');
-    _initializers.forEach((key, value) => buffer.writeln('$key - $value'));
-
-    buffer.writeln('--- Subscriptions ---');
-    _globalSubscriptions.forEach((item) => buffer.writeln('${item.key} - ${_globalValue[item.key]}'));
-
-    return buffer.toString();
-  }
-
   @override
   void dispose() {
-    _items.clear();
-    _initializers.clear();
     _globalSubscriptions.clear();
     _globalValue.clear();
   }
