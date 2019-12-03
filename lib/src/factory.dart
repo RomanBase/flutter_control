@@ -33,6 +33,7 @@ class GlobalSubscription<T> implements Disposable {
 
   /// Cancels subscription to global stream in [ControlFactory].
   void cancel() {
+    _active = false;
     if (_parent != null) {
       _parent.cancelSubscription(this);
     }
@@ -328,7 +329,10 @@ class ControlBroadcast implements Disposable {
   }
 
   /// Cancels subscriptions to global stream
-  void cancelSubscription(GlobalSubscription sub) => _globalSubscriptions.remove(sub);
+  void cancelSubscription(GlobalSubscription sub) {
+    sub.pause();
+    _globalSubscriptions.remove(sub);
+  }
 
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.
@@ -357,6 +361,8 @@ class ControlBroadcast implements Disposable {
 
   @override
   void dispose() {
+    _globalSubscriptions.forEach((sub) => sub._parent = null);
+
     _globalSubscriptions.clear();
     _globalValue.clear();
   }
