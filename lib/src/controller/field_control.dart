@@ -356,7 +356,7 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 }
 
 /// Enclosure and adds functionality to standard [Stream] and [StreamBuilder] flow.
-/// Use [FieldStreamBuilder] or basic variants ([StringBuilder], [BoolBuilder], etc.) for easier integration into Widget.
+/// Use [FieldBuilder] or basic variants ([StringBuilder], [BoolBuilder], etc.) for easier integration into Widget.
 ///
 /// There is few basic controllers to work with [BoolControl], [StringControl]. etc.
 class FieldControl<T> implements Disposable {
@@ -410,7 +410,7 @@ class FieldControl<T> implements Disposable {
 
   /// Sets the value and adds it to the stream.
   /// If given object is same as current value nothing happens.
-  /// [notify] [Stream]
+  /// [FieldControl.notify]
   void setValue(T value) {
     if (_value == value) {
       return;
@@ -493,7 +493,9 @@ class FieldControl<T> implements Disposable {
   /// [StreamSubscription] is automatically closed during dispose phase of [controller].
   /// [subscribeTo]
   FieldSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
-    controller.setValue(converter != null ? converter(value) : value);
+    if (value != null && value != controller.value) {
+      controller.setValue(converter != null ? converter(value) : value);
+    }
 
     return controller.subscribeTo(
       _stream.stream,

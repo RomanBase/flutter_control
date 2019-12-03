@@ -234,6 +234,8 @@ class NavigatorStackController extends BaseController {
 
   NavigatorStackController({this.initialPageIndex: 0});
 
+  VoidCallback onPagesInitialized;
+
   /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
   /// Notifies [State] to switch [Offstage] of old/new active controller.
@@ -285,6 +287,10 @@ class _NavigatorStackOffstage extends StatelessWidget {
     controller._items = pages.map((page) => page.controller).toList(growable: false);
     controller.setPageIndex(controller.initialPageIndex);
     controller.currentController.selected = true;
+
+    if (controller.onPagesInitialized != null) {
+      controller.onPagesInitialized();
+    }
   }
 
   @override
