@@ -4,7 +4,7 @@ import 'cards_page.dart';
 import 'settings_page.dart';
 
 class MenuPage extends StatelessWidget with LocalizationProvider {
-  final controller = NavigatorStackController(initialPageIndex: 1);
+  final controller = NavigatorStackController();
 
   @override
   Widget build(BuildContext context) {

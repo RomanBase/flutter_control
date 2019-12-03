@@ -6,7 +6,7 @@ class ControlBase extends StatefulWidget {
   final String defaultLocale;
   final Map<String, String> locales;
   final bool loadLocalization;
-  final Map<String, dynamic> entries;
+  final Map entries;
   final Map<Type, Initializer> initializers;
   final bool debug;
   final Duration loaderDelay;
@@ -80,7 +80,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     });
   }
 
-  void _initControl(Map<String, String> locales, Map<String, dynamic> entries, Map<Type, Initializer> initializers) {
+  void _initControl(Map<String, String> locales, Map entries, Map<Type, Initializer> initializers) {
     DelayBlock block;
     if (widget.loaderDelay != null) {
       block = DelayBlock(widget.loaderDelay);

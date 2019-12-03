@@ -10,7 +10,7 @@ class BaseApp extends StatelessWidget {
   final String defaultLocale;
   final Map<String, String> locales;
   final bool loadLocalization;
-  final Map<String, dynamic> entries;
+  final Map entries;
   final Map<Type, Initializer> initializers;
   final bool debug;
   final Duration loaderDelay;

@@ -6,6 +6,10 @@ import 'menu_page.dart';
 
 void main() => runApp(MyApp());
 
+class ITestT {}
+
+class TestT implements ITestT {}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -18,6 +22,7 @@ class MyApp extends StatelessWidget {
       },
       entries: {
         'cards': CardsController(),
+        ITestT: TestT(),
       },
       initializers: {
         DetailController: () => DetailController(),

@@ -50,7 +50,7 @@ class ControlProvider {
   /// returns object of requested type by given [key] or [Type] from [ControlFactory].
   /// check [ControlFactory] for more info.
   /// nullable
-  static T of<T>([String key]) => ControlFactory._instance.get<T>(key);
+  static T of<T>([dynamic key]) => ControlFactory._instance.get<T>(key);
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].
@@ -89,7 +89,7 @@ class ControlFactory implements Disposable {
   static ControlFactory of([dynamic context]) => _instance;
 
   /// Stored objects for global use.
-  final _items = Map<String, dynamic>(); //TODO: dynamic key ? For faster Type access..
+  final _items = Map(); //TODO: dynamic key ? For faster Type access..
 
   /// Stored Getters for object initialization.
   final _initializers = Map<Type, Initializer>();
@@ -105,7 +105,7 @@ class ControlFactory implements Disposable {
   bool get isInitialized => _initialized;
 
   /// Initializes default items and initializers in factory.
-  void initialize({Map<String, dynamic> items, Map<Type, Initializer> initializers}) {
+  void initialize({Map items, Map<Type, Initializer> initializers}) {
     if (_initialized) {
       return;
     }
@@ -142,14 +142,21 @@ class ControlFactory implements Disposable {
     }
   }
 
-  /// Stores [value] with given [key] for later use - [get] and [getWith].
+  /// Stores [value] with given [key] for later use - [get].
   /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is generated from [runtimeType] of given [value].
+  /// When given [key] is null, then key is generated from [Type] of given [value].
   /// returns key of stored object.
-  String set({String key, @required dynamic value}) {
-    if (key == null || key.isEmpty) {
-      key = value.runtimeType.toString();
+  dynamic set({dynamic key, @required dynamic value}) {
+    if (key == null) {
+      key = value.runtimeType;
     }
+
+    assert(() {
+      if (_items.containsKey(key)) {
+        printDebug('Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
+      }
+      return true;
+    }());
 
     _items[key] = value;
 
@@ -159,20 +166,22 @@ class ControlFactory implements Disposable {
   /// returns object of requested type by given key or by Type.
   /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
   /// nullable
-  T get<T>([String key, Map args]) {
-    if (key != null) {
-      final item = _items[key] as T;
+  T get<T>([dynamic key, Map args]) {
+    if (key == null) {
+      key = T;
+    }
 
-      if (item != null) {
-        _initItem(item, args: args, forceInit: false);
-        return item;
-      }
+    final item = _items[key] as T;
+
+    if (item != null) {
+      _initItem(item, args: args, forceInit: false);
+      return item;
     }
 
     for (final item in _items.values) {
       if (item.runtimeType == T) {
         _initItem(item, args: args, forceInit: false);
-        return item;
+        return item as T;
       }
     }
 
@@ -252,7 +261,7 @@ class ControlFactory implements Disposable {
   }
 
   /// Checks if key is in Factory.
-  bool containsKey(String key) => _items.containsKey(key);
+  bool containsKey(dynamic key) => _items.containsKey(key);
 
   /// Checks if Type is in Factory.
   bool containsType<T>({bool includeInitializers: true}) {
@@ -264,6 +273,10 @@ class ControlFactory implements Disposable {
 
     return _initializers.containsKey(T);
   }
+
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 
   /// Subscription to global stream
   GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) {
@@ -317,6 +330,10 @@ class ControlFactory implements Disposable {
       }
     });
   }
+
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
 
   @override
   String toString() {
