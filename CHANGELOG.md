@@ -1,3 +1,5 @@
+## [0.12.0] - ControlBroadcast (Separated from Factory)
+## [0.11.0] - ControlBase (BaseApp will be deprecated)
 ## [0.10.2] - Mixins
 ## [0.9.3] - RouteControl, NavigatorStack
 ## [0.9.1] - Dependency update
