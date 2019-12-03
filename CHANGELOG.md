@@ -11,4 +11,4 @@
 
 **Full Structure**
 
-![Structure](/docs/structure.png)
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure.png)

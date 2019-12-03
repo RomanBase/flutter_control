@@ -7,7 +7,7 @@ Stable but needs more testing and little care..
 Flutter Control helps to separate Business Logic from UI and works based on BLoC and Provider patterns, but with little twist.
 Whole Logic is based in Controller or Model classes and Widgets are notified about changes via Streams.
 
-![Structure](/docs/structure_simple.png)
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure_simple.png)
 
 ---
 
@@ -250,4 +250,4 @@ class TodoPage extends SingleControlWidget<TodoController> {
 
 **Full Structure**
 
-![Structure](/docs/structure.png)
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure.png)
