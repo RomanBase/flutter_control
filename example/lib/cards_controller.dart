@@ -66,7 +66,7 @@ class DetailController extends BaseController with RouteController, Localization
   final title = StringControl();
 
   @override
-  void onInit(Map<String, dynamic> args) {
+  void onInit(Map args) {
     super.onInit(args);
 
     _model = Parse.getArg<CardModel>(args);

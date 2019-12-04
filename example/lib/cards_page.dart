@@ -72,7 +72,7 @@ class CardWidget extends BaseControlWidget {
       ),
       child: FlatButton(
         padding: const EdgeInsets.all(16.0),
-        onPressed: () => ControlProvider.of<CardsController>()?.openCard(item),
+        onPressed: () => ControlProvider.get<CardsController>()?.openCard(item),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[

@@ -18,11 +18,11 @@ abstract class WidgetInitializer {
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
   @protected
-  Widget initWidget(BuildContext context, {Map<String, dynamic> args});
+  Widget initWidget(BuildContext context, {Map args});
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, Map<String, dynamic> args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
+  Widget getWidget(BuildContext context, {forceInit: false, Map args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
 
   /// Returns context of initialized [ControlWidget]
   /// nullable
@@ -34,7 +34,7 @@ abstract class WidgetInitializer {
     return null;
   }
 
-  Map<String, dynamic> _buildArgs(Map<String, dynamic> args) {
+  Map _buildArgs(Map args) {
     if (args != null) {
       args[ControlKey.initData] = data;
       return args;
@@ -59,7 +59,7 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 
   @override
-  Widget initWidget(BuildContext context, {Map<String, dynamic> args}) {
+  Widget initWidget(BuildContext context, {Map args}) {
     final widget = builder(context);
 
     if (widget is Initializable) {
@@ -72,7 +72,7 @@ class _WidgetInitBuilder extends WidgetInitializer {
 
 class WidgetInit extends StatefulWidget {
   final Widget child;
-  final Map<String, dynamic> args;
+  final Map args;
 
   const WidgetInit({Key key, this.child, this.args}) : super(key: key);
 

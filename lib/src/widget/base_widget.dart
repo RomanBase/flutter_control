@@ -5,7 +5,7 @@ import 'package:flutter_control/core.dart';
 class WidgetControlHolder implements Disposable {
   ControlState state;
   Route route;
-  Map<String, dynamic> args;
+  Map args;
 
   bool get initialized => state != null;
 
@@ -71,7 +71,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Widget's init arguments
   /// [holder] - [onInitState]
   @protected
-  Map<String, dynamic> get args => holder?.args;
+  Map get args => holder?.args;
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
@@ -125,7 +125,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @override
   @protected
   @mustCallSuper
-  void init(Map<String, dynamic> args) => holder.args = args;
+  void init(Map args) => holder.args = args;
 
   /// Called during State initialization.
   /// All controllers (from [initControllers]) are subscribed to this Widget and given State.
@@ -306,7 +306,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   NavigatorState get rootNavigator => Navigator.of(getContext(root: true));
 
   @override
-  void init(Map<String, dynamic> args) {
+  void init(Map args) {
     super.init(args);
 
     holder.route = Parse.getArg<Route>(args, key: ControlKey.initData);

@@ -1,57 +1,31 @@
 import 'package:flutter_control/core.dart';
 
-class GlobalSubscription<T> implements Disposable {
-  /// Key of global sub.
-  /// [ControlFactory.broadcast]
-  final String key;
-
-  /// Parent of this sub - who creates and setup this sub.
-  ControlBroadcast _parent;
-
-  /// Callback from sub.
-  /// [ControlFactory.broadcast]
-  ValueChanged<T> _onData;
-
-  bool _active = true;
-
-  /// Checks if parent is valid and sub is active.
-  bool get isActive => _parent != null && _active;
-
-  /// Default constructor.
-  GlobalSubscription(this.key);
-
-  /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
-
-  /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
-  void pause() => _active = false;
-
-  /// Resumes this subscription and [ControlFactory] broadcast will again starts notifying this sub.
-  void resume() => _active = true;
-
-  void _notify(dynamic value) => _onData(value as T);
-
-  /// Cancels subscription to global stream in [ControlFactory].
-  void cancel() {
-    _active = false;
-    if (_parent != null) {
-      _parent.cancelSubscription(this);
-    }
-  }
-
-  @override
-  void dispose() {
-    cancel();
-    _parent = null;
-  }
-}
+typedef InitInjection = dynamic Function(dynamic item, Map args);
 
 /// Shortcut class to get objects from [ControlFactory]
 class ControlProvider {
+  /// deprecated - use [ControlProvider.get] instead.
+  ///
   /// returns object of requested type by given [key] or [Type] from [ControlFactory].
   /// check [ControlFactory] for more info.
   /// nullable
+  @deprecated
   static T of<T>([dynamic key]) => ControlFactory._instance.get<T>(key);
+
+  /// returns object of requested type by given [key] or [Type] from [ControlFactory].
+  /// check [ControlFactory] for more info.
+  /// nullable
+  static T get<T>([dynamic key]) => ControlFactory._instance.get<T>(key);
+
+  /// Stores [value] with given [key] in [ControlFactory].
+  /// Object with same [key] previously stored in factory is overridden.
+  /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
+  /// returns key of stored object.
+  static dynamic set<T>({dynamic key, @required dynamic value}) => ControlFactory._instance.set<T>(key: key, value: value);
+
+  /// returns new object of requested type via initializer in [ControlFactory].
+  /// nullable
+  static T init<T>(Map args) => ControlFactory._instance.init(args);
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].
@@ -95,10 +69,16 @@ class ControlFactory implements Disposable {
   /// Stored Getters for object initialization.
   final _initializers = Map<Type, Initializer>();
 
+  /// Global stream of values and events.
   final _broadcast = ControlBroadcast();
 
+  /// Custom item initialization.
+  InitInjection _initInjection;
+
+  /// Factory initialize state.
   bool _initialized = false;
 
+  /// Checks if Factory is initialized. [ControlFactory.initialize] can be called only once.
   bool get isInitialized => _initialized;
 
   /// Initializes default items and initializers in factory.
@@ -129,24 +109,26 @@ class ControlFactory implements Disposable {
   }
 
   /// Stores initializer for later use - [init] or [get].
-  void addInitializer<T>(Initializer<T> initializer) => _initializers[T] = initializer;
+  void setInitializer<T>(Initializer<T> initializer) {
+    assert(() {
+      if (_initializers.containsKey(T)) {
+        printDebug('Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be overriden.');
+      }
+      return true;
+    }());
 
-  /// returns new object of requested type.
-  /// initializer must be specified - [addInitializer]
-  /// nullable
-  void _initItem(dynamic item, {Map args, bool forceInit: false}) {
-    if (item is Initializable && (args != null || forceInit)) {
-      item.init(args);
-    }
+    _initializers[T] = initializer;
   }
+
+  void setInitInjection(InitInjection injection) => _initInjection = injection;
 
   /// Stores [value] with given [key] for later use - [get].
   /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is generated from [Type] of given [value].
+  /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
   /// returns key of stored object.
-  dynamic set({dynamic key, @required dynamic value}) {
+  dynamic set<T>({dynamic key, @required dynamic value}) {
     if (key == null) {
-      key = value.runtimeType;
+      key = T ?? value.runtimeType;
     }
 
     assert(() {
@@ -204,7 +186,7 @@ class ControlFactory implements Disposable {
   }
 
   /// returns new object of requested type.
-  /// initializer must be specified - [addInitializer]
+  /// initializer must be specified - [setInitializer]
   /// nullable
   T init<T>([Map args, bool forceInit = false]) {
     if (_initializers.containsKey(T)) {
@@ -216,6 +198,19 @@ class ControlFactory implements Disposable {
     }
 
     return null;
+  }
+
+  /// returns new object of requested type.
+  /// initializer must be specified - [setInitializer]
+  /// nullable
+  void _initItem(dynamic item, {Map args, bool forceInit: false}) {
+    if (_initInjection != null) {
+      _initInjection(item, args);
+    }
+
+    if (item is Initializable && (args != null || forceInit)) {
+      item.init(args);
+    }
   }
 
   /// Removes item of given key or all items of given type.
@@ -243,16 +238,18 @@ class ControlFactory implements Disposable {
 
   /// Checks if key/type/object is in Factory.
   bool contains(dynamic value) {
-    if (value is String && containsKey(value)) {
+    if (containsKey(value)) {
       return true;
     }
 
     if (value is Type) {
+      if (containsKey(value.runtimeType)) {
+        return true;
+      }
+
       if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null || _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
         return true;
       }
-    } else if (containsKey(value.runtimeType.toString())) {
-      return true;
     }
 
     return _items.values.contains(value);
@@ -365,5 +362,51 @@ class ControlBroadcast implements Disposable {
 
     _globalSubscriptions.clear();
     _globalValue.clear();
+  }
+}
+
+class GlobalSubscription<T> implements Disposable {
+  /// Key of global sub.
+  /// [ControlFactory.broadcast]
+  final String key;
+
+  /// Parent of this sub - who creates and setup this sub.
+  ControlBroadcast _parent;
+
+  /// Callback from sub.
+  /// [ControlFactory.broadcast]
+  ValueChanged<T> _onData;
+
+  bool _active = true;
+
+  /// Checks if parent is valid and sub is active.
+  bool get isActive => _parent != null && _active;
+
+  /// Default constructor.
+  GlobalSubscription(this.key);
+
+  /// Checks if [key] and [value] type is eligible for this sub.
+  bool isValidForBroadcast(String key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
+
+  /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
+  void pause() => _active = false;
+
+  /// Resumes this subscription and [ControlFactory] broadcast will again starts notifying this sub.
+  void resume() => _active = true;
+
+  void _notify(dynamic value) => _onData(value as T);
+
+  /// Cancels subscription to global stream in [ControlFactory].
+  void cancel() {
+    _active = false;
+    if (_parent != null) {
+      _parent.cancelSubscription(this);
+    }
+  }
+
+  @override
+  void dispose() {
+    cancel();
+    _parent = null;
   }
 }

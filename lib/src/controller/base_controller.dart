@@ -15,7 +15,7 @@ typedef PairConverter<T> = T Function(dynamic, dynamic);
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
   /// Is typically called right after constructor.
-  void init(Map<String, dynamic> args) {}
+  void init(Map args) {}
 }
 
 /// General subscription for controllers.
@@ -60,7 +60,7 @@ class BaseControlModel with DisposeHandler implements Initializable, Subscriptio
   AppControl get control => factory.get(ControlKey.control);
 
   @override
-  void init(Map<String, dynamic> args) {}
+  void init(Map args) {}
 
   @override
   void subscribe(dynamic object) {}
@@ -91,7 +91,7 @@ class BaseController extends BaseControlModel {
   /// Set [preventMultiInit] enable multi init / re-init
   @override
   @mustCallSuper
-  BaseController init([Map<String, dynamic> args]) {
+  BaseController init([Map args]) {
     if (isInitialized && preventMultiInit) {
       printDebug('controller is already initialized: ${this.toString()}');
       return this;
@@ -106,7 +106,7 @@ class BaseController extends BaseControlModel {
   /// Is typically called right after constructor or when init is available.
   /// In most of times [Widget] or [State] isn't ready yet.
   /// check [init] and [preventMultiInit]
-  void onInit(Map<String, dynamic> args) {}
+  void onInit(Map args) {}
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
@@ -182,7 +182,7 @@ mixin RouteController on BaseControlModel {
     PageRouteProvider provider, {
     bool root: false,
     bool replacement: false,
-    Map<String, dynamic> args,
+    Map args,
     FutureOr<dynamic> result(dynamic value),
   }) {
     final handler = RouteHandler(_navigator, provider);
@@ -200,7 +200,7 @@ mixin RouteController on BaseControlModel {
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openRoot(
     PageRouteProvider provider, {
-    Map<String, dynamic> args,
+    Map args,
     FutureOr<dynamic> result(dynamic value),
   }) {
     final handler = RouteHandler(_navigator, provider);
@@ -220,7 +220,7 @@ mixin RouteController on BaseControlModel {
     PageRouteProvider provider, {
     bool root: false,
     DialogType type: DialogType.popup,
-    Map<String, dynamic> args,
+    Map args,
   }) {
     return RouteHandler(_navigator, provider).openDialog(root: root, type: type, args: args);
   }

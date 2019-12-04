@@ -345,7 +345,7 @@ class BaseLocalization with PrefsProvider {
 class LocalizationProvider {
   ///Instance of [BaseLocalization]
   @protected
-  BaseLocalization get localization => ControlProvider.of(ControlKey.localization);
+  BaseLocalization get localization => ControlProvider.get(ControlKey.localization);
 
   ///[BaseLocalization.localize]
   @protected

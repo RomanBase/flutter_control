@@ -16,7 +16,7 @@ class AppControl extends InheritedWidget {
       }
     }
 
-    return ControlProvider.of(ControlKey.control);
+    return ControlProvider.get(ControlKey.control);
   }
 
   /// Key of root State.
