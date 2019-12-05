@@ -53,7 +53,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   @override
   void notifyState([state]) {
     setState(() {
-      final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
+      final localization = ControlProvider.get<BaseLocalization>(ControlKey.localization);
       if (localization != null) {
         _locale = localization.locale;
       }
@@ -93,7 +93,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     }
 
     if (entries == null) {
-      entries = Map<String, dynamic>();
+      entries = Map();
     }
 
     if (locales == null || locales.isEmpty) {
@@ -112,7 +112,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     factory.initialize(items: entries, initializers: initializers);
 
-    final localization = ControlProvider.of<BaseLocalization>(ControlKey.localization);
+    final localization = ControlProvider.get<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
 
     _locale = localization.defaultLocale;

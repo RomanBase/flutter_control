@@ -1,3 +1,4 @@
+## [0.12.1] - ControlProvider and Initializable reworked
 ## [0.12.0] - ControlBroadcast (Separated from Factory)
 ## [0.11.0] - ControlBase (BaseApp will be deprecated)
 ## [0.10.2] - Mixins
