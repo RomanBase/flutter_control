@@ -298,8 +298,8 @@ class BaseLocalization with PrefsProvider {
 
   /// Tries to localize text by given [key].
   ///
-  /// json: [
-  ///   "monday", "tuesday", "wednesday", etc..
+  /// days: [
+  ///   "monday", "tuesday", "wednesday"
   /// ]
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
@@ -325,11 +325,11 @@ class BaseLocalization with PrefsProvider {
   ///   }
   /// }
   ///
-  /// [key] 'address' returns [Map] of json data.
-  /// [parser] custom parser of returned data.
+  /// [key] 'address' returns [Map] of json data if parser is not provided.
+  /// [parser] custom parser of returned data - can return custom Address class.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  dynamic localizeDynamic(String key, {LocalizationParser parser}) {
+  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) {
     if (_data.containsKey(key)) {
       if (parser != null) {
         return parser(_data[key], locale);
@@ -338,13 +338,17 @@ class BaseLocalization with PrefsProvider {
       return _data[key];
     }
 
-    return debug ? '${key}_$_locale' : '';
+    return defaultValue ?? debug ? '${key}_$_locale' : '';
   }
 
-  /// Tries to localize text by given key.
-  /// Enable/Disable debug mode to show/hide missing localizations.
+  /// Tries to localize text by given locale.
   /// [BaseLocalization.setCustomExtractor] to provide custom parsing.
+  ///
   /// Default extractor works only with locale map {'locale' : 'value'}
+  /// [iso2Locale] - default is current locale.
+  /// [defaultLocale] - default is locale passed into constructor.
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
   String extractLocalization(dynamic data, {String iso2Locale, String defaultLocale}) {
     iso2Locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
@@ -397,7 +401,7 @@ class LocalizationProvider {
 
   ///[BaseLocalization.localizeDynamic]
   @protected
-  dynamic localizeDynamic(String key, {LocalizationParser parser}) => localization.localizeDynamic(key, parser: parser);
+  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) => localization.localizeDynamic(key, parser: parser, defaultValue: defaultValue);
 
   ///[BaseLocalization.extractLocalization]
   @protected
