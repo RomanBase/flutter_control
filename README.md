@@ -6,8 +6,7 @@ Stable, but needs more tests and little care..
 
 ---
 
-Flutter Control helps to separate Business Logic from UI and with communication, localization and routing.  
-Whole Logic is based in Controller or Model classes and Widgets are notified about changes via Streams.
+Flutter Control helps to separate Business Logic from UI and with Communication, Localization and Routing.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure_simple.png)
 
@@ -19,14 +18,13 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 - [AppControl] Is [InheritedWidget] around whole App.
 - [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide easy communication and synchronization between separated parts of App.
 - [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
-- [RouteHandler] Initializes Widget and handles Navigation.
 
 ---
 
 **Streams and Observables**
 
-- [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
-- [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets.
+- [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets. Also to provide change events for other Controllers and Logic parts.
+- [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets. Also to provide change events for other Controllers and Logic parts.
 - [ListControl] Extended FieldControl to work with [Iterable]. And with [ListBuilder] to dynamically build list of Widgets.
 - [LoadingControl], [StringControl], [BoolControl], etc. with builders..
 
@@ -35,26 +33,26 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 **Controllers**
 
 - [BaseControlModel] Stores all Business Logic and initializes self during Widget construction.
-- [BaseController] Extended version of [BaseControlModel] with more functionality.
-- [BaseModel] Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic.
+- [BaseController] Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets.
+- [BaseModel] Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.
 - [InputController] Controller for [InputField] to control text, changes, validity, focus, etc. Controllers can be chained via 'next' and 'done' events.
 - [NavigatorController] Controller for [NavigatorStack.single] to control navigation inside Widget.
-- [NavigatorStackController] Controller for [NavigatorStack.pages] or [NavigatorStack.menu] to control navigation between Widgets.
+- [NavigatorStackController] Controller for [NavigatorStack.pages] or [NavigatorStack.menu] to control navigation between pages. Mainly used with bottom menu.
 
 ---
 
 **Widgets**
 
-- [ControlWidget] Base Widget to work with ControlModel. 
-- [BaseControlWidget] Widget with no init ControlModel, but still have access to Factory etc. so Controllers can be get from there.
-- [SingleControlWidget] Widget with just one ControlModel.
+- [ControlWidget] Base Widget to work with [BaseControlModel]. 
+- [BaseControlWidget] Widget with no init [BaseControlModel], but still have access to Factory etc. so Controllers can be get from there.
+- [SingleControlWidget] Widget with just one [BaseControlModel].
 
 - [InputField] Wrapper of [TextField] to provide more functionality and control via [InputController].
 - [FieldBuilder] Dynamic Widget builder controlled by [FieldControl].
 - [FieldBuilderGroup] Dynamic Widget builder controlled by multiple [FieldControl]s. 
-- [ListBuilder] Wrapper of [FieldBuilder] to easily work with Lists.
+- [ListBuilder] Wrapper of [FieldBuilder] to easily work with Lists. All primitives have own builder - [DoubleBuilder], [BoolBuilder], etc. 
 - [ControlBuilder] Dynamic Widget builder controlled by [ActionControl].
-- [StableWidget] Widget that is build just once.
+- [StableWidget] Widget that is build just once. No mather how many times is build called. Rebuild can be forced via parameters..
 
 - [NavigatorStack.single] Enables navigation inside Widget.
 - [NavigatorStack.pages] Enables navigation between Widgets. Usable for menus, tabs, etc.
@@ -62,20 +60,27 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 ---
 
-**Providers**
+**Providers with static functionality**
 
 - [ControlProvider] Provides and initializes objects from [ControlFactory].
-- [BroadcastProvider] Globally broadcast events and data.
-- [PageRouteProvider] Specifies Route and WidgetBuilder settings for [RouteHandler].
+- [BroadcastProvider] Globally broadcasts events and data.
+
+---
+
+**Routing**
+
+- [RouteHandler] Initializes Widget and handles Navigation.
+- [PageRouteProvider] Specifies Route and WidgetBuilder settings for [RouteHandler]. With [WidgetInitializer] passing args to Widgets and Controllers during navigation.
+- [RouteNavigator] Interface to work with Navigator and Routes.
 
 ---
 
 **Mixins**
 
 - [LocalizationProvider] - mixin for any class, enables [BaseLocalization] for given object.
-- [StateController] - mixin for [BaseControlModel] to notify State of Widget.
-- [RouteControl] - mixin for [ControlWidget], enables route navigation.
-- [RouteController] - mixin for [BaseControlModel], enables route navigation bridge to [ControlWidget] with [RouteControl]. 
+- [StateController] - mixin for [BaseControlModel] to notify State of Widget from Model/Controller.
+- [RouteControl] - mixin for [ControlWidget], enables default route navigation.
+- [RouteController] - mixin for [BaseControlModel], enables route navigation via [RouteHandler] bridge to [ControlWidget] with [RouteControl]. 
 - [TickerControl] - mixin for [ControlWidget], enables Ticker for given Widget.
 
 - [DisposeHandler] - mixin for any class, helps with object disposing.
@@ -87,10 +92,10 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 - [FutureBlock] Retriggerable delay.
 - [DelayBlock] Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
-- [Parse] Helps to parse json primitives and Iterables. Provides default values if parsing fails.
+- [Parse] Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
 - [Device] Wrapper over [MediaQuery].
 - [WidgetInitializer] Helps to initialize Widgets with init data.
-- [BaseTheme] Some basic values to work with during Widget composition.
+- [UnitId] Unique ID generator based on Time, Index or just Random. 
 
 - and more..
 
@@ -122,10 +127,14 @@ class TodoController extends BaseController {
   final doneCount = StringControl();
   final items = ListControl<TodoItemModel>();
   final input = InputController(regex: '.{3,}');
-
-  TodoController() {
+  
+  void onInit([Map args])
+  {
+    super.onInit(args);
+    
     items.subscribe((list) => _recalculateCount());
     input.done(addInputItem);
+    BroadcastProvider.subscribe<TodoItemModel>('remove', (value) => removeItem(value));
   }
 
   void addInputItem() {
@@ -134,7 +143,9 @@ class TodoController extends BaseController {
       return;
     }
 
-    items.add(TodoItemModel(this, input.value));
+    final item = TodoItemModel(input.value);
+    item.done.subscribe((value) => _recalculateCount());
+    items.add(item);
 
     input.setText(null);
   }
@@ -153,19 +164,19 @@ class TodoController extends BaseController {
 }
 ```
 
-Model holds state of one item in list and notifies parent controller about changes.
+Model holds state of one item in list and via BoolControl subscription notifies parent controller about changes.
 ```dart
 class TodoItemModel extends BaseModel {
   final done = BoolControl();
   final String title;
 
-  TodoItemModel(TodoController parent, this.title) {
-    done.subscribe((value) => parent._recalculateCount());
-  }
+  TodoItemModel(this.title);
+  
+  void removeSelf() => BroadcastProvider.broadcast<TodoItemModel>('remove', this);
 
   @override
   void dispose() {
-    done.dispose();
+    done.dispose(); // will also dispose Subscription
   }
 }
 ```

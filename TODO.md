@@ -1,5 +1,5 @@
 - Documentation
-  + All, mainly Factory, BaseApp, BaseController, ControlWidget, FieldControl
+  + All.
 
 - Tests
   + Factory.
@@ -23,15 +23,15 @@
 - [Core] 'minor update'
   + **done** Add more platforms to 'onPlatform' function.
 
-- [BaseApp] 'semi-major update'
-  + Support for CupertinoApp. Currently everything is based on 'package:flutter/material.dart' from [Core] export.
-  + Add more params from MaterialApp.
+- [ControlApp] 'major update'
+  + **done** Support for custom and any WidgetsApp. Wrap around whole App.
+  + **done** Deprecate [BaseApp]
   
 - [AppControl] 'new purpose update'
-  + Is not currently used well and is mostly cleared.
-  + Try to find new purpose for this class..
+  + **done** Provide access to root elements of App.
+  + **done** Notify whole App about rebuild.
   
-- [BaseFactory] 'semi-major update'
+- [ControlFactory] 'semi-major update'
   + **done** Merge or clean up some shady functions.
   + **done** 'add' vs. 'addItem' functions - 'object' to store is required and 'key' can be empty.
   + **done** 'get' vs. 'getWith' - can be merged.
@@ -40,7 +40,7 @@
 - [ControlWidget] 'semi-major update'
   + Better support for custom State
   + Provide more State functions - directly or via mixins, some of them can be binded even to Controller.
-  + [StateHolder] - check build/hot reload, correct widget/state pairing, maybe more 'get' caching to holder to save some performance
+  + [WidgetControlHolder] - check build/hot reload, correct widget/state pairing, maybe more 'get' caching to holder to save some performance
   + [TickerControl] - better support for custom State
   + [RouteControl] - more dialog options and custom Transitions
 
