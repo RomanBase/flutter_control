@@ -228,7 +228,7 @@ class BaseLocalization with PrefsProvider {
 
   /// Tries to localize text by given [key] and [plural].
   ///
-  /// json: {
+  /// count: {
   ///   "0": "zero",
   ///   "1": "single",
   ///   "2": "few",
@@ -243,25 +243,57 @@ class BaseLocalization with PrefsProvider {
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
   String localizePlural(String key, int plural) {
-    if (_data.containsKey(key) && _data[key] is Map) {
-      final data = _data[key];
-      final nums = List<int>();
+    if (_data.containsKey(key)) {
+      if (_data[key] is Map) {
+        final data = _data[key];
+        final nums = List<int>();
 
-      data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
-      nums.sort();
+        data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+        nums.sort();
 
-      for (final num in nums.reversed) {
-        if (plural >= num) {
-          return data[num.toString()];
+        for (final num in nums.reversed) {
+          if (plural >= num) {
+            return data[num.toString()];
+          }
+        }
+
+        if (data.contains['other']) {
+          return data['other'];
         }
       }
 
-      if (data.contains['other']) {
-        return data['other'];
-      }
+      return _data[key];
     }
 
     return debug ? '$key[$plural]_$_locale' : '';
+  }
+
+  /// Tries to localize text by given [key] and [gender].
+  ///
+  /// child: {
+  ///   "male": "boy",
+  ///   "female": "girl",
+  ///   "other": "child"
+  /// }
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  String localizeGender(String key, String gender) {
+    if (_data.containsKey(key)) {
+      if (_data[key] is Map) {
+        switch (gender) {
+          case 'male':
+            return _data[key]['male'] ?? _data[key]['other'];
+          case 'female':
+            return _data[key]['female'] ?? _data[key]['other'];
+          default:
+            return _data[key]['other'];
+        }
+      }
+
+      return _data[key];
+    }
+
+    return debug ? '$key[$gender]_$_locale' : '';
   }
 
   /// Tries to localize text by given [key].
@@ -354,6 +386,10 @@ class LocalizationProvider {
   ///[BaseLocalization.localizePlural]
   @protected
   String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
+
+  ///[BaseLocalization.localizeGender]
+  @protected
+  String localizeGender(String key, String gender) => localization.localizeGender(key, gender);
 
   ///[BaseLocalization.localizeList]
   @protected

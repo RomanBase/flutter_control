@@ -1,10 +1,12 @@
 **Alpha version of Flutter Control**
 
-Stable but needs more testing and little care..
+Stable, but needs more tests and little care..
+
+[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://api.cirrus-ci.com/github/RomanBase/flutter_control)
 
 ---
 
-Flutter Control helps to separate Business Logic from UI and works based on BLoC and Provider patterns, but with little twist.
+Flutter Control helps to separate Business Logic from UI and with communication, localization and routing.  
 Whole Logic is based in Controller or Model classes and Widgets are notified about changes via Streams.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure_simple.png)
@@ -13,7 +15,7 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 **Base classes**
 
-- [BaseApp] Wraps MaterialApp and initializes Control and Factory. It's just shortcut to start with Flutter Control.
+- [ControlApp] Wraps App and initializes Control with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.
 - [AppControl] Is [InheritedWidget] around whole App.
 - [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide easy communication and synchronization between separated parts of App.
 - [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
@@ -21,7 +23,7 @@ Whole Logic is based in Controller or Model classes and Widgets are notified abo
 
 ---
 
-**Streams**
+**Streams and Observables**
 
 - [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets.
 - [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets.
