@@ -6,35 +6,49 @@ import 'menu_page.dart';
 
 void main() => runApp(MyApp());
 
-class ITestT {}
-
-class TestT implements ITestT {}
-
-class MyApp extends StatelessWidget {
+class MyApp extends StatelessWidget with LocalizationProvider {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ControlBase(
+      debug: true,
       defaultLocale: 'en',
       locales: {
-        'en': 'assets/localization/en.json',
+        'en': AssetPath().localization('en'),
         'cs': 'assets/localization/cs.json',
       },
       entries: {
         'cards': CardsController(),
-        ITestT: TestT(),
       },
       initializers: {
-        DetailController: () => DetailController(),
+        DetailController: (args) => DetailController(),
       },
+      theme: (context) => MyTheme.of(context),
       root: (context) => MenuPage(),
       app: (BuildContext context, Key key, Widget home) {
         return MaterialApp(
           key: key,
           home: home,
-          title: 'Flutter Control Example',
+          title: localization.isActive ? localize('app_name') : 'Flutter Example',
+          theme: ThemeData(
+            primaryColor: Colors.orange,
+          ),
         );
       },
     );
+  }
+}
+
+class MyTheme extends ControlTheme {
+  @override
+  double get padding => 24.0;
+
+  @override
+  double get paddingHalf => 12.0;
+
+  const MyTheme(Device device, ThemeData data) : super(device: device, data: data);
+
+  factory MyTheme.of(BuildContext context) {
+    return MyTheme(Device.of(context), Theme.of(context));
   }
 }

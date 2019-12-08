@@ -55,7 +55,7 @@ class RouteHandler {
   /// Default constructor.
   /// [navigator] and [provider] must be specified.
   RouteHandler(this.navigator, this.provider) {
-    assert(navigator != null);
+    assert(navigator != null, 'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
     assert(provider != null);
   }
 

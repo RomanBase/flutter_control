@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
@@ -11,20 +12,31 @@ class ControlBase extends StatefulWidget {
   final bool debug;
   final Duration loaderDelay;
   final WidgetBuilder loader;
+  final Initializer<ControlTheme> theme;
   final WidgetBuilder root;
   final AppBuilder app;
 
-  /// Main - root - [Widget] for whole app.
-  /// [AppControl] with [MaterialApp] is build on top of everything.
-  /// This Widget helps easily integrate [AppControl] as [InheritedWidget] for descendant widgets.
-  /// Currently supports only [MaterialApp].
+  /// Root [Widget] for whole app.
+  ///
+  /// [debug] extra debug console prints.
+  /// [defaultLocale] key of default locale. First localization will be used if this value is not set.
+  /// [locales] map of supported localizations. Key - locale (en, en_US). Value - asset path.
+  /// [loadLocalization] loads localization during [ControlBase] initialization.
+  /// [entries] map of Controllers/Models to init and fill into [ControlFactory].
+  /// [initializers] map of dynamic initializers to store in [ControlFactory].
+  /// [theme] custom [ControlTheme] builder.
+  /// [loaderDelay] extra (minimum) loader time.
+  /// [loader] widget to show during loading and initializing control, localization.
+  /// [root] first Widget after loading finished.
+  /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppBuilder.key] and [AppBuilder.home] from builder to App Widget.
   const ControlBase({
+    this.debug: false,
     this.defaultLocale,
     this.locales,
     this.loadLocalization: true,
     this.entries,
     this.initializers,
-    this.debug,
+    this.theme,
     this.loaderDelay,
     this.loader,
     @required this.root,
@@ -47,8 +59,11 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   final _contextHolder = ContextHolder();
 
   String _locale;
+  LocalizationArgs _localeArgs;
   bool _loading = true;
+
   WidgetInitializer _rootBuilder;
+  WidgetInitializer _loadingBuilder;
 
   @override
   void notifyState([state]) {
@@ -66,13 +81,33 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _initControl(widget.locales, widget.entries, widget.initializers);
 
+    if (widget.loader != null) {
+      _loadingBuilder = WidgetInitializer.of((context) {
+        _contextHolder.changeContext(context);
+
+        final loader = widget.loader(context);
+
+        debugPrint('build loader');
+
+        return loader;
+      });
+    } else {
+      _loadingBuilder = WidgetInitializer.of((context) {
+        _contextHolder.changeContext(context);
+
+        debugPrint('build default loader');
+
+        return Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+          ),
+        );
+      });
+    }
+
     _rootBuilder = WidgetInitializer.of((context) {
       _contextHolder.changeContext(context);
       final root = widget.root(context);
-
-      if (root is Initializable) {
-        (root as Initializable).init({});
-      }
 
       debugPrint('build root');
 
@@ -89,6 +124,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     final factory = ControlFactory.of(this);
 
     if (factory.isInitialized) {
+      printDebug('-- reloading State of ControlBase');
       return; //TODO: solve this for hot reload
     }
 
@@ -106,9 +142,11 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     entries[ControlKey.preferences] = BasePrefs();
     entries[ControlKey.localization] = BaseLocalization(
-      widget.defaultLocale ?? localizationAssets[0].iso2Locale,
+      widget.defaultLocale ?? localizationAssets[0].locale,
       localizationAssets,
     );
+
+    initializers[ControlTheme] = widget.theme ?? (context) => ControlTheme.of(context);
 
     factory.initialize(items: entries, initializers: initializers);
 
@@ -119,8 +157,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _contextHolder.once((context) async {
       if (widget.loadLocalization) {
-        await localization.loadDefaultLocalization();
-        await localization.changeToSystemLocale(context);
+        _localeArgs = await localization.loadDefaultLocalization();
+        _localeArgs = await localization.changeToSystemLocale(context);
       }
 
       if (block != null) {
@@ -128,8 +166,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       }
 
       setState(() {
-        _loading = false;
         _locale = localization.locale;
+        _loading = false;
       });
     });
   }
@@ -147,13 +185,35 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   Widget _buildHomeWidget() {
     return _loading
         ? Builder(builder: (context) {
-            _contextHolder.changeContext(context);
-            return widget.loader != null ? widget.loader(context) : Center(child: CircularProgressIndicator());
+            _initTheme(context);
+            return _loadingBuilder.getWidget(context, args: {
+              'loading': _loading,
+              'locale': _locale,
+              'debug': widget.debug,
+            });
           })
         : Builder(builder: (context) {
-            // root context is then changed via _rootBuilder
-            return _rootBuilder.getWidget(context);
+            _initTheme(context);
+            return _rootBuilder.getWidget(context, args: {
+              'loading': _loading,
+              'locale': _locale,
+              'locale_result': _localeArgs ??
+                  LocalizationArgs(
+                    locale: _locale,
+                    source: 'asset',
+                    isActive: false,
+                    changed: false,
+                  ),
+              'debug': widget.debug,
+            });
           });
+  }
+
+  void _initTheme(BuildContext context) {
+    if (!ControlFactory.of(context).containsKey(ControlKey.theme)) {
+      final theme = ControlProvider.init<ControlTheme>(context);
+      ControlProvider.set(key: ControlKey.theme, value: theme);
+    }
   }
 
   @override

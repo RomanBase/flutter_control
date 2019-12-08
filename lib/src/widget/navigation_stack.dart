@@ -228,7 +228,10 @@ class NavigatorStackController extends BaseController {
 
   /// Notifies about page changes.
   /// Can be used with [ControlBuilder] to rebuild menu or highlight active widget.
-  final pageIndex = ActionControl<int>.broadcast(0);
+  /// By modifying this value nothing happens - This control is locked with [public_key] to prevent miss use.
+  ///
+  /// Use [setPageIndex] to change Page.
+  final pageIndex = ActionControl<int>.broadcast(0).lock(public_key);
 
   final int initialPageIndex;
 
@@ -238,7 +241,7 @@ class NavigatorStackController extends BaseController {
 
   /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
-  /// Notifies [State] to switch [Offstage] of old/new active controller.
+  /// Notifies [State] to switch Pages.
   void setPageIndex(int index) {
     currentController.selected = false;
 
@@ -246,7 +249,7 @@ class NavigatorStackController extends BaseController {
 
     currentController.selected = true;
 
-    pageIndex.setValue(currentPageIndex);
+    pageIndex.setValue(currentPageIndex, key: public_key);
   }
 
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.

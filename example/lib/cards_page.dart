@@ -37,7 +37,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
           ),
           Container(
             color: Colors.grey,
-            padding: const EdgeInsets.symmetric(horizontal: BaseTheme.padding, vertical: BaseTheme.padding_half),
+            padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingHalf),
             child: InputField(
               controller: controller.input,
             ),
@@ -78,7 +78,7 @@ class CardWidget extends BaseControlWidget {
           children: <Widget>[
             Text(
               item.title,
-              style: theme.textTheme.title,
+              style: font.title,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),

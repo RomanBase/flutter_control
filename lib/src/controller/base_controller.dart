@@ -7,10 +7,10 @@ enum DialogType { popup, sheet, dialog, dock }
 
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
-typedef Initializer<T> = T Function();
-typedef ValueCallback<T> = void Function(T);
-typedef ValueConverter<T> = T Function(dynamic);
-typedef PairConverter<T> = T Function(dynamic, dynamic);
+typedef Initializer<T> = T Function(dynamic args);
+typedef ValueCallback<T> = void Function(T value);
+typedef ValueConverter<T> = T Function(dynamic value);
+typedef PairConverter<T> = T Function(dynamic key, dynamic value);
 
 /// Standard initialization of object right after constructor.
 abstract class Initializable {

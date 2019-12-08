@@ -458,7 +458,7 @@ class InputField extends ControlWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cursor = cursorColor ?? theme.cursorColor;
+    final cursor = cursorColor ?? theme.data.cursorColor;
 
     return TextField(
       onChanged: controller._changeText,

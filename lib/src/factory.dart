@@ -25,7 +25,7 @@ class ControlProvider {
 
   /// returns new object of requested type via initializer in [ControlFactory].
   /// nullable
-  static T init<T>(Map args) => ControlFactory._instance.init(args);
+  static T init<T>([dynamic args]) => ControlFactory._instance.init(args);
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].
@@ -159,9 +159,9 @@ class ControlFactory implements Disposable {
     }
 
     for (final item in _items.values) {
-      if (item.runtimeType == T) {
+      if (item is T) {
         _initItem(item, args: args, forceInit: false);
-        return item as T;
+        return item;
       }
     }
 
@@ -188,9 +188,9 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [setInitializer]
   /// nullable
-  T init<T>([Map args, bool forceInit = false]) {
+  T init<T>([dynamic args, bool forceInit = false]) {
     if (_initializers.containsKey(T)) {
-      final item = _initializers[T]() as T;
+      final item = _initializers[T](args) as T;
 
       _initItem(item, args: args, forceInit: forceInit);
 
@@ -203,13 +203,13 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [setInitializer]
   /// nullable
-  void _initItem(dynamic item, {Map args, bool forceInit: false}) {
+  void _initItem(dynamic item, {dynamic args, bool forceInit: false}) {
     if (_initInjection != null) {
       _initInjection(item, args);
     }
 
     if (item is Initializable && (args != null || forceInit)) {
-      item.init(args);
+      item.init(args is Map ? args : Parse.toMap(args));
     }
   }
 
@@ -247,6 +247,7 @@ class ControlFactory implements Disposable {
         return true;
       }
 
+      //TODO: subtype
       if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null || _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
         return true;
       }
@@ -256,10 +257,10 @@ class ControlFactory implements Disposable {
   }
 
   /// Checks if key is in Factory.
-  bool containsKey(dynamic key) => _items.containsKey(key);
+  bool containsKey(dynamic key) => _items.containsKey(key) || key is Type && _initializers.containsKey(key);
 
   /// Checks if Type is in Factory.
-  bool containsType<T>({bool includeInitializers: true}) {
+  bool containsType<T>() {
     for (final item in _items.values) {
       if (item.runtimeType == T) {
         return true;

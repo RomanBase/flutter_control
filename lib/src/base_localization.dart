@@ -9,16 +9,19 @@ typedef LocalizationParser = dynamic Function(dynamic data, String locale);
 
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
-  /// Locale key in iso2 standard (en, es, etc.).
-  final String iso2Locale;
+  /// Locale key.
+  /// Use iso2 (en) or unicode (en_US) standard.
+  final String locale;
 
   /// Asset path to file with localization data (json).
-  /// - /assets/localization/en.json
+  /// - /assets/localization/en.json or /assets/localization/en_US.json
   final String assetPath;
+
+  String get iso2Locale => locale.substring(0, 2);
 
   /// Default constructor
   LocalizationAsset(
-    this.iso2Locale,
+    this.locale,
     this.assetPath,
   );
 }
@@ -44,17 +47,17 @@ class BaseLocalization with PrefsProvider {
   /// key to shared preferences where preferred locale is stored.
   static const String preference_key = 'pref_locale';
 
-  /// default app locale in iso2 standard.
+  /// default app locale.
   final String defaultLocale;
 
   /// List of available localization assets.
   /// LocalizationAssets defines language and asset path to file with localization data.
   final List<LocalizationAsset> assets;
 
-  /// returns locale in iso2 standard (en, es, etc.).
+  /// returns currently loaded locale.
   String get locale => _locale;
 
-  /// Current locale in iso2 standard (en, es, etc.).
+  /// Current locale.
   String _locale;
 
   /// Current localization data.
@@ -91,7 +94,7 @@ class BaseLocalization with PrefsProvider {
     if (pref != null && isLocalizationAvailable(pref)) {
       locale = pref;
     } else {
-      locale = deviceLocale(context)?.languageCode;
+      locale = deviceLocale(context)?.toString();
     }
 
     if (locale != null) {
@@ -107,9 +110,9 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Returns true if localization file is available and is possible to load it.
-  bool isLocalizationAvailable(String iso2Locale) {
+  bool isLocalizationAvailable(String locale) {
     for (final asset in assets) {
-      if (asset.iso2Locale == iso2Locale) {
+      if (asset.locale == locale || asset.iso2Locale == locale.substring(0, 2)) {
         return true;
       }
     }
@@ -118,9 +121,15 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Returns asset path for given locale or null if localization asset is not available.
-  String getAssetPath(String iso2Locale) {
+  String getAssetPath(String locale) {
     for (final asset in assets) {
-      if (asset.iso2Locale == iso2Locale) {
+      if (asset.locale == locale) {
+        return asset.assetPath;
+      }
+    }
+
+    for (final asset in assets) {
+      if (asset.iso2Locale == locale.substring(0, 2)) {
         return asset.assetPath;
       }
     }
@@ -147,11 +156,11 @@ class BaseLocalization with PrefsProvider {
   /// Changes localization data inside this object.
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
-  Future<LocalizationArgs> changeLocale(String iso2Locale, {bool preferred: true}) async {
-    if (iso2Locale == null || !isLocalizationAvailable(iso2Locale)) {
-      print('localization not available: $iso2Locale');
+  Future<LocalizationArgs> changeLocale(String locale, {bool preferred: true}) async {
+    if (locale == null || !isLocalizationAvailable(locale)) {
+      print('localization not available: $locale');
       return LocalizationArgs(
-        locale: iso2Locale,
+        locale: locale,
         isActive: false,
         changed: false,
         source: 'asset',
@@ -159,10 +168,10 @@ class BaseLocalization with PrefsProvider {
     }
 
     if (preferred) {
-      prefs.set(preference_key, iso2Locale);
+      prefs.set(preference_key, locale);
     }
 
-    if (_locale == iso2Locale) {
+    if (_locale == locale) {
       return LocalizationArgs(
         locale: locale,
         isActive: true,
@@ -171,8 +180,8 @@ class BaseLocalization with PrefsProvider {
       );
     }
 
-    _locale = iso2Locale;
-    return await _initLocalization(iso2Locale, getAssetPath(iso2Locale));
+    _locale = locale;
+    return await _initLocalization(locale, getAssetPath(locale));
   }
 
   /// Loads localization from asset file for given locale.
@@ -349,17 +358,17 @@ class BaseLocalization with PrefsProvider {
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(dynamic data, {String iso2Locale, String defaultLocale}) {
-    iso2Locale ??= this.locale;
+  String extractLocalization(dynamic data, {String locale, String defaultLocale}) {
+    locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 
     if (_mapExtractor != null) {
-      return _mapExtractor(data, iso2Locale, defaultLocale);
+      return _mapExtractor(data, locale, defaultLocale);
     }
 
     if (data is Map) {
-      if (data.containsKey(iso2Locale)) {
-        return data[iso2Locale];
+      if (data.containsKey(locale)) {
+        return data[locale];
       }
 
       if (data.containsKey(defaultLocale)) {
@@ -367,7 +376,7 @@ class BaseLocalization with PrefsProvider {
       }
     }
 
-    return debug ? 'empty_{$iso2Locale}_$defaultLocale' : '';
+    return debug ? 'empty_{$locale}_$defaultLocale' : '';
   }
 
   ///This extractor will be used in [BaseLocalization.extractLocalization] function.
@@ -405,5 +414,5 @@ class LocalizationProvider {
 
   ///[BaseLocalization.extractLocalization]
   @protected
-  String extractLocalization(dynamic data, {String iso2Locale, String defaultLocale}) => localization.extractLocalization(data, iso2Locale: iso2Locale, defaultLocale: defaultLocale);
+  String extractLocalization(dynamic data, {String locale, String defaultLocale}) => localization.extractLocalization(data, locale: locale, defaultLocale: defaultLocale);
 }

@@ -58,7 +58,6 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [ControlState]
 /// [_ControlTickerState]
 /// [_ControlSingleTickerState]
-//TODO: [get] performance
 abstract class ControlWidget extends StatefulWidget with LocalizationProvider implements Initializable, Disposable {
   /// Holder for [State] nad Controllers.
   final holder = WidgetControlHolder();
@@ -88,26 +87,46 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   AppControl get control => AppControl.of(context);
 
-  /// Instance of [Device].
-  /// Helper for [MediaQuery].
+  /// Instance of requested [ControlTheme].
+  /// Override [themeScope] to receive correct [ThemeData].
+  ///
+  /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
   @protected
-  Device get device => Device(MediaQuery.of(context));
+  ControlTheme get theme => state?.theme;
+
+  /// Instance of [AssetPath].
+  ///
+  /// Custom [AssetPath] can be set to [ControlTheme] - [theme].
+  @protected
+  AssetPath get asset => theme?.asset;
+
+  /// Instance of [Device].
+  /// Wrapper of [MediaQuery].
+  @protected
+  Device get device => theme?.device;
 
   /// Instance of nearest [ThemeData].
   @protected
-  ThemeData get theme => Theme.of(context);
+  ThemeData get themeData => theme?.data;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get font => theme.textTheme;
+  TextTheme get font => themeData?.textTheme;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontPrimary => theme.primaryTextTheme;
+  TextTheme get fontPrimary => themeData?.primaryTextTheme;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontAccent => theme.accentTextTheme;
+  TextTheme get fontAccent => themeData?.accentTextTheme;
+
+  /// Origin of [ControlTheme].
+  /// [ControlTheme.scope] initializes with nearest [ThemeData].
+  /// [ControlTheme.root] initializes with root [ThemeData] - default.
+  ///
+  /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
+  int get themeScope => ControlTheme.root;
 
   /// Default constructor
   ControlWidget({Key key}) : super(key: key);
@@ -210,13 +229,27 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   List<BaseControlModel> controllers;
 
+  ControlTheme theme;
+
   @override
   void initState() {
     super.initState();
 
+    invalidateTheme();
+
     controllers = widget.initControllers();
 
     widget.onInitState(this);
+  }
+
+  /// Invalidates current [ControlTheme].
+  /// Check [ControlWidget.themeScope] to gather correct [ThemeData]/
+  void invalidateTheme() {
+    if (widget.themeScope == ControlTheme.root) {
+      theme = ControlProvider.get(ControlKey.theme);
+    } else {
+      theme = ControlProvider.init<ControlTheme>(context);
+    }
   }
 
   @override

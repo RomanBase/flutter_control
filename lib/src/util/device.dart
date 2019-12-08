@@ -2,11 +2,10 @@ import 'package:flutter_control/core.dart';
 
 class Device {
   final MediaQueryData data;
-  final BuildContext context;
 
-  const Device(this.data, [this.context]);
+  const Device(this.data);
 
-  factory Device.of(BuildContext context) => Device(MediaQuery.of(context), context);
+  factory Device.of(BuildContext context) => Device(MediaQuery.of(context));
 
   bool get portrait => data.orientation == Orientation.portrait;
 
@@ -33,10 +32,6 @@ class Device {
 
   double get bottomBorderSize => data.padding.bottom;
 
-  Size get toolbarAreaSize => Size(width, topBorderSize + BaseTheme.button_height);
-
-  Size get menuAreaSize => Size(width, bottomBorderSize + BaseTheme.button_height);
-
   double px(double value) => value * ratio;
 
   double dp(double value) => value / ratio;
@@ -49,11 +44,11 @@ class Device {
 
   Offset dpOffset(Offset offset) => Offset(dp(offset.dx), dp(offset.dy));
 
-  T onOrientation<T>(Initializer<T> portrait, Initializer<T> landscape) {
+  T onOrientation<T>({Initializer<T> portrait, Initializer<T> landscape, dynamic args}) {
     if (this.portrait) {
-      return portrait();
+      return portrait(args);
     }
 
-    return landscape();
+    return landscape(args);
   }
 }

@@ -69,10 +69,26 @@ class ActionControl<T> implements Disposable {
   /// Global subscription.
   GlobalSubscription<T> _globalSub;
 
+  Object _lock;
+
+  bool get isLocked => _lock != null;
+
   ///Default constructor.
   ActionControl._([T value]) {
     _value = value;
   }
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other.value == value;
+  }
+
+  /// Checks if given object is same as this one.
+  /// Returns true if objects are same.
+  bool equal(FieldControl other) => identityHashCode(this) == identityHashCode(other);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
@@ -124,8 +140,32 @@ class ActionControl<T> implements Disposable {
     return _sub;
   }
 
+  /// Sets lock for this control.
+  /// Value now can't be changed without proper [key].
+  ActionControl lock(Object key) {
+    _lock = key;
+
+    return this;
+  }
+
+  /// Unlocks this control.
+  /// If proper [key] is passed, then no more key is required to change value.
+  /// Returns true if control is unlocked.
+  bool unlock(Object key) {
+    if (_lock == key) {
+      _lock = null;
+    }
+
+    return !isLocked;
+  }
+
   /// Sets new value and notifies listeners.
-  void setValue(T value) {
+  void setValue(T value, {Object key}) {
+    if (isLocked && _lock != key) {
+      printDebug('This control is locked. You need proper key to change value.');
+      return;
+    }
+
     _value = value;
 
     notify();
@@ -159,6 +199,11 @@ class ActionControl<T> implements Disposable {
       _globalSub.dispose();
       _globalSub = null;
     }
+  }
+
+  @override
+  String toString() {
+    return value?.toString();
   }
 }
 
@@ -392,6 +437,18 @@ class FieldControl<T> implements Disposable {
     }
   }
 
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other.value == value;
+  }
+
+  /// Checks if given object is same as this one.
+  /// Returns true if objects are same.
+  bool equal(FieldControl other) => identityHashCode(this) == identityHashCode(other);
+
   /// Initializes [FieldControl] and subscribes it to given [stream].
   /// Check [subscribeTo] function for more info.
   factory FieldControl.of(Stream stream, {T initValue, Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
@@ -542,6 +599,11 @@ class FieldControl<T> implements Disposable {
         _subscriptions = null;
       }
     }
+  }
+
+  @override
+  String toString() {
+    return value?.toString();
   }
 }
 
@@ -1113,7 +1175,7 @@ class StringControl extends FieldControl<String> {
 
   String regex;
 
-  bool get validRegex => regex != null;
+  bool get requestValidation => regex != null;
 
   StringControl([String value]) : super(value);
 
@@ -1123,7 +1185,7 @@ class StringControl extends FieldControl<String> {
 
   @override
   void setValue(String value) {
-    if (validRegex) {
+    if (requestValidation) {
       setWithRegex(value);
     } else {
       super.setValue(value);
@@ -1135,6 +1197,8 @@ class StringControl extends FieldControl<String> {
 
     if (RegExp(regex).hasMatch(value ?? '')) {
       super.setValue(value);
+    } else {
+      printDebug('value is not within regex $regex');
     }
   }
 }
@@ -1147,7 +1211,7 @@ class DoubleControl extends FieldControl<double> {
   double max = 0.0;
   bool clamp = true;
 
-  bool get validRange => min + max != 0.0;
+  bool get requestRange => min + max != 0.0;
 
   DoubleControl([double value = 0.0]) : super(value);
 
@@ -1156,7 +1220,7 @@ class DoubleControl extends FieldControl<double> {
   }
 
   void setValue(double value) {
-    if (validRange) {
+    if (requestRange) {
       setInRange(value);
     } else {
       super.setValue(value);
@@ -1169,6 +1233,8 @@ class DoubleControl extends FieldControl<double> {
     } else {
       if (value >= min && value <= max) {
         super.setValue(value);
+      } else {
+        printDebug('value is not within range $min - $max');
       }
     }
   }
@@ -1182,7 +1248,7 @@ class IntegerControl extends FieldControl<int> {
   int max = 0;
   bool clamp = true;
 
-  bool get validRange => min + max != 0;
+  bool get requestRange => min + max != 0;
 
   IntegerControl([int value = 0]) : super(value);
 
@@ -1191,7 +1257,7 @@ class IntegerControl extends FieldControl<int> {
   }
 
   void setValue(int value) {
-    if (validRange) {
+    if (requestRange) {
       setInRange(value);
     } else {
       super.setValue(value);
@@ -1204,6 +1270,8 @@ class IntegerControl extends FieldControl<int> {
     } else {
       if (value >= min && value <= max) {
         super.setValue(value);
+      } else {
+        printDebug('value is not within range $min - $max');
       }
     }
   }
