@@ -29,6 +29,7 @@ export './src/widget/navigation_stack.dart';
 export './src/widget/stable_widget.dart';
 export './src/widget/widget_provider.dart';
 
+// TODO: store defaults by type
 class ControlKey {
   static const String factory = 'factory';
   static const String broadcast = 'broadcast';

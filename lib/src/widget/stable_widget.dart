@@ -29,7 +29,7 @@ class _StableWidgetState extends State<StableWidget> {
       _sub = BroadcastProvider.subscribe<LocalizationArgs>(ControlKey.localization, (args) {
         if (args.changed) {
           setState(() {
-            holder.martToOverride();
+            holder.setDirty();
           });
         }
       });

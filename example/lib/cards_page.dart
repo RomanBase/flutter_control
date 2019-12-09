@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 import 'cards_controller.dart';
 import 'settings_page.dart';
 
-class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
+class CardsPage extends SingleControlWidget<CardsController> with RouteControl, ThemeProvider {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +52,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl {
   }
 }
 
-class CardWidget extends BaseControlWidget {
+class CardWidget extends BaseControlWidget with ThemeProvider{
   final CardModel item;
 
   CardWidget(this.item) : super(key: ObjectKey(item));

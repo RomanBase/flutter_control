@@ -46,6 +46,8 @@ class MyTheme extends ControlTheme {
   @override
   double get paddingHalf => 12.0;
 
+  Color get superColor => Colors.red;
+
   const MyTheme(Device device, ThemeData data) : super(device: device, data: data);
 
   factory MyTheme.of(BuildContext context) {

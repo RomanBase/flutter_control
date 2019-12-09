@@ -17,7 +17,7 @@ class InitHolder<T> {
   bool _isDirty = true;
 
   /// Is true if current [value] needs rebuild.
-  bool get isDirty => _isDirty || !isActive || !isBuild;
+  bool get isDirty => _isDirty || !isActive;
 
   /// Default constructor
   InitHolder({ValueGetter<T> builder}) {
@@ -27,7 +27,7 @@ class InitHolder<T> {
   /// Sets builder if none [isActive].
   /// [override] to override current builder even if [isActive] and clears current value.
   bool set({@required ValueGetter<T> builder, bool override: false}) {
-    if (_builder == null || isDirty || override) {
+    if (isDirty || override) {
       _value = null;
       _isDirty = false;
       _builder = builder;
@@ -40,6 +40,15 @@ class InitHolder<T> {
   /// Returns current value or build new one and store it for later get.
   T get() => _value ?? (_value = _builder());
 
-  /// Marks holder as dirty, so next [set] call will override builder.
-  void martToOverride() => _isDirty = true;
+  /// Sets builder if holder is [isDirty], then builds value.
+  T getWithBuilder(ValueGetter<T> builder) {
+    set(builder: builder);
+    return get();
+  }
+
+  /// Sets holder to dirty, so next [set] will override builder.
+  void setDirty() => _isDirty = true;
+
+  /// Removes value from holder, so next [get] will trigger builder.
+  void requestRebuild() => _value = null;
 }

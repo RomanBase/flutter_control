@@ -268,7 +268,7 @@ class InputController extends BaseControlModel with StateController {
 /// [InputController.next]
 /// [InputController.done]
 /// [InputController.changed]
-class InputField extends ControlWidget {
+class InputField extends ControlWidget with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
   final InputController controller;
