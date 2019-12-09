@@ -22,6 +22,19 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
             iconBuilder: (selected) => Icons.settings_applications,
             titleBuilder: (selected) => localize('settings'),
           ): (context) => SettingsPage(),
+          MenuItem(
+            key: 'about',
+            iconBuilder: (selected) => Icons.file_upload,
+            titleBuilder: (selected) => localize('about'),
+            onSelected: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'Flutter Control',
+                applicationVersion: '1.0',
+              );
+              return true;
+            },
+          ): (context) => Container(),
         },
       ),
       bottomNavigationBar: ControlBuilder(

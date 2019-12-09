@@ -1,3 +1,5 @@
+import 'package:flutter_control/core.dart';
+
 typedef MenuCallback<T> = T Function(bool selected);
 
 class MenuItem {
@@ -6,6 +8,7 @@ class MenuItem {
   final MenuCallback<String> titleBuilder;
   final Object data;
   final bool selected;
+  final ValueGetter<bool> onSelected;
 
   dynamic get icon => iconBuilder != null ? iconBuilder(selected) : null;
 
@@ -17,6 +20,7 @@ class MenuItem {
     this.titleBuilder,
     this.data,
     this.selected: false,
+    this.onSelected,
   });
 
   MenuItem copyWith({

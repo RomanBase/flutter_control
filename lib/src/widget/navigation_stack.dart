@@ -245,7 +245,15 @@ class NavigatorStackController extends BaseController {
   void setPageIndex(int index) {
     currentController.selected = false;
 
-    _pageIndex = index.clamp(0, _items.length - 1);
+    index = index.clamp(0, _items.length - 1);
+
+    if (items[index].menu?.onSelected != null) {
+      if (items[index].menu.onSelected()) {
+        return;
+      }
+    }
+
+    _pageIndex = index;
 
     currentController.selected = true;
 
@@ -298,13 +306,13 @@ class _NavigatorStackOffstage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final list = List<Widget>();
+
+    pages.forEach((item) => list.add(item.initializer?.getWidget(context) ?? Container()));
+
     return ControlBuilder(
       controller: controller.pageIndex,
       builder: (context, index) {
-        final list = List<Widget>();
-
-        pages.forEach((item) => list.add(item.initializer.getWidget(context)));
-
         if (overrideNavigation) {
           return WillPopScope(
             onWillPop: controller.popScope,
