@@ -132,7 +132,7 @@ class ControlFactory implements Disposable {
     }
 
     assert(() {
-      if (_items.containsKey(key)) {
+      if (_items.containsKey(key) && _items[key] != value) {
         printDebug('Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
       }
       return true;
@@ -168,29 +168,16 @@ class ControlFactory implements Disposable {
     return init<T>();
   }
 
-  /// Looks for item by [Type] in collection.
-  /// [includeFactory] to search in factory too.
-  /// [defaultValue] is returned if nothing found.
-  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue}) {
-    final item = Parse.getArg(collection);
-
-    if (item != null) {
-      return item;
-    }
-
-    if (includeFactory) {
-      return get<T>() ?? defaultValue;
-    }
-
-    return defaultValue;
-  }
-
   /// returns new object of requested type.
   /// initializer must be specified - [setInitializer]
   /// nullable
   T init<T>([dynamic args, bool forceInit = false]) {
-    if (_initializers.containsKey(T)) {
-      final item = _initializers[T](args) as T;
+    final initializer = findInitializer<T>();
+
+    if (initializer != null) {
+      args ??= get<AppControl>(ControlKey.control)?.rootContext;
+
+      final item = initializer(args);
 
       _initItem(item, args: args, forceInit: forceInit);
 
@@ -211,6 +198,37 @@ class ControlFactory implements Disposable {
     if (item is Initializable && (args != null || forceInit)) {
       item.init(args is Map ? args : Parse.toMap(args));
     }
+  }
+
+  /// Looks for item by [Type] in collection.
+  /// [includeFactory] to search in factory too.
+  /// [defaultValue] is returned if nothing found.
+  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue}) {
+    final item = Parse.getArg(collection);
+
+    if (item != null) {
+      return item;
+    }
+
+    if (includeFactory) {
+      return get<T>() ?? defaultValue;
+    }
+
+    return defaultValue;
+  }
+
+  Initializer<T> findInitializer<T>() {
+    if (_initializers.containsKey(T)) {
+      return _initializers[T];
+    } else {
+      final key = _initializers.keys.firstWhere((item) => T.runtimeType == item.runtimeType, orElse: () => null);
+
+      if (key != null) {
+        return _initializers[key];
+      }
+    }
+
+    return null;
   }
 
   /// Removes item of given key or all items of given type.

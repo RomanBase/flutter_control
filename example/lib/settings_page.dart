@@ -42,6 +42,13 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
               onPressed: controller.changeLocaleToCS,
               child: Text('change locale to CS'),
             ),
+            RaisedButton(
+              onPressed: controller.toggleTheme,
+              child: Text(
+                'toggle Theme',
+                style: font.button.copyWith(color: theme.primaryColor),
+              ),
+            ),
             StableWidget(
               localize: false,
               builder: (context) => Padding(
@@ -49,6 +56,7 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
                 child: Text(
                   localize('localization_info'),
                   textAlign: TextAlign.center,
+                  style: font.body1.copyWith(color: theme.primaryColor),
                 ),
               ),
             ),

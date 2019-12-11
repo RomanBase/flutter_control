@@ -15,6 +15,7 @@ class ControlBase extends StatefulWidget {
   final Initializer<ControlTheme> theme;
   final WidgetBuilder root;
   final AppBuilder app;
+  final VoidCallback onInit;
 
   /// Root [Widget] for whole app.
   ///
@@ -41,6 +42,7 @@ class ControlBase extends StatefulWidget {
     this.loader,
     @required this.root,
     @required this.app,
+    this.onInit,
   }) : super();
 
   @override
@@ -115,7 +117,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     });
   }
 
-  void _initControl(Map<String, String> locales, Map entries, Map<Type, Initializer> initializers) {
+  void _initControl(Map<String, String> locales, Map entries, Map<Type, Initializer> initializers) async {
     DelayBlock block;
     if (widget.loaderDelay != null) {
       block = DelayBlock(widget.loaderDelay);
@@ -182,10 +184,10 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     );
   }
 
+  //TODO: rework
   Widget _buildHomeWidget() {
     return _loading
         ? Builder(builder: (context) {
-            _initTheme(context);
             return _loadingBuilder.getWidget(context, args: {
               'loading': _loading,
               'locale': _locale,
@@ -193,7 +195,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
             });
           })
         : Builder(builder: (context) {
-            _initTheme(context);
             return _rootBuilder.getWidget(context, args: {
               'loading': _loading,
               'locale': _locale,
@@ -207,13 +208,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
               'debug': widget.debug,
             });
           });
-  }
-
-  void _initTheme(BuildContext context) {
-    if (!ControlFactory.of(context).containsKey(ControlKey.theme)) {
-      final theme = ControlProvider.init<ControlTheme>(context);
-      ControlProvider.set(key: ControlKey.theme, value: theme);
-    }
   }
 
   @override

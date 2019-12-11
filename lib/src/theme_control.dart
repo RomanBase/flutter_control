@@ -137,77 +137,43 @@ class ControlTheme {
   final ThemeData data;
   final AssetPath asset;
 
-  const ControlTheme({this.device, this.data, this.asset: const AssetPath()});
+  bool requestRebuild = false;
+
+  ControlTheme({this.device, this.data, this.asset: const AssetPath()});
 
   factory ControlTheme.of(BuildContext context) => ControlTheme(
         device: Device.of(context),
         data: Theme.of(context),
       );
 
-  static TextTheme textTheme({
-    String fontName,
-    Color color,
-    double fontSize,
-    double fontSizeSmall,
-    double fontSizeMid,
-    double fontSizeLarge,
-    double fontSizeExtra,
-    double fontSizeSuper,
-  }) =>
-      TextTheme(
-        display4: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeSuper, fontWeight: FontWeight.w900),
-        display3: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeExtra, fontWeight: FontWeight.w700),
-        display2: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeLarge, fontWeight: FontWeight.w600),
-        display1: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeMid, fontWeight: FontWeight.w500),
-        headline: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeLarge, fontWeight: FontWeight.w600),
-        title: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeMid, fontWeight: FontWeight.w700),
-        subhead: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeMid, fontWeight: FontWeight.w500),
-        body2: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeSmall, fontWeight: FontWeight.w300),
-        body1: TextStyle(fontFamily: fontName, color: color, fontSize: fontSize),
-        caption: TextStyle(fontFamily: fontName, color: color, fontSize: fontSizeSmall, fontWeight: FontWeight.w300),
-        button: TextStyle(fontFamily: fontName, color: color, fontSize: fontSize, fontWeight: FontWeight.w600),
-        subtitle: TextStyle(fontFamily: fontName, color: color, fontSize: fontSize, fontWeight: FontWeight.w300),
-        overline: TextStyle(fontFamily: fontName, color: color, fontSize: fontSize, fontWeight: FontWeight.w600),
+  ControlTheme copyWith({ThemeData data, AssetPath asset}) => ControlTheme(
+        device: device,
+        data: data ?? this.data,
+        asset: asset ?? this.asset,
       );
-}
 
-class ControlThemeScope<T extends ControlTheme> extends InheritedWidget {
-  final T theme;
-
-  const ControlThemeScope({Key key, @required this.theme, Widget child}) : super(key: key, child: child);
-
-  static Theme build<T extends ControlTheme>({@required ThemeData data, @required Initializer<T> control}) {
-    return Theme(
-      data: data,
-      child: Builder(builder: (context) => ControlThemeScope<T>(theme: control(context))),
-    );
+  @override
+  bool operator ==(other) {
+    return other is ControlTheme && data == other.data && this.runtimeType == other.runtimeType;
   }
 
   @override
-  bool updateShouldNotify(ControlThemeScope oldWidget) {
-    return theme != oldWidget.theme;
-  }
+  int get hashCode => data.hashCode;
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>() => ControlProvider.get<T>();
-
-  static T scope<T extends ControlTheme>(BuildContext context) {
-    final widget = context.inheritFromWidgetOfExactType(ControlThemeScope) as ControlThemeScope;
-
-    return widget?.theme ?? of<T>();
-  }
+  static T of<T extends ControlTheme>([BuildContext context]) => ControlProvider.init<ControlTheme>(context);
 
   /// Holds current [ControlTheme]. Ideally value is build once.
   /// Holder can be rebuild with [invalidateTheme].
-  final _holder = InitHolder<T>();
+  final _holder = InitHolder<T>(builder: () => of<T>());
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
   ///
   /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
   @protected
-  T get theme => _holder.getWithBuilder(() => of<T>());
+  T get theme => _holder.get();
 
   /// Instance of [AssetPath].
   ///
@@ -222,35 +188,31 @@ mixin ThemeProvider<T extends ControlTheme> {
 
   /// Instance of nearest [ThemeData].
   @protected
-  ThemeData get themeData => theme?.data;
+  ThemeData get data => theme?.data;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get font => themeData?.textTheme;
+  TextTheme get font => data?.textTheme;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontPrimary => themeData?.primaryTextTheme;
+  TextTheme get fontPrimary => data?.primaryTextTheme;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontAccent => themeData?.accentTextTheme;
+  TextTheme get fontAccent => data?.accentTextTheme;
 
   /// Origin of [ControlTheme].
   /// [ControlTheme.scope] initializes with nearest [ThemeData].
   /// [ControlTheme.root] initializes with root [ThemeData] - default.
   ///
   /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
-  int get themeScope => ControlTheme.root;
+  int get themeScope => ControlTheme.scope;
 
   /// Invalidates current [ControlTheme].
   /// With [ControlWidget] checks [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   /// With other objects checks [context] to provide scoped or global [ThemeData].
-  void invalidateTheme({BuildContext context}) {
-    if (context != null && themeScope == ControlTheme.scope) {
-      _holder.set(builder: () => scope<T>(context), override: true);
-    } else {
-      _holder.set(builder: () => of<T>(), override: true);
-    }
+  void invalidateTheme([BuildContext context]) {
+    _holder.set(builder: () => of<T>(context != null && themeScope == ControlTheme.scope ? context : null), override: true);
   }
 }

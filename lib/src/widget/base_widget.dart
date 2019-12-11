@@ -193,7 +193,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     super.initState();
 
     if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context: context);
+      (widget as ThemeProvider).invalidateTheme(context);
     }
 
     controllers = widget.initControllers();
@@ -210,6 +210,10 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   @protected
   void notifyWidget() {
+    if (widget is ThemeProvider) {
+      (widget as ThemeProvider).invalidateTheme(context);
+    }
+
     if (!widget.holder.initialized) {
       widget.notifyWidget(this);
     }
@@ -217,7 +221,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   @override
   Widget build(BuildContext context) {
-    notifyWidget(); //TODO: I don't like it here - but hot reload messes with holder.
+    notifyWidget();
 
     return widget.build(context);
   }

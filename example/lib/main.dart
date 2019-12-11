@@ -6,7 +6,14 @@ import 'menu_page.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget with LocalizationProvider {
+class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
+  final _theme = ActionControl<ThemeData>.broadcastListener(
+    key: 'theme',
+    defaultValue: ThemeData(
+      primaryColor: Colors.orange,
+    ),
+  );
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -25,15 +32,17 @@ class MyApp extends StatelessWidget with LocalizationProvider {
       },
       theme: (context) => MyTheme.of(context),
       root: (context) => MenuPage(),
-      app: (BuildContext context, Key key, Widget home) {
-        return MaterialApp(
-          key: key,
-          home: home,
-          title: localization.isActive ? localize('app_name') : 'Flutter Example',
-          theme: ThemeData(
-            primaryColor: Colors.orange,
-          ),
-        );
+      app: (context, key, home) {
+        return ControlBuilder<ThemeData>(
+            controller: _theme,
+            builder: (context, theme) {
+              return MaterialApp(
+                key: key,
+                home: home,
+                title: localization.isActive ? localize('app_name') : 'Flutter Example',
+                theme: theme,
+              );
+            });
       },
     );
   }
@@ -48,9 +57,14 @@ class MyTheme extends ControlTheme {
 
   Color get superColor => Colors.red;
 
-  const MyTheme(Device device, ThemeData data) : super(device: device, data: data);
+  MyTheme(Device device, ThemeData data) : super(device: device, data: data);
 
   factory MyTheme.of(BuildContext context) {
     return MyTheme(Device.of(context), Theme.of(context));
   }
+
+  MyTheme copy(ThemeData data) => MyTheme(
+        device,
+        data,
+      );
 }

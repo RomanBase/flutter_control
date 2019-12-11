@@ -88,7 +88,7 @@ class ActionControl<T> implements Disposable {
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
-  bool equal(FieldControl other) => identityHashCode(this) == identityHashCode(other);
+  bool equal(other) => identityHashCode(this) == identityHashCode(other);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
@@ -100,8 +100,8 @@ class ActionControl<T> implements Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  factory ActionControl.globalSubscription(String key, {bool broadcast: false}) {
-    ActionControl control = broadcast ? ActionControl<T>._() : _ActionControlBroadcast._();
+  factory ActionControl.broadcastListener({@required String key, bool broadcast: false, T defaultValue}) {
+    ActionControl control = broadcast ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
 
@@ -280,9 +280,13 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// [ControlWidgetBuilder] - returns Widget based on given value.
 class ControlBuilder<T> extends StatefulWidget {
   final ActionControl<T> controller;
-  final ControlWidgetBuilder<T> builder;
+  final ControlWidgetBuilder builder; //TODO: T
 
-  const ControlBuilder({Key key, @required this.controller, @required this.builder}) : super(key: key);
+  const ControlBuilder({
+    Key key,
+    @required this.controller,
+    @required this.builder,
+  }) : super(key: key);
 
   @override
   _ControlBuilderState createState() => _ControlBuilderState<T>();
