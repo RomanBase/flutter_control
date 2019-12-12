@@ -222,7 +222,7 @@ class InputController extends BaseControlModel with StateController {
     }
 
     if (unfocus) {
-      focus(false);
+      unfocusChain();
     }
 
     final isNextValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields

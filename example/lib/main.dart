@@ -50,12 +50,12 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
 
 class MyTheme extends ControlTheme {
   @override
-  double get padding => 24.0;
+  final padding = 24.0;
 
   @override
-  double get paddingHalf => 12.0;
+  final paddingHalf = 12.0;
 
-  Color get superColor => Colors.red;
+  final superColor = Colors.red;
 
   MyTheme(Device device, ThemeData data) : super(device, data);
 

@@ -35,79 +35,79 @@ class ControlTheme {
   static const root = 0;
   static const scope = 1;
 
-  double get padding => 16.0;
+  final padding = 16.0;
 
-  double get paddingHalf => 8.0;
+  final paddingHalf = 8.0;
 
-  double get paddingQuad => 4.0;
+  final paddingQuad = 4.0;
 
-  double get paddingQuarter => 12.0;
+  final paddingQuarter = 12.0;
 
-  double get paddingMid => 24.0;
+  final paddingMid = 24.0;
 
-  double get paddingExtended => 32.0;
+  final paddingExtended = 32.0;
 
-  double get paddingSection => 64.0;
+  final paddingSection = 64.0;
 
-  double get paddingHead => 96.0;
+  final paddingHead = 96.0;
 
-  double get iconSize => 24.0;
+  final iconSize = 24.0;
 
-  double get iconSizeLarge => 32.0;
+  final iconSizeLarge = 32.0;
 
-  double get iconBounds => 48.0;
+  final iconBounds = 48.0;
 
-  double get iconLauncher => 144.0;
+  final iconLauncher = 144.0;
 
-  double get thumb => 96.0;
+  final thumb = 96.0;
 
-  double get preview => 192.0;
+  final preview = 192.0;
 
-  double get head => 320.0;
+  final head = 320.0;
 
-  double get buttonWidth => 256.0;
+  final buttonWidth = 256.0;
 
-  double get buttonHeight => 56.0;
+  final buttonHeight = 56.0;
 
-  double get buttonRadius => 28.0;
+  final buttonRadius = 28.0;
 
-  double get buttonHeightSmall => 32.0;
+  final buttonHeightSmall = 32.0;
 
-  double get buttonRadiusSmall => 16.0;
+  final buttonRadiusSmall = 16.0;
 
-  double get controlHeight => 42.0;
+  final controlHeight = 42.0;
 
-  double get inputHeight => 56.0;
+  final inputHeight = 56.0;
 
-  double get barHeight => 56.0;
+  final barHeight = 56.0;
 
-  double get divider => 1.0;
-
-  ////////////////////////////////////////////////////////////////////////////////
-
-  String get fontName => 'GoogleSans';
-
-  double get fontSize => 14.0;
-
-  double get fontSizeSmall => 12.0;
-
-  double get fontSizeMid => 18.0;
-
-  double get fontSizeLarge => 24.0;
-
-  double get fontSizeExtra => 28.0;
-
-  double get fontSizeSuper => 36.0;
+  final divider = 1.0;
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  Duration get animDuration => const Duration(milliseconds: 250);
+  final fontName = 'GoogleSans';
 
-  Duration get animDurationFast => const Duration(milliseconds: 150);
+  final fontSize = 14.0;
 
-  Duration get animDurationSlow => const Duration(milliseconds: 500);
+  final fontSizeSmall = 12.0;
 
-  Duration get animDurationSecond => const Duration(milliseconds: 1000);
+  final fontSizeMid = 18.0;
+
+  final fontSizeLarge = 24.0;
+
+  final fontSizeExtra = 28.0;
+
+  final fontSizeSuper = 36.0;
+
+  ////////////////////////////////////////////////////////////////////////////////
+
+  final animDuration = const Duration(milliseconds: 250);
+
+  final animDurationFast = const Duration(milliseconds: 150);
+
+  final animDurationSlow = const Duration(milliseconds: 500);
+
+  final animDurationSecond = const Duration(milliseconds: 1000);
 
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -137,9 +137,7 @@ class ControlTheme {
   final ThemeData data;
   final AssetPath asset;
 
-  bool requestRebuild = false;
-
-  ControlTheme(this.device, this.data, [this.asset = const AssetPath()]);
+  const ControlTheme(this.device, this.data, [this.asset = const AssetPath()]);
 
   factory ControlTheme.of(BuildContext context) => ControlTheme(
         Device.of(context),
