@@ -64,6 +64,7 @@ Flutter Control helps to separate Business Logic from UI and with Communication,
 
 - [ControlProvider] Provides and initializes objects from [ControlFactory].
 - [BroadcastProvider] Globally broadcasts events and data.
+- [ThemeProvider] Initializes [ControlTheme] and caches current [ThemeData].
 
 ---
 
@@ -93,7 +94,6 @@ Flutter Control helps to separate Business Logic from UI and with Communication,
 - [FutureBlock] Retriggerable delay.
 - [DelayBlock] Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
 - [Parse] Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
-- [Device] Wrapper over [MediaQuery].
 - [WidgetInitializer] Helps to initialize Widgets with init data.
 - [UnitId] Unique ID generator based on Time, Index or just Random. 
 
@@ -108,13 +108,16 @@ Control and App initialization. TodoController is initialized and stored in glob
    class MainApp extends StatelessWidget {
      @override
      Widget build(BuildContext context) {
-       return BaseApp(
-         title: 'Flutter Control',
-         theme: ThemeData(),
+       return ControlBase(
          entries: {
            'todo': TodoController(),
          },
          root: (context) => TodoPage(),
+         app: (context, key, home) => MaterialApp(
+            key: key,
+            home: home,
+            title: 'Flutter Control',
+         ),
        );
      }
    }

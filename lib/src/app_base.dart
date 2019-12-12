@@ -3,6 +3,7 @@ import 'package:flutter_control/src/base_control.dart';
 
 typedef OnContextChanged = Function(BuildContext context);
 
+@deprecated
 class BaseApp extends StatelessWidget {
   final String title;
   final ThemeData theme;

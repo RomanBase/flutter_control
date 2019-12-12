@@ -139,17 +139,17 @@ class ControlTheme {
 
   bool requestRebuild = false;
 
-  ControlTheme({this.device, this.data, this.asset: const AssetPath()});
+  ControlTheme(this.device, this.data, [this.asset = const AssetPath()]);
 
   factory ControlTheme.of(BuildContext context) => ControlTheme(
-        device: Device.of(context),
-        data: Theme.of(context),
+        Device.of(context),
+        Theme.of(context),
       );
 
   ControlTheme copyWith({ThemeData data, AssetPath asset}) => ControlTheme(
-        device: device,
-        data: data ?? this.data,
-        asset: asset ?? this.asset,
+        device,
+        data ?? this.data,
+        asset ?? this.asset,
       );
 
   @override

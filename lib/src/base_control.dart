@@ -81,7 +81,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   void initState() {
     super.initState();
 
-    _initControl(widget.locales, widget.entries, widget.initializers);
+    _initControl(widget.locales ?? {'en': null}, widget.entries ?? {}, widget.initializers ?? {});
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of((context) {
@@ -128,15 +128,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     if (factory.isInitialized) {
       printDebug('-- reloading State of ControlBase');
       return; //TODO: solve this for hot reload
-    }
-
-    if (entries == null) {
-      entries = Map();
-    }
-
-    if (locales == null || locales.isEmpty) {
-      locales = Map<String, String>();
-      locales['en'] = null;
     }
 
     final localizationAssets = List<LocalizationAsset>();

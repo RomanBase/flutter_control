@@ -57,7 +57,7 @@ class MyTheme extends ControlTheme {
 
   Color get superColor => Colors.red;
 
-  MyTheme(Device device, ThemeData data) : super(device: device, data: data);
+  MyTheme(Device device, ThemeData data) : super(device, data);
 
   factory MyTheme.of(BuildContext context) {
     return MyTheme(Device.of(context), Theme.of(context));
