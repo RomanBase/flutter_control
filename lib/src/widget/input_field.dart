@@ -255,8 +255,8 @@ class InputController extends BaseControlModel with StateController {
   void dispose() {
     super.dispose();
 
-    _editController.dispose();
-    _focusController.dispose();
+    _editController?.dispose();
+    _focusController?.dispose();
 
     _editController = null;
     _focusController = null;
