@@ -50,8 +50,8 @@ class BroadcastProvider {
 /// Factory also creates global subscription stream driven by keys. Access this stream via [BroadcastProvider].
 ///
 /// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [BaseLocalization] and [BasePrefs].
-/// Fill [BaseApp.entries] for initial items to store inside factory.
-/// Fill [BaseApp.initializers] for initial builders to store inside factory.
+/// Fill [ControlBase.entries] for initial items to store inside factory.
+/// Fill [ControlBase.initializers] for initial builders to store inside factory.
 class ControlFactory implements Disposable {
   /// Instance of AppFactory.
   static final ControlFactory _instance = ControlFactory._();
@@ -221,7 +221,7 @@ class ControlFactory implements Disposable {
     if (_initializers.containsKey(T)) {
       return _initializers[T];
     } else {
-      final key = _initializers.keys.firstWhere((item) => T.runtimeType == item.runtimeType, orElse: () => null);
+      final key = _initializers.keys.firstWhere((item) => item is T, orElse: () => null);
 
       if (key != null) {
         return _initializers[key];
