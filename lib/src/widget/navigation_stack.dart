@@ -296,7 +296,7 @@ class _NavigatorStackOffstage extends StatelessWidget {
     assert(pages.length > 0);
 
     controller._items = pages.map((page) => page.controller).toList(growable: false);
-    controller.setPageIndex(controller.initialPageIndex);
+    controller.setPageIndex(controller._pageIndex > 0 ? controller._pageIndex : controller.initialPageIndex);
     controller.currentController.selected = true;
 
     if (controller.onPagesInitialized != null) {
