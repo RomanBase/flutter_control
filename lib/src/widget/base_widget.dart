@@ -33,7 +33,15 @@ abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWi
   }
 
   @protected
-  T initController() => getControl<T>();
+  T initController() {
+    T item = Parse.getArg<T>(args);
+
+    if (item == null) {
+      item = ControlProvider.init<T>(args);
+    }
+
+    return item;
+  }
 }
 
 /// [ControlWidget] with no init Controllers.
@@ -153,11 +161,6 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Callback from [State] when state is notified.
   @protected
   void onStateChanged(dynamic state) {}
-
-  /// Looks for [Type] in initialized controllers, then look up whole factory.
-  /// [ControlFactory.find]
-  @protected
-  T getControl<T>() => factory.find<T>(controllers, args: holder.args);
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
   BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
