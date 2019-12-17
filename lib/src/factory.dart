@@ -203,15 +203,15 @@ class ControlFactory implements Disposable {
   /// Looks for item by [Type] in collection.
   /// [includeFactory] to search in factory too.
   /// [defaultValue] is returned if nothing found.
-  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue}) {
-    final item = Parse.getArg(collection);
+  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue, Map args}) {
+    final item = Parse.getArg<T>(collection);
 
     if (item != null) {
       return item;
     }
 
     if (includeFactory) {
-      return get<T>() ?? defaultValue;
+      return get<T>(null, args) ?? defaultValue;
     }
 
     return defaultValue;

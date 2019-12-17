@@ -63,6 +63,8 @@ class ActionControl<T> implements Disposable {
   /// Last value passed to subs.
   T get value => _value;
 
+  bool get isEmpty => _value == null;
+
   /// Current subscription.
   ControlSubscription<T> _sub;
 
@@ -433,6 +435,8 @@ class FieldControl<T> implements Disposable {
 
   /// Checks if any value is available.
   bool get hasData => _value != null;
+
+  bool get isEmpty => _value == null;
 
   /// Initializes controller and [Stream] with default value.
   FieldControl([T value]) {
