@@ -165,7 +165,7 @@ class ControlFactory implements Disposable {
       }
     }
 
-    return init<T>();
+    return init<T>(args);
   }
 
   /// returns new object of requested type.
