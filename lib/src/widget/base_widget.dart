@@ -157,7 +157,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Looks for [Type] in initialized controllers, then look up whole factory.
   /// [ControlFactory.find]
   @protected
-  T getControl<T>() => factory.find<T>(controllers);
+  T getControl<T>() => factory.find<T>(controllers, args: holder.args);
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
   BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
