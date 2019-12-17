@@ -3,6 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/android/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/example/android/gradle.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/controller/field_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/field_control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/factory.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/factory.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,13 +21,25 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
+        <entry file="file://$PROJECT_DIR$/lib/src/controller/field_control.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="509">
-              <caret line="159" column="33" selection-start-line="159" selection-start-column="33" selection-end-line="159" selection-end-column="33" />
+            <state relative-caret-position="68">
+              <caret line="1184" selection-start-line="1184" selection-end-line="1184" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#2991#3439#0" />
+                <element signature="e#294#1334#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="399">
+              <caret line="39" column="31" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -32,8 +48,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/src/factory.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="212" column="25" lean-forward="true" selection-start-line="212" selection-start-column="25" selection-end-line="212" selection-end-column="25" />
+            <state relative-caret-position="289">
+              <caret line="17" column="40" selection-start-line="17" selection-start-column="40" selection-end-line="17" selection-end-column="40" />
             </state>
           </provider>
         </entry>
@@ -99,7 +115,6 @@
         <option value="$PROJECT_DIR$/lib/src/entity/menu.dart" />
         <option value="$PROJECT_DIR$/example/lib/menu_page.dart" />
         <option value="$PROJECT_DIR$/CHANGELOG.md" />
-        <option value="$PROJECT_DIR$/lib/src/widget/base_widget.dart" />
         <option value="$PROJECT_DIR$/example/lib/settings_page.dart" />
         <option value="$PROJECT_DIR$/example/lib/settings_controller.dart" />
         <option value="$PROJECT_DIR$/lib/src/app_base.dart" />
@@ -109,9 +124,10 @@
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/input_field.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" />
-        <option value="$PROJECT_DIR$/lib/src/controller/field_control.dart" />
-        <option value="$PROJECT_DIR$/lib/src/factory.dart" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
+        <option value="$PROJECT_DIR$/lib/src/controller/field_control.dart" />
+        <option value="$PROJECT_DIR$/lib/src/widget/base_widget.dart" />
+        <option value="$PROJECT_DIR$/lib/src/factory.dart" />
       </list>
     </option>
   </component>
@@ -248,20 +264,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1561479542723</updated>
-    </task>
-    <task id="LOCAL-00036" summary="todo">
-      <created>1569702516682</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1569702516682</updated>
-    </task>
-    <task id="LOCAL-00037" summary="clean up">
-      <created>1569760798275</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1569760798276</updated>
     </task>
     <task id="LOCAL-00038" summary="todo">
       <created>1569761720706</created>
@@ -592,7 +594,21 @@
       <option name="project" value="LOCAL" />
       <updated>1576601493770</updated>
     </task>
-    <option name="localTasksCounter" value="85" />
+    <task id="LOCAL-00085" summary="+5 widget find with args">
+      <created>1576601554445</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1576601554445</updated>
+    </task>
+    <task id="LOCAL-00086" summary="+6 SingleControlWidget init fix">
+      <created>1576602077109</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1576602077109</updated>
+    </task>
+    <option name="localTasksCounter" value="87" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -627,7 +643,7 @@
     <layout>
       <window_info id="Captures" order="0" weight="0.25" />
       <window_info id="Designer" order="1" />
-      <window_info active="true" content_ui="combo" id="Project" order="2" visible="true" weight="0.22208638" />
+      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.22208638" />
       <window_info id="Structure" order="3" side_tool="true" />
       <window_info id="Image Layers" order="4" />
       <window_info id="Capture Tool" order="5" />
@@ -641,7 +657,7 @@
       <window_info anchor="bottom" id="Flutter Performance" order="5" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="6" weight="0.3287234" />
       <window_info anchor="bottom" id="Messages" order="7" weight="0.32021275" />
-      <window_info anchor="bottom" id="Run" order="8" weight="0.2968085" />
+      <window_info active="true" anchor="bottom" id="Run" order="8" visible="true" weight="0.2968085" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.32975295" />
       <window_info anchor="right" id="Capture Analysis" order="0" />
       <window_info anchor="right" id="Theme Preview" order="1" />
@@ -652,8 +668,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="ControlBase - version 0.11.0" />
-    <MESSAGE value="factory now accepts dynamic keys" />
     <MESSAGE value="separate Broadcaster from Factory" />
     <MESSAGE value="separate Broadcaster from Factory and clean up" />
     <MESSAGE value="v 0.12.0" />
@@ -677,7 +691,9 @@
     <MESSAGE value="+3 minor changes" />
     <MESSAGE value="+4 menu index" />
     <MESSAGE value="+4 control - isEmpty, factory find - args" />
-    <option name="LAST_COMMIT_MESSAGE" value="+4 control - isEmpty, factory find - args" />
+    <MESSAGE value="+5 widget find with args" />
+    <MESSAGE value="+6 SingleControlWidget init fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="+6 SingleControlWidget init fix" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/test/.test_coverage.dart">
@@ -1034,10 +1050,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/controller/field_control.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="425">
-          <caret line="437" selection-start-line="437" selection-end-line="437" />
+        <state relative-caret-position="68">
+          <caret line="1184" selection-start-line="1184" selection-end-line="1184" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
             <element signature="e#294#1334#0" />
@@ -1047,26 +1070,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/base_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="509">
-          <caret line="159" column="33" selection-start-line="159" selection-start-column="33" selection-end-line="159" selection-end-column="33" />
+        <state relative-caret-position="399">
+          <caret line="39" column="31" lean-forward="true" selection-start-line="39" selection-start-column="29" selection-end-line="39" selection-end-column="32" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#2991#3439#0" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pubspec.yaml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="17" selection-start-line="2" selection-start-column="17" selection-end-line="2" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/factory.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="212" column="25" lean-forward="true" selection-start-line="212" selection-start-column="25" selection-end-line="212" selection-end-column="25" />
+        <state relative-caret-position="289">
+          <caret line="17" column="40" selection-start-line="17" selection-start-column="40" selection-end-line="17" selection-end-column="40" />
         </state>
       </provider>
     </entry>

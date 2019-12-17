@@ -763,7 +763,8 @@ class ListControl<T> extends FieldControl<List<T>> {
   int get length => value.length;
 
   /// return true if there is no item.
-  bool get isEmpty => value.isEmpty;
+  @override
+  bool get isEmpty => value != null && value.isEmpty;
 
   bool nullable = false;
 
@@ -1179,6 +1180,7 @@ class BoolControl extends FieldControl<bool> {
 /// [FieldBuilder]
 class StringControl extends FieldControl<String> {
   /// [String.isEmpty]
+  @override
   bool get isEmpty => value?.isEmpty ?? true;
 
   String regex;

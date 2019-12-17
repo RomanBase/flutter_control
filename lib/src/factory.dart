@@ -15,7 +15,7 @@ class ControlProvider {
   /// returns object of requested type by given [key] or [Type] from [ControlFactory].
   /// check [ControlFactory] for more info.
   /// nullable
-  static T get<T>([dynamic key]) => ControlFactory._instance.get<T>(key);
+  static T get<T>([dynamic key, dynamic args]) => ControlFactory._instance.get<T>(key, args);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
@@ -146,7 +146,7 @@ class ControlFactory implements Disposable {
   /// returns object of requested type by given key or by Type.
   /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
   /// nullable
-  T get<T>([dynamic key, Map args]) {
+  T get<T>([dynamic key, dynamic args]) {
     if (key == null) {
       key = T;
     }

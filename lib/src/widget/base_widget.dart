@@ -37,7 +37,7 @@ abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWi
     T item = Parse.getArg<T>(args);
 
     if (item == null) {
-      item = ControlProvider.init<T>(args);
+      item = ControlProvider.get<T>(null, args);
     }
 
     return item;
@@ -120,6 +120,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onInitState(ControlState state) {
     notifyWidget(state);
 
+    controllers?.remove(null);
     controllers?.forEach((controller) {
       controller.init(holder.args);
       controller.subscribe(this);
