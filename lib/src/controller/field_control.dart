@@ -53,14 +53,44 @@ class ControlSubscription<T> implements Disposable {
   }
 }
 
+abstract class ActionControlSub<T> {
+  /// Last value passed to subs.
+  T get value;
+
+  /// Subscribes event for changes.
+  /// Returns [ControlSubscription] for later cancellation.
+  /// When current value isn't null, then given listener is notified immediately.
+  ControlSubscription<T> subscribe(ValueCallback<T> action);
+
+  /// Subscribes event for just one next change.
+  /// Returns [ControlSubscription] for later cancellation.
+  /// When current value isn't null, then given listener is notified immediately.
+  ControlSubscription<T> once(ValueCallback<T> action);
+}
+
+class ActionControlSubscriber<T> implements ActionControlSub<T> {
+  final ActionControl<T> _control;
+
+  ActionControlSubscriber._(this._control);
+
+  @override
+  T get value => _control.value;
+
+  @override
+  ControlSubscription<T> subscribe(ValueCallback<T> action) => _control.subscribe(action);
+
+  @override
+  ControlSubscription<T> once(ValueCallback<T> action) => _control.once(action);
+}
+
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
-class ActionControl<T> implements Disposable {
+class ActionControl<T> implements ActionControlSub<T>, Disposable {
   /// Current value.
   T _value;
 
-  /// Last value passed to subs.
+  @override
   T get value => _value;
 
   bool get isEmpty => _value == null;
@@ -75,6 +105,8 @@ class ActionControl<T> implements Disposable {
 
   bool get isLocked => _lock != null;
 
+  ActionControlSub<T> get sub => ActionControlSubscriber._(this);
+
   ///Default constructor.
   ActionControl._([T value]) {
     _value = value;
@@ -85,7 +117,7 @@ class ActionControl<T> implements Disposable {
 
   @override
   bool operator ==(other) {
-    return other.value == value;
+    return other is ActionControl && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -110,9 +142,7 @@ class ActionControl<T> implements Disposable {
     return control;
   }
 
-  /// Subscribes event for changes.
-  /// Returns [ControlSubscription] for later cancellation.
-  /// When current value isn't null, then given listener is notified immediately.
+  @override
   ControlSubscription<T> subscribe(ValueCallback<T> action) {
     _sub = ControlSubscription<T>();
     _sub._parent = this;
@@ -125,9 +155,7 @@ class ActionControl<T> implements Disposable {
     return _sub;
   }
 
-  /// Subscribes event for just one next change.
-  /// Returns [ControlSubscription] for later cancellation.
-  /// When current value isn't null, then given listener is notified immediately.
+  @override
   ControlSubscription<T> once(ValueCallback<T> action) {
     _sub = ControlSubscription<T>();
     _sub._parent = this;
@@ -281,7 +309,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// [ActionControl.broadcast] - multiple subs.
 /// [ControlWidgetBuilder] - returns Widget based on given value.
 class ControlBuilder<T> extends StatefulWidget {
-  final ActionControl<T> controller;
+  final ActionControlSub<T> controller;
   final ControlWidgetBuilder builder; //TODO: T
 
   const ControlBuilder({
@@ -322,8 +350,8 @@ class _ControlBuilderState<T> extends State<ControlBuilder> {
 
 /// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ControlBuilderGroup extends StatefulWidget {
-  final List<ActionControl> controllers;
-  final ControlWidgetBuilder<List<dynamic>> builder;
+  final List<ActionControlSub> controllers;
+  final ControlWidgetBuilder builder; // todo: T
 
   const ControlBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
 
@@ -331,23 +359,36 @@ class ControlBuilderGroup extends StatefulWidget {
   _ControlBuilderGroupState createState() => _ControlBuilderGroupState();
 }
 
-class _ControlBuilderGroupState extends State<FieldBuilderGroup> {
-  List<dynamic> _values;
+class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
+  List _values;
+  final _subs = List<ControlSubscription>();
+
+  List _mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
     super.initState();
 
-    _values = widget.controllers.map((item) => item.value).toList(growable: false);
+    _values = _mapValues();
 
-    widget.controllers.forEach((controller) => controller.subscribe((data) => setState(() {
-          _values = widget.controllers.map((item) => item.value).toList(growable: false);
-        })));
+    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
+          (data) => setState(() {
+            _values = _mapValues();
+          }),
+        )));
   }
 
   @override
   Widget build(BuildContext context) {
     return widget.builder(context, _values);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _subs.forEach((item) => item.dispose());
+    _subs.clear();
   }
 }
 
@@ -450,7 +491,7 @@ class FieldControl<T> implements Disposable {
 
   @override
   bool operator ==(other) {
-    return other.value == value;
+    return other is FieldControl && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -557,7 +598,7 @@ class FieldControl<T> implements Disposable {
   /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [controller].
   /// [subscribeTo]
-  FieldSubscription streamTo(FieldControl<T> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
+  FieldSubscription streamTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
     if (value != null && value != controller.value) {
       controller.setValue(converter != null ? converter(value) : value);
     }
@@ -710,7 +751,7 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 /// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
   final List<FieldControl> controllers;
-  final ControlWidgetBuilder<List<dynamic>> builder;
+  final ControlWidgetBuilder builder; //todo: T
 
   const FieldBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
 
@@ -719,20 +760,20 @@ class FieldBuilderGroup extends StatefulWidget {
 }
 
 class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
-  List<dynamic> _values;
+  List _values;
   final _subs = List<FieldSubscription>();
 
-  List<dynamic> mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
+  List _mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
     super.initState();
 
-    _values = mapValues();
+    _values = _mapValues();
 
     widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
           (data) => setState(() {
-            _values = mapValues();
+            _values = _mapValues();
           }),
           notifyNow: false,
         )));
@@ -782,7 +823,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   T operator [](int index) => value[index];
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl<List<T>> controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
