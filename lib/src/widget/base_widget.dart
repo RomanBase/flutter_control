@@ -15,7 +15,7 @@ class WidgetControlHolder implements Disposable {
     }
 
     if (this.args == null) {
-      args = Map();
+      this.args = Map();
     }
 
     if (args is Map) {
