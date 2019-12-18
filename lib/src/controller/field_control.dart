@@ -598,7 +598,7 @@ class FieldControl<T> implements Disposable {
   /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [controller].
   /// [subscribeTo]
-  FieldSubscription streamTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
+  FieldSubscription streamTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
     if (value != null && value != controller.value) {
       controller.setValue(converter != null ? converter(value) : value);
     }
@@ -823,7 +823,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   T operator [](int index) => value[index];
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter, Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
