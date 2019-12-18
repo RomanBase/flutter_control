@@ -9,6 +9,26 @@ class WidgetControlHolder implements Disposable {
 
   bool get initialized => state != null;
 
+  void addArg(dynamic args) {
+    if (args == null) {
+      return;
+    }
+
+    if (this.args == null) {
+      args = Map();
+    }
+
+    if (args is Map) {
+      this.args.addAll(args);
+    } else if (args is Iterable) {
+      args.forEach((item) {
+        this.args[item.runtimeType] = item;
+      });
+    } else {
+      this.args[args.runtimeType] = args;
+    }
+  }
+
   WidgetControlHolder copy() => WidgetControlHolder()
     ..state = state
     ..route = route
@@ -25,7 +45,7 @@ class WidgetControlHolder implements Disposable {
 abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWidget {
   T get controller => controllers[0];
 
-  SingleControlWidget({Key key}) : super(key: key);
+  SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
   List<BaseControlModel> initControllers() {
@@ -46,7 +66,7 @@ abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWi
 
 /// [ControlWidget] with no init Controllers.
 abstract class BaseControlWidget extends ControlWidget {
-  BaseControlWidget({Key key}) : super(key: key);
+  BaseControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
   List<BaseControlModel> initControllers() => null;
@@ -73,16 +93,16 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Widget's [State]
   /// [holder] - [onInitState]
   @protected
-  ControlState get state => holder?.state;
+  ControlState get state => holder.state;
 
   /// Widget's init arguments
   /// [holder] - [onInitState]
   @protected
-  Map get args => holder?.args;
+  Map get args => holder.args;
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
-  List<BaseControlModel> get controllers => holder?.state?.controllers;
+  List<BaseControlModel> get controllers => holder.state?.controllers;
 
   /// Context of Widget's [State]
   BuildContext get context => state?.context;
@@ -96,7 +116,9 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   AppControl get control => AppControl.of(context);
 
   /// Default constructor
-  ControlWidget({Key key}) : super(key: key);
+  ControlWidget({Key key, dynamic args}) : super(key: key) {
+    holder.addArg(args);
+  }
 
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
@@ -111,7 +133,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @override
   @protected
   @mustCallSuper
-  void init(Map args) => holder.args = args;
+  void init(Map args) => holder.addArg(args);
 
   /// Called during State initialization.
   /// All controllers (from [initControllers]) are subscribed to this Widget and given State.
