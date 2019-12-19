@@ -94,12 +94,6 @@ void main() {
 
       expect(item.model, isNotNull);
     });
-
-    test('clear', () {
-      _FACTORY.clear();
-
-      expect(_FACTORY.isInitialized, isFalse);
-    });
   });
 
   group('Broadcast', () {
@@ -134,6 +128,9 @@ void main() {
       expect(count2, 2);
       expect(count3, 2);
       expect(count4, 1);
+
+      _BROADCAST.clear();
+      expect(_BROADCAST.subCount, 0);
     });
 
     test('event', () {
@@ -158,11 +155,17 @@ void main() {
 
       expect(count3, 0);
       expect(sub3.isActive, isFalse);
+
+      _BROADCAST.clear();
+      expect(_BROADCAST.subCount, 0);
     });
+  });
 
-    test('cancel', () {
-      _BROADCAST.dispose();
+  group('Clean up', () {
+    test('clear', () {
+      _FACTORY.dispose();
 
+      expect(_FACTORY.isInitialized, isFalse);
       expect(_BROADCAST.subCount, 0);
     });
   });
