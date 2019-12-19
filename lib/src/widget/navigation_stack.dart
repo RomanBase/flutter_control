@@ -215,24 +215,24 @@ class NavigatorStackController extends BaseController {
   /// List of MenuItems set in Widget construct phase.
   List<MenuItem> get menuItems => _items.map((item) => item.menu).toList(growable: false);
 
-  /// Current page index.
-  int _pageIndex = 0;
-
-  /// Returns current page index.
-  /// Use [setPageIndex] to change active controller.
-  /// Use [pageIndex] to be notified about changes.
-  int get currentPageIndex => _pageIndex;
-
   /// Returns current controller - based on [currentPageIndex].
   NavigatorController get currentController => _items[currentPageIndex];
 
   /// Notifies about page changes.
   /// Can be used with [ControlBuilder] to rebuild menu or highlight active widget.
-  /// By modifying this value nothing happens - This control is locked with [public_key] to prevent miss use.
   ///
   /// Use [setPageIndex] to change Page.
-  final pageIndex = ActionControl<int>.broadcast(0).lock(public_key);
+  final _pageIndex = ActionControl<int>.broadcast(-1);
 
+  /// Returns current page index.
+  /// Use [setPageIndex] to change active controller.
+  /// Use [pageIndex] to be notified about changes.
+  int get currentPageIndex => _pageIndex.value;
+
+  /// Subscription to listen about page index changes.
+  ActionControlSub get pageIndex => _pageIndex.sub;
+
+  /// Index of initial page.
   final int initialPageIndex;
 
   NavigatorStackController({this.initialPageIndex: 0});
@@ -253,11 +253,8 @@ class NavigatorStackController extends BaseController {
       }
     }
 
-    _pageIndex = index;
-
     currentController.selected = true;
-
-    pageIndex.setValue(currentPageIndex, key: public_key);
+    _pageIndex.setValue(index, key: public_key);
   }
 
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
@@ -296,7 +293,7 @@ class _NavigatorStackOffstage extends StatelessWidget {
     assert(pages.length > 0);
 
     controller._items = pages.map((page) => page.controller).toList(growable: false);
-    controller.setPageIndex(controller._pageIndex > 0 ? controller._pageIndex : controller.initialPageIndex); //TODO: start _pageIndex with -1 ?
+    controller.setPageIndex(controller.currentPageIndex > -1 ? controller.currentPageIndex : controller.initialPageIndex);
     controller.currentController.selected = true;
 
     if (controller.onPagesInitialized != null) {

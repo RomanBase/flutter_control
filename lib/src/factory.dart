@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-typedef InitInjection = dynamic Function(dynamic item, Map args);
+typedef InitInjection = dynamic Function(dynamic item, dynamic args);
 
 /// Shortcut class to get objects from [ControlFactory]
 class ControlProvider {
@@ -31,19 +31,19 @@ class ControlProvider {
 /// Shortcut class to work with global stream of [ControlFactory].
 class BroadcastProvider {
   /// Subscription to global stream.
-  static GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
+  static GlobalSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
 
   /// Subscription to global stream.
-  static GlobalSubscription subscribeEvent(String key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
+  static GlobalSubscription subscribeEvent(dynamic key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
 
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores value for future subs and notifies them during [subscribe] phase.
-  static void broadcast(String key, dynamic value, {bool store: false}) => ControlFactory._instance._broadcast.broadcast(key, value, store: store);
+  static void broadcast(dynamic key, dynamic value, {bool store: false}) => ControlFactory._instance._broadcast.broadcast(key, value, store: store);
 
   /// Sets data to global stream.
   /// Subs with same [key] will be notified.
-  static void broadcastEvent(String key) => ControlFactory._instance._broadcast.broadcastEvent(key);
+  static void broadcastEvent(dynamic key) => ControlFactory._instance._broadcast.broadcastEvent(key);
 }
 
 /// Factory for initializing and storing objects.
@@ -120,7 +120,7 @@ class ControlFactory implements Disposable {
     _initializers[T] = initializer;
   }
 
-  void setInitInjection(InitInjection injection) => _initInjection = injection;
+  void setInjector(InitInjection injection) => _initInjection = injection;
 
   /// Stores [value] with given [key] for later use - [get].
   /// Object with same [key] previously stored in factory is overridden.
@@ -128,7 +128,7 @@ class ControlFactory implements Disposable {
   /// returns key of stored object.
   dynamic set<T>({dynamic key, @required dynamic value}) {
     if (key == null) {
-      key = T ?? value.runtimeType;
+      key = T != dynamic ? T : value.runtimeType;
     }
 
     assert(() {
@@ -145,17 +145,20 @@ class ControlFactory implements Disposable {
 
   /// returns object of requested type by given key or by Type.
   /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
+  /// when [T] is passed to initializer and [args] are null, then [key] is used as arguments for [CControlFactory.init].
   /// nullable
   T get<T>([dynamic key, dynamic args]) {
     if (key == null) {
       key = T;
     }
 
-    final item = _items[key] as T;
+    if (_items.containsKey(key)) {
+      final item = _items[key] as T;
 
-    if (item != null) {
-      _initItem(item, args: args, forceInit: false);
-      return item;
+      if (item != null) {
+        _initItem(item, args: args, forceInit: false);
+        return item;
+      }
     }
 
     for (final item in _items.values) {
@@ -165,7 +168,7 @@ class ControlFactory implements Disposable {
       }
     }
 
-    return init<T>(args);
+    return init<T>(args ?? key);
   }
 
   /// returns new object of requested type.
@@ -288,6 +291,14 @@ class ControlFactory implements Disposable {
     return _initializers.containsKey(T);
   }
 
+  /// Clears whole Factory.
+  void clear() {
+    _items.clear();
+    _initializers.clear();
+    _initialized = false;
+    _initInjection = null;
+  }
+
   @override
   String toString() {
     final buffer = StringBuffer();
@@ -306,8 +317,9 @@ class ControlFactory implements Disposable {
 
   @override
   void dispose() {
-    _items.clear();
-    _initializers.clear();
+    clear();
+
+    _broadcast.dispose();
   }
 }
 
@@ -317,10 +329,12 @@ class ControlBroadcast implements Disposable {
   final _globalSubscriptions = List<GlobalSubscription>();
 
   /// Last available value for subs.
-  final _globalValue = Map<String, dynamic>();
+  final _globalValue = Map();
+
+  int get subCount => _globalSubscriptions.length;
 
   /// Subscription to global stream
-  GlobalSubscription<T> subscribe<T>(String key, ValueChanged<T> onData) {
+  GlobalSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) {
     assert(onData != null);
 
     final sub = GlobalSubscription<T>(key);
@@ -340,7 +354,7 @@ class ControlBroadcast implements Disposable {
   }
 
   /// Subscription to global stream
-  GlobalSubscription subscribeEvent(String key, VoidCallback callback) {
+  GlobalSubscription subscribeEvent(dynamic key, VoidCallback callback) {
     return subscribe(key, (_) => callback());
   }
 
@@ -353,41 +367,54 @@ class ControlBroadcast implements Disposable {
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores value for future subs and notifies them during [subscribe] phase.
-  void broadcast(String key, dynamic value, {bool store: false}) {
+  int broadcast(dynamic key, dynamic value, {bool store: false}) {
+    int count = 0;
+
     if (store) {
       _globalValue[key] = value;
     }
 
     _globalSubscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
+        count++;
         sub._notify(value);
       }
     });
+
+    return count;
   }
 
   /// Sets data to global stream.
   /// Subs with same [key] will be notified.
-  void broadcastEvent(String key) {
+  int broadcastEvent(dynamic key) {
+    int count = 0;
+
     _globalSubscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, null)) {
+        count++;
         sub._notify(null);
       }
     });
+
+    return count;
+  }
+
+  void clear() {
+    _globalSubscriptions.forEach((sub) => sub._parent = null);
+    _globalSubscriptions.clear();
+    _globalValue.clear();
   }
 
   @override
   void dispose() {
-    _globalSubscriptions.forEach((sub) => sub._parent = null);
-
-    _globalSubscriptions.clear();
-    _globalValue.clear();
+    clear();
   }
 }
 
 class GlobalSubscription<T> implements Disposable {
   /// Key of global sub.
   /// [ControlFactory.broadcast]
-  final String key;
+  final dynamic key;
 
   /// Parent of this sub - who creates and setup this sub.
   ControlBroadcast _parent;
@@ -405,7 +432,7 @@ class GlobalSubscription<T> implements Disposable {
   GlobalSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
-  bool isValidForBroadcast(String key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
+  bool isValidForBroadcast(dynamic key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
 
   /// Pauses this subscription and [ControlFactory] broadcast will skip this sub.
   void pause() => _active = false;

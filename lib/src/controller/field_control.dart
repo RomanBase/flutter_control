@@ -64,8 +64,8 @@ abstract class ActionControlSub<T> {
 
   /// Subscribes event for just one next change.
   /// Returns [ControlSubscription] for later cancellation.
-  /// When current value isn't null, then given listener is notified immediately.
-  ControlSubscription<T> once(ValueCallback<T> action);
+  /// If [current] is true and [value] isn't null, then given listener is notified immediately.
+  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true});
 }
 
 class ActionControlSubscriber<T> implements ActionControlSub<T> {
@@ -80,7 +80,7 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
   ControlSubscription<T> subscribe(ValueCallback<T> action) => _control.subscribe(action);
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action) => _control.once(action);
+  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) => _control.once(action, current: current);
 }
 
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
@@ -144,9 +144,9 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T> action) {
-    _sub = ControlSubscription<T>();
-    _sub._parent = this;
-    _sub._action = action;
+    _sub = ControlSubscription<T>()
+      .._parent = this
+      .._action = action;
 
     if (_value != null) {
       action(_value);
@@ -156,18 +156,20 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   }
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action) {
-    _sub = ControlSubscription<T>();
-    _sub._parent = this;
-    _sub._action = action;
-    _sub._keep = false;
+  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
+    final sub = ControlSubscription<T>()
+      .._parent = this
+      .._action = action
+      .._keep = false;
 
-    if (_value != null) {
+    if (_value != null && current) {
+      sub._clear();
       action(_value);
-      cancel();
+    } else {
+      _sub = sub;
     }
 
-    return _sub;
+    return sub;
   }
 
   /// Sets lock for this control.
@@ -233,7 +235,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   @override
   String toString() {
-    return value?.toString();
+    return value?.toString() ?? 'NULL - ${super.toString()}';
   }
 }
 
@@ -258,15 +260,11 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action) {
-    final sub = super.subscribe(action);
-    sub._keep = false;
-
+  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
+    final sub = super.once(action, current: current);
     _sub = null; // just clear unused sub reference
 
-    if (_value != null) {
-      action(_value);
-    } else {
+    if (sub.isActive) {
       _list.add(sub);
     }
 
@@ -398,9 +396,11 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
 
 class FieldSubscription<T> implements StreamSubscription<T> {
   final StreamSubscription<T> _sub;
-  final FieldControl<T> control;
+  final FieldControl<T> _control;
 
-  FieldSubscription(this.control, this._sub);
+  FieldSubscription(this._control, this._sub);
+
+  bool get isActive => !isPaused && _control.isSubscriptionActive(this);
 
   @override
   bool get isPaused => _sub.isPaused;
@@ -412,7 +412,7 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   @override
   Future cancel() {
-    control.cancelSubscription(this, dispose: false);
+    _control.cancelSubscription(this, dispose: false);
 
     return _sub.cancel();
   }
@@ -479,6 +479,8 @@ class FieldControl<T> implements Disposable {
 
   bool get isEmpty => _value == null;
 
+  bool get isActive => !_stream.isClosed;
+
   /// Initializes controller and [Stream] with default value.
   FieldControl([T value]) {
     if (value != null) {
@@ -533,12 +535,12 @@ class FieldControl<T> implements Disposable {
     }
   }
 
-  FieldSubscription _addSub(StreamSubscription<T> subscription) {
+  FieldSubscription _addSub(StreamSubscription subscription) {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
 
-    final sub = FieldSubscription<T>(this, subscription);
+    final sub = FieldSubscription(this, subscription);
 
     _subscriptions.add(sub);
 
@@ -552,14 +554,14 @@ class FieldControl<T> implements Disposable {
   void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
 
   /// Returns [Sink] with custom [ValueConverter].
-  Sink<dynamic> sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
+  Sink sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
 
   /// Sets value after [Future] finished.
   Future ofFuture(Future<T> future) => future.then((value) => setValue(value));
 
   /// Subscribes to [Stream] of this controller.
   /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
-  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool notifyNow: true}) {
+  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
@@ -568,7 +570,7 @@ class FieldControl<T> implements Disposable {
       cancelOnError: cancelOnError,
     );
 
-    if (value != null && notifyNow) {
+    if (value != null && current) {
       onData(value);
     }
 
@@ -649,6 +651,8 @@ class FieldControl<T> implements Disposable {
       }
     }
   }
+
+  bool isSubscriptionActive(FieldSubscription subscription) => isActive && _subscriptions.contains(subscription);
 
   @override
   String toString() {
@@ -775,7 +779,7 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
           (data) => setState(() {
             _values = _mapValues();
           }),
-          notifyNow: false,
+          current: false,
         )));
   }
 
