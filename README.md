@@ -8,7 +8,7 @@ Stable, but needs more tests and little care..
 
 Flutter Control helps to separate Business Logic from UI and with Communication, Localization and Routing.
 
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure_simple.png)
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure_simple.png)
 
 ---
 
@@ -266,4 +266,4 @@ class TodoPage extends SingleControlWidget<TodoController> {
 
 **Full Structure**
 
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/docs/structure.png)
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure.png)
