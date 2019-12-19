@@ -308,7 +308,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// [ControlWidgetBuilder] - returns Widget based on given value.
 class ControlBuilder<T> extends StatefulWidget {
   final ActionControlSub<T> controller;
-  final ControlWidgetBuilder builder; //TODO: T
+  final ControlWidgetBuilder builder;
 
   const ControlBuilder({
     Key key,

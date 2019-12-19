@@ -1,6 +1,10 @@
 import 'package:flutter_control/core.dart';
 
-typedef InitInjection = dynamic Function(dynamic item, dynamic args);
+typedef InitInjection<T> = void Function(T item, dynamic args);
+
+abstract class Injector {
+  void inject<T>(T item, dynamic args);
+}
 
 /// Shortcut class to get objects from [ControlFactory]
 class ControlProvider {
@@ -73,7 +77,7 @@ class ControlFactory implements Disposable {
   final _broadcast = ControlBroadcast();
 
   /// Custom item initialization.
-  InitInjection _initInjection;
+  Injector _injector;
 
   /// Factory initialize state.
   bool _initialized = false;
@@ -82,7 +86,7 @@ class ControlFactory implements Disposable {
   bool get isInitialized => _initialized;
 
   /// Initializes default items and initializers in factory.
-  void initialize({Map items, Map<Type, Initializer> initializers}) {
+  void initialize({Map items, Map<Type, Initializer> initializers, Injector injector}) {
     if (_initialized) {
       return;
     }
@@ -91,6 +95,8 @@ class ControlFactory implements Disposable {
 
     _items[ControlKey.factory] = this;
     _items[ControlKey.broadcast] = _broadcast;
+
+    setInjector(injector);
 
     if (items != null) {
       _items.addAll(items);
@@ -120,7 +126,10 @@ class ControlFactory implements Disposable {
     _initializers[T] = initializer;
   }
 
-  void setInjector(InitInjection injection) => _initInjection = injection;
+  void setInjector(Injector injector) {
+    _injector = injector ?? BaseInjector();
+    _items[Injector] = _injector;
+  }
 
   /// Stores [value] with given [key] for later use - [get].
   /// Object with same [key] previously stored in factory is overridden.
@@ -182,7 +191,7 @@ class ControlFactory implements Disposable {
 
       final item = initializer(args);
 
-      _initItem(item, args: args, forceInit: forceInit);
+      _initItem<T>(item, args: args, forceInit: forceInit);
 
       return item;
     }
@@ -193,10 +202,8 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [setInitializer]
   /// nullable
-  void _initItem(dynamic item, {dynamic args, bool forceInit: false}) {
-    if (_initInjection != null) {
-      _initInjection(item, args);
-    }
+  void _initItem<T>(dynamic item, {dynamic args, bool forceInit: false}) {
+    _injector.inject(item, args);
 
     if (item is Initializable && (args != null || forceInit)) {
       item.init(args is Map ? args : Parse.toMap(args));
@@ -296,7 +303,7 @@ class ControlFactory implements Disposable {
     _items.clear();
     _initializers.clear();
     _initialized = false;
-    _initInjection = null;
+    _injector = null;
   }
 
   @override
@@ -454,5 +461,77 @@ class GlobalSubscription<T> implements Disposable {
   void dispose() {
     cancel();
     _parent = null;
+  }
+}
+
+class BaseInjector implements Injector, Disposable {
+  final _injectors = Map<Type, InitInjection>();
+  InitInjection _other;
+
+  BaseInjector({Map<Type, InitInjection> injectors, InitInjection other}) {
+    if (injectors != null) {
+      _injectors.addAll(_injectors);
+    }
+
+    _other = other ?? (item, args) {};
+  }
+
+  void setInjector<T>(InitInjection<T> inject) {
+    if (T == dynamic) {
+      _other = inject;
+      return;
+    }
+
+    assert(() {
+      if (_injectors.containsKey(T)) {
+        printDebug('Injector already contains type: ${T.toString()}. Injection of this type will be overriden.');
+      }
+      return true;
+    }());
+
+    _injectors[T] = (item, args) => inject(item, args);
+  }
+
+  @override
+  void inject<T>(dynamic item, dynamic args) {
+    final injector = findInjector(item.runtimeType);
+
+    if (injector != null) {
+      injector(item, args);
+    }
+  }
+
+  InitInjection findInjector<T>(Type type) {
+    if (_injectors.containsKey(T)) {
+      return _injectors[T];
+    }
+
+    if (_injectors.containsKey(type)) {
+      return _injectors[type];
+    }
+
+    if (T != dynamic) {
+      final key = _injectors.keys.firstWhere((item) => item.runtimeType is T, orElse: () => null);
+
+      if (key != null) {
+        return _injectors[key];
+      }
+    }
+
+    return _other;
+  }
+
+  BaseInjector combine(BaseInjector other) => BaseInjector(
+        injectors: {
+          ..._injectors,
+          ...other._injectors,
+        },
+        other: _other ?? other._other,
+      );
+
+  @override
+  void dispose() {
+    _injectors.clear();
+    _other = null;
   }
 }

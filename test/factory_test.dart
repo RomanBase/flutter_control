@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -84,15 +82,25 @@ void main() {
     });
 
     test('inject', () {
-      _FACTORY.setInjector((item, args) {
-        if (item is _InjectModel) {
-          item.model = _FACTORY.get<_ArgModel>();
+      final injector = _FACTORY.get<Injector>() as BaseInjector;
+
+      injector.setInjector<_InjectModel>((item, args) {
+        item.data = _ArgModel();
+      });
+
+      injector.setInjector((item, args) {
+        if (item is _InitModel) {
+          item.data = args;
         }
       });
 
       final item = _FACTORY.init<_InjectModel>();
+      final itemBase = _InitModel();
 
-      expect(item.model, isNotNull);
+      injector.inject(itemBase, 'init');
+
+      expect(item.data.runtimeType, _ArgModel);
+      expect(itemBase.data, 'init');
     });
   });
 
@@ -171,6 +179,10 @@ void main() {
   });
 }
 
+class _InitModel extends BaseModel {
+  dynamic data;
+}
+
 class _ArgModel<T> extends BaseModel {
   T value;
 
@@ -182,11 +194,9 @@ class _ArgModel<T> extends BaseModel {
   }
 }
 
-class _InjectModel extends BaseModel {
+class _InjectModel extends _InitModel {
   BaseModel initValue;
   BaseController itemValue;
-
-  _ArgModel model;
 
   @override
   void init(Map args) {

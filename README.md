@@ -1,4 +1,4 @@
-**Alpha version of Flutter Control**
+**Beta version of Flutter Control**
 
 Stable, but needs more tests and little care..
 
@@ -6,7 +6,8 @@ Stable, but needs more tests and little care..
 
 ---
 
-Flutter Control helps to separate Business Logic from UI and with Communication, Localization and Routing.
+Flutter Control is complex library to maintain App and State management.
+And helps to separate Business Logic from UI and helps with Communication, Localization and Routing.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure_simple.png)
 
