@@ -13,6 +13,7 @@ class ControlBase extends StatefulWidget {
   final Duration loaderDelay;
   final WidgetBuilder loader;
   final Initializer<ControlTheme> theme;
+  final Injector injector;
   final WidgetBuilder root;
   final AppBuilder app;
   final VoidCallback onInit;
@@ -37,6 +38,7 @@ class ControlBase extends StatefulWidget {
     this.loadLocalization: true,
     this.entries,
     this.initializers,
+    this.injector,
     this.theme,
     this.loaderDelay,
     this.loader,
@@ -117,7 +119,11 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     });
   }
 
-  void _initControl(Map<String, String> locales, Map entries, Map<Type, Initializer> initializers) async {
+  void _initControl(
+    Map<String, String> locales,
+    Map entries,
+    Map<Type, Initializer> initializers,
+  ) async {
     DelayBlock block;
     if (widget.loaderDelay != null) {
       block = DelayBlock(widget.loaderDelay);
@@ -141,7 +147,11 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     initializers[ControlTheme] = widget.theme ?? (context) => ControlTheme.of(context);
 
-    factory.initialize(items: entries, initializers: initializers);
+    factory.initialize(
+      items: entries,
+      initializers: initializers,
+      injector: widget.injector,
+    );
 
     final localization = ControlProvider.get<BaseLocalization>(ControlKey.localization);
     localization.debug = widget.debug ?? debugMode;
