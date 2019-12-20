@@ -4,6 +4,21 @@ import 'package:flutter_control/core.dart';
 
 /// Helps to parse basic objects.
 class Parse {
+  /// Tries to parse value into String.
+  ///
+  /// If none found, then [defaultValue] is returned.
+  static String string(dynamic value, {String defaultValue: ''}) {
+    if (value is String) {
+      return value;
+    }
+
+    if (value != null) {
+      return value.toString();
+    }
+
+    return defaultValue;
+  }
+
   /// Tries to parse value into integer.
   ///
   /// null, int, double, bool, String
@@ -27,7 +42,7 @@ class Parse {
     }
 
     if (value is String) {
-      return int.tryParse(value) ?? defaultValue;
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? defaultValue;
     }
 
     return defaultValue;
@@ -74,6 +89,10 @@ class Parse {
 
     if (value == null) {
       return defaultValue;
+    }
+
+    if (value is String) {
+      return value.toLowerCase() == 'true';
     }
 
     final num = toInteger(value, defaultValue: -1);
@@ -328,7 +347,15 @@ class Parse {
       }
     }
 
-    return getArgFromList(map.values, predicate: predicate, defaultValue: defaultValue);
+    if (T != dynamic && predicate == null) {
+      final item = map.values.firstWhere((item) => item is T, orElse: () => null);
+
+      if (item != null) {
+        return item;
+      }
+    }
+
+    return getArgFromList<T>(map.values, predicate: predicate, defaultValue: defaultValue);
   }
 
   /// Tries to return object of given [Type] or [predicate].
@@ -344,12 +371,14 @@ class Parse {
       if (testItem != null) {
         return testItem;
       }
-    }
+    } else {
+      if (T != dynamic) {
+        final typeItem = iterable.firstWhere((item) => item is T, orElse: () => null);
 
-    final typeItem = iterable.firstWhere((item) => item is T, orElse: () => null);
-
-    if (typeItem != null) {
-      return typeItem;
+        if (typeItem != null) {
+          return typeItem;
+        }
+      }
     }
 
     return defaultValue;
