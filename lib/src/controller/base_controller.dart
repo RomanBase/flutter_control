@@ -2,16 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
-/// Types of dialogs for RouteNavigator.
-enum DialogType { popup, sheet, dialog, dock }
-
-enum LoadingStatus { none, progress, done, error, outdated, unknown }
-
-typedef Initializer<T> = T Function(dynamic args);
-typedef ValueCallback<T> = void Function(T value);
-typedef ValueConverter<T> = T Function(dynamic value);
-typedef PairConverter<T> = T Function(dynamic key, dynamic value);
-
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
   /// Is typically called right after constructor.

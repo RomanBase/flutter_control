@@ -11,6 +11,7 @@ export './src/app_control.dart';
 export './src/base_control.dart';
 export './src/base_localization.dart';
 export './src/base_prefs.dart';
+export './src/controller/action_control.dart';
 export './src/controller/base_controller.dart';
 export './src/controller/base_model.dart';
 export './src/controller/field_control.dart';
@@ -28,6 +29,19 @@ export './src/widget/input_field.dart';
 export './src/widget/navigation_stack.dart';
 export './src/widget/stable_widget.dart';
 export './src/widget/widget_provider.dart';
+
+enum DialogType { popup, sheet, dialog, dock }
+
+enum LoadingStatus { none, progress, done, error, outdated, unknown }
+
+typedef Initializer<T> = T Function(dynamic args);
+typedef ValueCallback<T> = void Function(T value);
+
+typedef ValueConverter<T> = T Function(dynamic value);
+typedef PairConverter<T> = T Function(dynamic key, dynamic value);
+
+typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
+typedef bool Predicate<T>(T value);
 
 // TODO: store defaults by type
 class ControlKey {
