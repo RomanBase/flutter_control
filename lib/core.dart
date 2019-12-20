@@ -43,18 +43,12 @@ typedef PairConverter<T> = T Function(dynamic key, dynamic value);
 typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
-// TODO: store defaults by type
 class ControlKey {
-  static const String factory = 'factory';
-  static const String broadcast = 'broadcast';
-  static const String localization = 'localization';
-  static const String preferences = 'prefs';
-  static const String control = 'control';
-  static const String initData = 'init_data';
-  static const String theme = 'theme';
-}
+  static const locale = 'locale';
+  static const initData = 'init_data';
 
-const public_key = Key('public');
+  static const public_key = Key('public');
+}
 
 bool get debugMode => !inRelease();
 

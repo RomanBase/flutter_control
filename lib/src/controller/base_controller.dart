@@ -47,7 +47,7 @@ class BaseControlModel with DisposeHandler implements Initializable, Subscriptio
 
   /// returns instance of [AppControl] if available.
   /// nullable
-  AppControl get control => factory.get(ControlKey.control);
+  AppControl get control => factory.get<AppControl>();
 
   @override
   void init(Map args) {}

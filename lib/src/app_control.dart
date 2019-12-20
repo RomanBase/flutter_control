@@ -16,7 +16,7 @@ class AppControl extends InheritedWidget {
       }
     }
 
-    return ControlProvider.get(ControlKey.control);
+    return ControlProvider.get<AppControl>();
   }
 
   /// Key of root State.
@@ -55,7 +55,7 @@ class AppControl extends InheritedWidget {
 
     _contextHolder.subscribe(_context.setValue);
 
-    ControlFactory.of(this).set(key: ControlKey.control, value: this);
+    ControlFactory.of(this).set(key: AppControl, value: this);
   }
 
   ControlSubscription<BuildContext> subscribeContextChanges(ValueCallback<BuildContext> callback) => _context.subscribe(callback);

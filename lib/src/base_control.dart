@@ -72,7 +72,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   @override
   void notifyState([state]) {
     setState(() {
-      final localization = ControlProvider.get<BaseLocalization>(ControlKey.localization);
+      final localization = ControlProvider.get<BaseLocalization>();
       if (localization != null) {
         _locale = localization.locale;
       }
@@ -139,8 +139,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
-    entries[ControlKey.preferences] = BasePrefs();
-    entries[ControlKey.localization] = BaseLocalization(
+    entries[BasePrefs] = BasePrefs();
+    entries[BaseLocalization] = BaseLocalization(
       widget.defaultLocale ?? localizationAssets[0].locale,
       localizationAssets,
     );
@@ -153,7 +153,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       injector: widget.injector,
     );
 
-    final localization = ControlProvider.get<BaseLocalization>(ControlKey.localization);
+    final localization = ControlProvider.get<BaseLocalization>();
     localization.debug = widget.debug ?? debugMode;
 
     _locale = localization.defaultLocale;

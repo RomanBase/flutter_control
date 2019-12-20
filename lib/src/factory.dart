@@ -93,8 +93,8 @@ class ControlFactory implements Disposable {
 
     _initialized = true;
 
-    _items[ControlKey.factory] = this;
-    _items[ControlKey.broadcast] = _broadcast;
+    _items[ControlFactory] = this;
+    _items[ControlBroadcast] = _broadcast;
 
     setInjector(injector);
 
@@ -187,7 +187,7 @@ class ControlFactory implements Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= get<AppControl>(ControlKey.control)?.rootContext;
+      args ??= get<AppControl>()?.rootContext;
 
       final item = initializer(args);
 

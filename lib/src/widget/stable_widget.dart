@@ -26,7 +26,7 @@ class _StableWidgetState extends State<StableWidget> {
     super.initState();
 
     if (widget.localize) {
-      _sub = BroadcastProvider.subscribe<LocalizationArgs>(ControlKey.localization, (args) {
+      _sub = BroadcastProvider.subscribe<LocalizationArgs>(ControlKey.locale, (args) {
         if (args.changed) {
           setState(() {
             holder.setDirty();
