@@ -47,7 +47,10 @@ void main() {
 
       final parse4 = Parse.toList<int>(map, hardCast: true);
       final parse5 = Parse.toList<int>(map, hardCast: false);
+
       final parse6 = Parse.toList<String>(map, converter: (item) => item.toString());
+      final parse7 = Parse.toList<String>('value');
+      final parse8 = Parse.toList<String>(0, converter: (value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
@@ -57,18 +60,26 @@ void main() {
       expect(parse4.length, 10);
       expect(parse5.length, 10);
       expect(parse6.length, 10);
+      expect(parse7.length, 1);
+      expect(parse8.length, 1);
+
       expect(parse6[0], '0');
+      expect(parse7[0], 'value');
+      expect(parse8[0], '0');
     });
 
-    test('list pair', () {
-      final parse1 = Parse.toListPair<int>(list, converter: (index, value) => Parse.toInteger(index) + value);
-      final parse2 = Parse.toListPair<int>(map, converter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
+    test('list entry', () {
+      final parse1 = Parse.toList<int>(list, entryConverter: (index, value) => Parse.toInteger(index) + value);
+      final parse2 = Parse.toList<int>(map, entryConverter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
+      final parse3 = Parse.toList<String>(0, entryConverter: (index, value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
+      expect(parse3.length, 1);
 
       expect(parse1[1], 2);
       expect(parse2[1], 2);
+      expect(parse3[0], '0');
     });
 
     test('map', () {
@@ -80,6 +91,9 @@ void main() {
       final parse5 = Parse.toMap<int>(map, hardCast: false);
       final parse6 = Parse.toMap<String>(map, converter: (item) => item.toString());
 
+      final parse7 = Parse.toMap<String>('value');
+      final parse8 = Parse.toMap<String>(0, converter: (value) => value.toString());
+
       expect(parse1.length, 10);
       expect(parse2.length, 10);
       expect(parse3.length, 10);
@@ -89,17 +103,25 @@ void main() {
       expect(parse5.length, 10);
       expect(parse6.length, 10);
       expect(parse6['0'], '0');
+
+      expect(parse7.length, 1);
+      expect(parse8.length, 1);
+      expect(parse7['0'], 'value');
+      expect(parse8['0'], '0');
     });
 
-    test('map pair', () {
-      final parse1 = Parse.toMapPair<int>(list, converter: (index, value) => Parse.toInteger(index) + value);
-      final parse2 = Parse.toMapPair<int>(map, converter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
+    test('map entry', () {
+      final parse1 = Parse.toMap<int>(list, entryConverter: (index, value) => Parse.toInteger(index) + value);
+      final parse2 = Parse.toMap<int>(map, entryConverter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
+      final parse3 = Parse.toMap<String>(0, entryConverter: (index, value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
+      expect(parse3.length, 1);
 
       expect(parse1['1'], 2);
       expect(parse2['1'], 2);
+      expect(parse3['0'], '0');
     });
   });
 
@@ -109,11 +131,13 @@ void main() {
       final parse1 = Parse.getArgFromList<int>(list);
       final parse2 = Parse.getArgFromList(list, predicate: (item) => item == 5);
       final parse3 = Parse.getArgFromList(list, predicate: (item) => item == -1, defaultValue: 10);
+      final ext = list.getArg(predicate: (item) => item == 5);
 
       expect(parse0, -1);
       expect(parse1, 0);
       expect(parse2, 5);
       expect(parse3, 10);
+      expect(ext, 5);
     });
 
     test('map', () {
@@ -124,6 +148,7 @@ void main() {
       final parse4 = Parse.getArgFromMap(map, key: int);
       final parse5 = Parse.getArgFromMap(map, key: '5');
       final parse6 = Parse.getArgFromMap<double>(map, defaultValue: -1.0);
+      final ext = map.getArg(key: '5');
 
       expect(parse0, -1);
       expect(parse1, 0);
@@ -132,6 +157,7 @@ void main() {
       expect(parse4, 0);
       expect(parse5, 5);
       expect(parse6, -1.0);
+      expect(ext, 5);
     });
 
     test('string', () {

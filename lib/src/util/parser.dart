@@ -4,7 +4,7 @@ import 'package:flutter_control/core.dart';
 
 /// Helps to parse basic objects.
 class Parse {
-  /// Tries to parse value into String.
+  /// Tries to parse value into [String].
   ///
   /// If none found, then [defaultValue] is returned.
   static String string(dynamic value, {String defaultValue: ''}) {
@@ -19,7 +19,7 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into integer.
+  /// Tries to parse value into [integer].
   ///
   /// null, int, double, bool, String
   ///
@@ -48,7 +48,7 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into double.
+  /// Tries to parse value into [double].
   ///
   /// null, int, double, bool, String.
   ///
@@ -77,7 +77,7 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into bool.
+  /// Tries to parse value into [bool].
   ///
   /// null, int, double, bool, String.
   ///
@@ -110,19 +110,41 @@ class Parse {
   ///
   /// Use [ValueConverter] to convert values into new List.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static List<T> toList<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
+  static List<T> toList<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
     final items = List<T>();
+    Map valueMap;
 
     if (value == null) {
       return items;
     }
 
     if (value is Map) {
+      valueMap = value;
       value = value.values;
     }
 
     if (value is Iterable) {
-      if (converter == null) {
+      if (converter != null) {
+        value.forEach((item) {
+          final listItem = converter(item);
+
+          if (listItem != null && listItem is T) {
+            items.add(listItem);
+          }
+        });
+      } else if (entryConverter != null) {
+        if (valueMap == null) {
+          valueMap = value.toList().asMap();
+        }
+
+        valueMap.forEach((key, item) {
+          final listItem = entryConverter(key, item);
+
+          if (listItem != null && listItem is T) {
+            items.add(listItem);
+          }
+        });
+      } else {
         if (value is List && hardCast) {
           return value.cast<T>();
         }
@@ -132,72 +154,23 @@ class Parse {
             items.add(item);
           }
         });
-      } else {
-        value.forEach((item) {
-          final listItem = converter(item);
-
-          if (listItem != null && listItem is T) {
-            items.add(listItem);
-          }
-        });
       }
     } else {
-      if (converter == null) {
-        if (value is T) {
-          items.add(value);
-        } else {
-          final listItem = converter(value);
-
-          if (listItem != null && listItem is T) {
-            items.add(listItem);
-          }
-        }
-      }
-    }
-
-    return items;
-  }
-
-  /// Tries to parse value into List.
-  /// If converter is not specified [Parse.toList] is used instead.
-  ///
-  /// List, Map, Iterable.
-  ///
-  /// Use [PairConverter] to convert values into new List.
-  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static List<T> toListPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
-    final items = List<T>();
-
-    if (converter == null) {
-      return toList<T>(value, hardCast: hardCast);
-    }
-
-    if (value == null) {
-      return items;
-    }
-
-    if (value is Iterable) {
-      value = value.toList().asMap();
-    }
-
-    if (value is Map) {
-      value.forEach((key, item) {
-        final listItem = converter(key, item);
+      if (converter != null) {
+        final listItem = converter(value);
 
         if (listItem != null && listItem is T) {
           items.add(listItem);
         }
-      });
-    } else {
-      if (converter == null) {
+      } else if (entryConverter != null) {
+        final listItem = entryConverter(0, value);
+
+        if (listItem != null && listItem is T) {
+          items.add(listItem);
+        }
+      } else {
         if (value is T) {
           items.add(value);
-        } else {
-          final listItem = converter('0', value);
-
-          if (listItem != null && listItem is T) {
-            items.add(listItem);
-          }
         }
       }
     }
@@ -211,7 +184,7 @@ class Parse {
   ///
   /// Use [ValueConverter] to convert values into new List.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, bool hardCast: true}) {
+  static Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
     final items = Map<String, T>();
 
     if (value == null) {
@@ -223,7 +196,23 @@ class Parse {
     }
 
     if (value is Map) {
-      if (converter == null) {
+      if (converter != null) {
+        value.forEach((key, item) {
+          final mapItem = converter(item);
+
+          if (mapItem != null && mapItem is T) {
+            items[key.toString()] = mapItem;
+          }
+        });
+      } else if (entryConverter != null) {
+        value.forEach((key, item) {
+          final mapItem = entryConverter(key, item);
+
+          if (mapItem != null && mapItem is T) {
+            items[key.toString()] = mapItem;
+          }
+        });
+      } else {
         if (hardCast) {
           return value.cast<String, T>();
         }
@@ -233,72 +222,23 @@ class Parse {
             items[key.toString()] = item;
           }
         });
+      }
+    } else {
+      if (converter != null) {
+        final listItem = converter(value);
+
+        if (listItem != null && listItem is T) {
+          items['0'] = listItem;
+        }
+      } else if (entryConverter != null) {
+        final listItem = entryConverter(0, value);
+
+        if (listItem != null && listItem is T) {
+          items['0'] = listItem;
+        }
       } else {
-        value.forEach((key, item) {
-          final mapItem = converter(item);
-
-          if (mapItem != null && mapItem is T) {
-            items[key.toString()] = mapItem;
-          }
-        });
-      }
-    } else {
-      if (converter == null) {
         if (value is T) {
           items['0'] = value;
-        } else {
-          final listItem = converter(value);
-
-          if (listItem != null && listItem is T) {
-            items['0'] = value;
-          }
-        }
-      }
-    }
-
-    return items;
-  }
-
-  /// Tries to parse value into Map.
-  /// If converter is not specified [Parse.toMap] is used instead.
-  ///
-  /// List, Map, Iterable.
-  ///
-  /// Use [PairConverter] to convert values into new Map.
-  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<String, T> toMapPair<T>(dynamic value, {PairConverter<T> converter, bool hardCast: true}) {
-    final items = Map<String, T>();
-
-    if (converter == null) {
-      return toMap<T>(value, hardCast: hardCast);
-    }
-
-    if (value == null) {
-      return items;
-    }
-
-    if (value is Iterable) {
-      value = value.toList().asMap();
-    }
-
-    if (value is Map) {
-      value.forEach((key, item) {
-        final mapItem = converter(key, item);
-
-        if (mapItem != null && mapItem is T) {
-          items[key.toString()] = mapItem;
-        }
-      });
-    } else {
-      if (converter == null) {
-        if (value is T) {
-          items['0'] = value;
-        } else {
-          final listItem = converter('0', value);
-
-          if (listItem != null && listItem is T) {
-            items['0'] = listItem;
-          }
         }
       }
     }
@@ -404,16 +344,25 @@ class Parse {
     return defaultValue;
   }
 }
-/*
-extension ObjectExtension on String {
-  T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromString<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
-}
 
 extension MapExtension on Map {
   T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromMap<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
 }
 
-extension IterableExtension on List {
+extension IterableExtension on Iterable {
   T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
 }
-*/
+
+mixin ParseHelper {
+  String string(dynamic value, {String defaultValue: ''}) => Parse.string(value, defaultValue: defaultValue);
+
+  int toInteger(dynamic value, {int defaultValue: 0}) => Parse.toInteger(value, defaultValue: defaultValue);
+
+  double toDouble(dynamic value, {double defaultValue: 0.0}) => Parse.toDouble(value, defaultValue: defaultValue);
+
+  bool toBool(dynamic value, {bool defaultValue: false}) => Parse.toBool(value, defaultValue: defaultValue);
+
+  List<T> toList<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) => Parse.toList<T>(value, converter: converter, entryConverter: entryConverter, hardCast: hardCast);
+
+  Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) => Parse.toMap<T>(value, converter: converter, entryConverter: entryConverter, hardCast: hardCast);
+}

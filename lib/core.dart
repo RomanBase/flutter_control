@@ -1,7 +1,6 @@
 library flutter_control;
 
 import 'dart:io';
-
 import 'core.dart';
 
 export 'package:flutter/material.dart';
@@ -38,7 +37,7 @@ typedef Initializer<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);
 
 typedef ValueConverter<T> = T Function(dynamic value);
-typedef PairConverter<T> = T Function(dynamic key, dynamic value);
+typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
 
 typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
 typedef bool Predicate<T>(T value);
