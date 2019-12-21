@@ -7,13 +7,6 @@ import 'menu_page.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
-  final _theme = ActionControl<ThemeData>.broadcastListener(
-    key: 'theme',
-    defaultValue: ThemeData(
-      primaryColor: Colors.orange,
-    ),
-  );
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -33,8 +26,11 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
       theme: (context) => MyTheme.of(context),
       root: (context) => MenuPage(),
       app: (context, key, home) {
-        return ControlBuilder<ThemeData>(
-            controller: _theme,
+        return BroadcastBuilder<ThemeData>(
+            key: 'theme',
+            defaultValue: ThemeData(
+              primaryColor: Colors.orange,
+            ),
             builder: (context, theme) {
               return MaterialApp(
                 key: key,

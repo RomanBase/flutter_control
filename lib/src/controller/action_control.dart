@@ -129,7 +129,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  factory ActionControl.broadcastListener({@required String key, bool broadcast: false, T defaultValue}) {
+  factory ActionControl.broadcastListener({@required dynamic key, bool broadcast: false, T defaultValue}) {
     ActionControl control = broadcast ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
@@ -389,5 +389,54 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
 
     _subs.forEach((item) => item.dispose());
     _subs.clear();
+  }
+}
+
+class BroadcastBuilder<T> extends StatefulWidget {
+  final ControlWidgetBuilder<T> builder;
+  final T defaultValue;
+
+  dynamic get broadcastKey => (key as ValueKey).value;
+
+  BroadcastBuilder({
+    @required dynamic key,
+    @required this.builder,
+    this.defaultValue,
+  }) : super(key: ValueKey(key));
+
+  @override
+  State<StatefulWidget> createState() => _BroadcastBuilderState<T>();
+
+  Widget build(BuildContext context, T value) => builder(context, value);
+}
+
+class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
+  T _value;
+
+  ActionControl controller;
+  ControlSubscription _sub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
+
+    _sub = controller.subscribe((value) {
+      setState(() {
+        _value = value;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.build(context, _value);
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _sub.cancel();
+    controller.dispose();
   }
 }
