@@ -19,6 +19,7 @@ class FocusController extends FocusNode {
 
 /// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
+//todo: extend TextEditingController ?
 class InputControl extends BaseControlModel with StateController {
   @override
   bool get preferSoftDispose => true;

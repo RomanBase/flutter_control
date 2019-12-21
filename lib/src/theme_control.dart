@@ -1,10 +1,12 @@
 import 'package:flutter_control/core.dart';
 
 class AssetPath {
-  const AssetPath();
+  final String rootDir;
+
+  const AssetPath({this.rootDir: 'assets'});
 
   /// Refers to assets/path
-  String root(String path) => path.startsWith('/') ? "assets$path" : "assets/$path";
+  String root(String path) => path.startsWith('/') ? "$rootDir$path" : "$rootDir/$path";
 
   /// Refers to assets/images/name.ext
   /// Default [ext] is 'png'.

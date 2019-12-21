@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
               return MaterialApp(
                 key: key,
                 home: home,
-                title: localization.isActive ? localize('app_name') : 'Flutter Example',
+                title: localizeDynamic('app_name', defaultValue: 'Flutter Example') as String,
                 theme: theme,
               );
             });

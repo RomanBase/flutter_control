@@ -347,7 +347,7 @@ class BaseLocalization with PrefsProvider {
       return _data[key];
     }
 
-    return defaultValue ?? debug ? '${key}_$_locale' : '';
+    return defaultValue ?? (debug ? '${key}_$_locale' : '');
   }
 
   /// Tries to localize text by given locale.
