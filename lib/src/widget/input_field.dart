@@ -19,7 +19,7 @@ class FocusController extends FocusNode {
 
 /// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
-class InputController extends BaseControlModel with StateController {
+class InputControl extends BaseControlModel with StateController {
   @override
   bool get preferSoftDispose => true;
 
@@ -59,7 +59,7 @@ class InputController extends BaseControlModel with StateController {
   bool get hasFocus => _focusController?.hasFocus ?? false;
 
   /// Next InputController.
-  InputController _next;
+  InputControl _next;
 
   /// Callback when user submit text.
   VoidCallback _onDone;
@@ -71,7 +71,7 @@ class InputController extends BaseControlModel with StateController {
   ValueCallback<String> _onChanged;
 
   /// Default constructor
-  InputController({String text, this.regex}) {
+  InputControl({String text, this.regex}) {
     _text = text;
   }
 
@@ -118,19 +118,19 @@ class InputController extends BaseControlModel with StateController {
   }
 
   /// Sets next Controller into chain.
-  InputController next(InputController controller) {
+  InputControl next(InputControl controller) {
     return _next = controller;
   }
 
   /// Sets callback for input submit.
-  InputController done(VoidCallback onDone) {
+  InputControl done(VoidCallback onDone) {
     _onDone = onDone;
 
     return this;
   }
 
   /// Sets callback for text changes.
-  InputController changed(ValueCallback<String> onChanged) {
+  InputControl changed(ValueCallback<String> onChanged) {
     _onChanged = onChanged;
 
     return this;
@@ -263,15 +263,15 @@ class InputController extends BaseControlModel with StateController {
   }
 }
 
-/// More powerful [TextField] with [InputController] and default [InputDecoration]
+/// More powerful [TextField] with [InputControl] and default [InputDecoration]
 ///
-/// [InputController.next]
-/// [InputController.done]
-/// [InputController.changed]
+/// [InputControl.next]
+/// [InputControl.done]
+/// [InputControl.changed]
 class InputField extends ControlWidget with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
-  final InputController controller;
+  final InputControl controller;
 
   /// Text that suggests what sort of input the field accepts.
   ///

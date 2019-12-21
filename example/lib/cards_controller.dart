@@ -5,7 +5,7 @@ import 'cards_page.dart';
 class CardsController extends BaseController with RouteController, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
-  final input = InputController();
+  final input = InputControl();
 
   int _counter = 0;
 
