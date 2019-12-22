@@ -2,7 +2,7 @@
 
 ---
 
-Flutter Control is complex library to maintain App and State management.
+Flutter Control is complex library to maintain App and State management.\
 Helps to separate Business Logic from UI and with Communication, Localization, Routing and passing arguments/values/events around.
 
 ---
@@ -13,30 +13,30 @@ Helps to separate Business Logic from UI and with Communication, Localization, R
 
 **Flutter Control Base**
 
-- [ControlBase] Wraps App and initializes main Control classes with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.
-- [ControlFactory] Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during initialization and also on demand.
-  Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**.
-  Comes with [ControlProvider] to easily access core functions from any part of App.
-  Factory is one and only singleton in this library.
-  Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.
+- **[ControlBase]** Wraps App and initializes main Control classes with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.\
+- **[ControlFactory]** Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during initialization and also on demand.\
+  Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**.\
+  Comes with **[ControlProvider]** to easily access core functions from any part of App.\
+  Factory is one and only singleton in this library.\
+  Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.\
   
 ---  
 
-- **[BaseControlModel]** is base class to maintain Business Logic parts of App.
-  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.
-  **[BaseModel]** Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.
-  This Controllers comes with few **[mixin]** classes to extend base functionality:
-   - **[RouteController]** to provide navigation outside of Widget.
-   - **[StateController]** to notify state of whole Widget.
+- **[BaseControlModel]** is base class to maintain Business Logic parts of App.\
+  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
+  **[BaseModel]** Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
+  This Controllers comes with few **[mixin]** classes to extend base functionality:\
+   - **[RouteController]** to provide navigation outside of Widget.\
+   - **[StateController]** to notify state of whole Widget.\
 
-- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].
-  If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.
-  This Widget comes with few **[mixin]** classes:
-   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.
-   - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.
+- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].\
+  If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.\
+  This Widget comes with few **[mixin]** classes:\
+   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.\
+   - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.\
    
-  **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].
-  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.
+  **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].\
+  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.\
 
 ```dart
 
