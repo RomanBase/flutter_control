@@ -4,6 +4,8 @@ typedef InitInjection<T> = void Function(T item, dynamic args);
 
 abstract class Injector {
   void inject<T>(T item, dynamic args);
+
+  static Injector ofTypes(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
 }
 
 /// Shortcut class to get objects from [ControlFactory]
@@ -128,6 +130,7 @@ class ControlFactory implements Disposable {
 
   void setInjector(Injector injector) {
     _injector = injector ?? BaseInjector();
+
     _items[Injector] = _injector;
   }
 
