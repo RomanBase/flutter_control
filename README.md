@@ -16,7 +16,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 
 - **[ControlBase]** Wraps App and initializes Control, Factory, Localization, Injector and Broadcaster. It's just shortcut to start with Flutter Control.
 - **[ControlFactory]** Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during initialization and also on demand.\
-  Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**.\
+  Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use type as a key..\
   Comes with **[ControlProvider]** a static class to easily access core functions from any part of App.\
   Factory is one and only singleton in this library.\
   Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.
@@ -32,7 +32,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
       initializers: {
         Counter: (_) => CounterModel(),
       },
-      injector: Injector.ofTypes({
+      injector: Injector.of({
         Counter: (item, args) => item.controller = ControlProvider.get('counter'),
       }),
       loader: (context) => LoadingPage(),

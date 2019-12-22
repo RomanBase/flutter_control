@@ -5,7 +5,7 @@ typedef InitInjection<T> = void Function(T item, dynamic args);
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
-  static Injector ofTypes(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
+  static Injector of(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
 }
 
 /// Shortcut class to get objects from [ControlFactory]
@@ -475,7 +475,7 @@ class BaseInjector implements Injector, Disposable {
       _injectors.addAll(injectors);
     }
 
-    _other = other ?? (item, args) {};
+    _other = other;
   }
 
   void setInjector<T>(InitInjection<T> inject) {
