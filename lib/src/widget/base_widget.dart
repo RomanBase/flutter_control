@@ -385,7 +385,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup}) async {
     final dialogContext = getContext(root: root);
 
-    //TODO: dialogs
+    //TODO: more options
     switch (type) {
       case DialogType.popup:
         return await showDialog(context: dialogContext, builder: (context) => builder(context));

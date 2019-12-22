@@ -81,12 +81,15 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
+/// [ActionControl.broadcastListener] - Subscription to [BroadcastProvider].
 class ActionControl<T> implements ActionControlSub<T>, Disposable {
   /// Current value.
   T _value;
 
   @override
   T get value => _value;
+
+  set value(value) => setValue(value);
 
   bool get isEmpty => _value == null;
 

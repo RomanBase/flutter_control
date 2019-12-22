@@ -2,9 +2,6 @@
   + All.
 
 - Tests
-  + Factory.
-  + BaseController.
-  + FieldControl.
   + ControlWidget.
   + BaseLocalization.
   + RouteHandler.
@@ -52,7 +49,7 @@
   + **done** 'getArgFromString' - parse input to json and then return object.
 
 - [GlobalSubscription] x [ControlSubscription] x [FieldSubscription] 'major update'
-  + Compare these and maybe merge them or create interface/abstract class.
+  + **nope** Compare these and maybe merge them or create interface/abstract class.
 
 - [FieldControl] 'minor update'
   + **done** Provide save access to Stream or to major Stream functions.
@@ -79,7 +76,7 @@
   + It's too stable :) hot reload not working now..
   
 - [Device] 'minor update'
-  + Add more platform specific props and helpers.
+  + **merged with theme** Add more platform specific props and helpers.
   
 - [BaseLocalization] 'minor update'
   + **done** Custom/dynamic localization extractor for multi language API data.
@@ -89,9 +86,9 @@
 - [BasePrefs] 'minor update'
   + Json - get/set is quit unstable right now. Add some safety checks..
   
-- [BaseTheme] 'major update'
-  + Add more Material and Cupertino constants and preferred values.
-  + Combine with [Device] to provide more runtime numbers based on physical device.
+- [BaseTheme] 'major update' - new class [ControlTheme]
+  + **done** Add more Material and Cupertino constants and preferred values.
+  + **done** Combine with [Device] to provide more runtime numbers based on physical device.
   
 - [UnitId] 'new class'
   + **done**  Random id generator.

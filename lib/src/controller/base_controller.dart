@@ -52,6 +52,8 @@ class BaseControlModel with DisposeHandler implements Initializable, Subscriptio
   @override
   void init(Map args) {}
 
+  /// Used to subscribe interface/handler/notifier etc.
+  /// Can be called multiple times with different objects!
   @override
   void subscribe(dynamic object) {}
 
@@ -98,12 +100,6 @@ class BaseController extends BaseControlModel {
   /// check [init] and [preventMultiInit]
   void onInit(Map args) {}
 
-  /// Used to subscribe interface/handler/notifier etc.
-  /// Can be called multiple times with different objects!
-  @mustCallSuper
-  @override
-  void subscribe(dynamic object) {}
-
   /// Used to reload Controller.
   /// Currently empty and is ready to override.
   Future<void> reload() async {}
@@ -122,6 +118,8 @@ class BaseController extends BaseControlModel {
 mixin StateController on BaseControlModel implements StateNotifier {
   /// Notify listeners.
   final _notifier = ActionControl.broadcast();
+
+  ActionControlSub get stateNotifier => _notifier.sub;
 
   /// Called during State initialization.
   void onStateInitialized() {}

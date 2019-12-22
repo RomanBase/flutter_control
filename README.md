@@ -1,42 +1,79 @@
-**Beta version of Flutter Control**
-
-Stable, but needs more tests and little care..
-
-[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://api.cirrus-ci.com/github/RomanBase/flutter_control)
+[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
 
 ---
 
 Flutter Control is complex library to maintain App and State management.
-And helps to separate Business Logic from UI and helps with Communication, Localization and Routing.
+Helps to separate Business Logic from UI and with Communication, Localization, Routing and passing arguments/values/events around.
+
+---
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure_simple.png)
 
 ---
 
-**Base classes**
+**Flutter Control Base**
 
-- [ControlApp] Wraps App and initializes Control with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.
-- [AppControl] Is [InheritedWidget] around whole App.
-- [ControlFactory] Mainly initializes and stores Controllers, Models and other Logic classes. Also works as global Stream to provide easy communication and synchronization between separated parts of App.
-- [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
+- [ControlBase] Wraps App and initializes main Control classes with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.
+- [ControlFactory] Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during initialization and also on demand.
+  Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**.
+  Comes with [ControlProvider] to easily access core functions from any part of App.
+  Factory is one and only singleton in this library.
+  Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.
+  
+---  
+
+- **[BaseControlModel]** is base class to maintain Business Logic parts of App.
+  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.
+  **[BaseModel]** Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.
+  This Controllers comes with few **[mixin]** classes to extend base functionality:
+   - **[RouteController]** to provide navigation outside of Widget.
+   - **[StateController]** to notify state of whole Widget.
+
+- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].
+  If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.
+  This Widget comes with few **[mixin]** classes:
+   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.
+   - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.
+   
+  **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].
+  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.
+
+```dart
+
+```
 
 ---
 
-**Streams and Observables**
+- **[ActionControl]** is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.
+  Has three variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Broadcast Listener** (subscribes to Global Event Stream).
+  On the Widget side is **[ControlBuilder]** to dynamically build Widgets. It's also possible to use **[ControlBuilderGroup]** for multiple Observables.
+  Value is set directly, but can be used privately and with **[ActionControlSub]** interface provide subscription functionality to public.
+  Upon dismiss every **[ControlSubscription]** is closed.
 
-- [ActionControl] Single or Broadcast Observable. Usable with [ControlBuilder] to dynamically build Widgets. Also to provide change events for other Controllers and Logic parts.
-- [FieldControl] Stream wrapper to use with [FieldStreamBuilder] or [FieldBuilder] to dynamically build Widgets. Also to provide change events for other Controllers and Logic parts.
-- [ListControl] Extended FieldControl to work with [Iterable]. And with [ListBuilder] to dynamically build list of Widgets.
-- [LoadingControl], [StringControl], [BoolControl], etc. with builders..
+- [FieldControl] is more robust Observable solution around [Stream] and [StreamController]. Primarily is used to notify Widgets and to provide events about value changes.
+  Can listen [Stream], [Future] or subscribe to another FieldControl with possibility to filter and convert values.
+  FieldControl comes with pre-build primitive variants as [StringControl], [DoubleControl], etc., where is possible to use validation, regex or value clamping. And also [ListControl] to work with Iterables.
+  On the Widget side is [FieldBuilder] and [FieldStreamBuilder] to dynamically build Widgets. Also [FieldBuilderGroup] for use with multiple Observables.
+  It's possible to set value directly, via [FieldSink] or [FieldSinkConverter].
+  Upon dismiss every **[FieldSubscription]** is closed.
+
+```dart
+
+```
+
+---
+  
+- [BaseLocalization] Json based localization, that supports simple strings, plurals and dynamic structures.
+  Easy access via [LocalizationProvider] mixin. Localization object is stored in Factory, so is accessible without context and can be used even in Controllers, Entities, etc.
+  
+- [ControlBroadcast] Event stream across whole App. Broadcaster is part of [ControlFactory] and is stored there.
+  With [BroadcastProvider] is possible to subscribe to any stream and send data or events from one end of App to another, even to Widgets.
 
 ---
 
 **Controllers**
 
-- [BaseControlModel] Stores all Business Logic and initializes self during Widget construction.
-- [BaseController] Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets.
-- [BaseModel] Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.
-- [InputController] Controller for [InputField] to control text, changes, validity, focus, etc. Controllers can be chained via 'next' and 'done' events.
+- [InputControl] Controller for [InputField] to control text, changes, validity, focus, etc. Controllers can be chained via 'next' and 'done' events.
 - [NavigatorController] Controller for [NavigatorStack.single] to control navigation inside Widget.
 - [NavigatorStackController] Controller for [NavigatorStack.pages] or [NavigatorStack.menu] to control navigation between pages. Mainly used with bottom menu.
 
@@ -44,15 +81,7 @@ And helps to separate Business Logic from UI and helps with Communication, Local
 
 **Widgets**
 
-- [ControlWidget] Base Widget to work with [BaseControlModel]. 
-- [BaseControlWidget] Widget with no init [BaseControlModel], but still have access to Factory etc. so Controllers can be get from there.
-- [SingleControlWidget] Widget with just one [BaseControlModel].
-
 - [InputField] Wrapper of [TextField] to provide more functionality and control via [InputController].
-- [FieldBuilder] Dynamic Widget builder controlled by [FieldControl].
-- [FieldBuilderGroup] Dynamic Widget builder controlled by multiple [FieldControl]s. 
-- [ListBuilder] Wrapper of [FieldBuilder] to easily work with Lists. All primitives have own builder - [DoubleBuilder], [BoolBuilder], etc. 
-- [ControlBuilder] Dynamic Widget builder controlled by [ActionControl].
 - [StableWidget] Widget that is build just once. No mather how many times is build called. Rebuild can be forced via parameters..
 
 - [NavigatorStack.single] Enables navigation inside Widget.
@@ -63,7 +92,6 @@ And helps to separate Business Logic from UI and helps with Communication, Local
 
 **Providers with static functionality**
 
-- [ControlProvider] Provides and initializes objects from [ControlFactory].
 - [BroadcastProvider] Globally broadcasts events and data.
 - [ThemeProvider] Initializes [ControlTheme] and caches current [ThemeData].
 
@@ -71,7 +99,6 @@ And helps to separate Business Logic from UI and helps with Communication, Local
 
 **Routing**
 
-- [RouteHandler] Initializes Widget and handles Navigation.
 - [PageRouteProvider] Specifies Route and WidgetBuilder settings for [RouteHandler]. With [WidgetInitializer] passing args to Widgets and Controllers during navigation.
 - [RouteNavigator] Interface to work with Navigator and Routes.
 
@@ -80,11 +107,6 @@ And helps to separate Business Logic from UI and helps with Communication, Local
 **Mixins**
 
 - [LocalizationProvider] - mixin for any class, enables [BaseLocalization] for given object.
-- [StateController] - mixin for [BaseControlModel] to notify State of Widget from Model/Controller.
-- [RouteControl] - mixin for [ControlWidget], enables default route navigation.
-- [RouteController] - mixin for [BaseControlModel], enables route navigation via [RouteHandler] bridge to [ControlWidget] with [RouteControl]. 
-- [TickerControl] - mixin for [ControlWidget], enables Ticker for given Widget.
-
 - [DisposeHandler] - mixin for any class, helps with object disposing.
 - [PrefsProvider] - mixin for any class, helps to store user preferences.
 
@@ -122,7 +144,7 @@ Control and App initialization. TodoController is initialized and stored in glob
        );
      }
    }
-   ```
+```
 
 Controller handles all Business Logic. Simply adds and removes items from List and recalculates item done count.
 [StringControl] and [ListControl] wraps [Stream] and notifies [FieldBuilder] about changes.

@@ -83,6 +83,8 @@ class FieldControl<T> implements Disposable {
   /// Returns current value - last in stream.
   T get value => _value;
 
+  set value(value) => setValue(value);
+
   /// Checks if any value is available.
   bool get hasData => _value != null;
 
