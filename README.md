@@ -13,30 +13,30 @@ Helps to separate Business Logic from UI and with Communication, Localization, R
 
 **Flutter Control Base**
 
-- **[ControlBase]** Wraps App and initializes main Control classes with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.\
+- **[ControlBase]** Wraps App and initializes main Control classes with Global State, Factory and Localization. It's just shortcut to start with Flutter Control.
 - **[ControlFactory]** Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during initialization and also on demand.\
   Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**.\
   Comes with **[ControlProvider]** to easily access core functions from any part of App.\
   Factory is one and only singleton in this library.\
-  Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.\
+  Core objects of Flutter Control are stored in Factory Storage by default and are accessible by their **[Type]**.
   
 ---  
 
-- **[BaseControlModel]** is base class to maintain Business Logic parts of App.\
-  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
+- **[BaseControlModel]** is base class to maintain Business Logic parts of App.
+  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.
   **[BaseModel]** Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
-  This Controllers comes with few **[mixin]** classes to extend base functionality:\
+  This Controllers comes with few **[mixin]** classes to extend base functionality:
    - **[RouteController]** to provide navigation outside of Widget.\
    - **[StateController]** to notify state of whole Widget.\
 
 - **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].\
   If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.\
-  This Widget comes with few **[mixin]** classes:\
-   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.\
-   - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.\
+  This Widget comes with few **[mixin]** classes:
+   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.
+   - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.
    
   **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].\
-  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.\
+  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.
 
 ```dart
 
@@ -44,17 +44,17 @@ Helps to separate Business Logic from UI and with Communication, Localization, R
 
 ---
 
-- **[ActionControl]** is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.
-  Has three variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Broadcast Listener** (subscribes to Global Event Stream).
-  On the Widget side is **[ControlBuilder]** to dynamically build Widgets. It's also possible to use **[ControlBuilderGroup]** for multiple Observables.
-  Value is set directly, but can be used privately and with **[ActionControlSub]** interface provide subscription functionality to public.
+- **[ActionControl]** is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
+  Has three variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Broadcast Listener** (subscribes to Global Event Stream).\
+  On the Widget side is **[ControlBuilder]** to dynamically build Widgets. It's also possible to use **[ControlBuilderGroup]** for multiple Observables.\
+  Value is set directly, but can be used privately and with **[ActionControlSub]** interface provide subscription functionality to public.\
   Upon dismiss every **[ControlSubscription]** is closed.
 
-- [FieldControl] is more robust Observable solution around [Stream] and [StreamController]. Primarily is used to notify Widgets and to provide events about value changes.
-  Can listen [Stream], [Future] or subscribe to another FieldControl with possibility to filter and convert values.
-  FieldControl comes with pre-build primitive variants as [StringControl], [DoubleControl], etc., where is possible to use validation, regex or value clamping. And also [ListControl] to work with Iterables.
-  On the Widget side is [FieldBuilder] and [FieldStreamBuilder] to dynamically build Widgets. Also [FieldBuilderGroup] for use with multiple Observables.
-  It's possible to set value directly, via [FieldSink] or [FieldSinkConverter].
+- **[FieldControl]** is more robust Observable solution around **[Stream]** and **[StreamController]**. Primarily is used to notify Widgets and to provide events about value changes.\
+  Can listen **[Stream]**, **[Future]** or subscribe to another FieldControl with possibility to filter and convert values.\
+  FieldControl comes with pre-build primitive variants as **[StringControl]**, **[DoubleControl]**, etc., where is possible to use validation, regex or value clamping. And also **[ListControl]** to work with Iterables.\
+  On the Widget side is **[FieldBuilder]** and **[FieldStreamBuilder]** to dynamically build Widgets. Also **[FieldBuilderGroup]** for use with multiple Observables.\
+  It's possible to set value directly, via **[FieldSink]** or **[FieldSinkConverter]**.\
   Upon dismiss every **[FieldSubscription]** is closed.
 
 ```dart
