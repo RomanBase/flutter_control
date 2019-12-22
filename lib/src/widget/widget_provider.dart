@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-
 /// Abstract implementation of simple widget initializer and holder.
 abstract class WidgetInitializer {
   /// Current Widget.
@@ -45,6 +44,7 @@ abstract class WidgetInitializer {
     };
   }
 
+  /// Wraps initializer into [WidgetBuilder].
   WidgetBuilder wrap({Map args}) => (context) => getWidget(context, args: args);
 }
 

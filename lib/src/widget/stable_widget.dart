@@ -39,7 +39,7 @@ class _StableWidgetState extends State<StableWidget> {
   @override
   Widget build(BuildContext context) {
     if (holder.isDirty || widget.forceOverride) {
-      holder.set(builder: () => widget.builder(context), override: widget.forceOverride);
+      holder.set(builder: () => widget.builder(context), override: true);
     }
 
     return holder.get();
