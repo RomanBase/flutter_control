@@ -165,14 +165,14 @@ class ControlFactory implements Disposable {
       final item = _items[key] as T;
 
       if (item != null) {
-        _initItem(item, args: args, forceInit: false);
+        inject(item, args: args);
         return item;
       }
     }
 
     for (final item in _items.values) {
       if (item is T) {
-        _initItem(item, args: args, forceInit: false);
+        inject(item, args: args);
         return item;
       }
     }
@@ -183,7 +183,7 @@ class ControlFactory implements Disposable {
   /// returns new object of requested type.
   /// initializer must be specified - [setInitializer]
   /// nullable
-  T init<T>([dynamic args, bool forceInit = false]) {
+  T init<T>([dynamic args]) {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
@@ -191,7 +191,7 @@ class ControlFactory implements Disposable {
 
       final item = initializer(args);
 
-      _initItem<T>(item, args: args, forceInit: forceInit);
+      inject<T>(item, args: args);
 
       return item;
     }
@@ -199,13 +199,12 @@ class ControlFactory implements Disposable {
     return null;
   }
 
-  /// returns new object of requested type.
-  /// initializer must be specified - [setInitializer]
-  /// nullable
-  void _initItem<T>(dynamic item, {dynamic args, bool forceInit: false}) {
-    _injector.inject(item, args);
+  /// Injects and initializes given [item] with [args].
+  /// [Initializable.init] is called only when [args] are not null.
+  void inject<T>(dynamic item, {dynamic args}) {
+    _injector.inject<T>(item, args);
 
-    if (item is Initializable && (args != null || forceInit)) {
+    if (item is Initializable && args != null) {
       item.init(args is Map ? args : Parse.toMap(args));
     }
   }
@@ -470,7 +469,7 @@ class BaseInjector implements Injector, Disposable {
 
   BaseInjector({Map<Type, InitInjection> injectors, InitInjection other}) {
     if (injectors != null) {
-      _injectors.addAll(_injectors);
+      _injectors.addAll(injectors);
     }
 
     _other = other ?? (item, args) {};

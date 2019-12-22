@@ -173,5 +173,7 @@ void main() {
       expect(parse2, 5);
       expect(parse3, null);
     });
+
+    test('dynamic', () {});
   });
 }

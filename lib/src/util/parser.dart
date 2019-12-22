@@ -250,6 +250,10 @@ class Parse {
   /// If none found, then [defaultValue] is returned.
   /// Currently supports [Parse.getArgFromMap], [Parse.getArgFromList] and [Parse.getArgFromString]
   static T getArg<T>(dynamic value, {dynamic key, bool Function(dynamic) predicate, T defaultValue}) {
+    if (value is T) {
+      return value;
+    }
+
     if (value is Map) {
       return getArgFromMap<T>(value, key: key, predicate: predicate, defaultValue: defaultValue);
     }
