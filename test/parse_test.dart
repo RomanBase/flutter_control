@@ -174,6 +174,20 @@ void main() {
       expect(parse3, null);
     });
 
-    test('dynamic', () {});
+    test('dynamic', () {
+      final parse0 = Parse.getArg(null, defaultValue: 'empty');
+      final parse1 = Parse.getArg<String>('item');
+      final parse2 = Parse.getArg<int>(list);
+      final parse3 = Parse.getArg<int>(map);
+      final parse4 = Parse.getArg<Iterable>(list);
+      final parse5 = Parse.getArg<Map>(map);
+
+      expect(parse0, 'empty');
+      expect(parse1, 'item');
+      expect(parse2, 0);
+      expect(parse3, 0);
+      expect(parse4, isNotNull);
+      expect(parse5, isNotNull);
+    });
   });
 }

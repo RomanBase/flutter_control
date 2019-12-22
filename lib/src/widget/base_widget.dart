@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter_control/core.dart';
 
 class WidgetControlHolder implements Disposable {
+  Map args;
   ControlState state;
   Route route;
-  Map args;
 
   bool get initialized => state != null;
 
@@ -19,7 +19,9 @@ class WidgetControlHolder implements Disposable {
     }
 
     if (args is Map) {
-      this.args.addAll(args);
+      args.forEach((key, value) {
+        this.args[key] = value;
+      });
     } else if (args is Iterable) {
       args.forEach((item) {
         this.args[item.runtimeType] = item;
@@ -29,10 +31,29 @@ class WidgetControlHolder implements Disposable {
     }
   }
 
-  WidgetControlHolder copy() => WidgetControlHolder()
-    ..state = state
-    ..route = route
-    ..args = args;
+  T getArg<T>({String key, T defaultValue}) => Parse.getArgFromMap<T>(args, key: key, defaultValue: defaultValue);
+
+  bool findRoute([BuildContext context]) {
+    if (route != null) {
+      return true;
+    }
+
+    route = Parse.getArg<Route>(args, key: ControlKey.initData);
+
+    if (route == null && context != null) {
+      ModalRoute.of(context);
+    }
+
+    return route != null;
+  }
+
+  List<BaseControlModel> findControls() {
+    if (args == null) {
+      return [];
+    }
+
+    return args.values.where((item) => item is BaseControlModel).toList(growable: false).cast<BaseControlModel>();
+  }
 
   @override
   void dispose() {
@@ -54,10 +75,10 @@ abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWi
 
   @protected
   T initController() {
-    T item = Parse.getArg<T>(args);
+    T item = holder.getArg<T>();
 
     if (item == null) {
-      item = ControlProvider.get<T>(null, args);
+      item = ControlProvider.get<T>(null, holder.args);
     }
 
     return item;
@@ -88,17 +109,15 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [_ControlSingleTickerState]
 abstract class ControlWidget extends StatefulWidget with LocalizationProvider implements Initializable, Disposable {
   /// Holder for [State] nad Controllers.
+  @protected
   final holder = WidgetControlHolder();
+
+  bool get isInitialized => holder.initialized;
 
   /// Widget's [State]
   /// [holder] - [onInitState]
   @protected
   ControlState get state => holder.state;
-
-  /// Widget's init arguments
-  /// [holder] - [onInitState]
-  @protected
-  Map get args => holder.args;
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
@@ -117,7 +136,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Default constructor
   ControlWidget({Key key, dynamic args}) : super(key: key) {
-    holder.addArg(args);
+    addArg(args);
   }
 
   /// Called during construction phase.
@@ -133,7 +152,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @override
   @protected
   @mustCallSuper
-  void init(Map args) => holder.addArg(args);
+  void init(Map args) => addArg(args);
 
   /// Called during State initialization.
   /// All controllers (from [initControllers]) are subscribed to this Widget and given State.
@@ -189,8 +208,18 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
 
   /// Returns value by given key or type.
-  /// Args are passed to Widget during [init] phase.
-  T getArg<T>({String key, T defaultValue}) => Parse.getArgFromMap<T>(args, key: key, defaultValue: defaultValue);
+  /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
+  T getArg<T>({String key, T defaultValue}) => holder.getArg(key: key, defaultValue: defaultValue);
+
+  /// Returns value by given key or type.
+  /// Look up in [controllers] and [factory].
+  /// Use [getArg] to look up in Widget's arguments.
+  T getControl<T>({String key, dynamic args}) => factory.find(controllers, includeFactory: true, args: args);
+
+  /// Adds [arg] to this widget.
+  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
+  /// [args] are then parsed into [Map].
+  void addArg(dynamic args) => holder.addArg(args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
@@ -223,6 +252,18 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     }
 
     controllers = widget.initControllers();
+
+    if (controllers == null) {
+      controllers = <BaseControlModel>[];
+    }
+
+    final argControls = widget.holder.findControls();
+
+    argControls.forEach((item) {
+      if (!controllers.contains(item)) {
+        controllers.add(item);
+      }
+    });
 
     widget.onInitState(this);
   }
@@ -321,9 +362,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   void init(Map args) {
     super.init(args);
 
-    holder.route = Parse.getArg<Route>(args, key: ControlKey.initData);
-
-    if (holder.route != null) {
+    if (holder.findRoute(context)) {
       printDebug('${this.toString()} at route: ${holder.route.settings.name}');
     }
   }
