@@ -60,7 +60,7 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openRoute]
-  Future<dynamic> openRoute({bool root: false, bool replacement: false, Map args}) {
+  Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
     final initializer = WidgetInitializer.of(provider.builder);
@@ -77,7 +77,7 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openRoot]
-  Future<dynamic> openRoot({Map args}) {
+  Future<dynamic> openRoot({dynamic args}) {
     debugPrint("open root: ${provider.identifier} from $navigator");
 
     final initializer = WidgetInitializer.of(provider.builder);
@@ -92,7 +92,7 @@ class RouteHandler {
   }
 
   /// [RouteNavigator.openDialog]
-  Future<dynamic> openDialog({bool root: false, DialogType type, Map args}) {
+  Future<dynamic> openDialog({bool root: false, DialogType type, dynamic args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
     route = null;
@@ -104,7 +104,7 @@ class RouteHandler {
   }
 
   /// Wraps [builder] and init widget during build phase.
-  WidgetBuilder _initBuilder(WidgetBuilder builder, Map args) => WidgetInitializer.of(builder).wrap(args: args);
+  WidgetBuilder _initBuilder(WidgetBuilder builder, dynamic args) => WidgetInitializer.of(builder).wrap(args: args);
 }
 
 /// Abstract class for [PageRoute] construction with given settings.

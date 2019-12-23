@@ -922,6 +922,16 @@ class IntegerControl extends FieldControl<int> {
     setInRange(value);
   }
 
+  int operator +(int num) {
+    setValue(value + num);
+    return value;
+  }
+
+  int operator -(int num){
+    setValue(value + num);
+    return value;
+  }
+
   void setValue(int value) {
     if (requestRange) {
       setInRange(value);

@@ -9,15 +9,7 @@ abstract class Injector {
 }
 
 /// Shortcut class to get objects from [ControlFactory]
-class ControlProvider {
-  /// deprecated - use [ControlProvider.get] instead.
-  ///
-  /// returns object of requested type by given [key] or [Type] from [ControlFactory].
-  /// check [ControlFactory] for more info.
-  /// nullable
-  @deprecated
-  static T of<T>([dynamic key]) => ControlFactory._instance.get<T>(key);
-
+class ControlProvider<T> extends StatelessWidget {
   /// returns object of requested type by given [key] or [Type] from [ControlFactory].
   /// check [ControlFactory] for more info.
   /// nullable
@@ -32,6 +24,26 @@ class ControlProvider {
   /// returns new object of requested type via initializer in [ControlFactory].
   /// nullable
   static T init<T>([dynamic args]) => ControlFactory._instance.init(args);
+
+  /// Injects and initializes given [item] with [args].
+  /// [Initializable.init] is called only when [args] are not null.
+  static void inject<T>(dynamic item, {dynamic args}) => ControlFactory._instance.inject(item, args: args);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  final dynamic factoryKey;
+  final dynamic args;
+  final ControlWidgetBuilder<T> builder;
+
+  ControlProvider({
+    Key key,
+    this.factoryKey,
+    this.args,
+    @required this.builder,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => builder(context, get<T>(factoryKey, args));
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].

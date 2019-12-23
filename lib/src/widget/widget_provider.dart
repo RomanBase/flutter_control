@@ -10,6 +10,8 @@ abstract class WidgetInitializer {
   /// Send to Widget via [args] with [ControlKey.initData] key.
   Object data;
 
+  bool get isInitialized => _widget != null;
+
   WidgetInitializer();
 
   factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
@@ -17,11 +19,11 @@ abstract class WidgetInitializer {
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
   @protected
-  Widget initWidget(BuildContext context, {Map args});
+  Widget initWidget(BuildContext context, {dynamic args});
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, Map args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
+  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
 
   /// Returns context of initialized [ControlWidget]
   /// nullable
@@ -33,19 +35,18 @@ abstract class WidgetInitializer {
     return null;
   }
 
-  Map _buildArgs(Map args) {
-    if (args != null) {
-      args[ControlKey.initData] = data;
-      return args;
+  Map _buildArgs(dynamic args) {
+    if (args != Map) {
+      args = Parse.toMap(args);
     }
 
-    return {
-      ControlKey.initData: data,
-    };
+    args[ControlKey.initData] = data;
+
+    return args;
   }
 
   /// Wraps initializer into [WidgetBuilder].
-  WidgetBuilder wrap({Map args}) => (context) => getWidget(context, args: args);
+  WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
 }
 
 /// Simple [WidgetBuilder] and holder.
@@ -59,7 +60,7 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 
   @override
-  Widget initWidget(BuildContext context, {Map args}) {
+  Widget initWidget(BuildContext context, {dynamic args}) {
     final widget = builder(context);
 
     if (widget is Initializable) {

@@ -99,6 +99,24 @@ void main() {
       expect(controller.value, isTrue);
     });
   });
+
+  group('Initializer', () {
+    testWidgets('wrapper', (tester) async {
+      final initializer = WidgetInitializer.of((context) => TestWidget(10));
+      initializer.data = 'init';
+
+      await tester.pumpWidget(Builder(builder: initializer.wrap(args: {'key': 'args'})));
+
+      expect(initializer.isInitialized, isTrue);
+
+      final widget = initializer.getWidget(null) as TestWidget;
+
+      expect(widget, isNotNull);
+      expect(widget.getArg<int>(), 10);
+      expect(widget.getArg(key: ControlKey.initData), 'init');
+      expect(widget.getArg(key: 'key'), 'args');
+    });
+  });
 }
 
 class TestWidget extends ControlWidget {
