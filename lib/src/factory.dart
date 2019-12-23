@@ -496,7 +496,7 @@ class BaseInjector implements Injector, Disposable {
 
   @override
   void inject<T>(dynamic item, dynamic args) {
-    final injector = findInjector(item.runtimeType);
+    final injector = findInjector<T>(item.runtimeType);
 
     if (injector != null) {
       injector(item, args);
@@ -504,11 +504,11 @@ class BaseInjector implements Injector, Disposable {
   }
 
   InitInjection findInjector<T>(Type type) {
-    if (_injectors.containsKey(T)) {
+    if (T != dynamic && _injectors.containsKey(T)) {
       return _injectors[T];
     }
 
-    if (_injectors.containsKey(type)) {
+    if (type != null && _injectors.containsKey(type)) {
       return _injectors[type];
     }
 

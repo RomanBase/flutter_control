@@ -135,22 +135,25 @@ class ControlTheme {
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  final Device device;
-  final ThemeData data;
-  final AssetPath asset;
+  BuildContext _context;
+  Device _device;
+  ThemeData _data;
+  AssetPath _asset;
 
-  const ControlTheme(this.device, this.data, [this.asset = const AssetPath()]);
+  Device get device => _device ?? (_device = Device.of(_context));
 
-  factory ControlTheme.of(BuildContext context) => ControlTheme(
-        Device.of(context),
-        Theme.of(context),
-      );
+  ThemeData get data => _data ?? (_data = Theme.of(_context));
 
-  ControlTheme copyWith({ThemeData data, AssetPath asset}) => ControlTheme(
-        device,
-        data ?? this.data,
-        asset ?? this.asset,
-      );
+  AssetPath get asset => _asset ?? (_asset = AssetPath());
+
+  set asset(value) => _asset = value;
+
+  ControlTheme([this._context]);
+
+  void invalidate([BuildContext context]) {
+    _data = null;
+    _context = context ?? ControlProvider.get<AppControl>().rootContext;
+  }
 
   @override
   bool operator ==(other) {
@@ -164,43 +167,39 @@ class ControlTheme {
 mixin ThemeProvider<T extends ControlTheme> {
   static T of<T extends ControlTheme>([BuildContext context]) => ControlProvider.init<ControlTheme>(context);
 
-  /// Holds current [ControlTheme]. Ideally value is build once.
-  /// Holder can be rebuild with [invalidateTheme].
-  final _holder = InitHolder<T>(builder: () => of<T>());
-
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
   ///
   /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
   @protected
-  T get theme => _holder.get();
+  final T theme = of<T>();
 
   /// Instance of [AssetPath].
   ///
   /// Custom [AssetPath] can be set to [ControlTheme] - [theme].
   @protected
-  AssetPath get asset => theme?.asset;
+  AssetPath get asset => theme.asset;
 
   /// Instance of [Device].
   /// Wrapper of [MediaQuery].
   @protected
-  Device get device => theme?.device;
+  Device get device => theme.device;
 
   /// Instance of nearest [ThemeData].
   @protected
-  ThemeData get data => theme?.data;
+  ThemeData get themeData => theme.data;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get font => data?.textTheme;
+  TextTheme get font => theme.font;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontPrimary => data?.primaryTextTheme;
+  TextTheme get fontPrimary => theme.fontPrimary;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontAccent => data?.accentTextTheme;
+  TextTheme get fontAccent => theme.fontAccent;
 
   /// Origin of [ControlTheme].
   /// [ControlTheme.scope] initializes with nearest [ThemeData].
@@ -210,9 +209,8 @@ mixin ThemeProvider<T extends ControlTheme> {
   int get themeScope => ControlTheme.scope;
 
   /// Invalidates current [ControlTheme].
-  /// With [ControlWidget] checks [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
-  /// With other objects checks [context] to provide scoped or global [ThemeData].
+  /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   void invalidateTheme([BuildContext context]) {
-    _holder.set(builder: () => of<T>(context != null && themeScope == ControlTheme.scope ? context : null), override: true);
+    theme.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
   }
 }

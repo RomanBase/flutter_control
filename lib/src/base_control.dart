@@ -145,7 +145,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       localizationAssets,
     );
 
-    initializers[ControlTheme] = widget.theme ?? (context) => ControlTheme.of(context);
+    initializers[ControlTheme] = widget.theme ?? (context) => ControlTheme(context);
 
     factory.initialize(
       items: entries,

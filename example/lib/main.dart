@@ -23,7 +23,10 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
       initializers: {
         DetailController: (args) => DetailController(),
       },
-      theme: (context) => MyTheme.of(context),
+      injector: Injector.of({
+        ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),
+      }),
+      theme: (context) => MyTheme(context),
       root: (context) => MenuPage(),
       app: (context, key, home) {
         return BroadcastBuilder<ThemeData>(
@@ -53,14 +56,5 @@ class MyTheme extends ControlTheme {
 
   final superColor = Colors.red;
 
-  MyTheme(Device device, ThemeData data) : super(device, data);
-
-  factory MyTheme.of(BuildContext context) {
-    return MyTheme(Device.of(context), Theme.of(context));
-  }
-
-  MyTheme copy(ThemeData data) => MyTheme(
-        device,
-        data,
-      );
+  MyTheme(BuildContext context) : super(context);
 }
