@@ -5,24 +5,19 @@ import 'package:flutter_control/core.dart';
 
 typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
+//TODO: documentation is old and don't match now..
 /// Abstract class for basic type of navigation.
 abstract class RouteNavigator {
   /// Pushes route into current Navigator.
   /// [route] - specific route: type, settings, transition etc.
   /// [root] - pushes route into root Navigator - onto top of everything.
   /// [replacement] - pushes route as replacement of current route.
-  ///
-  /// [Scaffold] as root context for [Navigator] is part of [BaseApp] Widget.
-  /// As well [AppControl] can be initialized with custom root context and root Key.
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
 
   /// Clears current [Navigator] and opens new [Route].
   Future<dynamic> openRoot(Route route);
 
   /// Opens Dialog/ModalSheet/BottomSheet etc. as custom Widget Dialog via Controller.
-  ///
-  /// Scaffold as root context for [Navigator] is part of [BaseApp] Widget.
-  /// As well [AppControl] can be initialized with custom root context and root Key.
   Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
 
   /// Goes back in navigation stack until first [Route].

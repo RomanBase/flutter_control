@@ -67,7 +67,6 @@ class BroadcastProvider {
 /// Factory for initializing and storing objects.
 /// Factory also creates global subscription stream driven by keys. Access this stream via [BroadcastProvider].
 ///
-/// When app is used with [BaseApp] and [AppControl] factory automatically holds [AppControl], [BaseLocalization] and [BasePrefs].
 /// Fill [ControlBase.entries] for initial items to store inside factory.
 /// Fill [ControlBase.initializers] for initial builders to store inside factory.
 class ControlFactory implements Disposable {

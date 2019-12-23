@@ -12,7 +12,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 
 ---
 
-**Flutter Control Base**
+**Flutter Control Core**
 
 - **[ControlBase]** Wraps App and initializes Control, Factory, Localization, Injector and Broadcaster. It's just shortcut to start with Flutter Control.
 - **[ControlFactory]** Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during object initialization and also on demand.\
@@ -50,12 +50,12 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   
 ---  
 
-- **[BaseControlModel]** is base class to maintain Business Logic parts of App.
-  **[BaseController]** Extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.
-  **[BaseModel]** Extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
+- **[BaseControlModel]** is base class to maintain Business Logic parts of App.\
+  **[BaseController]** is extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
+  **[BaseModel]** is extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
   This Controllers comes with few **[mixin]** classes to extend base functionality:
-   - **[RouteController]** to provide navigation outside of Widget.\
-   - **[StateController]** to notify state of whole Widget.\
+   - **[RouteController]** to provide navigation outside of Widget.
+   - **[StateController]** to notify state of whole Widget.
 
 - **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].\
   If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.\
@@ -93,7 +93,7 @@ class CounterPage extends SingleControlWidget<CounterModel> {
 }
 ```
 
-After hitting **'+'** button State of CounterPage will be notified and whole Widget re-builds.
+After hitting **'+'** button State of CounterPage will be notified and whole Widget is re-build.
 
 ---
 
@@ -144,7 +144,7 @@ class CounterPage extends SingleControlWidget<CounterController> {
 }
 ```
 
-After hitting **'+'** button State of FieldBuilder will be notified and only Text Widget re-builds.
+After hitting **'+'** button State of FieldBuilder will be notified and only Text Widget is re-build.
 
 ---
 
@@ -176,7 +176,7 @@ There is more ways how to pass and init Controllers in **[ControlWidget]** and l
   init(Map args);
 ```
 
-4. On demand during build statically or via Provider Widget, and new **[args]** can be provided to objects:
+4. On demand during build statically or via Provider Widget, and new **[args]** can be pushed to objects:
 ```dart
   @override
   Widget build(BuildContext context) {
@@ -191,7 +191,7 @@ There is more ways how to pass and init Controllers in **[ControlWidget]** and l
   }
 ```
 
-Arguments are then passed into Controllers as a [Map]. So you need to know 'key' or 'Type' to retrieve them. Static class **[Parse]** and their extensions can help..
+Arguments are then passed into Controllers as a **[Map]**. So you need to know **'key'** or **'Type'** to retrieve them. Static class **[Parse]** and their extensions can help..
   
 ```dart
   @override
@@ -201,7 +201,7 @@ Arguments are then passed into Controllers as a [Map]. So you need to know 'key'
   }
 ```
 
-**[BaseController]** by default prevents 'multi init'. But this behaviour can be of course overridden.
+**[BaseController]** by default prevents **'multi init'**. But this behaviour can be of course overridden.
 
 ---
 
@@ -245,8 +245,8 @@ Arguments are then passed into Controllers as a [Map]. So you need to know 'key'
 ```
 
 - **[ControlTheme]** wraps **[ThemeData]**, **[MediaQuery]** into **[Device]** class and **[AssetPath]**.\
-  **Theme** is cached on their first use, so 'Theme.of' called just once per Widget.\
-  Control Theme adds some parameters and getters on top of standard Theme.
+  **Theme** is cached on their first use, so **'Theme.of'** is called just once per Widget.\
+  Control Theme adds some parameters and getters on top of standard Theme.\
   Easy access via **[ThemeProvider]** a mixin class that initializes **[ControlTheme]**.\
   Custom **[ControlTheme]** class builder can be used in [ControlBase] constructor to modify default params and provide more of them.
 
@@ -275,7 +275,9 @@ Arguments are then passed into Controllers as a [Map]. So you need to know 'key'
         identifier: 'counter',
         builder: (context) => CounterPage(),
       );
+```
 
+```dart
   class HelloPage extends BaseControlWidget with RouteControl {
   
     @override
@@ -291,7 +293,7 @@ Arguments are then passed into Controllers as a [Map]. So you need to know 'key'
 ```
 
 Sometimes is handy to navigate from Controller or Model and for these scenarios exists **[RouteController]** mixin.\
-Widget still needs to be with **[RouteControl]**.
+Widget still needs to be implemented with **[RouteControl]**.
 
 ```dart
   class HelloController extends BaseController with RouteController {
@@ -319,19 +321,19 @@ Widget still needs to be with **[RouteControl]**.
 
 **Other classes**
 
-- [InputField] Wrapper of [TextField] to provide more functionality and control via [InputController].
-- [DisposeHandler] - mixin for any class, helps with object disposing.
-- [PrefsProvider] - mixin for any class, helps to store user preferences.
-- [FutureBlock] Retriggerable delay.
-- [DelayBlock] Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
-- [Parse] Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
-- [WidgetInitializer] Helps to initialize Widgets with init data.
-- [UnitId] Unique ID generator based on Time, Index or just Random. 
+- **[InputField]** Wrapper of [TextField] to provide more functionality and control via [InputController].
+- **[DisposeHandler]** - mixin for any class, helps with object disposing.
+- **[PrefsProvider]** - mixin for any class, helps to store user preferences.
+- **[FutureBlock]** Retriggerable delay.
+- **[DelayBlock]** Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
+- **[Parse]** Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
+- **[WidgetInitializer]** Helps to initialize Widgets with init data.
+- **[UnitId]** Unique Id generator based on Time, Index or just Random. 
 
 - and more..
 
 ---
 
-**Full Structure**
+**Full Core Structure**
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure.png)

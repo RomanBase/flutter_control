@@ -1,15 +1,11 @@
 import 'package:flutter_control/core.dart';
 
 class AppControl extends InheritedWidget {
-  /// Runtime Type of class.
-  /// Used for custom class integration.
-  static Type _accessType;
-
   /// returns nearest AppControl to given context.
   /// nullable
   static AppControl of(BuildContext context) {
     if (context != null) {
-      final control = context.inheritFromWidgetOfExactType(_accessType);
+      final control = context.dependOnInheritedWidgetOfExactType<AppControl>();
 
       if (control != null) {
         return control;
@@ -50,8 +46,6 @@ class AppControl extends InheritedWidget {
   ) : super(key: GlobalObjectKey(child), child: child) {
     assert(rootKey != null);
     assert(_contextHolder != null);
-
-    _accessType = this.runtimeType;
 
     _contextHolder.subscribe(_context.setValue);
 
