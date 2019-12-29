@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_control/core.dart';
 
 class Device {
@@ -24,6 +26,10 @@ class Device {
   double get screenRatio => width / height;
 
   double get landscapeScreenRatio => height / width;
+
+  double get min => math.min(width, height);
+
+  double get max => math.max(width, height);
 
   @deprecated
   bool get hasNotch => data.padding.top > 20.0;
