@@ -62,6 +62,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   /// Root BuildContext holder is passed into AppControl.
   final _contextHolder = ContextHolder();
 
+  final factory = ControlFactory.of();
+
   String _locale;
   LocalizationArgs _localeArgs;
   bool _loading = true;
@@ -82,8 +84,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   @override
   void initState() {
     super.initState();
-
-    _initControl(widget.locales ?? {'en': null}, widget.entries ?? {}, widget.initializers ?? {});
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of((context) {
@@ -117,51 +117,36 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
       return root;
     });
+
+    _initControl();
   }
 
-  void _initControl(
-    Map<String, String> locales,
-    Map entries,
-    Map<Type, Initializer> initializers,
-  ) async {
+  void _initControl() async {
     DelayBlock block;
     if (widget.loaderDelay != null) {
       block = DelayBlock(widget.loaderDelay);
     }
-
-    final factory = ControlFactory.of(this);
 
     if (factory.isInitialized) {
       printDebug('-- reloading State of ControlBase');
       return; //TODO: solve this for hot reload
     }
 
-    final localizationAssets = List<LocalizationAsset>();
-    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
-
-    entries[BasePrefs] = BasePrefs();
-    entries[BaseLocalization] = BaseLocalization(
-      widget.defaultLocale ?? localizationAssets[0].locale,
-      localizationAssets,
-    );
-
-    initializers[ControlTheme] = widget.theme ?? (context) => ControlTheme(context);
-
-    factory.initialize(
-      items: entries,
-      initializers: initializers,
+    FlutterControl.init(
+      debug: widget.debug,
+      defaultLocale: widget.defaultLocale,
+      locales: widget.locales ?? {'en': null},
+      entries: widget.entries ?? {},
+      initializers: widget.initializers ?? {},
+      theme: widget.theme,
       injector: widget.injector,
     );
 
-    final localization = ControlProvider.get<BaseLocalization>();
-    localization.debug = widget.debug ?? debugMode;
-
-    _locale = localization.defaultLocale;
+    _locale = ControlProvider.get<BaseLocalization>().defaultLocale;
 
     _contextHolder.once((context) async {
       if (widget.loadLocalization) {
-        _localeArgs = await localization.loadDefaultLocalization();
-        _localeArgs = await localization.changeToSystemLocale(context);
+        _localeArgs = await FlutterControl.loadLocalization(context: context);
       }
 
       if (block != null) {
@@ -169,7 +154,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       }
 
       setState(() {
-        _locale = localization.locale;
+        _locale = _localeArgs.locale;
         _loading = false;
       });
     });

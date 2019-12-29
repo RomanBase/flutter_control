@@ -8,6 +8,68 @@ abstract class Injector {
   static Injector of(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
 }
 
+class FlutterControl {
+  static bool init({
+    bool debug: false,
+    String defaultLocale,
+    Map<String, String> locales: const {'en': null},
+    Map entries: const {},
+    Map<Type, Initializer> initializers: const {},
+    Initializer theme,
+    Injector injector,
+  }) {
+    assert(locales != null || locales.length > 0, "Locales can't be empty or NULL");
+    assert(entries != null, "Entries can't be NULL");
+    assert(initializers != null, "Initializers can't be NULL");
+
+    if (ControlFactory._instance.isInitialized) {
+      return false;
+    }
+
+    ControlFactory._instance.debug = debug;
+
+    final localizationAssets = List<LocalizationAsset>();
+    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
+
+    entries[BasePrefs] = BasePrefs();
+    entries[BaseLocalization] = BaseLocalization(
+      defaultLocale ?? localizationAssets[0].locale,
+      localizationAssets,
+    )..debug = debug;
+
+    initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
+
+    ControlFactory._instance.initialize(
+      items: entries,
+      initializers: initializers,
+      injector: injector,
+    );
+
+    return true;
+  }
+
+  static Future<LocalizationArgs> loadLocalization({
+    @required BuildContext context,
+    bool loadDefaultLocale: true,
+  }) async {
+    assert(ControlFactory._instance.isInitialized, 'Factory must be initialized !');
+
+    final localization = ControlProvider.get<BaseLocalization>();
+
+    assert(localization != null, 'Localization must be in Factory !');
+
+    LocalizationArgs args;
+
+    if (loadDefaultLocale) {
+      args = await localization.loadDefaultLocalization();
+    }
+
+    args = await localization.changeToSystemLocale(context);
+
+    return args;
+  }
+}
+
 /// Shortcut class to get objects from [ControlFactory]
 class ControlProvider<T> extends StatelessWidget {
   /// returns object of requested type by given [key] or [Type] from [ControlFactory].
@@ -97,6 +159,8 @@ class ControlFactory implements Disposable {
 
   /// Checks if Factory is initialized. [ControlFactory.initialize] can be called only once.
   bool get isInitialized => _initialized;
+
+  bool debug = false;
 
   /// Initializes default items and initializers in factory.
   void initialize({Map items, Map<Type, Initializer> initializers, Injector injector}) {
