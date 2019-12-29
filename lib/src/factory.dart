@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 typedef InitInjection<T> = void Function(T item, dynamic args);
@@ -8,27 +9,30 @@ abstract class Injector {
   static Injector of(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
 }
 
-class FlutterControl {
+class Control {
   static get isInitialized => ControlFactory._instance.isInitialized;
 
+  static get debug => ControlFactory._instance.debug;
+
   static bool init({
-    bool debug: false,
+    bool debug,
     String defaultLocale,
-    Map<String, String> locales: const {'en': null},
-    Map entries: const {},
-    Map<Type, Initializer> initializers: const {},
+    Map<String, String> locales,
+    Map entries,
+    Map<Type, Initializer> initializers,
     Initializer theme,
     Injector injector,
   }) {
-    assert(locales != null || locales.length > 0, "Locales can't be empty or NULL");
-    assert(entries != null, "Entries can't be NULL");
-    assert(initializers != null, "Initializers can't be NULL");
-
     if (isInitialized) {
       return false;
     }
 
+    debug ??= kDebugMode;
     ControlFactory._instance.debug = debug;
+
+    locales ??= {'en': null};
+    entries ??= {};
+    initializers ??= {};
 
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));

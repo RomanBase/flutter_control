@@ -1,6 +1,9 @@
 library flutter_control;
 
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
 import 'core.dart';
 
 export 'package:flutter/material.dart';
@@ -49,19 +52,6 @@ class ControlKey {
   static const public_key = Key('public');
 }
 
-bool get debugMode => !inRelease();
-
-bool inRelease({bool profileModeAsRelease: true}) {
-  bool result = profileModeAsRelease ? true : bool.fromEnvironment('dart.vm.product'); // profile and release mode
-
-  assert(() {
-    result = false; // debug mode
-    return true;
-  }());
-
-  return result;
-}
-
 T onPlatform<T>({
   Initializer<T> android,
   Initializer<T> ios,
@@ -107,7 +97,7 @@ T _platformFuncSwitch<T>(Initializer<T> platform, Initializer<T> alter, Initiali
 }
 
 void printDebug(Object object) {
-  if (debugMode) {
+  if (kDebugMode || Control.debug) {
     print(object);
   }
 }

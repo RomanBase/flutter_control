@@ -125,7 +125,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       block = DelayBlock(widget.loaderDelay);
     }
 
-    if (FlutterControl.isInitialized) {
+    if (Control.isInitialized) {
       if (block != null) {
         await block.finish();
       }
@@ -138,7 +138,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       return;
     }
 
-    FlutterControl.init(
+    Control.init(
       debug: widget.debug,
       defaultLocale: widget.defaultLocale,
       locales: widget.locales ?? {'en': null},
@@ -152,7 +152,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _contextHolder.once((context) async {
       if (widget.loadLocalization) {
-        _localeArgs = await FlutterControl.loadLocalization(context: context);
+        _localeArgs = await Control.loadLocalization(context: context);
       }
 
       if (block != null) {
