@@ -128,8 +128,12 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     }
 
     if (factory.isInitialized) {
-      printDebug('-- reloading State of ControlBase');
-      return; //TODO: solve this for hot reload
+      setState(() {
+        _localeArgs = ControlProvider.get<BaseLocalization>().asArgs();
+        _loading = false;
+      });
+
+      return;
     }
 
     FlutterControl.init(

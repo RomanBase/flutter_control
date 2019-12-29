@@ -76,6 +76,13 @@ class BaseLocalization with PrefsProvider {
   /// Default constructor
   BaseLocalization(this.defaultLocale, this.assets);
 
+  LocalizationArgs asArgs() => LocalizationArgs(
+        locale: locale,
+        isActive: isActive,
+        changed: false,
+        source: 'localization',
+      );
+
   /// Returns current Locale of device.
   Locale deviceLocale(BuildContext context) {
     return Localizations.localeOf(context, nullOk: true);
