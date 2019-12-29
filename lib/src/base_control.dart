@@ -128,6 +128,10 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     }
 
     if (factory.isInitialized) {
+      if (block != null) {
+        await block.finish();
+      }
+
       setState(() {
         _localeArgs = ControlProvider.get<BaseLocalization>().asArgs();
         _loading = false;
