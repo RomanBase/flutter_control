@@ -9,6 +9,8 @@ abstract class Injector {
 }
 
 class FlutterControl {
+  static get isInitialized => ControlFactory._instance.isInitialized;
+
   static bool init({
     bool debug: false,
     String defaultLocale,
@@ -22,7 +24,7 @@ class FlutterControl {
     assert(entries != null, "Entries can't be NULL");
     assert(initializers != null, "Initializers can't be NULL");
 
-    if (ControlFactory._instance.isInitialized) {
+    if (isInitialized) {
       return false;
     }
 
@@ -45,7 +47,7 @@ class FlutterControl {
       injector: injector,
     );
 
-    return true;
+    return isInitialized;
   }
 
   static Future<LocalizationArgs> loadLocalization({

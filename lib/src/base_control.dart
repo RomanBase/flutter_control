@@ -62,8 +62,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   /// Root BuildContext holder is passed into AppControl.
   final _contextHolder = ContextHolder();
 
-  final factory = ControlFactory.of();
-
   String _locale;
   LocalizationArgs _localeArgs;
   bool _loading = true;
@@ -127,7 +125,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       block = DelayBlock(widget.loaderDelay);
     }
 
-    if (factory.isInitialized) {
+    if (FlutterControl.isInitialized) {
       if (block != null) {
         await block.finish();
       }
