@@ -98,7 +98,7 @@ T _platformFuncSwitch<T>(Initializer<T> platform, Initializer<T> alter, Initiali
 }
 
 void printDebug(Object object) {
-  if (kDebugMode || Control.debug) {
+  if (kDebugMode && Control.debug) {
     print(object);
   }
 }
