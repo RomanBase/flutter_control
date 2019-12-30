@@ -78,8 +78,9 @@ class Control {
 
 /// Shortcut class to get objects from [ControlFactory]
 class ControlProvider<T> extends StatelessWidget {
-  /// returns object of requested type by given [key] or [Type] from [ControlFactory].
-  /// check [ControlFactory] for more info.
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
+  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
   /// nullable
   static T get<T>([dynamic key, dynamic args]) => ControlFactory._instance.get<T>(key, args);
 
@@ -89,13 +90,19 @@ class ControlProvider<T> extends StatelessWidget {
   /// returns key of stored object.
   static dynamic set<T>({dynamic key, @required dynamic value}) => ControlFactory._instance.set<T>(key: key, value: value);
 
-  /// returns new object of requested type via initializer in [ControlFactory].
+  /// returns new object of requested [Type] via initializer in [ControlFactory].
   /// nullable
   static T init<T>([dynamic args]) => ControlFactory._instance.init(args);
 
   /// Injects and initializes given [item] with [args].
   /// [Initializable.init] is called only when [args] are not null.
   static void inject<T>(dynamic item, {dynamic args}) => ControlFactory._instance.inject(item, args: args);
+
+  /// Executes sequence of functions to retrieve expect object.
+  /// Look up in [source] for item via [Parse.getArg].
+  /// Then [ControlFactory.get] / [ControlFactory.init] is executed.
+  /// nullable
+  static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => ControlFactory._instance.resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -236,9 +243,10 @@ class ControlFactory implements Disposable {
     return key;
   }
 
-  /// returns object of requested type by given key or by Type.
-  /// when [args] are not empty and object is [Initializable], then [Initializable.init] is called
-  /// when [T] is passed to initializer and [args] are null, then [key] is used as arguments for [CControlFactory.init].
+  /// Returns object of requested type by given [key] or by [Type].
+  /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
+  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
+  /// Finally object is Injected [ControlFactory.inject] with given [args].
   /// nullable
   T get<T>([dynamic key, dynamic args]) {
     if (key == null) {
@@ -284,8 +292,9 @@ class ControlFactory implements Disposable {
   }
 
   /// Injects and initializes given [item] with [args].
+  /// [Injector.inject] is called even if [args] are null.
   /// [Initializable.init] is called only when [args] are not null.
-  void inject<T>(dynamic item, {dynamic args}) {
+  void inject<T>(dynamic item, {dynamic args, bool force: true}) {
     _injector.inject<T>(item, args);
 
     if (item is Initializable && args != null) {
@@ -293,21 +302,20 @@ class ControlFactory implements Disposable {
     }
   }
 
-  /// Looks for item by [Type] in collection.
-  /// [includeFactory] to search in factory too.
-  /// [defaultValue] is returned if nothing found.
-  T find<T>(dynamic collection, {bool includeFactory: true, T defaultValue, Map args}) {
-    final item = Parse.getArg<T>(collection);
+  /// Executes sequence of functions to retrieve expect object.
+  /// Look up in [source] for item via [Parse.getArg].
+  /// Then [ControlFactory.get] and [ControlFactory.init] is executed.
+  /// Finally [ControlFactory.inject] is called.
+  /// nullable
+  T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) {
+    final item = Parse.getArg<T>(source, key: key);
 
     if (item != null) {
+      inject(item, args: args);
       return item;
     }
 
-    if (includeFactory) {
-      return get<T>(null, args) ?? defaultValue;
-    }
-
-    return defaultValue;
+    return get<T>(key, args) ?? defaultValue;
   }
 
   Initializer<T> findInitializer<T>() {

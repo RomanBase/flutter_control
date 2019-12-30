@@ -207,6 +207,11 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Returns context of this widget or [root] context that is stored in [AppControl]
   BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
 
+  /// Adds [arg] to this widget.
+  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
+  /// [args] are then parsed into [Map].
+  void addArg(dynamic args) => holder.addArg(args);
+
   /// Returns value by given key or type.
   /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
   T getArg<T>({String key, T defaultValue}) => holder.getArg(key: key, defaultValue: defaultValue);
@@ -214,12 +219,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Returns value by given key or type.
   /// Look up in [controllers] and [factory].
   /// Use [getArg] to look up in Widget's arguments.
-  T getControl<T>({String key, dynamic args}) => factory.find(controllers, includeFactory: true, args: args);
-
-  /// Adds [arg] to this widget.
-  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
-  /// [args] are then parsed into [Map].
-  void addArg(dynamic args) => holder.addArg(args);
+  T getControl<T>({dynamic key, dynamic args}) => ControlProvider.resolve<T>(controllers, key: key, args: args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
