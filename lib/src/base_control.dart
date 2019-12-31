@@ -89,7 +89,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
         final loader = widget.loader(context);
 
-        debugPrint('build loader');
+        printDebug('build loader');
 
         return loader;
       });
@@ -97,7 +97,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       _loadingBuilder = WidgetInitializer.of((context) {
         _contextHolder.changeContext(context);
 
-        debugPrint('build default loader');
+        printDebug('build default loader');
 
         return Center(
           child: CircularProgressIndicator(
@@ -111,7 +111,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       _contextHolder.changeContext(context);
       final root = widget.root(context);
 
-      debugPrint('build root');
+      printDebug('build root');
 
       return root;
     });

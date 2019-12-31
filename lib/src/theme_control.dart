@@ -146,12 +146,23 @@ class ControlTheme {
 
   AssetPath get asset => _asset ?? (_asset = AssetPath());
 
+  @protected
+  BuildContext get context => _context;
+
+  @protected
   set asset(value) => _asset = value;
+
+  @protected
+  set data(value) => _data = value;
+
+  @protected
+  set device(value) => _device = value;
 
   ControlTheme([this._context]);
 
   void invalidate([BuildContext context]) {
     _data = null;
+    _device = null;
     _context = context ?? ControlProvider.get<AppControl>().rootContext;
   }
 
