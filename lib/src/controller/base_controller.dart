@@ -40,7 +40,7 @@ abstract class StateNotifier {
 /// Extend this class to create custom controllers and models.
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class BaseControlModel with DisposeHandler implements Initializable, Subscriptionable {
+class BaseControlModel with DisposeHandler, Disposer implements Initializable, Subscriptionable {
   /// returns instance of [ControlFactory] if available.
   /// nullable
   ControlFactory get factory => ControlFactory.of(this);
@@ -260,5 +260,46 @@ mixin DisposeHandler implements Disposable {
   void softDispose() {}
 
   @override
-  void dispose() {}
+  void dispose() {
+    if (this is Disposer) {
+      (this as Disposer).executeDispose();
+    }
+  }
+}
+
+mixin Disposer {
+  List<Disposable> _disposables;
+
+  void autoDispose(List<Disposable> disposables) {
+    if (_disposables == null) {
+      _disposables = disposables;
+    } else {
+      _disposables.addAll(disposables);
+    }
+  }
+
+  void addToDispose(Disposable disposable) {
+    if (_disposables == null) {
+      _disposables = List<Disposable>();
+    }
+
+    _disposables.add(disposable);
+  }
+
+  void removeFromDispose(Disposable disposable) {
+    _disposables?.remove(disposable);
+  }
+
+  void executeDispose() {
+    _disposables.forEach((item) => item.dispose());
+    _disposables.clear();
+  }
+}
+
+extension DisposableExt on Disposable {
+  dynamic disposeWith(Disposer disposer) {
+    disposer.addToDispose(this);
+
+    return this;
+  }
 }
