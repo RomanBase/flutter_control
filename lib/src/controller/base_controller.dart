@@ -14,14 +14,6 @@ abstract class Subscriptionable {
   void subscribe(dynamic object) {}
 }
 
-/// Standard disposable implementation.
-abstract class Disposable {
-  /// Used to clear and dispose object.
-  /// After this method call is object typically unusable and ready for GC.
-  /// Can be called multiple times!
-  void dispose();
-}
-
 /// Base abstract class for communication between Controller - [StateController] and [State].
 /// Controller can notify State about changes.
 /// This class needs to be implemented in State.
@@ -109,6 +101,7 @@ class BaseController extends BaseControlModel {
   @override
   @mustCallSuper
   void dispose() {
+    super.dispose();
     _isInitialized = false;
   }
 }
@@ -237,69 +230,5 @@ mixin RouteController on BaseControlModel {
     super.dispose();
 
     _navigator = null;
-  }
-}
-
-mixin DisposeHandler implements Disposable {
-  bool get preventDispose => false;
-
-  bool get preferSoftDispose => false;
-
-  void requestDispose() {
-    if (preventDispose) {
-      return;
-    }
-
-    if (preferSoftDispose) {
-      softDispose();
-    } else {
-      dispose();
-    }
-  }
-
-  void softDispose() {}
-
-  @override
-  void dispose() {
-    if (this is Disposer) {
-      (this as Disposer).executeDispose();
-    }
-  }
-}
-
-mixin Disposer {
-  List<Disposable> _disposables;
-
-  void autoDispose(List<Disposable> disposables) {
-    if (_disposables == null) {
-      _disposables = disposables;
-    } else {
-      _disposables.addAll(disposables);
-    }
-  }
-
-  void addToDispose(Disposable disposable) {
-    if (_disposables == null) {
-      _disposables = List<Disposable>();
-    }
-
-    _disposables.add(disposable);
-  }
-
-  void removeFromDispose(Disposable disposable) {
-    _disposables?.remove(disposable);
-  }
-
-  void executeDispose() {
-    _disposables.forEach((item) => item.dispose());
-    _disposables.clear();
-  }
-}
-
-extension DisposableExt on Disposable {
-  dynamic disposeWith(Disposer disposer) {
-    disposer.addToDispose(this);
-
-    return this;
   }
 }

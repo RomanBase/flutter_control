@@ -16,6 +16,7 @@ export './src/base_prefs.dart';
 export './src/controller/action_control.dart';
 export './src/controller/base_controller.dart';
 export './src/controller/base_model.dart';
+export './src/controller/disposable.dart';
 export './src/controller/field_control.dart';
 export './src/controller/route_control.dart';
 export './src/entity/menu.dart';
