@@ -7,7 +7,7 @@ typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings s
 
 //TODO: documentation is old and don't match now..
 /// Abstract class for basic type of navigation.
-abstract class RouteNavigator {
+abstract class ControlNavigator {
   /// Pushes route into current Navigator.
   /// [route] - specific route: type, settings, transition etc.
   /// [root] - pushes route into root Navigator - onto top of everything.
@@ -34,11 +34,11 @@ abstract class RouteNavigator {
   void closeRoute(Route route, [dynamic result]);
 }
 
-/// Ties up [RouteNavigator] and [PageRouteProvider].
+/// Ties up [ControlNavigator] and [PageRouteProvider].
 /// [PageRouteProvider.builder] is wrapped and Widget is initialized during build phase.
 class RouteHandler {
   /// Implementation of navigator.
-  final RouteNavigator navigator;
+  final ControlNavigator navigator;
 
   /// Implementation of provider.
   final PageRouteProvider provider;
@@ -50,11 +50,11 @@ class RouteHandler {
   /// Default constructor.
   /// [navigator] and [provider] must be specified.
   RouteHandler(this.navigator, this.provider) {
-    assert(navigator != null, 'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
+    assert(navigator != null, 'Ensure that your widget implements [ControlNavigator] or is with [RouteNavigator] mixin.');
     assert(provider != null);
   }
 
-  /// [RouteNavigator.openRoute]
+  /// [ControlNavigator.openRoute]
   Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
@@ -71,7 +71,7 @@ class RouteHandler {
     return result;
   }
 
-  /// [RouteNavigator.openRoot]
+  /// [ControlNavigator.openRoot]
   Future<dynamic> openRoot({dynamic args}) {
     debugPrint("open root: ${provider.identifier} from $navigator");
 
@@ -86,7 +86,7 @@ class RouteHandler {
     return result;
   }
 
-  /// [RouteNavigator.openDialog]
+  /// [ControlNavigator.openDialog]
   Future<dynamic> openDialog({bool root: false, DialogType type, dynamic args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
@@ -153,5 +153,5 @@ class PageRouteProvider {
   }
 
   /// Initializes [RouteHandler] with given [navigator] and this route provider.
-  RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
+  RouteHandler navigator(ControlNavigator navigator) => RouteHandler(navigator, this);
 }

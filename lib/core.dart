@@ -8,19 +8,17 @@ import 'core.dart';
 
 export 'package:flutter/material.dart';
 
-export './src/app_base.dart';
-export './src/app_control.dart';
 export './src/base_control.dart';
 export './src/base_localization.dart';
 export './src/base_prefs.dart';
+export './src/control.dart';
+export './src/control_broadcast.dart';
 export './src/controller/action_control.dart';
-export './src/controller/base_controller.dart';
 export './src/controller/base_model.dart';
+export './src/controller/control_model.dart';
 export './src/controller/disposable.dart';
 export './src/controller/field_control.dart';
 export './src/controller/route_control.dart';
-export './src/entity/menu.dart';
-export './src/factory.dart';
 export './src/theme_control.dart';
 export './src/util/device.dart';
 export './src/util/future_block.dart';

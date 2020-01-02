@@ -320,12 +320,12 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 class FieldStreamBuilder<T> extends StreamBuilder<T> {
   FieldStreamBuilder({
     Key key,
-    @required FieldControl<T> controller,
+    @required FieldControl<T> control,
     @required AsyncWidgetBuilder<T> builder,
   }) : super(
           key: key,
-          initialData: controller._value,
-          stream: controller.stream,
+          initialData: control._value,
+          stream: control.stream,
           builder: builder,
         );
 
@@ -343,13 +343,13 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 
   FieldBuilder({
     Key key,
-    @required FieldControl<T> controller,
+    @required FieldControl<T> control,
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
     this.nullOk: false,
   }) : super(
             key: key,
-            controller: controller,
+            control: control,
             builder: (context, snapshot) {
               if (snapshot.hasData || nullOk) {
                 return builder(context, snapshot.data);
@@ -363,12 +363,12 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
             });
 }
 
-/// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
+/// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
-  final List<FieldControl> controllers;
+  final List<FieldControl> controls;
   final ControlWidgetBuilder builder; //todo: T
 
-  const FieldBuilderGroup({Key key, @required this.controllers, @required this.builder}) : super(key: key);
+  const FieldBuilderGroup({Key key, @required this.controls, @required this.builder}) : super(key: key);
 
   @override
   _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
@@ -378,7 +378,7 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
   List _values;
   final _subs = List<FieldSubscription>();
 
-  List _mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
+  List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
@@ -386,7 +386,7 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
 
     _values = _mapValues();
 
-    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
+    widget.controls.forEach((controller) => _subs.add(controller.subscribe(
           (data) => setState(() {
             _values = _mapValues();
           }),
@@ -660,12 +660,12 @@ class ListControl<T> extends FieldControl<List<T>> {
 class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
   ListBuilder({
     Key key,
-    @required FieldControl<List<T>> controller,
+    @required FieldControl<List<T>> control,
     @required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder noData,
   }) : super(
             key: key,
-            controller: controller,
+            control: control,
             builder: (context, snapshot) {
               if (snapshot.hasData && snapshot.data.length > 0) {
                 return builder(context, snapshot.data);
@@ -725,6 +725,7 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   void unknown({String msg}) => setStatus(LoadingStatus.unknown, msg: msg);
 }
 
+//TODO: refactor
 /// Builder for [LoadingControl].
 /// [LoadingStatus]
 /// [FieldStreamBuilder]
@@ -733,11 +734,11 @@ class LoadingStackBuilder extends FieldStreamBuilder<LoadingStatus> {
 
   LoadingStackBuilder({
     Key key,
-    @required LoadingControl controller,
+    @required LoadingControl control,
     @required this.children,
   }) : super(
             key: key,
-            controller: controller,
+            control: control,
             builder: (context, snapshot) {
               if (children == null || children.length == 0) {
                 return null;
@@ -758,6 +759,7 @@ class LoadingStackBuilder extends FieldStreamBuilder<LoadingStatus> {
             });
 }
 
+//TODO: refactor
 /// Builder for [LoadingControl].
 /// [LoadingStatus]
 /// [FieldStreamBuilder]
@@ -770,7 +772,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
 
   LoadingBuilder({
     Key key,
-    @required LoadingControl controller,
+    @required LoadingControl control,
     this.progress,
     this.done,
     this.error,
@@ -778,7 +780,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
     this.unknown,
   }) : super(
           key: key,
-          controller: controller,
+          control: control,
           builder: (context, snapshot) {
             final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
 
@@ -794,9 +796,9 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
               case LoadingStatus.error:
                 return error != null
                     ? error(context)
-                    : controller.hasMessage
+                    : control.hasMessage
                         ? Center(
-                            child: Text(controller.message),
+                            child: Text(control.message),
                           )
                         : null;
               case LoadingStatus.outdated:
@@ -920,16 +922,6 @@ class IntegerControl extends FieldControl<int> {
 
   IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp}) {
     setInRange(value);
-  }
-
-  int operator +(int num) {
-    setValue(value + num);
-    return value;
-  }
-
-  int operator -(int num){
-    setValue(value + num);
-    return value;
   }
 
   void setValue(int value) {

@@ -57,6 +57,8 @@ class ControlTheme {
 
   final iconSizeLarge = 32.0;
 
+  final iconSizeSmall = 18.0;
+
   final iconBounds = 48.0;
 
   final iconLauncher = 144.0;
@@ -88,18 +90,6 @@ class ControlTheme {
   ////////////////////////////////////////////////////////////////////////////////
 
   final fontName = 'GoogleSans';
-
-  final fontSize = 14.0;
-
-  final fontSizeSmall = 12.0;
-
-  final fontSizeMid = 18.0;
-
-  final fontSizeLarge = 24.0;
-
-  final fontSizeExtra = 28.0;
-
-  final fontSizeSuper = 36.0;
 
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -163,7 +153,7 @@ class ControlTheme {
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
-    _context = context ?? ControlProvider.get<AppControl>().rootContext;
+    _context = context ?? ControlProvider.get<ControlBase>().rootContext;
   }
 
   @override

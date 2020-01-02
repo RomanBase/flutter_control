@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_control/core.dart';
 
 /// Subscription to [ActionControl]
-class ControlSubscription<T> implements Disposable {
+class ActionSubscription<T> implements Disposable {
   ActionControl<T> _parent;
   ValueCallback<T> _action;
 
@@ -53,14 +53,14 @@ abstract class ActionControlSub<T> {
   T get value;
 
   /// Subscribes event for changes.
-  /// Returns [ControlSubscription] for later cancellation.
+  /// Returns [ActionSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ControlSubscription<T> subscribe(ValueCallback<T> action);
+  ActionSubscription<T> subscribe(ValueCallback<T> action);
 
   /// Subscribes event for just one next change.
-  /// Returns [ControlSubscription] for later cancellation.
+  /// Returns [ActionSubscription] for later cancellation.
   /// If [current] is true and [value] isn't null, then given listener is notified immediately.
-  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true});
+  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true});
 }
 
 class ActionControlSubscriber<T> implements ActionControlSub<T> {
@@ -72,10 +72,10 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
   T get value => _control.value;
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T> action) => _control.subscribe(action);
+  ActionSubscription<T> subscribe(ValueCallback<T> action) => _control.subscribe(action);
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) => _control.once(action, current: current);
+  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) => _control.once(action, current: current);
 }
 
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
@@ -94,7 +94,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   bool get isEmpty => _value == null;
 
   /// Current subscription.
-  ControlSubscription<T> _sub;
+  ActionSubscription<T> _sub;
 
   /// Global subscription.
   GlobalSubscription<T> _globalSub;
@@ -141,8 +141,8 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T> action) {
-    _sub = ControlSubscription<T>()
+  ActionSubscription<T> subscribe(ValueCallback<T> action) {
+    _sub = ActionSubscription<T>()
       .._parent = this
       .._action = action;
 
@@ -154,8 +154,8 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   }
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
-    final sub = ControlSubscription<T>()
+  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
+    final sub = ActionSubscription<T>()
       .._parent = this
       .._action = action
       .._keep = false;
@@ -214,7 +214,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   /// Removes specified sub from listeners.
   /// If no sub is specified then removes all.
-  void cancel([ControlSubscription<T> subscription]) {
+  void cancel([ActionSubscription<T> subscription]) {
     if (_sub != null) {
       _sub._clear();
       _sub = null;
@@ -239,12 +239,12 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
 /// Broadcast version of [ActionControl]
 class _ActionControlBroadcast<T> extends ActionControl<T> {
-  final _list = List<ControlSubscription<T>>();
+  final _list = List<ActionSubscription<T>>();
 
   _ActionControlBroadcast._([T value]) : super._(value);
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T> action) {
+  ActionSubscription<T> subscribe(ValueCallback<T> action) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
 
@@ -258,7 +258,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ControlSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
+  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
     final sub = super.once(action, current: current);
     _sub = null; // just clear unused sub reference
 
@@ -282,7 +282,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  void cancel([ControlSubscription<T> subscription]) {
+  void cancel([ActionSubscription<T> subscription]) {
     if (subscription == null) {
       _list.forEach((sub) => sub._clear());
       _list.clear();
@@ -304,32 +304,32 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// [ActionControl.single] - single sub.
 /// [ActionControl.broadcast] - multiple subs.
 /// [ControlWidgetBuilder] - returns Widget based on given value.
-class ControlBuilder<T> extends StatefulWidget {
-  final ActionControlSub<T> controller;
+class ActionBuilder<T> extends StatefulWidget {
+  final ActionControlSub<T> control;
   final ControlWidgetBuilder<T> builder;
 
-  const ControlBuilder({
+  const ActionBuilder({
     Key key,
-    @required this.controller,
+    @required this.control,
     @required this.builder,
   }) : super(key: key);
 
   @override
-  _ControlBuilderState createState() => _ControlBuilderState<T>();
+  _ActionBuilderState createState() => _ActionBuilderState<T>();
 
   Widget build(BuildContext context, T value) => builder(context, value);
 }
 
-class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
+class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   T _value;
 
-  ControlSubscription _sub;
+  ActionSubscription _sub;
 
   @override
   void initState() {
     super.initState();
 
-    _sub = widget.controller.subscribe((value) {
+    _sub = widget.control.subscribe((value) {
       setState(() {
         _value = value;
       });
@@ -347,14 +347,14 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
   }
 }
 
-/// Subscribes to all given [controllers] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
+/// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ControlBuilderGroup extends StatefulWidget {
-  final List<ActionControlSub> controllers;
+  final List<ActionControlSub> controls;
   final ControlWidgetBuilder<List> builder;
 
   const ControlBuilderGroup({
     Key key,
-    @required this.controllers,
+    @required this.controls,
     @required this.builder,
   }) : super(key: key);
 
@@ -366,9 +366,9 @@ class ControlBuilderGroup extends StatefulWidget {
 
 class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   List _values;
-  final _subs = List<ControlSubscription>();
+  final _subs = List<ActionSubscription>();
 
-  List _mapValues() => widget.controllers.map((item) => item.value).toList(growable: false);
+  List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
@@ -376,7 +376,7 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
 
     _values = _mapValues();
 
-    widget.controllers.forEach((controller) => _subs.add(controller.subscribe(
+    widget.controls.forEach((controller) => _subs.add(controller.subscribe(
           (data) => setState(() {
             _values = _mapValues();
           }),
@@ -416,16 +416,16 @@ class BroadcastBuilder<T> extends StatefulWidget {
 class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
   T _value;
 
-  ActionControl controller;
-  ControlSubscription _sub;
+  ActionControl control;
+  ActionSubscription _sub;
 
   @override
   void initState() {
     super.initState();
 
-    controller = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
+    control = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
 
-    _sub = controller.subscribe((value) {
+    _sub = control.subscribe((value) {
       setState(() {
         _value = value;
       });
@@ -440,6 +440,6 @@ class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
     super.dispose();
 
     _sub.cancel();
-    controller.dispose();
+    control.dispose();
   }
 }

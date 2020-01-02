@@ -8,10 +8,10 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
         builder: (context) => SettingsPage(),
       );
 
-  SettingsController get controller => controllers[0];
+  SettingsController get controller => controls[0];
 
   @override
-  List<BaseController> initControllers() {
+  List<BaseControl> initControllers() {
     return [SettingsController()];
   }
 

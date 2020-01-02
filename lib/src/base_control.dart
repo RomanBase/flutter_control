@@ -1,19 +1,40 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
+/// Holder of current root context.
+final _context = ActionControl<BuildContext>.broadcast();
+
+const _baseKey = GlobalObjectKey('base');
+
+typedef AppBuilder = Widget Function(BuildContext context, Widget home);
 
 class ControlBase extends StatefulWidget {
+  static ControlBase of(BuildContext context) {
+    ControlBase base;
+
+    if (context != null) {
+      base = context.findAncestorWidgetOfExactType<ControlBase>();
+    }
+
+    return base ?? ControlProvider.get<ControlBase>();
+  }
+
+  /// Returns current context from [contextHolder]
+  BuildContext get rootContext => _context.value;
+
+  /// Sets new root context to [contextHolder]
+  set rootContext(BuildContext context) => _context.value = context;
+
+  final bool debug;
   final String defaultLocale;
   final Map<String, String> locales;
   final bool loadLocalization;
   final Map entries;
   final Map<Type, Initializer> initializers;
-  final bool debug;
+  final Injector injector;
+  final Initializer<ControlTheme> theme;
   final Duration loaderDelay;
   final WidgetBuilder loader;
-  final Initializer<ControlTheme> theme;
-  final Injector injector;
   final WidgetBuilder root;
   final AppBuilder app;
   final VoidCallback onInit;
@@ -45,10 +66,18 @@ class ControlBase extends StatefulWidget {
     @required this.root,
     @required this.app,
     this.onInit,
-  }) : super();
+  }) : super(key: _baseKey);
 
   @override
   State<StatefulWidget> createState() => ControlBaseState();
+
+  ActionSubscription<BuildContext> subscribeContextChanges(ValueCallback<BuildContext> callback) => _context.subscribe(callback);
+
+  ActionSubscription<BuildContext> subscribeNextContextChange(ValueCallback<BuildContext> callback) => _context.once(callback);
+
+  void notifyControlState() {
+    (_baseKey.currentState as StateNotifier)?.notifyState();
+  }
 }
 
 /// Creates State for BaseApp.
@@ -56,14 +85,6 @@ class ControlBase extends StatefulWidget {
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
 class ControlBaseState extends State<ControlBase> implements StateNotifier {
-  /// Root GlobalKey is passed into AppControl.
-  final _rootKey = GlobalObjectKey('root');
-
-  /// Root BuildContext holder is passed into AppControl.
-  final _contextHolder = ContextHolder();
-
-  String _locale;
-  LocalizationArgs _localeArgs;
   bool _loading = true;
 
   WidgetInitializer _rootBuilder;
@@ -71,32 +92,25 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
   @override
   void notifyState([state]) {
-    setState(() {
-      final localization = ControlProvider.get<BaseLocalization>();
-      if (localization != null) {
-        _locale = localization.locale;
-      }
-    });
+    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
 
+    ControlProvider.set<ControlBase>(value: widget);
+
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of((context) {
-        _contextHolder.changeContext(context);
-
-        final loader = widget.loader(context);
-
+        widget.rootContext = context;
         printDebug('build loader');
 
-        return loader;
+        return widget.loader(context);
       });
     } else {
       _loadingBuilder = WidgetInitializer.of((context) {
-        _contextHolder.changeContext(context);
-
+        widget.rootContext = context;
         printDebug('build default loader');
 
         return Center(
@@ -108,15 +122,40 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     }
 
     _rootBuilder = WidgetInitializer.of((context) {
-      _contextHolder.changeContext(context);
-      final root = widget.root(context);
-
+      widget.rootContext = context;
       printDebug('build root');
 
-      return root;
+      return widget.root(context);
     });
 
     _initControl();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    printDebug('build base');
+
+    return ControlScope(
+      locale: ControlProvider.get<BaseLocalization>().locale,
+      child: widget.app(
+        context,
+        Builder(
+          builder: (context) => _buildHomeWidget(context),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeWidget(BuildContext context) {
+    return _loading
+        ? _loadingBuilder.getWidget(context, args: {
+            'loading': _loading,
+            'debug': widget.debug,
+          })
+        : _rootBuilder.getWidget(context, args: {
+            'loading': _loading,
+            'debug': widget.debug,
+          });
   }
 
   void _initControl() async {
@@ -131,7 +170,6 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       }
 
       setState(() {
-        _localeArgs = ControlProvider.get<BaseLocalization>().asArgs();
         _loading = false;
       });
 
@@ -148,11 +186,9 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       injector: widget.injector,
     );
 
-    _locale = ControlProvider.get<BaseLocalization>().defaultLocale;
-
-    _contextHolder.once((context) async {
+    widget.subscribeNextContextChange((context) async {
       if (widget.loadLocalization) {
-        _localeArgs = await Control.loadLocalization(context: context);
+        await Control.loadLocalization(context: context);
       }
 
       if (block != null) {
@@ -160,51 +196,20 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       }
 
       setState(() {
-        _locale = _localeArgs.locale;
         _loading = false;
       });
     });
   }
+}
+
+class ControlScope extends InheritedWidget {
+  final String locale;
+
+  const ControlScope({Widget child, this.locale}) : super(key: const ObjectKey('scope'), child: child);
 
   @override
-  Widget build(BuildContext context) {
-    return AppControl.init(
-      rootKey: _rootKey,
-      contextHolder: _contextHolder,
-      rootStateNotifier: this,
-      child: widget.app(context, _rootKey, _buildHomeWidget()),
-    );
-  }
-
-  //TODO: rework
-  Widget _buildHomeWidget() {
-    return _loading
-        ? Builder(builder: (context) {
-            return _loadingBuilder.getWidget(context, args: {
-              'loading': _loading,
-              'locale': _locale,
-              'debug': widget.debug,
-            });
-          })
-        : Builder(builder: (context) {
-            return _rootBuilder.getWidget(context, args: {
-              'loading': _loading,
-              'locale': _locale,
-              'locale_result': _localeArgs ??
-                  LocalizationArgs(
-                    locale: _locale,
-                    source: 'asset',
-                    isActive: false,
-                    changed: false,
-                  ),
-              'debug': widget.debug,
-            });
-          });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _contextHolder.dispose();
+  bool updateShouldNotify(ControlScope oldWidget) {
+    printDebug('should notify - $locale : ${locale != oldWidget.locale}');
+    return locale != oldWidget.locale;
   }
 }

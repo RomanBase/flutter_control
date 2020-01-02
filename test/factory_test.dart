@@ -8,7 +8,7 @@ final broadcast = factory.get<ControlBroadcast>();
 void main() {
   factory.initialize(
     items: {
-      BaseControlModel: BaseController(),
+      ControlModel: BaseControl(),
       _InjectModel: _InjectModel(),
       'key': 'value',
     },
@@ -24,10 +24,10 @@ void main() {
     });
 
     test('get', () {
-      final itemByType = factory.get<BaseControlModel>();
-      final itemByKey = factory.get(BaseControlModel);
+      final itemByType = factory.get<ControlModel>();
+      final itemByKey = factory.get(ControlModel);
       final itemBySKey = factory.get('key');
-      final itemByExactType = factory.get<BaseController>();
+      final itemByExactType = factory.get<BaseControl>();
 
       expect(itemByType, isNotNull);
       expect(itemByKey, isNotNull);
@@ -37,7 +37,7 @@ void main() {
       expect(itemByExactType.isInitialized, isTrue);
 
       expect(itemByType == itemByKey, isTrue);
-      expect(itemByType.runtimeType, BaseController);
+      expect(itemByType.runtimeType, BaseControl);
 
       final itemInit = factory.init<_ArgModel>('init');
       final itemGetInit = factory.get<_ArgModel>('init');
@@ -66,11 +66,11 @@ void main() {
     });
 
     test('swap', () {
-      factory.set(key: BaseControlModel, value: _SwapController());
+      factory.set(key: ControlModel, value: _SwapController());
 
-      final itemByType = factory.get<BaseControlModel>();
-      final itemByKey = factory.get(BaseControlModel);
-      final itemByExactType = factory.get<BaseController>();
+      final itemByType = factory.get<ControlModel>();
+      final itemByKey = factory.get(ControlModel);
+      final itemByExactType = factory.get<BaseControl>();
 
       expect(itemByType, isNotNull);
       expect(itemByKey, isNotNull);
@@ -194,15 +194,15 @@ class _ArgModel<T> extends BaseModel {
 
 class _InjectModel extends _InitModel {
   BaseModel initValue;
-  BaseController itemValue;
+  BaseControl itemValue;
 
   @override
   void init(Map args) {
     super.init(args);
 
     initValue = factory.init<_ArgModel>();
-    itemValue = factory.get<BaseController>();
+    itemValue = factory.get<BaseControl>();
   }
 }
 
-class _SwapController extends BaseController {}
+class _SwapController extends BaseControl {}

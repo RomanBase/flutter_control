@@ -20,7 +20,7 @@ class FocusController extends FocusNode {
 /// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
 //todo: extend TextEditingController ?
-class InputControl extends BaseControlModel with StateController {
+class InputControl extends ControlModel with StateControl {
   @override
   bool get preferSoftDispose => true;
 
@@ -443,7 +443,7 @@ class InputField extends ControlWidget with ThemeProvider {
   }) : super(key: key);
 
   @override
-  List<BaseControlModel> initControllers() {
+  List<ControlModel> initControllers() {
     controller._obscure = obscureText;
 
     return [controller];

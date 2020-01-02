@@ -56,7 +56,7 @@ void main() {
       expect(widget.getArg(key: 'init'), isTrue);
 
       expect(controller, isNotNull);
-      expect(widget.controllers.length, 1);
+      expect(widget.controls.length, 1);
       expect(controller.isInitialized, isTrue);
       expect(controller.value, isTrue);
 
@@ -71,7 +71,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.controller;
+      final controller = widget.control;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
@@ -89,7 +89,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.controllers[0] as TestController;
+      final controller = widget.controls[0] as TestController;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
@@ -128,7 +128,7 @@ class TestWidget extends ControlWidget {
   }
 
   @override
-  List<BaseControlModel> initControllers() {
+  List<ControlModel> initControllers() {
     return [TestController()];
   }
 }
@@ -151,7 +151,7 @@ class TestSingleWidget extends SingleControlWidget<TestController> {
   }
 }
 
-class TestController extends BaseController {
+class TestController extends BaseControl {
   bool value;
 
   @override

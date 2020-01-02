@@ -47,12 +47,12 @@ class WidgetControlHolder implements Disposable {
     return route != null;
   }
 
-  List<BaseControlModel> findControls() {
+  List<ControlModel> findControls() {
     if (args == null) {
       return [];
     }
 
-    return args.values.where((item) => item is BaseControlModel).toList(growable: false).cast<BaseControlModel>();
+    return args.values.where((item) => item is ControlModel).toList(growable: false).cast<ControlModel>();
   }
 
   @override
@@ -63,13 +63,13 @@ class WidgetControlHolder implements Disposable {
 }
 
 /// [ControlWidget] with just one init Controller.
-abstract class SingleControlWidget<T extends BaseControlModel> extends ControlWidget {
-  T get controller => controllers[0];
+abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
+  T get control => controls[0];
 
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<BaseControlModel> initControllers() {
+  List<ControlModel> initControllers() {
     return [initController()];
   }
 
@@ -90,14 +90,14 @@ abstract class BaseControlWidget extends ControlWidget {
   BaseControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<BaseControlModel> initControllers() => null;
+  List<ControlModel> initControllers() => null;
 }
 
-/// Base [StatefulWidget] to cooperate with [BaseController].
-/// [BaseController]
-/// [StateController]
+/// Base [StatefulWidget] to cooperate with [BaseControl].
+/// [BaseControl]
+/// [StateControl]
 ///
-/// [RouteControl] & [RouteController]
+/// [RouteNavigator] & [RouteControl]
 /// [RouteHandler] & [PageRouteProvider]
 ///
 /// [ControlFactory]
@@ -121,7 +121,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControllers]
-  List<BaseControlModel> get controllers => holder.state?.controllers;
+  List<ControlModel> get controls => holder.state?.controllers;
 
   /// Context of Widget's [State]
   BuildContext get context => state?.context;
@@ -129,10 +129,6 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Instance of [ControlFactory].
   @protected
   ControlFactory get factory => ControlFactory.of(this);
-
-  /// Instance of [AppControl].
-  @protected
-  AppControl get control => AppControl.of(context);
 
   /// Default constructor
   ControlWidget({Key key, dynamic args}) : super(key: key) {
@@ -142,7 +138,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
   @protected
-  List<BaseControlModel> initControllers();
+  List<ControlModel> initControllers();
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
@@ -161,16 +157,16 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onInitState(ControlState state) {
     notifyWidget(state);
 
-    controllers?.remove(null);
-    controllers?.forEach((controller) {
+    controls?.remove(null);
+    controls?.forEach((controller) {
       controller.init(holder.args);
       controller.subscribe(this);
 
       if (state is TickerProvider) {
-        (controller as BaseController).onTickerInitialized(state as TickerProvider);
+        (controller as BaseControl).onTickerInitialized(state as TickerProvider);
       }
 
-      if (controller is StateController) {
+      if (controller is StateControl) {
         controller.subscribe(state);
         state._createSub(controller);
         controller.onStateInitialized();
@@ -205,7 +201,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onStateChanged(dynamic state) {}
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? control.rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) => root ? ControlBase.of(context).rootContext ?? context : context;
 
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
@@ -217,17 +213,17 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   T getArg<T>({String key, T defaultValue}) => holder.getArg(key: key, defaultValue: defaultValue);
 
   /// Returns value by given key or type.
-  /// Look up in [controllers] and [factory].
+  /// Look up in [controls] and [factory].
   /// Use [getArg] to look up in Widget's arguments.
-  T getControl<T>({dynamic key, dynamic args}) => ControlProvider.resolve<T>(controllers, key: key, args: args);
+  T getControl<T>({dynamic key, dynamic args}) => ControlProvider.resolve<T>(controls, key: key, args: args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected
   Widget build(BuildContext context);
 
-  /// Disposes and removes all [controllers].
-  /// Controller can prevent disposing [BaseController.preventDispose].
+  /// Disposes and removes all [controls].
+  /// Controller can prevent disposing [BaseControl.preventDispose].
   @override
   @mustCallSuper
   void dispose() {
@@ -238,10 +234,10 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
 class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
-  /// List of Subscriptions from [StateController]s
-  List<ControlSubscription> _stateSubs;
+  /// List of Subscriptions from [StateControl]s
+  List<ActionSubscription> _stateSubs;
 
-  List<BaseControlModel> controllers;
+  List<ControlModel> controllers;
 
   @override
   void initState() {
@@ -254,7 +250,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     controllers = widget.initControllers();
 
     if (controllers == null) {
-      controllers = <BaseControlModel>[];
+      controllers = <ControlModel>[];
     }
 
     final argControls = widget.holder.findControls();
@@ -293,16 +289,16 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     return widget.build(context);
   }
 
-  void _createSub(StateController controller) {
+  void _createSub(StateControl controller) {
     if (_stateSubs == null) {
-      _stateSubs = List<ControlSubscription>();
+      _stateSubs = List<ActionSubscription>();
     }
 
     _stateSubs.add(controller.subscribeStateNotifier(notifyState));
   }
 
   /// Disposes and removes all [controllers].
-  /// Controller can prevent disposing [BaseController.preventDispose].
+  /// Controller can prevent disposing [BaseControl.preventDispose].
   /// Then disposes Widget.
   @override
   @mustCallSuper
@@ -353,7 +349,7 @@ mixin SingleTickerControl on ControlWidget {
 }
 
 /// Mixin class to enable navigation for [ControlWidget]
-mixin RouteControl on ControlWidget implements RouteNavigator {
+mixin RouteNavigator on ControlWidget implements ControlNavigator {
   NavigatorState get navigator => Navigator.of(context);
 
   NavigatorState get rootNavigator => Navigator.of(getContext(root: true));

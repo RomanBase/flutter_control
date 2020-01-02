@@ -6,11 +6,11 @@ void main() {
 
   group('Field Control', () {
     test('value modification', () {
-      final controller = FieldControl<int>(1);
+      final control = FieldControl<int>(1);
 
-      controller.setValue(controller.value + 1);
+      control.setValue(control.value + 1);
 
-      expect(controller.value, 2);
+      expect(control.value, 2);
     });
 
     test('value sub', () {

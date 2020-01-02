@@ -3,13 +3,13 @@ import 'package:flutter_control/core.dart';
 import 'cards_controller.dart';
 import 'settings_page.dart';
 
-class CardsPage extends SingleControlWidget<CardsController> with RouteControl, ThemeProvider {
+class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator, ThemeProvider {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: FieldBuilder<String>(
-          controller: controller.countLabel,
+          control: control.countLabel,
           builder: (context, value) => Text('${localize('title')} - $value'),
         ),
         actions: <Widget>[
@@ -23,11 +23,11 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl, 
         children: <Widget>[
           Expanded(
             child: ListBuilder<CardModel>(
-              controller: controller.cards,
+              control: control.cards,
               builder: (context, items) {
                 return ListView.builder(
-                  itemCount: controller.cards.length,
-                  itemBuilder: (context, index) => CardWidget(controller.cards[index]),
+                  itemCount: control.cards.length,
+                  itemBuilder: (context, index) => CardWidget(control.cards[index]),
                 );
               },
               noData: (context) => Center(
@@ -39,13 +39,13 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl, 
             color: Colors.grey,
             padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingHalf),
             child: InputField(
-              controller: controller.input,
+              controller: control.input,
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: controller.addCard,
+        onPressed: control.addCard,
         child: Icon(Icons.add),
       ),
     );
@@ -58,7 +58,7 @@ class CardWidget extends BaseControlWidget with ThemeProvider{
   CardWidget(this.item) : super(key: ObjectKey(item));
 
   @override
-  List<BaseControlModel> initControllers() => [item];
+  List<ControlModel> initControllers() => [item];
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +83,13 @@ class CardWidget extends BaseControlWidget with ThemeProvider{
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: FieldBuilder<String>(
-                controller: item.countLabel,
+                control: item.countLabel,
                 builder: (context, text) => Text(text),
                 noData: (context) => Text(localize('empty_card')),
               ),
             ),
             FieldBuilder<double>(
-              controller: item.progress,
+              control: item.progress,
               builder: (context, progress) => LinearProgressIndicator(value: progress),
             ),
           ],
@@ -99,7 +99,7 @@ class CardWidget extends BaseControlWidget with ThemeProvider{
   }
 }
 
-class DetailPage extends SingleControlWidget<DetailController> with RouteControl {
+class DetailPage extends SingleControlWidget<DetailController> with RouteNavigator {
   static PageRouteProvider route() => PageRouteProvider.of(
         identifier: '/card_detail',
         builder: (context) => DetailPage(),
@@ -110,18 +110,18 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
     return Scaffold(
       appBar: AppBar(
         title: FieldBuilder<String>(
-          controller: controller.title,
+          control: control.title,
           builder: (context, title) => Text(title),
         ),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.delete_outline),
-            onPressed: controller.deleteSelf,
+            onPressed: control.deleteSelf,
           ),
         ],
       ),
       body: ListBuilder<CardItemModel>(
-        controller: controller.items,
+        control: control.items,
         builder: (context, items) {
           return ListView.builder(
             itemCount: items.length,
@@ -133,7 +133,7 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteControl
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: controller.addItem,
+        onPressed: control.addItem,
         child: Icon(Icons.add),
       ),
     );
@@ -146,7 +146,7 @@ class ItemWidget extends BaseControlWidget {
   ItemWidget(this.item) : super(key: ObjectKey(item));
 
   @override
-  List<BaseControlModel> initControllers() => [item];
+  List<ControlModel> initControllers() => [item];
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +156,7 @@ class ItemWidget extends BaseControlWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           FieldBuilder<bool>(
-            controller: item.done,
+            control: item.done,
             builder: (context, done) => Checkbox(value: done, onChanged: item.changeState),
           ),
           Text(item.title),

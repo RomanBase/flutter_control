@@ -357,7 +357,7 @@ extension IterableExtension on Iterable {
   T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
 }
 
-mixin ParseHelper {
+mixin ParseProvider {
   String string(dynamic value, {String defaultValue: ''}) => Parse.string(value, defaultValue: defaultValue);
 
   int toInteger(dynamic value, {int defaultValue: 0}) => Parse.toInteger(value, defaultValue: defaultValue);

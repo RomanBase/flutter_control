@@ -1,12 +1,12 @@
 import 'package:flutter_control/core.dart';
 
 class NotifierBuilder<T> extends StatefulWidget {
-  final Listenable model;
+  final Listenable control;
   final ControlWidgetBuilder<T> builder;
 
   const NotifierBuilder({
     Key key,
-    @required this.model,
+    @required this.control,
     @required this.builder,
   }) : super(key: key);
 
@@ -14,11 +14,11 @@ class NotifierBuilder<T> extends StatefulWidget {
   State<StatefulWidget> createState() => _NotifierBuilderState();
 
   Widget build(BuildContext context) {
-    if (model is ValueNotifier) {
-      return builder(context, (model as ValueNotifier).value);
+    if (control is ValueNotifier) {
+      return builder(context, (control as ValueNotifier).value);
     }
 
-    return builder(context, model as T);
+    return builder(context, control as T);
   }
 }
 
@@ -27,7 +27,7 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
   void initState() {
     super.initState();
 
-    widget.model.addListener(_updateState);
+    widget.control.addListener(_updateState);
   }
 
   void _updateState() {
@@ -41,6 +41,6 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
   void dispose() {
     super.dispose();
 
-    widget.model.removeListener(_updateState);
+    widget.control.removeListener(_updateState);
   }
 }

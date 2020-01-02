@@ -8,13 +8,14 @@ abstract class Initializable {
   void init(Map args) {}
 }
 
+//TODO: not used anymore
 /// General subscription for controllers.
 abstract class Subscriptionable {
   /// Is typically called right after state initialization.
   void subscribe(dynamic object) {}
 }
 
-/// Base abstract class for communication between Controller - [StateController] and [State].
+/// Base abstract class for communication between Controller - [StateControl] and [State].
 /// Controller can notify State about changes.
 /// This class needs to be implemented in State.
 abstract class StateNotifier {
@@ -26,20 +27,16 @@ abstract class StateNotifier {
 /// [init] -> [onInit] is called during Widget's construction phase.
 /// [subscribe] is called during State's init phase.
 ///
-/// [BaseController]
+/// [BaseControl]
 /// [BaseModel]
 ///
 /// Extend this class to create custom controllers and models.
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class BaseControlModel with DisposeHandler, Disposer implements Initializable, Subscriptionable {
+class ControlModel with DisposeHandler, Disposer implements Initializable, Subscriptionable {
   /// returns instance of [ControlFactory] if available.
   /// nullable
   ControlFactory get factory => ControlFactory.of(this);
-
-  /// returns instance of [AppControl] if available.
-  /// nullable
-  AppControl get control => factory.get<AppControl>();
 
   @override
   void init(Map args) {}
@@ -62,7 +59,7 @@ class BaseControlModel with DisposeHandler, Disposer implements Initializable, S
 /// [ControlFactory]
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class BaseController extends BaseControlModel {
+class BaseControl extends ControlModel {
   /// init check.
   bool _isInitialized = false;
 
@@ -75,7 +72,7 @@ class BaseController extends BaseControlModel {
   /// Set [preventMultiInit] enable multi init / re-init
   @override
   @mustCallSuper
-  BaseController init([Map args]) {
+  BaseControl init([Map args]) {
     if (isInitialized && preventMultiInit) {
       printDebug('controller is already initialized: ${this.toString()}');
       return this;
@@ -108,7 +105,7 @@ class BaseController extends BaseControlModel {
 
 /// [State] must implement [StateNotifier] for proper functionality.
 /// Typically [ControlState] is used on the other side.
-mixin StateController on BaseControlModel implements StateNotifier {
+mixin StateControl on ControlModel implements StateNotifier {
   /// Notify listeners.
   final _notifier = ActionControl.broadcast();
 
@@ -120,9 +117,9 @@ mixin StateController on BaseControlModel implements StateNotifier {
   @override
   void notifyState([dynamic state]) => _notifier.setValue(state);
 
-  ControlSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
+  ActionSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
 
-  void cancelStateNotifier(ControlSubscription sub) => _notifier.cancel(sub);
+  void cancelStateNotifier(ActionSubscription sub) => _notifier.cancel(sub);
 
   @override
   @mustCallSuper
@@ -133,31 +130,31 @@ mixin StateController on BaseControlModel implements StateNotifier {
   }
 }
 
-/// Mixin for [BaseController]
+/// Mixin for [BaseControl]
 /// Enables navigation from Controller.
 ///
-/// [ControlWidget] with [RouteControl]
-/// [RouteNavigator]
+/// [ControlWidget] with [RouteNavigator]
+/// [ControlNavigator]
 /// [RouteHandler] & [PageRouteProvider]
-mixin RouteController on BaseControlModel {
-  /// Implementation of [RouteNavigator] where [Navigator] is used.
-  RouteNavigator _navigator;
+mixin RouteControl on ControlModel {
+  /// Implementation of [ControlNavigator] where [Navigator] is used.
+  ControlNavigator _navigator;
 
-  /// Check if is [RouteNavigator] valid.
+  /// Check if is [ControlNavigator] valid.
   bool get isNavigatorAvailable => _navigator != null;
 
-  /// Subscribes [RouteNavigator] for later user.
+  /// Subscribes [ControlNavigator] for later user.
   @override
   @mustCallSuper
   void subscribe(dynamic object) {
     super.subscribe(object);
 
-    if (object is RouteNavigator) {
+    if (object is ControlNavigator) {
       _navigator = object;
     }
   }
 
-  /// [RouteNavigator.openRoute].
+  /// [ControlNavigator.openRoute].
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openPage(
     PageRouteProvider provider, {
@@ -177,7 +174,7 @@ mixin RouteController on BaseControlModel {
     return handler;
   }
 
-  /// [RouteNavigator.openRoot].
+  /// [ControlNavigator.openRoot].
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openRoot(
     PageRouteProvider provider, {
@@ -195,7 +192,7 @@ mixin RouteController on BaseControlModel {
     return handler;
   }
 
-  /// [RouteNavigator.openDialog].
+  /// [ControlNavigator.openDialog].
   /// [RouteHandler] -> [PageRouteProvider]
   Future<dynamic> openDialog(
     PageRouteProvider provider, {
@@ -206,10 +203,10 @@ mixin RouteController on BaseControlModel {
     return RouteHandler(_navigator, provider).openDialog(root: root, type: type, args: args);
   }
 
-  /// [RouteNavigator.close].
+  /// [ControlNavigator.close].
   void close([dynamic result]) => _navigator?.close(result);
 
-  /// [RouteNavigator.backTo].
+  /// [ControlNavigator.backTo].
   void backTo({
     Route route,
     String identifier,
@@ -221,10 +218,10 @@ mixin RouteController on BaseControlModel {
         predicate: predicate,
       );
 
-  /// [RouteNavigator.openRoot].
+  /// [ControlNavigator.openRoot].
   void backToRoot() => _navigator?.backToRoot();
 
-  /// Disables [RouteNavigator].
+  /// Disables [ControlNavigator].
   @override
   void dispose() {
     super.dispose();

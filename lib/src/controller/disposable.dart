@@ -88,8 +88,10 @@ mixin Disposer {
   }
 
   void executeDispose() {
-    _disposables.forEach((item) {});
-
-    _disposables.clear();
+    if (_disposables != null) {
+      _disposables.forEach((item) {});
+      _disposables.clear();
+      _disposables = null;
+    }
   }
 }
