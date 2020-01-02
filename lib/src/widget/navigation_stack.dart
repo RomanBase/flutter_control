@@ -419,6 +419,12 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
   void didUpdateWidget(NavigatorStackGroup oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    if (control != oldWidget.control) {
+      _items = widget.items;
+      _initControl();
+      return;
+    }
+
     final oldMenu = control.menuItems;
     final newMenu = widget.items.map((page) => page.control.menu).toList(growable: false);
 

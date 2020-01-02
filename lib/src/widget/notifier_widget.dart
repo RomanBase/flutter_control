@@ -1,5 +1,17 @@
 import 'package:flutter_control/core.dart';
 
+class BaseNotifier extends ChangeNotifier implements StateNotifier {
+  dynamic state;
+
+  BaseNotifier([this.state]);
+
+  @override
+  void notifyState([state]) {
+    this.state = state;
+    notifyListeners();
+  }
+}
+
 class NotifierBuilder<T> extends StatefulWidget {
   final Listenable control;
   final ControlWidgetBuilder<T> builder;

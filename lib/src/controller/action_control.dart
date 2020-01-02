@@ -196,6 +196,10 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
       return;
     }
 
+    if (_value == value) {
+      return;
+    }
+
     _value = value;
 
     notify();

@@ -10,9 +10,21 @@ abstract class Injector {
 }
 
 class Control {
-  static get isInitialized => ControlFactory._instance.isInitialized;
+  static get isInitialized => factory().isInitialized;
 
-  static get debug => ControlFactory._instance.debug;
+  static get debug => factory().debug;
+
+  static ControlFactory factory() => ControlFactory._instance;
+
+  static ControlScope of([BuildContext context]) {
+    ControlScope scope;
+
+    if (context != null) {
+      scope = context.findAncestorWidgetOfExactType<ControlScope>();
+    }
+
+    return scope ?? ControlProvider.get<ControlScope>();
+  }
 
   static bool init({
     bool debug,
@@ -38,6 +50,7 @@ class Control {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
+    entries[ControlScope] = ControlScope.empty();
     entries[BasePrefs] = BasePrefs();
     entries[RouteStorage] = RouteStorage(routes);
     entries[BaseLocalization] = BaseLocalization(
@@ -56,7 +69,7 @@ class Control {
     return isInitialized;
   }
 
-  static Future<LocalizationArgs> loadLocalization({
+  static Future<LocalizationArgs> initLocalization({
     @required BuildContext context,
     bool loadDefaultLocale: true,
   }) async {
@@ -170,10 +183,6 @@ class ControlFactory with Disposable {
 
   /// Default constructor
   ControlFactory._();
-
-  /// Returns instance of [ControlFactory] for given context.
-  /// Currently is context ignored and exist only one instance of factory.
-  static ControlFactory of([dynamic context]) => _instance;
 
   /// Stored objects for global use.
   final _items = Map();

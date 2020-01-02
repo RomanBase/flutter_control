@@ -126,7 +126,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Instance of [ControlFactory].
   @protected
-  ControlFactory get factory => ControlFactory.of(this);
+  ControlFactory get factory => Control.factory();
 
   /// Default constructor
   ControlWidget({Key key, dynamic args}) : super(key: key) {
@@ -199,7 +199,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onStateChanged(dynamic state) {}
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? ControlBase.of(context).rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) => root ? Control.of(context).rootContext ?? context : context;
 
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
@@ -232,9 +232,6 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
 class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
-  /// List of Subscriptions from [StateControl]s
-  List<ActionSubscription> _stateSubs;
-
   List<ControlModel> controls;
 
   @override
@@ -280,11 +277,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   }
 
   void _createSub(StateControl controller) {
-    if (_stateSubs == null) {
-      _stateSubs = List<ActionSubscription>();
-    }
-
-    _stateSubs.add(controller.subscribeStateNotifier(notifyState));
+    controller.subscribeStateNotifier(notifyState);
   }
 
   /// Disposes and removes all [controls].
@@ -295,14 +288,14 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   void dispose() {
     super.dispose();
 
-    if (_stateSubs != null) {
-      _stateSubs.forEach((sub) => sub.cancel());
-      _stateSubs.clear();
-      _stateSubs = null;
-    }
-
     if (controls != null) {
-      controls.forEach((controller) => controller.requestDispose());
+      controls.forEach((controller) {
+        if (controller is StateControl) {
+          controller.cancelStateNotifier(notifyState);
+        }
+
+        controller.requestDispose();
+      });
       controls.clear();
       controls = null;
     }

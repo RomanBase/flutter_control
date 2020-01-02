@@ -36,7 +36,7 @@ abstract class StateNotifier {
 class ControlModel with DisposeHandler, Disposer implements Initializable, Subscriptionable {
   /// returns instance of [ControlFactory] if available.
   /// nullable
-  ControlFactory get factory => ControlFactory.of(this);
+  ControlFactory get factory => Control.factory();
 
   @override
   void init(Map args) {}
@@ -114,22 +114,19 @@ class BaseControl extends ControlModel {
 /// Typically [ControlState] is used on the other side.
 mixin StateControl on ControlModel implements StateNotifier {
   /// Notify listeners.
-  final _notifier = ActionControl.broadcast();
-
-  ActionControlSub get stateNotifier => _notifier.sub;
+  final _notifier = BaseNotifier();
 
   /// Called during State initialization.
   void onStateInitialized() {}
 
   @override
-  void notifyState([dynamic state]) => _notifier.setValue(state);
+  void notifyState([dynamic state]) => _notifier.notifyState(state);
 
-  ActionSubscription subscribeStateNotifier(ValueCallback action) => _notifier.subscribe(action);
+  void subscribeStateNotifier(VoidCallback action) => _notifier.addListener(action);
 
-  void cancelStateNotifier(ActionSubscription sub) => _notifier.cancel(sub);
+  void cancelStateNotifier(VoidCallback action) => _notifier.removeListener(action);
 
   @override
-  @mustCallSuper
   void dispose() {
     super.dispose();
 

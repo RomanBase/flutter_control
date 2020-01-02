@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final factory = ControlFactory.of(null);
+final factory = Control.factory();
 
 final broadcast = factory.get<ControlBroadcast>();
 

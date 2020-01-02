@@ -4,21 +4,22 @@ import 'package:flutter_control/core.dart';
 /// Holder of current root context.
 final _context = ActionControl<BuildContext>.broadcast();
 
-const _baseKey = GlobalObjectKey('base');
-const _appKey = GlobalObjectKey('app');
+const _baseKey = GlobalObjectKey<ControlBaseState>(ControlBaseState);
+const _scopeKey = GlobalObjectKey(ControlScope);
 
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
 
 class ControlScope extends InheritedWidget {
-  ControlScope({Widget child}) : super(key: GlobalObjectKey(child), child: child) {
-    ControlFactory.of().remove<ControlBase>();
+  ControlScope({Key key, Widget child}) : super(key: key ?? GlobalObjectKey(child), child: child) {
+    Control.factory().remove<ControlBase>();
     ControlProvider.set<ControlBase>(value: this);
   }
 
-  @override
-  bool updateShouldNotify(ControlScope oldWidget) {
-    return false;
-  }
+  factory ControlScope.empty() => ControlScope(child: EmptyWidget());
+
+  GlobalKey<ControlBaseState> get baseKey => _baseKey;
+
+  GlobalKey get scopeKey => _scopeKey;
 
   /// Returns current context from [contextHolder]
   BuildContext get rootContext => _context.value;
@@ -30,22 +31,23 @@ class ControlScope extends InheritedWidget {
 
   ActionSubscription<BuildContext> subscribeNextContextChange(ValueCallback<BuildContext> callback) => _context.once(callback);
 
-  void notifyControlState() {
-    (_baseKey.currentState as StateNotifier)?.notifyState();
+  bool notifyControlState() {
+    if (baseKey.currentState != null && baseKey.currentState.mounted) {
+      baseKey.currentState.notifyState();
+
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  bool updateShouldNotify(ControlScope oldWidget) {
+    return false;
   }
 }
 
 class ControlBase extends StatefulWidget {
-  static ControlScope of(BuildContext context) {
-    ControlScope base;
-
-    if (context != null) {
-      base = context.findAncestorWidgetOfExactType<ControlScope>();
-    }
-
-    return base ?? ControlProvider.get<ControlScope>();
-  }
-
   final bool debug;
   final String defaultLocale;
   final Map<String, String> locales;
@@ -116,14 +118,12 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of((context) {
-        _context.value = context;
         printDebug('build loader');
 
         return widget.loader(context);
       });
     } else {
       _loadingBuilder = WidgetInitializer.of((context) {
-        _context.value = context;
         printDebug('build default loader');
 
         return Center(
@@ -135,10 +135,15 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     }
 
     _rootBuilder = WidgetInitializer.of((context) {
-      _context.value = context;
       printDebug('build root');
 
       return widget.root(context);
+    });
+
+    BroadcastProvider.subscribe<LocalizationArgs>(ControlKey.locale, (args) {
+      if (args.changed) {
+        setState(() {});
+      }
     });
 
     _initControl();
@@ -147,17 +152,20 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   @override
   Widget build(BuildContext context) {
     return ControlScope(
+      key: null,
       child: widget.app(
         context,
-        _appKey,
+        _scopeKey,
         Builder(
-          builder: (context) => _buildHomeWidget(context),
+          builder: (context) => _buildHome(context),
         ),
       ),
     );
   }
 
-  Widget _buildHomeWidget(BuildContext context) {
+  Widget _buildHome(BuildContext context) {
+    _context.value = context;
+
     return _loading
         ? _loadingBuilder.getWidget(context, args: {
             'loading': _loading,
@@ -200,7 +208,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _context.once((context) async {
       if (widget.loadLocalization) {
-        await Control.loadLocalization(context: context);
+        await Control.initLocalization(context: context);
       }
 
       if (block != null) {
@@ -211,5 +219,24 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
         _loading = false;
       });
     });
+  }
+}
+
+class EmptyWidget extends Widget {
+  @override
+  Element createElement() => EmptyElement(this);
+}
+
+class EmptyElement extends Element {
+  EmptyElement(Widget widget) : super(widget);
+
+  @override
+  void forgetChild(Element child) {
+    printDebug('empty element: forget');
+  }
+
+  @override
+  void performRebuild() {
+    printDebug('empty element: rebuild');
   }
 }

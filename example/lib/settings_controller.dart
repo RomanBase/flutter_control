@@ -10,11 +10,7 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
   Future<void> changeLocale(String locale) async {
     localizationLoading.progress();
 
-    await localization.changeLocale(locale).then((args) {
-      if (args.changed) {
-        factory.get<ControlScope>().notifyControlState();
-      }
-    });
+    await localization.changeLocale(locale);
 
     localizationLoading.done();
   }
