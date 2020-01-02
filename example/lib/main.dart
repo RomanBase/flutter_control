@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control_example/menu_page.dart';
 
 import 'cards_controller.dart';
 
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
         ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),
       }),
       theme: (context) => MyTheme(context),
-      root: (context) => CounterPage(),
+      root: (context) => MenuPage(),
       app: (context, key, home) {
         return BroadcastBuilder<ThemeData>(
             key: 'theme',
@@ -38,9 +39,9 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
             builder: (context, theme) {
               return MaterialApp(
                 key: key,
-                home: home,
                 title: localizeDynamic('app_name', defaultValue: 'Flutter Example') as String,
                 theme: theme,
+                home: home,
               );
             });
       },
@@ -125,11 +126,10 @@ class CounterPage extends SingleControlWidget<CounterController> {
 }
 
 PageRouteProvider get counterPageRoute => PageRouteProvider.of(
-  identifier: 'counter',
-  builder: (context) => CounterPage(),
-);
+      identifier: 'counter',
+      builder: (context) => CounterPage(),
+    );
 
 class HelloController extends BaseController with RouteController {
-
   void navigateNext() => openPage(counterPageRoute);
 }

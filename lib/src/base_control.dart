@@ -172,33 +172,33 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       rootKey: _rootKey,
       contextHolder: _contextHolder,
       rootStateNotifier: this,
-      child: widget.app(context, _rootKey, _buildHomeWidget()),
+      child: widget.app(
+          context,
+          _rootKey,
+          Builder(
+            builder: (context) => _buildHomeWidget(context),
+          )),
     );
   }
 
-  //TODO: rework
-  Widget _buildHomeWidget() {
+  Widget _buildHomeWidget(BuildContext context) {
     return _loading
-        ? Builder(builder: (context) {
-            return _loadingBuilder.getWidget(context, args: {
-              'loading': _loading,
-              'locale': _locale,
-              'debug': widget.debug,
-            });
+        ? _loadingBuilder.getWidget(context, args: {
+            'loading': _loading,
+            'locale': _locale,
+            'debug': widget.debug,
           })
-        : Builder(builder: (context) {
-            return _rootBuilder.getWidget(context, args: {
-              'loading': _loading,
-              'locale': _locale,
-              'locale_result': _localeArgs ??
-                  LocalizationArgs(
-                    locale: _locale,
-                    source: 'asset',
-                    isActive: false,
-                    changed: false,
-                  ),
-              'debug': widget.debug,
-            });
+        : _rootBuilder.getWidget(context, args: {
+            'loading': _loading,
+            'locale': _locale,
+            'locale_result': _localeArgs ??
+                LocalizationArgs(
+                  locale: _locale,
+                  source: 'asset',
+                  isActive: false,
+                  changed: false,
+                ),
+            'debug': widget.debug,
           });
   }
 
