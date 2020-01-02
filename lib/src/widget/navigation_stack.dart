@@ -118,9 +118,9 @@ class NavigatorControl extends BaseControl implements _StackNavigator {
 /// With [overrideNavigation] Widget will create [WillPopScope] and handles back button.
 ///
 /// [NavigatorStack.single] - Single navigator. Typically used inside other page to show content progress.
-/// [NavigatorStack.stack] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
+/// [NavigatorStack.group] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
 /// Typically just one page is visible - usable with [BottomNavigationBar] to preserve navigation of separated pages.
-/// [NavigatorStack.menu] - Simplified version of [NavigatorStack.stack], can be used if access to [NavigatorControl]s is not required.
+/// [NavigatorStack.menu] - Simplified version of [NavigatorStack.group], can be used if access to [NavigatorControl]s is not required.
 ///
 /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
 ///
@@ -158,17 +158,17 @@ class NavigatorStack extends StatefulWidget {
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
   /// With [overrideNavigation] Widget will create [WillPopScope] and handles back button.
   ///
-  /// [NavigatorStack.stack] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
+  /// [NavigatorStack.group] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
   /// Typically just one page is visible - usable with [BottomNavigationBar] to preserve navigation of separated pages.
-  /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.stack], can be used if access to [NavigatorControl]s is not required.
+  /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.group], can be used if access to [NavigatorControl]s is not required.
   ///
   /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static Widget stack({NavigatorStackControl control, @required List<NavigatorStack> stack, bool overrideNavigation: true}) {
+  static Widget group({NavigatorStackControl control, @required List<NavigatorStack> items, bool overrideNavigation: true}) {
     return NavigatorStackGroup(
       control: control ?? NavigatorStackControl(),
-      stack: stack,
+      items: items,
       overrideNavigation: overrideNavigation,
     );
   }
@@ -176,9 +176,9 @@ class NavigatorStack extends StatefulWidget {
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
   /// With [overrideNavigation] Widget will create [WillPopScope] and handles back button.
   ///
-  /// [NavigatorStack.stack] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
+  /// [NavigatorStack.group] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
   /// Typically just one page is visible - usable with [BottomNavigationBar] to preserve navigation of separated pages.
-  /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.stack], can be used if access to [NavigatorControl]s is not required.
+  /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.group], can be used if access to [NavigatorControl]s is not required.
   ///
   /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
   ///
@@ -191,9 +191,9 @@ class NavigatorStack extends StatefulWidget {
           builder: value,
         )));
 
-    return NavigatorStack.stack(
+    return NavigatorStack.group(
       control: control,
-      stack: stack,
+      items: stack,
       overrideNavigation: overrideNavigation,
     );
   }
@@ -278,9 +278,9 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 //########################################################################################
 
 /// Controller for:
-/// [NavigatorStack.stack] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
+/// [NavigatorStack.group] - Multiple [NavigatorStack]s in [Stack]. Only selected Controllers are visible - [Offstage].
 /// Typically just one page is visible - usable with [BottomNavigationBar] to preserve navigation of separated pages.
-/// [NavigatorStack.menu] - Simplified version of [NavigatorStack.stack], can be used if access to [NavigatorControl]s is not required.
+/// [NavigatorStack.menu] - Simplified version of [NavigatorStack.group], can be used if access to [NavigatorControl]s is not required.
 ///
 /// [NavigatorStack]
 class NavigatorStackControl extends BaseControl {
@@ -375,15 +375,15 @@ class NavigatorStackControl extends BaseControl {
 /// [NavigatorStackControl]
 class NavigatorStackGroup extends StatefulWidget {
   final NavigatorStackControl control;
-  final List<NavigatorStack> stack;
+  final List<NavigatorStack> items;
   final bool overrideNavigation;
 
   NavigatorStackGroup({
     @required this.control,
-    @required this.stack,
+    @required this.items,
     this.overrideNavigation: true,
   }) : super(key: ObjectKey(control)) {
-    assert(stack.length > 0);
+    assert(items.length > 0);
   }
 
   @override
@@ -392,21 +392,21 @@ class NavigatorStackGroup extends StatefulWidget {
 
 class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
   NavigatorStackControl get control => widget.control;
-  List<NavigatorStack> _stack;
+  List<NavigatorStack> _items;
 
   @override
   void initState() {
     super.initState();
 
-    if (_stack == null) {
-      _stack = widget.stack;
+    if (_items == null) {
+      _items = widget.items;
     }
 
     _initControl();
   }
 
   void _initControl() {
-    control._items = _stack.map((page) => page.control).toList(growable: false);
+    control._items = _items.map((page) => page.control).toList(growable: false);
     control.setPageIndex(control.currentPageIndex);
     control.currentControl.selected = true;
 
@@ -420,7 +420,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     super.didUpdateWidget(oldWidget);
 
     final oldMenu = control.menuItems;
-    final newMenu = widget.stack.map((page) => page.control.menu).toList(growable: false);
+    final newMenu = widget.items.map((page) => page.control.menu).toList(growable: false);
 
     final oldMenuHasKeys = oldMenu.firstWhere((item) => item.key == null, orElse: () => null) == null;
     final newMenuHasKeys = newMenu.firstWhere((item) => item.key == null, orElse: () => null) == null;
@@ -444,7 +444,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       printDebug('Stack navigation: re-init.');
       printDebug('Stack navigation: set menu keys to swap items.');
 
-      _stack = widget.stack;
+      _items = widget.items;
       _initControl();
 
       return;
@@ -452,19 +452,19 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
 
     printDebug('Stack navigation update');
 
-    final menu = List<NavigatorStack>.of(_stack);
+    final menu = List<NavigatorStack>.of(_items);
 
     menu.removeWhere((item) => !newMenu.contains(item.control.menu));
 
-    widget.stack.forEach((item) {
+    widget.items.forEach((item) {
       if (!oldMenu.contains(item.control.menu)) {
         menu.add(item);
       }
     });
 
-    _stack.clear();
+    _items.clear();
     newMenu.forEach((item) {
-      _stack.add(menu.firstWhere((stack) => stack.control.menu == item));
+      _items.add(menu.firstWhere((nav) => nav.control.menu == item));
     });
 
     _initControl();
@@ -477,7 +477,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       builder: (context, index) {
         final stack = IndexedStack(
           index: index,
-          children: _stack,
+          children: _items,
         );
 
         if (widget.overrideNavigation) {
