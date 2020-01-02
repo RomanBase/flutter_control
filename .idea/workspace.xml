@@ -3,17 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/settings_controller.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings_controller.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/control_base.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control_base.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/controller/action_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/action_control.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/controller/control_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/controller/control_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/theme_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/theme_control.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/util/parser.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/util/parser.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/base_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/notifier_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/notifier_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/factory_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/factory_test.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,22 +17,13 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="Pixel_3_API_28" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/lib/src/widget/notifier_widget.dart">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="204">
-              <caret line="12" column="1" lean-forward="true" selection-start-line="12" selection-start-column="1" selection-end-line="12" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
+        <entry file="file://$PROJECT_DIR$/test/widget_test.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="490">
-              <caret line="40" column="22" selection-start-line="40" selection-start-column="22" selection-end-line="40" selection-end-column="22" />
+            <state relative-caret-position="-850">
+              <caret line="22" column="21" lean-forward="true" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
               <folding>
-                <element signature="e#0#39#0" expanded="true" />
+                <element signature="e#0#43#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -78,6 +59,7 @@
       <find>Navigator(</find>
       <find>ControlScope</find>
       <find>_register</find>
+      <find>inject</find>
     </findStrings>
     <replaceStrings>
       <replace>double get</replace>
@@ -111,7 +93,6 @@
         <option value="$PROJECT_DIR$/TODO.md" />
         <option value="$PROJECT_DIR$/example/lib/settings_page.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" />
-        <option value="$PROJECT_DIR$/test/widget_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/util/device.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/property_widget.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/input_field.dart" />
@@ -139,7 +120,6 @@
         <option value="$PROJECT_DIR$/test/factory_test.dart" />
         <option value="$PROJECT_DIR$/example/lib/settings_controller.dart" />
         <option value="$PROJECT_DIR$/lib/src/control_base.dart" />
-        <option value="$PROJECT_DIR$/lib/src/control.dart" />
         <option value="$PROJECT_DIR$/lib/src/controller/action_control.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/notifier_widget.dart" />
         <option value="$PROJECT_DIR$/lib/src/controller/disposable.dart" />
@@ -147,6 +127,8 @@
         <option value="$PROJECT_DIR$/lib/src/controller/control_model.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" />
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
+        <option value="$PROJECT_DIR$/test/widget_test.dart" />
+        <option value="$PROJECT_DIR$/lib/src/control.dart" />
       </list>
     </option>
   </component>
@@ -263,7 +245,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Flutter.main.dart">
+  <component name="RunManager" selected="Flutter Test.arg control init">
     <configuration name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter" singleton="false">
       <option name="filePath" value="$PROJECT_DIR$/example/lib/main.dart" />
       <method v="2" />
@@ -301,11 +283,11 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Flutter Test.wrapper" />
-        <item itemvalue="Flutter Test.tests in widget_test.dart" />
-        <item itemvalue="Flutter Test.tests in controller_test.dart" />
         <item itemvalue="Flutter Test.arg control init" />
         <item itemvalue="Flutter Test.init" />
+        <item itemvalue="Flutter Test.tests in widget_test.dart" />
+        <item itemvalue="Flutter Test.wrapper" />
+        <item itemvalue="Flutter Test.tests in controller_test.dart" />
       </list>
     </recent_temporary>
   </component>
@@ -319,13 +301,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1561479542723</updated>
-    </task>
-    <task id="LOCAL-00077" summary="minor fixes">
-      <created>1576168885144</created>
-      <option name="number" value="00077" />
-      <option name="presentableId" value="LOCAL-00077" />
-      <option name="project" value="LOCAL" />
-      <updated>1576168885145</updated>
     </task>
     <task id="LOCAL-00078" summary="version 0.14.1+1">
       <created>1576168897778</created>
@@ -663,16 +638,17 @@
       <option name="project" value="LOCAL" />
       <updated>1577998713075</updated>
     </task>
-    <option name="localTasksCounter" value="126" />
+    <task id="LOCAL-00126" summary="refactor v3">
+      <created>1578007253176</created>
+      <option name="number" value="00126" />
+      <option name="presentableId" value="LOCAL-00126" />
+      <option name="project" value="LOCAL" />
+      <updated>1578007253177</updated>
+    </task>
+    <option name="localTasksCounter" value="127" />
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="arg_control_init - 2019.12.22 at 14h 31m 22s.xml">
-      <configuration name="arg control init" configurationId="FlutterTestConfigType" />
-    </history-entry>
-    <history-entry file="arg_control_init - 2019.12.22 at 14h 32m 34s.xml">
-      <configuration name="arg control init" configurationId="FlutterTestConfigType" />
-    </history-entry>
     <history-entry file="arg_control_init - 2019.12.22 at 14h 34m 18s.xml">
       <configuration name="arg control init" configurationId="FlutterTestConfigType" />
     </history-entry>
@@ -697,6 +673,12 @@
     <history-entry file="wrapper - 2019.12.23 at 16h 32m 21s.xml">
       <configuration name="wrapper" configurationId="FlutterTestConfigType" />
     </history-entry>
+    <history-entry file="tests_in_widget_test_dart - 2020.01.03 at 00h 30m 12s.xml">
+      <configuration name="tests in widget_test.dart" configurationId="FlutterTestConfigType" />
+    </history-entry>
+    <history-entry file="init - 2020.01.03 at 00h 35m 43s.xml">
+      <configuration name="init" configurationId="FlutterTestConfigType" />
+    </history-entry>
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -709,11 +691,10 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="54" y="-8" width="2514" height="1096" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Captures" order="0" weight="0.25" />
       <window_info id="Designer" order="1" />
-      <window_info active="true" content_ui="combo" id="Project" order="2" visible="true" weight="0.24531378" />
+      <window_info content_ui="combo" id="Project" order="2" visible="true" weight="0.24531378" />
       <window_info id="Structure" order="3" side_tool="true" />
       <window_info id="Image Layers" order="4" />
       <window_info id="Capture Tool" order="5" />
@@ -727,7 +708,7 @@
       <window_info anchor="bottom" id="Flutter Performance" order="5" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="6" weight="0.3287234" />
       <window_info anchor="bottom" id="Messages" order="7" weight="0.31914893" />
-      <window_info anchor="bottom" id="Run" order="8" weight="0.2957447" />
+      <window_info active="true" anchor="bottom" id="Run" order="8" visible="true" weight="0.2957447" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.3287234" />
       <window_info anchor="right" id="Capture Analysis" order="0" />
       <window_info anchor="right" id="Theme Preview" order="1" />
@@ -739,7 +720,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="+9 args in constructor" />
     <MESSAGE value="+10 sub changes" />
     <MESSAGE value="injector, test and bug" />
     <MESSAGE value="+14 test and fix" />
@@ -764,19 +744,13 @@
     <MESSAGE value="extract disposable" />
     <MESSAGE value="v 0.15.2 pre-release" />
     <MESSAGE value="init v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="init v2" />
+    <MESSAGE value="refactor v3" />
+    <option name="LAST_COMMIT_MESSAGE" value="refactor v3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/flutter_control$parse_test_dart.json" NAME="parse_test.dart Coverage Results" MODIFIED="1576948652731" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="DartCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" CONTEXT_FILE_PATH="$PROJECT_DIR$/test/parse_test.dart" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/lib/src/util/device.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="31" column="44" selection-start-line="31" selection-start-column="44" selection-end-line="31" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/controller/field_control.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="847">
@@ -795,22 +769,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/entity/menu.dart" />
-    <entry file="file://$PROJECT_DIR$/test/controller_test.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-            <element signature="e#366#638#0" />
-            <element signature="e#678#1261#0" />
-            <element signature="e#1298#1909#0" />
-            <element signature="e#1936#2277#0" />
-            <element signature="e#2300#2622#0" />
-            <element signature="e#3183#5258#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/stable_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="714">
@@ -890,13 +848,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="246">
           <caret line="330" column="27" selection-start-line="330" selection-start-column="27" selection-end-line="330" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/base_localization.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="263">
-          <caret line="399" column="39" selection-start-line="399" selection-start-column="39" selection-end-line="399" selection-end-column="78" />
         </state>
       </provider>
     </entry>
@@ -1069,23 +1020,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/factory_test.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" lean-forward="true" selection-start-line="4" selection-end-line="4" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/framework.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="305">
-          <caret line="321" column="8" selection-start-line="321" selection-start-column="8" selection-end-line="321" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/controller/action_control.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="612">
@@ -1095,16 +1029,6 @@
             <element signature="e#153#1193#0" />
             <element signature="e#1230#1801#0" />
             <element signature="e#1867#2232#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/control.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1836">
-          <caret line="184" column="21" selection-start-line="184" selection-start-column="21" selection-end-line="184" selection-end-column="21" />
-          <folding>
-            <element signature="e#0#41#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1170,6 +1094,20 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/framework.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="560">
+          <caret line="2139" column="4" selection-start-line="2139" selection-start-column="4" selection-end-line="2139" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/base_localization.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="305">
+          <caret line="76" column="2" selection-start-line="76" selection-start-column="2" selection-end-line="76" selection-end-column="2" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/notifier_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
@@ -1179,10 +1117,50 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="490">
+        <state relative-caret-position="592">
           <caret line="40" column="22" selection-start-line="40" selection-start-column="22" selection-end-line="40" selection-end-column="22" />
           <folding>
             <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/controller_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="16" column="9" selection-start-line="16" selection-start-column="9" selection-end-line="16" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/factory_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1054">
+          <caret line="92" column="9" lean-forward="true" selection-start-line="92" selection-start-column="9" selection-end-line="92" selection-end-column="9" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/control.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1054">
+          <caret line="257" column="34" lean-forward="true" selection-start-line="257" selection-start-column="34" selection-end-line="257" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#41#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test/widget_test.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-850">
+          <caret line="22" column="21" lean-forward="true" selection-start-line="22" selection-start-column="21" selection-end-line="22" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
           </folding>
         </state>
       </provider>

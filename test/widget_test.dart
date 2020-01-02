@@ -89,14 +89,10 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.controls[0] as TestController;
-
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
 
-      expect(controller, isNotNull);
-      expect(controller.isInitialized, isTrue);
-      expect(controller.value, isTrue);
+      expect(widget.controls.length, 0);
     });
   });
 

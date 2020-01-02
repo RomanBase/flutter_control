@@ -250,9 +250,13 @@ class ControlFactory with Disposable {
   }
 
   void setInjector(Injector injector) {
-    _injector = injector ?? BaseInjector();
+    _injector = injector;
 
-    _items[Injector] = _injector;
+    if (injector == null && _items.containsKey(Injector)) {
+      _items.remove(Injector);
+    } else {
+      _items[Injector] = injector;
+    }
   }
 
   /// Stores [value] with given [key] for later use - [get].
@@ -328,7 +332,9 @@ class ControlFactory with Disposable {
   /// [Injector.inject] is called even if [args] are null.
   /// [Initializable.init] is called only when [args] are not null.
   void inject<T>(dynamic item, {dynamic args, bool force: true}) {
-    _injector.inject<T>(item, args);
+    if (_injector != null) {
+      _injector.inject<T>(item, args);
+    }
 
     if (item is Initializable && args != null) {
       item.init(args is Map ? args : Parse.toMap(args));
