@@ -16,6 +16,7 @@ void main() {
       _ArgModel: (_) => _ArgModel<String>(),
       _InjectModel: (_) => _InjectModel(),
     },
+    injector: BaseInjector(),
   );
 
   group('Control Factory', () {
