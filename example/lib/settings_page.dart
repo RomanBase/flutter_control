@@ -11,7 +11,7 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
   SettingsController get controller => controls[0];
 
   @override
-  List<BaseControl> initControllers() {
+  List<BaseControl> initControls() {
     return [SettingsController()];
   }
 

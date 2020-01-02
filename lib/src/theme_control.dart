@@ -153,7 +153,7 @@ class ControlTheme {
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
-    _context = context ?? ControlProvider.get<ControlBase>().rootContext;
+    _context = context ?? ControlProvider.get<ControlScope>().rootContext;
   }
 
   @override

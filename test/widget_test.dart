@@ -128,7 +128,7 @@ class TestWidget extends ControlWidget {
   }
 
   @override
-  List<ControlModel> initControllers() {
+  List<ControlModel> initControls() {
     return [TestController()];
   }
 }

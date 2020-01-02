@@ -12,7 +12,7 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
 
     await localization.changeLocale(locale).then((args) {
       if (args.changed) {
-        factory.get<ControlBase>().notifyControlState();
+        factory.get<ControlScope>().notifyControlState();
       }
     });
 
@@ -32,6 +32,6 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
             primaryColor: Colors.green,
           );
 
-    BroadcastProvider.broadcast('theme', data);
+    BroadcastProvider.broadcast('theme', data, store: true);
   }
 }

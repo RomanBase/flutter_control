@@ -443,7 +443,7 @@ class InputField extends ControlWidget with ThemeProvider {
   }) : super(key: key);
 
   @override
-  List<ControlModel> initControllers() {
+  List<ControlModel> initControls() {
     controller._obscure = obscureText;
 
     return [controller];

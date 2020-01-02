@@ -416,16 +416,15 @@ class BroadcastBuilder<T> extends StatefulWidget {
 class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
   T _value;
 
-  ActionControl control;
-  ActionSubscription _sub;
+  ActionControl _control;
 
   @override
   void initState() {
     super.initState();
 
-    control = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
+    _control = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
 
-    _sub = control.subscribe((value) {
+    _control.subscribe((value) {
       setState(() {
         _value = value;
       });
@@ -439,7 +438,6 @@ class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
   void dispose() {
     super.dispose();
 
-    _sub.cancel();
-    control.dispose();
+    _control.dispose();
   }
 }

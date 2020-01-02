@@ -20,8 +20,9 @@ class Control {
     Map<String, String> locales,
     Map entries,
     Map<Type, Initializer> initializers,
-    Initializer theme,
     Injector injector,
+    List<PageRouteProvider> routes,
+    Initializer theme,
   }) {
     if (isInitialized) {
       return false;
@@ -38,6 +39,7 @@ class Control {
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
     entries[BasePrefs] = BasePrefs();
+    entries[RouteStorage] = RouteStorage(routes);
     entries[BaseLocalization] = BaseLocalization(
       defaultLocale ?? localizationAssets[0].locale,
       localizationAssets,
@@ -194,7 +196,11 @@ class ControlFactory with Disposable {
   bool debug = false;
 
   /// Initializes default items and initializers in factory.
-  void initialize({Map items, Map<Type, Initializer> initializers, Injector injector}) {
+  void initialize({
+    Map items,
+    Map<Type, Initializer> initializers,
+    Injector injector,
+  }) {
     if (_initialized) {
       return;
     }
@@ -297,7 +303,7 @@ class ControlFactory with Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= get<ControlBase>()?.rootContext;
+      args ??= get<ControlScope>()?.rootContext;
 
       final item = initializer(args);
 
@@ -351,11 +357,17 @@ class ControlFactory with Disposable {
   }
 
   /// Removes item of given key or all items of given type.
-  void remove<T>([String key]) {
-    if (key == null) {
-      _items.removeWhere((key, value) => value is T);
-    } else {
-      _items.remove(key);
+  void remove<T>([dynamic key]) {
+    if (key == null && T != dynamic) {
+      key = T;
+    }
+
+    if (key != null) {
+      if (_items.containsKey(key)) {
+        _items.remove(key);
+      } else {
+        _items.removeWhere((key, value) => value is T);
+      }
     }
   }
 

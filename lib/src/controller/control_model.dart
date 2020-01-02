@@ -49,6 +49,13 @@ class ControlModel with DisposeHandler, Disposer implements Initializable, Subsc
   /// Called during State initialization.
   /// Check [TickerControl] mixin.
   void onTickerInitialized(TickerProvider ticker) {}
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    printDebug('dispose ${this.runtimeType.toString()}');
+  }
 }
 
 /// Base controller to use with [ControlWidget]

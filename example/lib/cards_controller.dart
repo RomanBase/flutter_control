@@ -9,6 +9,9 @@ class CardsController extends BaseControl with RouteControl, LocalizationProvide
 
   int _counter = 0;
 
+  @override
+  bool get preventDispose => true;
+
   CardsController() {
     cards.subscribe((value) => countLabel.setValue('${value.length}'));
   }
@@ -69,7 +72,7 @@ class DetailController extends BaseControl with RouteControl, LocalizationProvid
   void onInit(Map args) {
     super.onInit(args);
 
-    _model = Parse.getArg<CardModel>(args);
+    _model = args.getArg<CardModel>();
 
     _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }

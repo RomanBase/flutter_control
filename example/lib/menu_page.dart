@@ -9,9 +9,10 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: ObjectKey(controller),
       body: NavigatorStack.menu(
-        controller: controller,
-        pages: {
+        control: controller,
+        items: {
           MenuItem(
             key: 'cards',
             iconBuilder: (selected) => Icons.credit_card,

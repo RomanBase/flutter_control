@@ -15,7 +15,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.settings),
-            onPressed: () => SettingsPage.route().navigator(this).openRoute(),
+            onPressed: () => SettingsPage.route().navigator(this).openRoute(root: true),
           ),
         ],
       ),
@@ -52,13 +52,10 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator
   }
 }
 
-class CardWidget extends BaseControlWidget with ThemeProvider{
+class CardWidget extends BaseControlWidget with ThemeProvider {
   final CardModel item;
 
   CardWidget(this.item) : super(key: ObjectKey(item));
-
-  @override
-  List<ControlModel> initControllers() => [item];
 
   @override
   Widget build(BuildContext context) {
@@ -140,13 +137,10 @@ class DetailPage extends SingleControlWidget<DetailController> with RouteNavigat
   }
 }
 
-class ItemWidget extends BaseControlWidget {
+class ItemWidget extends StatelessWidget {
   final CardItemModel item;
 
   ItemWidget(this.item) : super(key: ObjectKey(item));
-
-  @override
-  List<ControlModel> initControllers() => [item];
 
   @override
   Widget build(BuildContext context) {

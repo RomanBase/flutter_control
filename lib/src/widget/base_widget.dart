@@ -69,9 +69,7 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControllers() {
-    return [initController()];
-  }
+  List<ControlModel> initControls() => [initController()];
 
   @protected
   T initController() {
@@ -90,7 +88,7 @@ abstract class BaseControlWidget extends ControlWidget {
   BaseControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControllers() => null;
+  List<ControlModel> initControls() => [];
 }
 
 /// Base [StatefulWidget] to cooperate with [BaseControl].
@@ -120,8 +118,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   ControlState get state => holder.state;
 
   /// List of Controllers passed during construction phase.
-  /// [holder] - [initControllers]
-  List<ControlModel> get controls => holder.state?.controllers;
+  /// [holder] - [initControls]
+  List<ControlModel> get controls => holder.state?.controls;
 
   /// Context of Widget's [State]
   BuildContext get context => state?.context;
@@ -138,38 +136,38 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
   @protected
-  List<ControlModel> initControllers();
+  List<ControlModel> initControls() => holder.findControls();
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
 
   /// When [RouteHandler] is used, then this function is called right after Widget construction. +
-  /// All controllers (from [initControllers]) are initialized too.
+  /// All controllers (from [initControls]) are initialized too.
   @override
   @protected
   @mustCallSuper
   void init(Map args) => addArg(args);
 
   /// Called during State initialization.
-  /// All controllers (from [initControllers]) are subscribed to this Widget and given State.
+  /// All controllers (from [initControls]) are subscribed to this Widget and given State.
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
     notifyWidget(state);
 
     controls?.remove(null);
-    controls?.forEach((controller) {
-      controller.init(holder.args);
-      controller.subscribe(this);
+    controls?.forEach((control) {
+      control.init(holder.args);
+      control.subscribe(this);
 
       if (state is TickerProvider) {
-        (controller as BaseControl).onTickerInitialized(state as TickerProvider);
+        (control as BaseControl).onTickerInitialized(state as TickerProvider);
       }
 
-      if (controller is StateControl) {
-        controller.subscribe(state);
-        state._createSub(controller);
-        controller.onStateInitialized();
+      if (control is StateControl) {
+        control.subscribe(state);
+        state._createSub(control);
+        control.onStateInitialized();
       }
     });
   }
@@ -237,7 +235,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   /// List of Subscriptions from [StateControl]s
   List<ActionSubscription> _stateSubs;
 
-  List<ControlModel> controllers;
+  List<ControlModel> controls;
 
   @override
   void initState() {
@@ -247,19 +245,11 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       (widget as ThemeProvider).invalidateTheme(context);
     }
 
-    controllers = widget.initControllers();
+    controls = widget.initControls();
 
-    if (controllers == null) {
-      controllers = <ControlModel>[];
+    if (controls == null) {
+      controls = <ControlModel>[];
     }
-
-    final argControls = widget.holder.findControls();
-
-    argControls.forEach((item) {
-      if (!controllers.contains(item)) {
-        controllers.add(item);
-      }
-    });
 
     widget.onInitState(this);
   }
@@ -297,7 +287,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     _stateSubs.add(controller.subscribeStateNotifier(notifyState));
   }
 
-  /// Disposes and removes all [controllers].
+  /// Disposes and removes all [controls].
   /// Controller can prevent disposing [BaseControl.preventDispose].
   /// Then disposes Widget.
   @override
@@ -311,10 +301,10 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       _stateSubs = null;
     }
 
-    if (controllers != null) {
-      controllers.forEach((controller) => controller.requestDispose());
-      controllers.clear();
-      controllers = null;
+    if (controls != null) {
+      controls.forEach((controller) => controller.requestDispose());
+      controls.clear();
+      controls = null;
     }
 
     widget.holder.dispose();

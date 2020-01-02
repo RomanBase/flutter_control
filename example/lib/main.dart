@@ -28,13 +28,14 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
       }),
       theme: (context) => MyTheme(context),
       root: (context) => MenuPage(),
-      app: (context, home) => BroadcastBuilder<ThemeData>(
+      app: (context, key, home) => BroadcastBuilder<ThemeData>(
         key: 'theme',
         defaultValue: ThemeData(
           primaryColor: Colors.orange,
         ),
         builder: (context, theme) {
           return MaterialApp(
+            key: key,
             title: localizeDynamic('app_name', defaultValue: 'Flutter Example') as String,
             theme: theme,
             home: home,
