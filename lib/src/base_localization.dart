@@ -84,12 +84,25 @@ class BaseLocalization with PrefsProvider {
       );
 
   /// Returns current Locale of device.
-  Locale deviceLocale(BuildContext context) {
+  Locale getDeviceLocale(BuildContext context) {
     return Localizations.localeOf(context, nullOk: true);
   }
 
+  /// Returns preferred locale of this app instance.
+  /// Either Device locale or locale stored in preferences.
+  Future<String> getSystemLocale(BuildContext context) async {
+    return (await prefs.get(preference_key)) ?? getDeviceLocale(context)?.toString();
+  }
+
+  /// Checks if preferred locale is loaded.
+  Future<bool> isSystemLocaleActive(BuildContext context) async {
+    final pref = await getSystemLocale(context);
+
+    return isActive && isLocaleEqual(pref, locale);
+  }
+
   /// Changes localization to [defaultLocale].
-  Future<LocalizationArgs> loadDefaultLocalization() => changeLocale(defaultLocale);
+  Future<LocalizationArgs> loadDefaultLocalization() => changeLocale(defaultLocale, preferred: false);
 
   /// Changes localization to system language
   /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
@@ -101,7 +114,7 @@ class BaseLocalization with PrefsProvider {
     if (pref != null && isLocalizationAvailable(pref)) {
       locale = pref;
     } else {
-      locale = deviceLocale(context)?.toString();
+      locale = getDeviceLocale(context)?.toString();
     }
 
     if (locale != null) {
@@ -119,12 +132,26 @@ class BaseLocalization with PrefsProvider {
   /// Returns true if localization file is available and is possible to load it.
   bool isLocalizationAvailable(String locale) {
     for (final asset in assets) {
-      if (asset.locale == locale || asset.iso2Locale == locale.substring(0, 2)) {
+      if (isLocaleEqual(asset.locale, locale)) {
         return true;
       }
     }
 
     return false;
+  }
+
+  /// Checks if [a] and [b] is same or if this locales points to same asset path.
+  /// Comparing 'en' and 'en_US' can be true because they can point to same asset.
+  bool isLocaleEqual(String a, String b) {
+    if (a == b) {
+      return true;
+    }
+
+    if (a == null || b == null) {
+      return false;
+    }
+
+    return getAssetPath(a) == getAssetPath(b);
   }
 
   /// Returns asset path for given locale or null if localization asset is not available.
@@ -133,6 +160,11 @@ class BaseLocalization with PrefsProvider {
       if (asset.locale == locale) {
         return asset.assetPath;
       }
+    }
+
+    if (locale.length < 2) {
+      printDebug('Locale should have minimum of 2 chars - iso2 standard');
+      return null;
     }
 
     for (final asset in assets) {
@@ -178,7 +210,7 @@ class BaseLocalization with PrefsProvider {
       prefs.set(preference_key, locale);
     }
 
-    if (_locale == locale) {
+    if (isLocaleEqual(this.locale, locale)) {
       return LocalizationArgs(
         locale: locale,
         isActive: true,

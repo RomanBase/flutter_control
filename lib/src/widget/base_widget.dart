@@ -166,7 +166,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
       if (control is StateControl) {
         control.subscribe(state);
-        state._createSub(control);
+        state._subscribeStateNotifier(control);
         control.onStateInitialized();
       }
     });
@@ -191,6 +191,9 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
     holder.state = state;
   }
 
+  @protected
+  void didUpdate(ControlWidget oldWidget) {}
+
   /// Notifies [State] of this [Widget].
   void notifyState(dynamic state) => holder.state?.notifyState(state);
 
@@ -199,7 +202,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onStateChanged(dynamic state) {}
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? Control.of(context).rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) => root ? Control.of(context)?.rootContext ?? context : context;
 
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
@@ -225,7 +228,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @override
   @mustCallSuper
   void dispose() {
-    printDebug('dispose ${this.toString()}');
+    printDebug('dispose: ${this.runtimeType.toString()}');
   }
 }
 
@@ -270,13 +273,24 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   }
 
   @override
-  Widget build(BuildContext context) {
-    notifyWidget();
+  void didUpdateWidget(U oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-    return widget.build(context);
+    widget.didUpdate(oldWidget);
   }
 
-  void _createSub(StateControl controller) {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    notifyWidget();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.build(context);
+
+  /// Subscribes to [StateControl]
+  void _subscribeStateNotifier(StateControl controller) {
     controller.subscribeStateNotifier(notifyState);
   }
 

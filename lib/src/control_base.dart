@@ -4,15 +4,14 @@ import 'package:flutter_control/core.dart';
 /// Holder of current root context.
 final _context = ActionControl<BuildContext>.broadcast();
 
-const _baseKey = GlobalObjectKey<ControlBaseState>(ControlBaseState);
+const _baseKey = GlobalObjectKey<ControlBaseState>(ControlBase);
 const _scopeKey = GlobalObjectKey(ControlScope);
 
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
 
 class ControlScope extends InheritedWidget {
   ControlScope({Key key, Widget child}) : super(key: key ?? GlobalObjectKey(child), child: child) {
-    Control.factory().remove<ControlBase>();
-    ControlProvider.set<ControlBase>(value: this);
+    Control.factory().swap<ControlScope>(value: this);
   }
 
   factory ControlScope.empty() => ControlScope(child: EmptyWidget());
@@ -31,12 +30,33 @@ class ControlScope extends InheritedWidget {
 
   ActionSubscription<BuildContext> subscribeNextContextChange(ValueCallback<BuildContext> callback) => _context.once(callback);
 
+  final debug = true;
+
   bool notifyControlState() {
-    if (baseKey.currentState != null && baseKey.currentState.mounted) {
-      baseKey.currentState.notifyState();
+    if (debug) {
+      if (baseKey.currentState != null && baseKey.currentState.mounted) {
+        baseKey.currentState.notifyState();
+
+        return true;
+      }
+    }
+
+    printDebug('ControlBase is not in Widget Tree! (ControlScope.baseKey)');
+    printDebug('Trying to notify ControlScope.scopeKey ..');
+
+    if (scopeKey.currentState != null && scopeKey.currentState.mounted) {
+      if (scopeKey.currentState is StateNotifier) {
+        (scopeKey.currentState as StateNotifier).notifyState();
+      } else {
+        printDebug('Found State is not StateNotifier, Trying to call setState directly..');
+        // ignore: invalid_use_of_protected_member
+        scopeKey.currentState.setState(() {});
+      }
 
       return true;
     }
+
+    printDebug('No State to notify found.');
 
     return false;
   }
@@ -117,11 +137,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
     super.initState();
 
     if (widget.loader != null) {
-      _loadingBuilder = WidgetInitializer.of((context) {
-        printDebug('build loader');
-
-        return widget.loader(context);
-      });
+      _loadingBuilder = WidgetInitializer.of(widget.loader);
     } else {
       _loadingBuilder = WidgetInitializer.of((context) {
         printDebug('build default loader');
@@ -134,11 +150,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       });
     }
 
-    _rootBuilder = WidgetInitializer.of((context) {
-      printDebug('build root');
-
-      return widget.root(context);
-    });
+    _rootBuilder = WidgetInitializer.of(widget.root);
 
     BroadcastProvider.subscribe<LocalizationArgs>(ControlKey.locale, (args) {
       if (args.changed) {
@@ -183,41 +195,37 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       block = DelayBlock(widget.loaderDelay);
     }
 
-    if (Control.isInitialized) {
-      if (block != null) {
-        await block.finish();
-      }
-
-      setState(() {
-        _loading = false;
-      });
-
-      return;
+    if (!Control.isInitialized) {
+      Control.init(
+        debug: widget.debug,
+        defaultLocale: widget.defaultLocale,
+        locales: widget.locales ?? {'en': null},
+        entries: widget.entries ?? {},
+        initializers: widget.initializers ?? {},
+        injector: widget.injector,
+        routes: widget.routes,
+        theme: widget.theme,
+      );
     }
 
-    Control.init(
-      debug: widget.debug,
-      defaultLocale: widget.defaultLocale,
-      locales: widget.locales ?? {'en': null},
-      entries: widget.entries ?? {},
-      initializers: widget.initializers ?? {},
-      injector: widget.injector,
-      routes: widget.routes,
-      theme: widget.theme,
-    );
-
-    _context.once((context) async {
-      if (widget.loadLocalization) {
+    if (widget.loadLocalization && !ControlProvider.get<BaseLocalization>().isActive) {
+      _context.once((context) async {
         await Control.initLocalization(context: context);
-      }
 
-      if (block != null) {
-        await block.finish();
-      }
-
-      setState(() {
-        _loading = false;
+        _finishInitialization(block);
       });
+    } else {
+      _finishInitialization(block);
+    }
+  }
+
+  void _finishInitialization(DelayBlock block) async {
+    if (block != null) {
+      await block.finish();
+    }
+
+    setState(() {
+      _loading = false;
     });
   }
 }

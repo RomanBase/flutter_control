@@ -8,13 +8,6 @@ abstract class Initializable {
   void init(Map args) {}
 }
 
-//TODO: not used anymore
-/// General subscription for controllers.
-abstract class Subscriptionable {
-  /// Is typically called right after state initialization.
-  void subscribe(dynamic object) {}
-}
-
 /// Base abstract class for communication between Controller - [StateControl] and [State].
 /// Controller can notify State about changes.
 /// This class needs to be implemented in State.
@@ -33,7 +26,7 @@ abstract class StateNotifier {
 /// Extend this class to create custom controllers and models.
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class ControlModel with DisposeHandler, Disposer implements Initializable, Subscriptionable {
+class ControlModel with DisposeHandler, Disposer implements Initializable {
   /// returns instance of [ControlFactory] if available.
   /// nullable
   ControlFactory get factory => Control.factory();
@@ -43,7 +36,6 @@ class ControlModel with DisposeHandler, Disposer implements Initializable, Subsc
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  @override
   void subscribe(dynamic object) {}
 
   /// Called during State initialization.
@@ -54,7 +46,7 @@ class ControlModel with DisposeHandler, Disposer implements Initializable, Subsc
   void dispose() {
     super.dispose();
 
-    printDebug('dispose ${this.runtimeType.toString()}');
+    printDebug('dispose: ${this.runtimeType.toString()}');
   }
 }
 
@@ -81,7 +73,7 @@ class BaseControl extends ControlModel {
   @mustCallSuper
   BaseControl init([Map args]) {
     if (isInitialized && preventMultiInit) {
-      printDebug('controller is already initialized: ${this.toString()}');
+      printDebug('controller is already initialized: ${this.runtimeType.toString()}');
       return this;
     }
 

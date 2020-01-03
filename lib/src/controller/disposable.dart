@@ -17,9 +17,9 @@ extension DisposableExt on Disposable {
 }
 
 mixin DisposeHandler implements Disposable {
-  bool get preventDispose => false;
+  bool preventDispose = false;
 
-  bool get preferSoftDispose => false;
+  bool preferSoftDispose = false;
 
   void requestDispose() {
     if (preventDispose) {

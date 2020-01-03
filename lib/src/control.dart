@@ -85,7 +85,9 @@ class Control {
       args = await localization.loadDefaultLocalization();
     }
 
-    args = await localization.changeToSystemLocale(context);
+    if (!await localization.isSystemLocaleActive(context)) {
+      args = await localization.changeToSystemLocale(context);
+    }
 
     return args;
   }
@@ -231,10 +233,37 @@ class ControlFactory with Disposable {
 
     _items.forEach((key, value) {
       if (value is Initializable) {
-        value.init(null);
-        printDebug('factory init $key - $value - ${value.hashCode}');
+        value.init({});
+
+        printDebug('Factory inits $key - ${value.runtimeType.toString()}');
+      }
+
+      if (value is DisposeHandler) {
+        value.preventDispose = true;
+
+        printDebug('Factory prevents dispose of $key - ${value.runtimeType.toString()}');
       }
     });
+  }
+
+  dynamic keyOf<T>({dynamic key, dynamic value}) {
+    if (key == null) {
+      key = T != dynamic ? T : value?.runtimeType;
+    }
+
+    return key;
+  }
+
+  /// Sets [Injector] for this Factory.
+  /// Set null to remove current Injector.
+  void setInjector(Injector injector) {
+    _injector = injector;
+
+    if (injector == null && _items.containsKey(Injector)) {
+      _items.remove(Injector);
+    } else {
+      _items[Injector] = injector;
+    }
   }
 
   /// Stores initializer for later use - [init] or [get].
@@ -249,25 +278,14 @@ class ControlFactory with Disposable {
     _initializers[T] = initializer;
   }
 
-  void setInjector(Injector injector) {
-    _injector = injector;
-
-    if (injector == null && _items.containsKey(Injector)) {
-      _items.remove(Injector);
-    } else {
-      _items[Injector] = injector;
-    }
-  }
-
   /// Stores [value] with given [key] for later use - [get].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
   /// returns key of stored object.
   dynamic set<T>({dynamic key, @required dynamic value}) {
-    if (key == null) {
-      key = T != dynamic ? T : value.runtimeType;
-    }
+    key = keyOf<T>(key: key, value: value);
 
+    assert(key != null);
     assert(() {
       if (_items.containsKey(key) && _items[key] != value) {
         printDebug('Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
@@ -286,9 +304,9 @@ class ControlFactory with Disposable {
   /// Finally object is Injected [ControlFactory.inject] with given [args].
   /// nullable
   T get<T>([dynamic key, dynamic args]) {
-    if (key == null) {
-      key = T;
-    }
+    key = keyOf<T>(key: key);
+
+    assert(key != null);
 
     if (_items.containsKey(key)) {
       final item = _items[key] as T;
@@ -357,6 +375,7 @@ class ControlFactory with Disposable {
     return get<T>(key, args) ?? defaultValue;
   }
 
+  /// Finds [Initializer] of given [Type].
   Initializer<T> findInitializer<T>() {
     if (_initializers.containsKey(T)) {
       return _initializers[T];
@@ -371,24 +390,50 @@ class ControlFactory with Disposable {
     return null;
   }
 
-  /// Removes item of given key or all items of given type.
-  void remove<T>([dynamic key]) {
-    if (key == null && T != dynamic) {
-      key = T;
-    }
+  /// Removes item of given [key] or all items of given [Type].
+  /// If [key] isn't provided, then T is used as key.
+  void remove<T>({dynamic key, bool dispose: false}) {
+    key = keyOf<T>(key: key);
 
-    if (key != null) {
-      if (_items.containsKey(key)) {
-        _items.remove(key);
-      } else {
-        _items.removeWhere((key, value) => value is T);
+    assert(key != null);
+
+    if (_items.containsKey(key)) {
+      final item = _items.remove(key);
+      if (dispose && item is Disposable) {
+        item.dispose();
       }
+    } else {
+      _items.removeWhere((key, value) {
+        final remove = value is T;
+
+        if (remove && dispose && value is Disposable) {
+          value.dispose();
+        }
+
+        return remove;
+      });
     }
+  }
+
+  /// Swaps item in Factory.
+  /// Basically calls [ControlFactory.remove] and [ControlFactory.set].
+  void swap<T>({dynamic key, @required dynamic value, bool dispose: false}) {
+    key = keyOf<T>(key: key, value: value);
+
+    remove<T>(key: key, dispose: dispose);
+    set<T>(key: key, value: value);
   }
 
   /// Removes initializer of given Type.
   void removeInitializer(Type type) {
     _initializers.remove(type);
+  }
+
+  /// Swaps initializers in Factory.
+  /// Basically calls [ControlFactory.removeInitializer] and [ControlFactory.setInitializer].
+  void swapInitializer<T>(Initializer<T> initializer) {
+    removeInitializer(T);
+    setInitializer(initializer);
   }
 
   /// Removes all items of given type

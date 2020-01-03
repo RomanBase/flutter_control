@@ -217,7 +217,6 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 
     widget.control.subscribe(this);
 
-    printDebug('init nav');
     _updateNavigator();
   }
 
@@ -231,6 +230,7 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 
   void _updateNavigator() {
     _navigator ??= GlobalObjectKey<NavigatorState>(this);
+    widget.control.subscribe(_navigator);
   }
 
   @override
@@ -402,6 +402,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       _items = widget.items;
     }
 
+    control.subscribe(this);
     _initControl();
   }
 
