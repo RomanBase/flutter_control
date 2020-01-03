@@ -7,7 +7,7 @@ abstract class WidgetInitializer {
   Widget _widget;
 
   /// Init data.
-  /// Send to Widget via [args] with [ControlKey.initData] key.
+  /// Send to Widget via [_args] with [ControlKey.initData] key.
   Object data;
 
   bool get isInitialized => _widget != null;
@@ -16,6 +16,8 @@ abstract class WidgetInitializer {
 
   factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
 
+  static WidgetInitializer control<T>(ControlWidgetBuilder<T> builder) => _WidgetInitControlBuilder(builder);
+
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
   @protected
@@ -23,26 +25,28 @@ abstract class WidgetInitializer {
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
-
-  /// Returns context of initialized [ControlWidget]
-  /// nullable
-  BuildContext getContext() {
-    if (_widget is ControlWidget) {
-      return (_widget as ControlWidget).context;
+  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) {
+    if (forceInit || _widget == null || !isValid()) {
+      _widget = initWidget(context, args: args);
     }
 
-    return null;
+    return _widget;
+  }
+
+  bool isValid() {
+    if (_widget is ControlWidget) {
+      return (_widget as ControlWidget).isValid;
+    }
+
+    return true;
   }
 
   Map _buildArgs(dynamic args) {
-    if (args != Map) {
-      args = Parse.toMap(args);
-    }
+    final buildArgs = ControlArgs(args);
 
-    args[ControlKey.initData] = data;
+    buildArgs.set(data);
 
-    return args;
+    return buildArgs.args;
   }
 
   /// Wraps initializer into [WidgetBuilder].
@@ -65,6 +69,25 @@ class _WidgetInitBuilder extends WidgetInitializer {
 
     if (widget is Initializable) {
       (widget as Initializable).init(_buildArgs(args));
+    }
+
+    return widget;
+  }
+}
+
+class _WidgetInitControlBuilder<T> extends WidgetInitializer {
+  final ControlWidgetBuilder<T> builder;
+
+  _WidgetInitControlBuilder(this.builder);
+
+  @override
+  Widget initWidget(BuildContext context, {args}) {
+    final initArgs = _buildArgs(args);
+
+    final widget = builder(context, Parse.getArg<T>(initArgs));
+
+    if (widget is Initializable) {
+      (widget as Initializable).init(initArgs);
     }
 
     return widget;

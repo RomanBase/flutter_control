@@ -184,8 +184,8 @@ class Parse {
   ///
   /// Use [ValueConverter] to convert values into new List.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
-    final items = Map<String, T>();
+  static Map<dynamic, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
+    final items = Map<dynamic, T>();
 
     if (value == null) {
       return items;
@@ -214,7 +214,7 @@ class Parse {
         });
       } else {
         if (hardCast) {
-          return value.cast<String, T>();
+          return value.cast<dynamic, T>();
         }
 
         value.forEach((key, item) {

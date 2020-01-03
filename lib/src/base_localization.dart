@@ -187,7 +187,7 @@ class BaseLocalization with PrefsProvider {
       source: 'runtime',
     );
 
-    BroadcastProvider.broadcast(ControlKey.locale, args);
+    BroadcastProvider.broadcast(BaseLocalization, args);
 
     return args;
   }
@@ -249,7 +249,7 @@ class BaseLocalization with PrefsProvider {
         source: 'asset',
       );
 
-      BroadcastProvider.broadcast(ControlKey.locale, args);
+      BroadcastProvider.broadcast(BaseLocalization, args);
 
       return args;
     }

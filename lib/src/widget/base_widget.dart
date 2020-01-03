@@ -2,63 +2,50 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
-class WidgetControlHolder implements Disposable {
-  Map args;
-  ControlState state;
-  Route route;
+class ControlArgHolder implements Disposable {
+  bool _valid = true;
+  ControlArgs _cache;
+  ControlState _state;
 
-  bool get initialized => state != null;
+  bool get isCacheActive => _cache != null;
+
+  bool get initialized => _state != null;
+
+  Map get args => argStore?.args;
+
+  ControlArgs get argStore => _state?.args ?? _cache;
+
+  void init(ControlState state) {
+    _state = state;
+
+    if (_cache != null) {
+      _state.addArg(_cache);
+      _cache = null;
+    }
+  }
 
   void addArg(dynamic args) {
-    if (args == null) {
+    if (initialized) {
+      _state.addArg(args);
       return;
     }
 
-    if (this.args == null) {
-      this.args = Map();
+    if (_cache == null) {
+      _cache = new ControlArgs();
     }
 
-    if (args is Map) {
-      args.forEach((key, value) {
-        this.args[key] = value;
-      });
-    } else if (args is Iterable) {
-      args.forEach((item) {
-        this.args[item.runtimeType] = item;
-      });
-    } else {
-      this.args[args.runtimeType] = args;
-    }
+    _cache.set(args);
   }
 
-  T getArg<T>({String key, T defaultValue}) => Parse.getArgFromMap<T>(args, key: key, defaultValue: defaultValue);
+  T getArg<T>({dynamic key, T defaultValue}) => Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
 
-  bool findRoute([BuildContext context]) {
-    if (route != null) {
-      return true;
-    }
-
-    route = Parse.getArg<Route>(args, key: ControlKey.initData);
-
-    if (route == null && context != null) {
-      ModalRoute.of(context);
-    }
-
-    return route != null;
-  }
-
-  List<ControlModel> findControls() {
-    if (args == null) {
-      return [];
-    }
-
-    return args.values.where((item) => item is ControlModel).toList(growable: false).cast<ControlModel>();
-  }
+  List<ControlModel> findControls() => argStore?.getAll<ControlModel>() ?? [];
 
   @override
   void dispose() {
-    state = null;
-    args = null;
+    _valid = false;
+    _cache = null;
+    _state = null;
   }
 }
 
@@ -108,20 +95,27 @@ abstract class BaseControlWidget extends ControlWidget {
 abstract class ControlWidget extends StatefulWidget with LocalizationProvider implements Initializable, Disposable {
   /// Holder for [State] nad Controllers.
   @protected
-  final holder = WidgetControlHolder();
+  final holder = ControlArgHolder();
 
+  /// Returns [true] if [State] is hooked and [WidgetControlHolder] is initialized.
   bool get isInitialized => holder.initialized;
+
+  /// Returns [true] if Widget is active and [WidgetControlHolder] is not disposed.
+  /// Widget is valid even when is not initialized yet.
+  bool get isValid => holder._valid;
 
   /// Widget's [State]
   /// [holder] - [onInitState]
   @protected
-  ControlState get state => holder.state;
+  ControlState get state => holder._state;
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControls]
-  List<ControlModel> get controls => holder.state?.controls;
+  @protected
+  List<ControlModel> get controls => holder._state?.controls;
 
   /// Context of Widget's [State]
+  @protected
   BuildContext get context => state?.context;
 
   /// Instance of [ControlFactory].
@@ -153,7 +147,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
-    notifyWidget(state);
+    assert(isInitialized);
 
     controls?.remove(null);
     controls?.forEach((control) {
@@ -177,7 +171,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void notifyWidget(ControlState state) {
     assert(() {
       if (holder.initialized) {
-        printDebug('something is maybe wrong, state reinitialized...');
+        printDebug('state re-init of: ${this.runtimeType.toString()}');
         printDebug('old state: ${this.state}');
         printDebug('new state: $state');
       }
@@ -188,14 +182,14 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
       return;
     }
 
-    holder.state = state;
+    holder.init(state);
   }
 
   @protected
   void didUpdate(ControlWidget oldWidget) {}
 
   /// Notifies [State] of this [Widget].
-  void notifyState(dynamic state) => holder.state?.notifyState(state);
+  void notifyState(dynamic state) => holder._state?.notifyState(state);
 
   /// Callback from [State] when state is notified.
   @protected
@@ -211,7 +205,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Returns value by given key or type.
   /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
-  T getArg<T>({String key, T defaultValue}) => holder.getArg(key: key, defaultValue: defaultValue);
+  T getArg<T>({dynamic key, T defaultValue}) => holder.getArg<T>(key: key, defaultValue: defaultValue);
 
   /// Returns value by given key or type.
   /// Look up in [controls] and [factory].
@@ -236,6 +230,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 /// State is subscribed to Controller which notifies back about state changes.
 class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
   List<ControlModel> controls;
+  ControlArgs args;
 
   @override
   void initState() {
@@ -248,11 +243,26 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     controls = widget.initControls();
 
     if (controls == null) {
-      controls = <ControlModel>[];
+      controls = [];
     }
 
+    widget.notifyWidget(this);
     widget.onInitState(this);
   }
+
+  void addArg(dynamic args) {
+    if (args == null) {
+      return;
+    }
+
+    if (this.args == null) {
+      this.args = ControlArgs();
+    }
+
+    this.args.set(args);
+  }
+
+  T getArg<T>({dynamic key, T defaultValue}) => widget.getArg<T>(key: key, defaultValue: defaultValue);
 
   @override
   void notifyState([dynamic state]) {
@@ -329,7 +339,7 @@ class _ControlSingleTickerState<U extends ControlWidget> extends ControlState<U>
 /// Use [SingleTickerControl] to create State with [SingleTickerProviderStateMixin].
 mixin TickerControl on ControlWidget {
   @protected
-  TickerProvider get ticker => holder.state as TickerProvider;
+  TickerProvider get ticker => holder._state as TickerProvider;
 
   @override
   ControlState<ControlWidget> createState() => _ControlTickerState();
@@ -339,7 +349,7 @@ mixin TickerControl on ControlWidget {
 /// Use [TickerControl] to create State with [TickerProviderStateMixin].
 mixin SingleTickerControl on ControlWidget {
   @protected
-  TickerProvider get ticker => holder.state as TickerProvider;
+  TickerProvider get ticker => holder._state as TickerProvider;
 
   @override
   ControlState<ControlWidget> createState() => _ControlSingleTickerState();
@@ -351,12 +361,27 @@ mixin RouteNavigator on ControlWidget implements ControlNavigator {
 
   NavigatorState get rootNavigator => Navigator.of(getContext(root: true));
 
+  Route get activeRoute => findRoute(context);
+
+  Route findRoute([BuildContext context]) {
+    Route _route;
+
+    _route = getArg<Route>();
+
+    if (_route == null && context != null) {
+      _route = ModalRoute.of(context);
+    }
+
+    return _route;
+  }
+
   @override
   void init(Map args) {
     super.init(args);
 
-    if (holder.findRoute(context)) {
-      printDebug('${this.toString()} at route: ${holder.route.settings.name}');
+    final route = activeRoute;
+    if (route != null) {
+      printDebug('${this.toString()} at route: ${route.settings.name}');
     }
   }
 
@@ -414,8 +439,10 @@ mixin RouteNavigator on ControlWidget implements ControlNavigator {
 
   @override
   void close([dynamic result]) {
-    if (holder.route != null) {
-      closeRoute(holder.route, result);
+    final route = activeRoute;
+
+    if (route != null) {
+      closeRoute(route, result);
     } else {
       navigator.pop(result);
     }

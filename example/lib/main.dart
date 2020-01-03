@@ -27,7 +27,13 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
         ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),
       }),
       theme: (context) => MyTheme(context),
-      root: (context) => MenuPage(),
+      loader: (context) => InitLoader.of(
+        delay: Duration(seconds: 3),
+        builder: (context, control) => Container(
+          color: Colors.orange,
+        ),
+      ),
+      root: (context, args) => MenuPage(),
       app: (context, key, home) => BroadcastBuilder<ThemeData>(
         key: 'theme',
         defaultValue: ThemeData(
