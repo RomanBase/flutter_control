@@ -126,6 +126,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   WidgetInitializer _rootBuilder;
   WidgetInitializer _loadingBuilder;
 
+  BroadcastSubscription _localeSub;
+
   @override
   void notifyState([state]) {
     setState(() {
@@ -159,8 +161,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _rootBuilder = WidgetInitializer.control(widget.root);
 
-    BroadcastProvider.subscribe<LocalizationArgs>(BaseLocalization, (args) async {
-      if (args.changed && await ControlProvider.get<BaseLocalization>().isSystemLocaleActive(context)) {
+    _localeSub = BaseLocalization.subscribeChanges((args) async {
+      if (args.changed && await Control.localization().isSystemLocaleActive(context)) {
         setState(() {
           _loading = false;
         });
@@ -184,8 +186,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
       );
     }
 
-    if (widget.loadLocalization && !ControlProvider.get<BaseLocalization>().isActive) {
-      _context.once((context) => Control.initLocalization(context: context));
+    if (widget.loadLocalization && !Control.localization().isActive) {
+      _context.once((context) async => await Control.localization().init(context: context));
     } else {
       _loading = false;
     }
@@ -223,6 +225,13 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
               ControlArgs: _args,
             },
           );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _localeSub?.dispose();
+    _localeSub = null;
   }
 }
 

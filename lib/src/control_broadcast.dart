@@ -3,25 +3,33 @@ import 'package:flutter_control/core.dart';
 /// Global stream to broadcast data and events.
 class ControlBroadcast implements Disposable {
   /// List of active subs.
-  final _globalSubscriptions = List<GlobalSubscription>();
+  final _subscriptions = List<BroadcastSubscription>();
 
   /// Last available value for subs.
-  final _globalValue = Map();
+  final _store = Map();
 
-  int get subCount => _globalSubscriptions.length;
+  int get subCount => _subscriptions.length;
+
+  T getStore<T>(dynamic key) {
+    if (_store.containsKey(key)) {
+      return _store[key] as T;
+    }
+
+    return null;
+  }
 
   /// Subscription to global stream
-  GlobalSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) {
+  BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) {
     assert(onData != null);
 
-    final sub = GlobalSubscription<T>(key);
+    final sub = BroadcastSubscription<T>(key);
 
     sub._parent = this;
     sub._onData = onData;
 
-    _globalSubscriptions.add(sub);
+    _subscriptions.add(sub);
 
-    final lastValue = _globalValue[sub.key];
+    final lastValue = _store[sub.key];
 
     if (lastValue != null && sub.isValidForBroadcast(sub.key, lastValue)) {
       sub._notify(lastValue);
@@ -31,14 +39,14 @@ class ControlBroadcast implements Disposable {
   }
 
   /// Subscription to global stream
-  GlobalSubscription subscribeEvent(dynamic key, VoidCallback callback) {
+  BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) {
     return subscribe(key, (_) => callback());
   }
 
   /// Cancels subscriptions to global stream
-  void cancelSubscription(GlobalSubscription sub) {
+  void cancelSubscription(BroadcastSubscription sub) {
     sub.pause();
-    _globalSubscriptions.remove(sub);
+    _subscriptions.remove(sub);
   }
 
   /// Sets data to global stream.
@@ -48,10 +56,10 @@ class ControlBroadcast implements Disposable {
     int count = 0;
 
     if (store) {
-      _globalValue[key] = value;
+      _store[key] = value;
     }
 
-    _globalSubscriptions.forEach((sub) {
+    _subscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
         count++;
         sub._notify(value);
@@ -66,7 +74,7 @@ class ControlBroadcast implements Disposable {
   int broadcastEvent(dynamic key) {
     int count = 0;
 
-    _globalSubscriptions.forEach((sub) {
+    _subscriptions.forEach((sub) {
       if (sub.isValidForBroadcast(key, null)) {
         count++;
         sub._notify(null);
@@ -77,9 +85,9 @@ class ControlBroadcast implements Disposable {
   }
 
   void clear() {
-    _globalSubscriptions.forEach((sub) => sub._parent = null);
-    _globalSubscriptions.clear();
-    _globalValue.clear();
+    _subscriptions.forEach((sub) => sub._parent = null);
+    _subscriptions.clear();
+    _store.clear();
   }
 
   @override
@@ -88,7 +96,7 @@ class ControlBroadcast implements Disposable {
   }
 }
 
-class GlobalSubscription<T> implements Disposable {
+class BroadcastSubscription<T> implements Disposable {
   /// Key of global sub.
   /// [ControlFactory.broadcast]
   final dynamic key;
@@ -106,7 +114,7 @@ class GlobalSubscription<T> implements Disposable {
   bool get isActive => _parent != null && _active;
 
   /// Default constructor.
-  GlobalSubscription(this.key);
+  BroadcastSubscription(this.key);
 
   /// Checks if [key] and [value] type is eligible for this sub.
   bool isValidForBroadcast(dynamic key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);

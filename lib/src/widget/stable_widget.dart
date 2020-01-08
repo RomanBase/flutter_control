@@ -19,7 +19,7 @@ class StableWidget extends StatefulWidget {
 class _StableWidgetState extends State<StableWidget> {
   final holder = InitHolder<Widget>();
 
-  GlobalSubscription _sub;
+  BroadcastSubscription _sub;
 
   @override
   void initState() {

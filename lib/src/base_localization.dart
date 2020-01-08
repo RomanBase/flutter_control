@@ -80,8 +80,28 @@ class BaseLocalization with PrefsProvider {
         locale: locale,
         isActive: isActive,
         changed: false,
-        source: 'localization',
+        source: 'runtime',
       );
+
+  Future<LocalizationArgs> init({@required BuildContext context, bool loadDefaultLocale: true}) async {
+    assert(Control.isInitialized, 'Factory must be initialized !');
+
+    LocalizationArgs args;
+
+    if (loadDefaultLocale) {
+      args = await loadDefaultLocalization();
+    }
+
+    if (!await isSystemLocaleActive(context)) {
+      args = await changeToSystemLocale(context);
+    }
+
+    return args;
+  }
+
+  static BroadcastSubscription<LocalizationArgs> subscribeChanges(ValueCallback<LocalizationArgs> callback) {
+    return BroadcastProvider.subscribe<LocalizationArgs>(BaseLocalization, callback);
+  }
 
   /// Returns current Locale of device.
   Locale getDeviceLocale(BuildContext context) {

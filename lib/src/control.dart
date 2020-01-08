@@ -16,6 +16,10 @@ class Control {
 
   static ControlFactory factory() => ControlFactory._instance;
 
+  static ControlBroadcast broadcast() => factory()._broadcast;
+
+  static BaseLocalization localization() => ControlProvider.get<BaseLocalization>();
+
   static ControlScope of([BuildContext context]) {
     ControlScope scope;
 
@@ -67,29 +71,6 @@ class Control {
     );
 
     return isInitialized;
-  }
-
-  static Future<LocalizationArgs> initLocalization({
-    @required BuildContext context,
-    bool loadDefaultLocale: true,
-  }) async {
-    assert(ControlFactory._instance.isInitialized, 'Factory must be initialized !');
-
-    final localization = ControlProvider.get<BaseLocalization>();
-
-    assert(localization != null, 'Localization must be in Factory !');
-
-    LocalizationArgs args;
-
-    if (loadDefaultLocale) {
-      args = await localization.loadDefaultLocalization();
-    }
-
-    if (!await localization.isSystemLocaleActive(context)) {
-      args = await localization.changeToSystemLocale(context);
-    }
-
-    return args;
   }
 }
 
@@ -159,10 +140,10 @@ class ControlProviderGroup extends StatelessWidget {
 /// Shortcut class to work with global stream of [ControlFactory].
 class BroadcastProvider {
   /// Subscription to global stream.
-  static GlobalSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
+  static BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
 
   /// Subscription to global stream.
-  static GlobalSubscription subscribeEvent(dynamic key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
+  static BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
 
   /// Sets data to global stream.
   /// Subs with same [key] and [value] type will be notified.

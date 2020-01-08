@@ -97,7 +97,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   ActionSubscription<T> _sub;
 
   /// Global subscription.
-  GlobalSubscription<T> _globalSub;
+  BroadcastSubscription<T> _globalSub;
 
   Object _lock;
 
