@@ -76,6 +76,7 @@ class InputControl extends ControlModel with StateControl {
     _text = text;
   }
 
+  //TODO: WTF ?
   /// Initializes [TextEditingController] and [FocusController].
   /// Can be called multiple times to prevent early disposed controllers.
   void _initControllers() {

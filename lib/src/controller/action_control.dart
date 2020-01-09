@@ -55,7 +55,7 @@ abstract class ActionControlSub<T> {
   /// Subscribes event for changes.
   /// Returns [ActionSubscription] for later cancellation.
   /// When current value isn't null, then given listener is notified immediately.
-  ActionSubscription<T> subscribe(ValueCallback<T> action);
+  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true});
 
   /// Subscribes event for just one next change.
   /// Returns [ActionSubscription] for later cancellation.
@@ -72,7 +72,7 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
   T get value => _control.value;
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action) => _control.subscribe(action);
+  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) => _control.subscribe(action, current: current);
 
   @override
   ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) => _control.once(action, current: current);
@@ -81,7 +81,7 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
-/// [ActionControl.broadcastListener] - Subscription to [BroadcastProvider].
+/// [ActionControl.asBroadcastProvider] - Subscription to [BroadcastProvider].
 class ActionControl<T> implements ActionControlSub<T>, Disposable {
   /// Current value.
   T _value;
@@ -103,7 +103,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   bool get isLocked => _lock != null;
 
-  ActionControlSub<T> get sub => ActionControlSubscriber._(this);
+  ActionControlSub<T> get sub => ActionControlSubscriber<T>._(this);
 
   ///Default constructor.
   ActionControl._([T value]) {
@@ -124,15 +124,15 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
-  factory ActionControl.single([T value]) => ActionControl<T>._(value);
+  static ActionControl single<T>([T value]) => ActionControl<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  factory ActionControl.broadcast([T value]) => _ActionControlBroadcast<T>._(value);
+  static ActionControl broadcast<T>([T value]) => _ActionControlBroadcast<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  factory ActionControl.broadcastListener({@required dynamic key, bool broadcast: false, T defaultValue}) {
+  static ActionControl asBroadcastProvider<T>({@required dynamic key, bool broadcast: false, T defaultValue}) {
     ActionControl control = broadcast ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
@@ -141,12 +141,12 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
   }
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action) {
+  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) {
     _sub = ActionSubscription<T>()
       .._parent = this
       .._action = action;
 
-    if (_value != null) {
+    if (current && _value != null) {
       action(_value);
     }
 
@@ -248,13 +248,13 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   _ActionControlBroadcast._([T value]) : super._(value);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action) {
+  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
 
     _list.add(sub);
 
-    if (_value != null) {
+    if (current && _value != null) {
       action(_value);
     }
 
@@ -333,11 +333,29 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   void initState() {
     super.initState();
 
-    _sub = widget.control.subscribe((value) {
-      setState(() {
-        _value = value;
-      });
-    });
+    _initSub();
+  }
+
+  void _initSub() {
+    _value = widget.control.value;
+    _sub = widget.control.subscribe(
+      (value) {
+        setState(() {
+          _value = value;
+        });
+      },
+      current: false,
+    );
+  }
+
+  @override
+  void didUpdateWidget(ActionBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.control != oldWidget.control) {
+      _sub.cancel();
+      _initSub();
+    }
   }
 
   @override
@@ -347,7 +365,8 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   void dispose() {
     super.dispose();
 
-    _sub.cancel();
+    _sub?.cancel();
+    _sub = null;
   }
 }
 
@@ -378,13 +397,30 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   void initState() {
     super.initState();
 
+    _initSubs();
+  }
+
+  void _initSubs() {
     _values = _mapValues();
 
-    widget.controls.forEach((controller) => _subs.add(controller.subscribe(
+    widget.controls.forEach((control) => _subs.add(control.subscribe(
           (data) => setState(() {
             _values = _mapValues();
           }),
+          current: false,
         )));
+  }
+
+  @override
+  void didUpdateWidget(ControlBuilderGroup oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controls != oldWidget.controls) {
+      _subs.forEach((item) => item.dispose());
+      _subs.clear();
+
+      _initSubs();
+    }
   }
 
   @override
@@ -426,7 +462,7 @@ class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
   void initState() {
     super.initState();
 
-    _control = ActionControl<T>.broadcastListener(key: widget.broadcastKey, defaultValue: widget.defaultValue);
+    _control = ActionControl.asBroadcastProvider<T>(key: widget.broadcastKey, defaultValue: widget.defaultValue);
 
     _control.subscribe((value) {
       setState(() {

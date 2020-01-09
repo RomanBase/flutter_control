@@ -46,7 +46,7 @@ abstract class WidgetInitializer {
 
     buildArgs.set(data);
 
-    return buildArgs.args;
+    return buildArgs.data;
   }
 
   /// Wraps initializer into [WidgetBuilder].
@@ -92,28 +92,4 @@ class _WidgetInitControlBuilder<T> extends WidgetInitializer {
 
     return widget;
   }
-}
-
-class WidgetInit extends StatefulWidget {
-  final Widget child;
-  final Map args;
-
-  const WidgetInit({Key key, this.child, this.args}) : super(key: key);
-
-  @override
-  _WidgetInitState createState() => _WidgetInitState();
-}
-
-class _WidgetInitState extends State<WidgetInit> {
-  @override
-  void initState() {
-    super.initState();
-
-    if (widget.child is Initializable) {
-      (widget.child as Initializable).init(widget.args);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }

@@ -26,7 +26,7 @@ export './src/util/future_block.dart';
 export './src/util/init_holder.dart';
 export './src/util/parser.dart';
 export './src/util/unit_id.dart';
-export './src/widget/base_widget.dart';
+export './src/widget/control_widget.dart';
 export './src/widget/input_field.dart';
 export './src/widget/loader_widget.dart';
 export './src/widget/navigation_stack.dart';

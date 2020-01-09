@@ -19,8 +19,6 @@ class InitHolder<T> {
   /// Is true if current [value] needs rebuild.
   bool get isDirty => _isDirty || !isActive;
 
-  Object lock;
-
   /// Default constructor
   InitHolder({ValueGetter<T> builder}) {
     _builder = builder;
@@ -41,14 +39,6 @@ class InitHolder<T> {
 
   /// Returns current value or build new one and store it for later get.
   T get() => _value ?? (_value = _builder());
-
-  /// Sets builder if holder is [isDirty], then builds value.
-  T getWithBuilder(ValueGetter<T> builder, [Object lock]) {
-    set(builder: builder, override: this.lock != lock);
-    this.lock = lock;
-
-    return get();
-  }
 
   /// Sets holder to dirty, so next [set] will override builder.
   void setDirty() => _isDirty = true;

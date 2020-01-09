@@ -102,7 +102,7 @@ void main() {
 
   group('Action Control', () {
     test('value modification', () {
-      final controller = ActionControl<int>.single(1);
+      final controller = ActionControl.single<int>(1);
 
       controller.setValue(controller.value + 1);
 
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('value lock', () {
-      final controller = ActionControl<int>.single(1);
+      final controller = ActionControl.single<int>(1);
 
       controller.lock(key);
       controller.setValue(controller.value + 1);
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('value unlock', () {
-      final controller = ActionControl<int>.single(1);
+      final controller = ActionControl.single<int>(1);
 
       controller.lock(key);
       controller.setValue(controller.value + 1);
@@ -131,7 +131,7 @@ void main() {
     });
 
     test('value with lock', () {
-      final controller = ActionControl<int>.single(1);
+      final controller = ActionControl.single<int>(1);
 
       controller.lock(key);
       controller.setValue(controller.value + 1, key: key);
@@ -140,7 +140,7 @@ void main() {
     });
 
     test('value with sub', () {
-      final controller = ActionControl<int>.single(1);
+      final controller = ActionControl.single<int>(1);
       final sub = controller.sub;
 
       sub.once((value) => expect(value, 1));
@@ -150,7 +150,7 @@ void main() {
     });
 
     test('cancel', () {
-      final controller = ActionControl<int>.broadcast(null);
+      final controller = ActionControl.broadcast<int>(null);
 
       final sub1 = controller.once((_) {});
       final sub2 = controller.subscribe((_) {});
@@ -173,8 +173,8 @@ void main() {
     });
 
     test('operator ==', () {
-      final controllerA = ActionControl<int>.single(1);
-      final controllerB = ActionControl<int>.broadcast(1);
+      final controllerA = ActionControl.single<int>(1);
+      final controllerB = ActionControl.broadcast<int>(1);
 
       expect(controllerA == controllerB, true);
       // ignore: unrelated_type_equality_checks

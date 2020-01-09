@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 /// Holder of current root context.
-final _context = ActionControl<BuildContext>.broadcast();
+final _context = ActionControl.broadcast<BuildContext>();
 
 const _baseKey = GlobalObjectKey<ControlBaseState>(ControlBase);
 const _scopeKey = GlobalObjectKey(ControlScope);

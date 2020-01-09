@@ -300,7 +300,7 @@ class NavigatorStackControl extends BaseControl {
   /// Can be used with [ActionBuilder] to rebuild menu or highlight active widget.
   ///
   /// Use [setPageIndex] to change Page.
-  final _pageIndex = ActionControl<int>.broadcast(0);
+  final _pageIndex = ActionControl.broadcast<int>(0);
 
   /// Returns current page index.
   /// Use [setPageIndex] to change active controller.

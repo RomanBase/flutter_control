@@ -43,9 +43,13 @@ class RouteHandler {
   /// Implementation of provider.
   final PageRouteProvider provider;
 
-  Future<dynamic> result;
+  Future<dynamic> _result;
 
-  PageRoute route;
+  Future<dynamic> get result => _result;
+
+  Route _route;
+
+  Route get route => _route;
 
   /// Default constructor.
   /// [navigator] and [provider] must be specified.
@@ -60,15 +64,15 @@ class RouteHandler {
 
     final initializer = WidgetInitializer.of(provider.builder);
 
-    result = navigator.openRoute(
-      route = provider.getRoute(initializer.wrap(args: args)),
+    _result = navigator.openRoute(
+      _route = provider.getRoute(initializer.wrap(args: args)),
       root: root,
       replacement: replacement,
     );
 
-    initializer.data = route;
+    initializer.data = _route;
 
-    return result;
+    return _result;
   }
 
   /// [ControlNavigator.openRoot]
@@ -77,21 +81,21 @@ class RouteHandler {
 
     final initializer = WidgetInitializer.of(provider.builder);
 
-    result = navigator.openRoot(
-      route = provider.getRoute(initializer.wrap(args: args)),
+    _result = navigator.openRoot(
+      _route = provider.getRoute(initializer.wrap(args: args)),
     );
 
-    initializer.data = route;
+    initializer.data = _route;
 
-    return result;
+    return _result;
   }
 
   /// [ControlNavigator.openDialog]
   Future<dynamic> openDialog({bool root: false, DialogType type, dynamic args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
-    route = null;
-    return result = navigator.openDialog(
+    _route = null;
+    return _result = navigator.openDialog(
       _initBuilder(provider.builder, args),
       root: root,
       type: type,

@@ -3,11 +3,15 @@ import 'package:flutter_control/core.dart';
 class ControlArgs implements Disposable {
   final _args = Map();
 
-  Map get args => _args;
+  Map get data => _args;
 
   ControlArgs([dynamic args]) {
     set(args);
   }
+
+  dynamic operator [](dynamic key) => _args.getArg(key: key);
+
+  void operator []=(dynamic key, dynamic value) => _args[key] = value;
 
   void set(dynamic args) {
     if (args == null) {
@@ -66,10 +70,6 @@ class ControlArgs implements Disposable {
   }
 
   void clear() => _args.clear();
-
-  dynamic operator [](dynamic key) => _args.getArg(key: key);
-
-  void operator []=(dynamic key, dynamic value) => _args[key] = value;
 
   @override
   void dispose() {

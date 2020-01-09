@@ -47,7 +47,6 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
               child: ThemeText(),
             ),
             StableWidget(
-              localize: false,
               builder: (context) => Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Text(

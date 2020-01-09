@@ -11,7 +11,7 @@ class ControlArgHolder implements Disposable {
 
   bool get initialized => _state != null;
 
-  Map get args => argStore?.args;
+  Map get args => argStore?.data;
 
   ControlArgs get argStore => _state?.args ?? _cache;
 
@@ -170,7 +170,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   @protected
   void notifyWidget(ControlState state) {
     assert(() {
-      if (holder.initialized) {
+      if (holder.initialized && this.state != state) {
         printDebug('state re-init of: ${this.runtimeType.toString()}');
         printDebug('old state: ${this.state}');
         printDebug('new state: $state');
@@ -184,9 +184,6 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
     holder.init(state);
   }
-
-  @protected
-  void didUpdate(ControlWidget oldWidget) {}
 
   /// Notifies [State] of this [Widget].
   void notifyState(dynamic state) => holder._state?.notifyState(state);
@@ -273,10 +270,6 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   @protected
   void notifyWidget() {
-    if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context);
-    }
-
     if (!widget.holder.initialized) {
       widget.notifyWidget(this);
     }
@@ -286,12 +279,18 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   void didUpdateWidget(U oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    widget.didUpdate(oldWidget);
+    if (widget.holder != oldWidget.holder) {
+      widget.notifyWidget(this);
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    if (widget is ThemeProvider) {
+      (widget as ThemeProvider).invalidateTheme(context);
+    }
 
     notifyWidget();
   }
@@ -300,8 +299,8 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   Widget build(BuildContext context) => widget.build(context);
 
   /// Subscribes to [StateControl]
-  void _subscribeStateNotifier(StateControl controller) {
-    controller.subscribeStateNotifier(notifyState);
+  void _subscribeStateNotifier(StateControl control) {
+    control.subscribeStateNotifier(notifyState);
   }
 
   /// Disposes and removes all [controls].

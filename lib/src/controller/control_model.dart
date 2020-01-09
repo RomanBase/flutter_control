@@ -66,7 +66,7 @@ class BaseControl extends ControlModel {
   bool get isInitialized => _isInitialized;
 
   /// prevent multiple times init and [onInit] will be called just once
-  bool get preventMultiInit => true;
+  bool preventMultiInit = true;
 
   /// Set [preventMultiInit] enable multi init / re-init
   @override
@@ -89,11 +89,10 @@ class BaseControl extends ControlModel {
   void onInit(Map args) {}
 
   /// Used to reload Controller.
-  /// Currently empty and is ready to override.
+  /// Called by [NavigatorStack] when page is reselected.
   Future<void> reload() async {}
 
   /// Typically is this method called during State disable phase.
-  /// Disables linking between Controller and State.
   @override
   @mustCallSuper
   void dispose() {
@@ -102,8 +101,6 @@ class BaseControl extends ControlModel {
   }
 }
 
-/// [State] must implement [StateNotifier] for proper functionality.
-/// Typically [ControlState] is used on the other side.
 mixin StateControl on ControlModel implements StateNotifier {
   /// Notify listeners.
   final _notifier = BaseNotifier();

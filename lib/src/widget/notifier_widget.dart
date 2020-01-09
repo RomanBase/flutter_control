@@ -1,15 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class BaseNotifier extends ChangeNotifier implements StateNotifier {
-  dynamic state;
-
-  BaseNotifier([this.state]);
+class BaseNotifier<T> extends ChangeNotifier implements StateNotifier, ValueListenable<T> {
+  T _value;
 
   @override
-  void notifyState([state]) {
-    this.state = state;
+  T get value => _value;
+
+  set value(T newValue) {
+    _value = newValue;
     notifyListeners();
   }
+
+  BaseNotifier([T value]);
+
+  @override
+  void notifyState([state]) => value = state;
 }
 
 class NotifierBuilder<T> extends StatefulWidget {
@@ -27,7 +33,7 @@ class NotifierBuilder<T> extends StatefulWidget {
 
   Widget build(BuildContext context) {
     if (control is ValueNotifier) {
-      return builder(context, (control as ValueNotifier).value);
+      return builder(context, (control as ValueListenable).value as T);
     }
 
     return builder(context, control as T);
@@ -44,6 +50,16 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
 
   void _updateState() {
     setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(NotifierBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.control != widget.control) {
+      oldWidget.control.removeListener(_updateState);
+      widget.control.addListener(_updateState);
+    }
   }
 
   @override

@@ -4,8 +4,9 @@ import 'dart:math';
 import 'package:flutter_control/core.dart';
 
 class FieldSubscription<T> implements StreamSubscription<T> {
-  final StreamSubscription<T> _sub;
-  final FieldControl<T> _control;
+  StreamSubscription<T> _sub;
+  FieldControl<T> _control;
+  bool cancelOnError = false;
 
   FieldSubscription(this._control, this._sub);
 
@@ -14,6 +15,24 @@ class FieldSubscription<T> implements StreamSubscription<T> {
   @override
   bool get isPaused => _sub.isPaused;
 
+  void _cancelSub() => _control.cancelSubscription(this, dispose: false);
+
+  Function _wrapOnDone(Function handleDone) {
+    return () {
+      handleDone();
+      _cancelSub();
+    };
+  }
+
+  Function _wrapOnError(Function handleError) {
+    return (err) {
+      handleError(err);
+      if (cancelOnError) {
+        cancel();
+      }
+    };
+  }
+
   @override
   Future<E> asFuture<E>([E futureValue]) {
     return _sub.asFuture(futureValue);
@@ -21,7 +40,7 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   @override
   Future cancel() {
-    _control.cancelSubscription(this, dispose: false);
+    _cancelSub();
 
     return _sub.cancel();
   }
@@ -33,12 +52,12 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   @override
   void onDone(void Function() handleDone) {
-    _sub.onDone(handleDone);
+    _sub.onDone(_wrapOnDone(handleDone));
   }
 
   @override
   void onError(Function handleError) {
-    _sub.onError(handleError);
+    _sub.onError(_wrapOnError(handleError));
   }
 
   @override
@@ -51,7 +70,7 @@ class FieldSubscription<T> implements StreamSubscription<T> {
     _sub.resume();
   }
 
-  void disposeSubscription() {
+  void _cancelStreamSub() {
     _sub.cancel();
   }
 }
@@ -146,12 +165,15 @@ class FieldControl<T> implements Disposable {
     }
   }
 
-  FieldSubscription _addSub(StreamSubscription subscription) {
+  FieldSubscription _addSub(StreamSubscription subscription, {Function onError, void onDone(), bool cancelOnError: false}) {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
 
-    final sub = FieldSubscription(this, subscription);
+    final sub = FieldSubscription(this, subscription)
+      ..onError(onError)
+      ..onDone(onDone)
+      ..cancelOnError = cancelOnError;
 
     _subscriptions.add(sub);
 
@@ -168,7 +190,24 @@ class FieldControl<T> implements Disposable {
   Sink sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
 
   /// Sets value after [Future] finished.
-  Future ofFuture(Future<T> future) => future.then((value) => setValue(value));
+  Future onFuture(Future future, {ValueConverter converter}) => future.then((value) => setValue(converter == null ? value : converter(value)));
+
+  /// Subscribes this controller to given [Stream].
+  /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
+  /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
+  /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
+  FieldSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
+    return _addSub(
+      stream.listen(
+        (data) {
+          setValue(converter != null ? converter(data) : data);
+        },
+      ),
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
 
   /// Subscribes to [Stream] of this controller.
   /// [StreamSubscription] are automatically closed during dispose phase of [FieldControl].
@@ -176,47 +215,31 @@ class FieldControl<T> implements Disposable {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
-      onError: onError,
-      onDone: onDone,
-      cancelOnError: cancelOnError,
     );
 
     if (value != null && current) {
       onData(value);
     }
 
-    return _addSub(subscription);
-  }
-
-  /// Subscribes this controller to given [Stream].
-  /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
-  /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
-  /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
-  FieldSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
-    // ignore: cancel_subscriptions
-    final subscription = stream.listen(
-      (data) {
-        setValue(converter != null ? converter(data) : data);
-      },
+    return _addSub(
+      subscription,
       onError: onError,
       onDone: onDone,
       cancelOnError: cancelOnError,
     );
-
-    return _addSub(subscription);
   }
 
-  /// Given [controller] will subscribe to [Stream] of this [FieldControl].
-  /// Whenever value in [Stream] is changed [controller] will be notified.
+  /// Given [control] will subscribe to [Stream] of this [FieldControl].
+  /// Whenever value in [Stream] is changed [control] will be notified.
   /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
-  /// [StreamSubscription] is automatically closed during dispose phase of [controller].
+  /// [StreamSubscription] is automatically closed during dispose phase of [control].
   /// [subscribeTo]
-  FieldSubscription streamTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
-    if (value != null && value != controller.value) {
-      controller.setValue(converter != null ? converter(value) : value);
+  FieldSubscription streamTo(FieldControl control, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
+    if (value != null && value != control.value) {
+      control.setValue(converter != null ? converter(value) : value);
     }
 
-    return controller.subscribeTo(
+    return control.subscribeTo(
       _stream.stream,
       onError: onError,
       onDone: onDone,
@@ -241,7 +264,7 @@ class FieldControl<T> implements Disposable {
   void _clearSubscriptions() {
     if (_subscriptions != null) {
       for (final sub in _subscriptions) {
-        sub.disposeSubscription();
+        sub._cancelStreamSub();
       }
 
       _subscriptions = null;
@@ -254,7 +277,7 @@ class FieldControl<T> implements Disposable {
       _subscriptions.remove(subscription);
 
       if (dispose) {
-        subscription.disposeSubscription();
+        subscription._cancelStreamSub();
       }
 
       if (_subscriptions.isEmpty) {
