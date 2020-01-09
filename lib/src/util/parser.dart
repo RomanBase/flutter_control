@@ -289,6 +289,10 @@ class Parse {
           return item;
         }
       }
+
+      if (predicate == null) {
+        return defaultValue;
+      }
     }
 
     if (T != dynamic && predicate == null) {

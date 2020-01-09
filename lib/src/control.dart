@@ -18,6 +18,8 @@ class Control {
 
   static ControlBroadcast broadcast() => factory()._broadcast;
 
+  static Injector injector() => factory()._injector;
+
   static BaseLocalization localization() => ControlProvider.get<BaseLocalization>();
 
   static ControlScope of([BuildContext context]) {
@@ -65,7 +67,7 @@ class Control {
     initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
 
     ControlFactory._instance.initialize(
-      items: entries,
+      entries: entries,
       initializers: initializers,
       injector: injector,
     );
@@ -189,7 +191,7 @@ class ControlFactory with Disposable {
 
   /// Initializes default items and initializers in factory.
   void initialize({
-    Map items,
+    Map entries,
     Map<Type, Initializer> initializers,
     Injector injector,
   }) {
@@ -204,8 +206,8 @@ class ControlFactory with Disposable {
 
     setInjector(injector);
 
-    if (items != null) {
-      _items.addAll(items);
+    if (entries != null) {
+      _items.addAll(entries);
     }
 
     if (initializers != null) {
@@ -285,6 +287,7 @@ class ControlFactory with Disposable {
   /// Finally object is Injected [ControlFactory.inject] with given [args].
   /// nullable
   T get<T>([dynamic key, dynamic args]) {
+    final useExactKey = key != null;
     key = keyOf<T>(key: key);
 
     assert(key != null);
@@ -298,14 +301,22 @@ class ControlFactory with Disposable {
       }
     }
 
-    for (final item in _items.values) {
-      if (item is T) {
-        inject(item, args: args);
-        return item;
+    if (!useExactKey) {
+      for (final item in _items.values) {
+        if (item is T) {
+          inject(item, args: args);
+          return item;
+        }
       }
     }
 
-    return init<T>(args ?? key);
+    final item = init<T>(args ?? key);
+
+    if (useExactKey && item != null) {
+      set<T>(key: key, value: item);
+    }
+
+    return item;
   }
 
   /// returns new object of requested type.
@@ -360,7 +371,7 @@ class ControlFactory with Disposable {
   Initializer<T> findInitializer<T>() {
     if (_initializers.containsKey(T)) {
       return _initializers[T];
-    } else {
+    } else if (T != dynamic) {
       final key = _initializers.keys.firstWhere((item) => item is T, orElse: () => null);
 
       if (key != null) {

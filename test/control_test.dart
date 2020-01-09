@@ -3,11 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 final factory = Control.factory();
 
-final broadcast = factory.get<ControlBroadcast>();
+final broadcast = Control.broadcast();
 
 void main() {
-  factory.initialize(
-    items: {
+  Control.init(
+    debug: false,
+    entries: {
       ControlModel: BaseControl(),
       _InjectModel: _InjectModel(),
       'key': 'value',
@@ -18,6 +19,27 @@ void main() {
     },
     injector: BaseInjector(),
   );
+
+  group('Control', () {
+    test('init', () {
+      expect(Control.isInitialized, factory.isInitialized);
+
+      expect(Control.factory(), isNotNull);
+      expect(Control.localization(), isNotNull);
+      expect(Control.broadcast(), isNotNull);
+      expect(Control.injector(), isNotNull);
+      expect(Control.of(null), isNotNull);
+
+      expect(Control.debug, isFalse);
+      expect(Control.debug, factory.debug);
+
+      expect(Control.isInitialized, isTrue);
+      expect(Control.isInitialized, factory.isInitialized);
+
+      Control.factory().debug = true;
+      expect(Control.debug, isTrue);
+    });
+  });
 
   group('Control Factory', () {
     test('instance', () {
@@ -64,6 +86,28 @@ void main() {
 
       expect(autoKey, ActionControl);
       expect(typeKey, FieldControl);
+    });
+
+    test('resolve', () {
+      final data = {'0': 'item', ControlModel: _InitModel()};
+
+      final item = factory.resolve<String>(data, defaultValue: 'def');
+      final model = factory.resolve(data, key: ControlModel, args: 'init');
+      final argModel = factory.resolve<_ArgModel>(data, args: 'init');
+      final def = factory.resolve(data, key: 'none', defaultValue: 'def');
+      final defStore = factory.get('none');
+
+      expect(item, 'item');
+
+      expect(model, isNotNull);
+      expect(model is ControlModel, isTrue);
+      expect((model as _InitModel).data, isNull);
+
+      expect(argModel, isNotNull);
+      expect(argModel.value, 'init');
+
+      expect(def, 'def');
+      expect(defStore, isNull);
     });
 
     test('swap', () {
