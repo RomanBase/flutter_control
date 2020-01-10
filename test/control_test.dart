@@ -6,6 +6,8 @@ final factory = Control.factory();
 final broadcast = Control.broadcast();
 
 void main() {
+  expect(factory.isInitialized, isFalse);
+
   Control.init(
     debug: false,
     entries: {
@@ -19,6 +21,8 @@ void main() {
     },
     injector: BaseInjector(),
   );
+
+  expect(factory.isInitialized, isTrue);
 
   group('Control', () {
     test('init', () {
@@ -44,6 +48,24 @@ void main() {
   group('Control Factory', () {
     test('instance', () {
       expect(factory, isNotNull);
+
+      final reInit = factory.initialize();
+
+      expect(reInit, isFalse);
+    });
+
+    test('set', () {
+      final exactKey = factory.set(key: 'string', value: 'value');
+      final exactTypeKey = factory.set(key: String, value: 'value');
+
+      expect(exactKey, 'string');
+      expect(exactTypeKey, String);
+
+      final autoKey = factory.set(value: ActionControl.single());
+      final typeKey = factory.set<FieldControl>(value: FieldControl());
+
+      expect(autoKey, ActionControl);
+      expect(typeKey, FieldControl);
     });
 
     test('get', () {
@@ -72,20 +94,6 @@ void main() {
 
       expect(itemInject.initValue, isNotNull);
       expect(itemInject.itemValue, isNotNull);
-    });
-
-    test('set', () {
-      final exactKey = factory.set(key: 'string', value: 'value');
-      final exactTypeKey = factory.set(key: String, value: 'value');
-
-      expect(exactKey, 'string');
-      expect(exactTypeKey, String);
-
-      final autoKey = factory.set(value: ActionControl.single());
-      final typeKey = factory.set<FieldControl>(value: FieldControl());
-
-      expect(autoKey, ActionControl);
-      expect(typeKey, FieldControl);
     });
 
     test('resolve', () {

@@ -190,13 +190,9 @@ class ControlFactory with Disposable {
   bool debug = false;
 
   /// Initializes default items and initializers in factory.
-  void initialize({
-    Map entries,
-    Map<Type, Initializer> initializers,
-    Injector injector,
-  }) {
+  bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector}) {
     if (_initialized) {
-      return;
+      return false;
     }
 
     _initialized = true;
@@ -227,6 +223,8 @@ class ControlFactory with Disposable {
         printDebug('Factory prevents dispose of $key - ${value.runtimeType.toString()}');
       }
     });
+
+    return true;
   }
 
   dynamic keyOf<T>({dynamic key, dynamic value}) {
