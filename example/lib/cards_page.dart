@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control_example/settings_page.dart';
 
 import 'cards_controller.dart';
-import 'settings_page.dart';
 
 class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator, ThemeProvider {
   @override
@@ -15,7 +15,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.settings),
-            onPressed: () => SettingsPage.route().navigator(this).openRoute(root: true),
+            onPressed: () => routeOf<SettingsPage>().openRoute(root: true),
           ),
         ],
       ),
@@ -97,11 +97,6 @@ class CardWidget extends BaseControlWidget with ThemeProvider {
 }
 
 class DetailPage extends SingleControlWidget<DetailController> with RouteNavigator {
-  static PageRouteProvider route() => PageRouteProvider.build(
-        identifier: '/card_detail',
-        builder: (context) => DetailPage(),
-      );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -129,7 +129,7 @@ mixin StateControl on ControlModel implements StateNotifier {
 /// [ControlWidget] with [RouteNavigator]
 /// [ControlNavigator]
 /// [RouteHandler] & [PageRouteProvider]
-mixin RouteControl on ControlModel {
+mixin RouteControlProvider on ControlModel {
   /// Implementation of [ControlNavigator] where [Navigator] is used.
   ControlNavigator _navigator;
 
@@ -147,16 +147,18 @@ mixin RouteControl on ControlModel {
     }
   }
 
+  RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(_navigator);
+
   /// [ControlNavigator.openRoute].
   /// [RouteHandler] -> [PageRouteProvider]
-  RouteHandler openPage(
-    PageRouteProvider provider, {
+  RouteHandler openRoute(
+    ControlRoute route, {
     bool root: false,
     bool replacement: false,
-    Map args,
+    dynamic args,
     FutureOr<dynamic> result(dynamic value),
   }) {
-    final handler = RouteHandler(_navigator, provider);
+    final handler = RouteHandler(_navigator, route);
 
     final future = handler.openRoute(root: root, replacement: replacement, args: args);
 
@@ -170,11 +172,11 @@ mixin RouteControl on ControlModel {
   /// [ControlNavigator.openRoot].
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openRoot(
-    PageRouteProvider provider, {
-    Map args,
+    ControlRoute route, {
+    dynamic args,
     FutureOr<dynamic> result(dynamic value),
   }) {
-    final handler = RouteHandler(_navigator, provider);
+    final handler = RouteHandler(_navigator, route);
 
     final future = handler.openRoot(args: args);
 
@@ -188,12 +190,12 @@ mixin RouteControl on ControlModel {
   /// [ControlNavigator.openDialog].
   /// [RouteHandler] -> [PageRouteProvider]
   Future<dynamic> openDialog(
-    PageRouteProvider provider, {
+    ControlRoute route, {
     bool root: false,
     DialogType type: DialogType.popup,
-    Map args,
+    dynamic args,
   }) {
-    return RouteHandler(_navigator, provider).openDialog(root: root, type: type, args: args);
+    return RouteHandler(_navigator, route).openDialog(root: root, type: type, args: args);
   }
 
   /// [ControlNavigator.close].

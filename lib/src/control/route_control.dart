@@ -34,14 +34,14 @@ abstract class ControlNavigator {
   void closeRoute(Route route, [dynamic result]);
 }
 
-/// Ties up [ControlNavigator] and [PageRouteProvider].
-/// [PageRouteProvider.builder] is wrapped and Widget is initialized during build phase.
+/// Ties up [ControlNavigator] and [ControlRoute].
+/// [ControlRoute.builder] is wrapped and Widget is initialized during build phase.
 class RouteHandler {
   /// Implementation of navigator.
   final ControlNavigator navigator;
 
   /// Implementation of provider.
-  final PageRouteProvider provider;
+  final ControlRoute provider;
 
   Future<dynamic> _result;
 
@@ -107,29 +107,29 @@ class RouteHandler {
 }
 
 /// Abstract class for [PageRoute] construction with given settings.
-class PageRouteProvider {
+class ControlRoute {
   /// Default [Route] generator.
-  static PageRouteProvider build<T>({
+  static ControlRoute build<T>({
     dynamic identifier,
     dynamic settings,
     @required WidgetBuilder builder,
     RouteBuilder routeBuilder,
   }) =>
-      PageRouteProvider()
+      ControlRoute()
         ..identifier = RouteStore.routeIdentifier<T>(identifier)
         ..settings = settings
         ..builder = builder
         ..routeBuilder = routeBuilder;
 
-  static PageRouteProvider route<T>({
+  static ControlRoute route<T>({
     dynamic identifier,
     @required Route route,
   }) =>
-      PageRouteProvider()
+      ControlRoute()
         ..identifier = RouteStore.routeIdentifier(identifier)
         ..routeBuilder = (_, __) => route;
 
-  static PageRouteProvider of<T>([dynamic identifier]) => Control.get<RouteStore>()?.getRoute<T>(identifier);
+  static ControlRoute of<T>([dynamic identifier]) => Control.get<RouteStore>()?.getRoute<T>(identifier);
 
   String identifier;
 
@@ -143,7 +143,7 @@ class PageRouteProvider {
   RouteBuilder routeBuilder;
 
   /// Default constructor.
-  PageRouteProvider();
+  ControlRoute();
 
   /// Returns [Route] of given type and with given settings.
   Route buildRoute(WidgetBuilder builder) {
@@ -172,33 +172,33 @@ class PageRouteProvider {
 }
 
 class RouteStore {
-  final _routes = Map<String, PageRouteProvider>();
+  final _routes = Map<String, ControlRoute>();
 
-  RouteStore([List<PageRouteProvider> providers]) {
+  RouteStore([List<ControlRoute> providers]) {
     if (providers != null) {
       addProviders(providers);
     }
   }
 
-  void addProviders(List<PageRouteProvider> providers) {
+  void addProviders(List<ControlRoute> providers) {
     providers.forEach((item) => addProvider(item));
   }
 
   String addRoute<T>({dynamic identifier, @required Route route}) {
-    return addProvider<T>(PageRouteProvider.route<T>(
+    return addProvider<T>(ControlRoute.route<T>(
       identifier: identifier,
       route: route,
     ));
   }
 
   String addBuilder<T>({dynamic identifier, @required WidgetBuilder builder}) {
-    return addProvider<T>(PageRouteProvider.build<T>(
+    return addProvider<T>(ControlRoute.build<T>(
       identifier: identifier,
       builder: builder,
     ));
   }
 
-  String addProvider<T>(PageRouteProvider provider) {
+  String addProvider<T>(ControlRoute provider) {
     final identifier = provider.identifier ?? routeIdentifier<T>();
 
     assert(() {
@@ -213,8 +213,8 @@ class RouteStore {
     return identifier;
   }
 
-  /// Returns [PageRouteProvider] of given [identifier].
-  PageRouteProvider getRoute<T>([dynamic identifier]) {
+  /// Returns [ControlRoute] of given [identifier].
+  ControlRoute getRoute<T>([dynamic identifier]) {
     identifier = routeIdentifier<T>(identifier);
 
     if (_routes.containsKey(identifier)) {
@@ -224,7 +224,7 @@ class RouteStore {
     return null;
   }
 
-  PageRouteProvider getRoot([String identifier]) {
+  ControlRoute getRoot([String identifier]) {
     identifier ??= '/';
 
     if (_routes.containsKey(identifier)) {

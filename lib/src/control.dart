@@ -34,7 +34,7 @@ class Control {
     Map entries,
     Map<Type, Initializer> initializers,
     Injector injector,
-    List<PageRouteProvider> routes,
+    List<ControlRoute> routes,
     Initializer theme,
   }) async {
     if (isInitialized) {

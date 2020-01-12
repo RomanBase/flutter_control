@@ -82,7 +82,7 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [BaseControl]
 /// [StateControl]
 ///
-/// [RouteNavigator] & [RouteControl]
+/// [RouteNavigator] & [RouteControlProvider]
 /// [RouteHandler] & [PageRouteProvider]
 ///
 /// [ControlFactory]
@@ -383,6 +383,8 @@ mixin RouteNavigator on ControlWidget implements ControlNavigator {
       printDebug('${this.toString()} at route: ${route.settings.name}');
     }
   }
+
+  RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(this);
 
   @override
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {

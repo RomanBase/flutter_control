@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control_example/cards_page.dart';
 import 'package:flutter_control_example/menu_page.dart';
+import 'package:flutter_control_example/settings_page.dart';
 
 import 'cards_controller.dart';
 
@@ -33,6 +35,10 @@ class MyApp extends StatelessWidget with PrefsProvider {
           color: Colors.orange,
         ),
       ),
+      routes: [
+        ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
+        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+      ],
       root: (context, args) => MenuPage(),
       app: (context, key, home) => BroadcastBuilder<ThemeData>(
         key: 'theme',

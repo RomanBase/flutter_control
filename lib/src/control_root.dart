@@ -64,7 +64,7 @@ class ControlRoot extends StatefulWidget {
   final Map entries;
   final Map<Type, Initializer> initializers;
   final Injector injector;
-  final List<PageRouteProvider> routes;
+  final List<ControlRoute> routes;
   final Initializer<ControlTheme> theme;
   final WidgetBuilder loader;
   final bool disableLoader;
