@@ -41,13 +41,7 @@ abstract class WidgetInitializer {
     return true;
   }
 
-  Map _buildArgs(dynamic args) {
-    final buildArgs = ControlArgs(args);
-
-    buildArgs.set(data);
-
-    return buildArgs.data;
-  }
+  Map _buildArgs(dynamic args) => Parse.toArgs(args, data: data);
 
   /// Wraps initializer into [WidgetBuilder].
   WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
