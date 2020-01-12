@@ -6,11 +6,11 @@ import 'cards_controller.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
+class MyApp extends StatelessWidget with PrefsProvider {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ControlBase(
+    return ControlRoot(
       debug: true,
       defaultLocale: 'en',
       locales: {
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
       }),
       theme: (context) => MyTheme(context),
       loader: (context) => InitLoader.of(
-        delay: Duration(seconds: 3),
+        delay: Duration(seconds: 1),
         builder: (context, control) => Container(
           color: Colors.orange,
         ),
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget with LocalizationProvider, PrefsProvider {
         builder: (context, theme) {
           return MaterialApp(
             key: key,
-            title: localizeDynamic('app_name', defaultValue: 'Flutter Example') as String,
+            title: 'Flutter Example',
             theme: theme,
             home: home,
           );

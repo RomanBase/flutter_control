@@ -28,6 +28,12 @@ class UnitId {
   /// Returns [UnitId.cycleId] of given [index].
   /// [UnitId.az] is used as input - so result is not case sensitive and without numbers.
   /// Set [digitOffset] to specify minimum length of final result.
+  ///
+  /// For [UnitId.aZ] sequence results are:
+  /// 0 - a
+  /// 1 - b
+  /// 26 - aa
+  /// 27 - ab
   static String charId(int index, {int digitOffset: 0}) => cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
 
   /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds 4 random chars to end of String.

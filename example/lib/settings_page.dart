@@ -3,7 +3,7 @@ import 'package:flutter_control_example/main.dart';
 import 'package:flutter_control_example/settings_controller.dart';
 
 class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
-  static PageRouteProvider route() => PageRouteProvider.of(
+  static PageRouteProvider route() => PageRouteProvider.build(
         identifier: '/settings',
         builder: (context) => SettingsPage(),
       );

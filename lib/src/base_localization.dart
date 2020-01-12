@@ -92,7 +92,7 @@ class BaseLocalization with PrefsProvider {
       args = await loadDefaultLocalization();
     }
 
-    if (!await isSystemLocaleActive(context)) {
+    if (!isSystemLocaleActive(context)) {
       args = await changeToSystemLocale(context);
     }
 
@@ -110,13 +110,13 @@ class BaseLocalization with PrefsProvider {
 
   /// Returns preferred locale of this app instance.
   /// Either Device locale or locale stored in preferences.
-  Future<String> getSystemLocale(BuildContext context) async {
-    return (await prefs.get(preference_key)) ?? getDeviceLocale(context)?.toString();
+  String getSystemLocale(BuildContext context) {
+    return prefs.get(preference_key) ?? getDeviceLocale(context)?.toString();
   }
 
   /// Checks if preferred locale is loaded.
-  Future<bool> isSystemLocaleActive(BuildContext context) async {
-    final pref = await getSystemLocale(context);
+  bool isSystemLocaleActive(BuildContext context) {
+    final pref = getSystemLocale(context);
 
     return isActive && isLocaleEqual(pref, locale);
   }
@@ -127,7 +127,7 @@ class BaseLocalization with PrefsProvider {
   /// Changes localization to system language
   /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
   Future<LocalizationArgs> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
-    final pref = preferred ? await prefs.get(preference_key) : null;
+    final pref = preferred ? prefs.get(preference_key) : null;
 
     String locale;
 
@@ -449,7 +449,7 @@ class BaseLocalization with PrefsProvider {
 class LocalizationProvider {
   ///Instance of [BaseLocalization]
   @protected
-  BaseLocalization get localization => ControlProvider.get<BaseLocalization>();
+  BaseLocalization get localization => Control.get<BaseLocalization>();
 
   ///[BaseLocalization.localize]
   @protected

@@ -3,12 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 final factory = Control.factory();
 
-final broadcast = Control.broadcast();
+final broadcast = Control.broadcaster();
 
-void main() {
-  expect(factory.isInitialized, isFalse);
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  Control.init(
+  final isInitialized = await Control.initControl(
     debug: false,
     entries: {
       ControlModel: BaseControl(),
@@ -22,7 +22,9 @@ void main() {
     injector: BaseInjector(),
   );
 
-  expect(factory.isInitialized, isTrue);
+  test('Set up', () async {
+    expect(isInitialized, isTrue);
+  });
 
   group('Control', () {
     test('init', () {
@@ -30,9 +32,8 @@ void main() {
 
       expect(Control.factory(), isNotNull);
       expect(Control.localization(), isNotNull);
-      expect(Control.broadcast(), isNotNull);
+      expect(Control.broadcaster(), isNotNull);
       expect(Control.injector(), isNotNull);
-      expect(Control.of(null), isNotNull);
 
       expect(Control.debug, isFalse);
       expect(Control.debug, factory.debug);
@@ -70,8 +71,8 @@ void main() {
 
     test('get', () {
       final itemByType = factory.get<ControlModel>();
-      final itemByKey = factory.get(ControlModel);
-      final itemBySKey = factory.get('key');
+      final itemByKey = factory.get(key: ControlModel);
+      final itemBySKey = factory.get(key: 'key');
       final itemByExactType = factory.get<BaseControl>();
 
       expect(itemByType, isNotNull);
@@ -85,7 +86,7 @@ void main() {
       expect(itemByType.runtimeType, BaseControl);
 
       final itemInit = factory.init<_ArgModel>('init');
-      final itemGetInit = factory.get<_ArgModel>('init');
+      final itemGetInit = factory.get<_ArgModel>(args: 'init');
 
       expect(itemInit.value, 'init');
       expect(itemGetInit.value, 'init');
@@ -103,7 +104,7 @@ void main() {
       final model = factory.resolve(data, key: ControlModel, args: 'init');
       final argModel = factory.resolve<_ArgModel>(data, args: 'init');
       final def = factory.resolve(data, key: 'none', defaultValue: 'def');
-      final defStore = factory.get('none');
+      final defStore = factory.get(key: 'none');
 
       expect(item, 'item');
 
@@ -122,7 +123,7 @@ void main() {
       factory.set(key: ControlModel, value: _SwapController());
 
       final itemByType = factory.get<ControlModel>();
-      final itemByKey = factory.get(ControlModel);
+      final itemByKey = factory.get(key: ControlModel);
       final itemByExactType = factory.get<BaseControl>();
 
       expect(itemByType, isNotNull);

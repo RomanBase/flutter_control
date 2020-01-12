@@ -371,23 +371,23 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
 }
 
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
-class ControlBuilderGroup extends StatefulWidget {
+class ActionBuilderGroup extends StatefulWidget {
   final List<ActionControlSub> controls;
   final ControlWidgetBuilder<List> builder;
 
-  const ControlBuilderGroup({
+  const ActionBuilderGroup({
     Key key,
     @required this.controls,
     @required this.builder,
   }) : super(key: key);
 
   @override
-  _ControlBuilderGroupState createState() => _ControlBuilderGroupState();
+  _ActionBuilderGroupState createState() => _ActionBuilderGroupState();
 
   Widget build(BuildContext context, List values) => builder(context, values);
 }
 
-class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
+class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   List _values;
   final _subs = List<ActionSubscription>();
 
@@ -412,7 +412,7 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   }
 
   @override
-  void didUpdateWidget(ControlBuilderGroup oldWidget) {
+  void didUpdateWidget(ActionBuilderGroup oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.controls != oldWidget.controls) {

@@ -69,7 +69,7 @@ class CardWidget extends BaseControlWidget with ThemeProvider {
       ),
       child: FlatButton(
         padding: const EdgeInsets.all(16.0),
-        onPressed: () => ControlProvider.get<CardsController>()?.openCard(item),
+        onPressed: () => Control.get<CardsController>()?.openCard(item),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -97,7 +97,7 @@ class CardWidget extends BaseControlWidget with ThemeProvider {
 }
 
 class DetailPage extends SingleControlWidget<DetailController> with RouteNavigator {
-  static PageRouteProvider route() => PageRouteProvider.of(
+  static PageRouteProvider route() => PageRouteProvider.build(
         identifier: '/card_detail',
         builder: (context) => DetailPage(),
       );

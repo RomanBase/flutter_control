@@ -1,33 +1,54 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_control/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Wrapper around [SharedPreferences].
 class BasePrefs {
-  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+  SharedPreferences prefs;
 
-  Future<void> set(String key, String value) async => (await prefs).setString(key, value);
+  bool get mounted => prefs != null;
 
-  Future<String> get(String key, {String defaultValue}) async => (await prefs).getString(key) ?? defaultValue;
+  Future<BasePrefs> init() async {
+    await mount();
+    return this;
+  }
 
-  Future<void> setBool(String key, bool value) async => (await prefs).setBool(key, value);
+  Future<SharedPreferences> mount() async {
+    if (!mounted) {
+      //impossible to mount in pure Dart environment..
+      //only iOS and Android right now..
+      try {
+        prefs = await SharedPreferences.getInstance();
+      } catch (e) {
+        printDebug(e.toString());
+      }
+    }
 
-  Future<bool> getBool(String key, {bool defaultValue: true}) async => (await prefs).getBool(key) ?? defaultValue;
+    return prefs;
+  }
 
-  Future<void> setInt(String key, int value) async => (await prefs).setInt(key, value);
+  void set(String key, String value) => prefs.setString(key, value);
 
-  Future<int> getInt(String key, {int defaultValue: 0}) async => (await prefs).getInt(key) ?? defaultValue;
+  String get(String key, {String defaultValue}) => prefs.getString(key) ?? defaultValue;
 
-  Future<void> setDouble(String key, double value) async => (await prefs).setDouble(key, value);
+  void setBool(String key, bool value) => prefs.setBool(key, value);
 
-  Future<double> getDouble(String key, {double defaultValue: 0.0}) async => (await prefs).getDouble(key) ?? defaultValue;
+  bool getBool(String key, {bool defaultValue: true}) => prefs.getBool(key) ?? defaultValue;
 
-  Future<void> json(String key, dynamic value) async => (await prefs).setString(key, jsonEncode(value));
+  void setInt(String key, int value) => prefs.setInt(key, value);
 
-  Future<dynamic> getJson(String key) async => jsonDecode((await get(key, defaultValue: '{}')));
+  int getInt(String key, {int defaultValue: 0}) => prefs.getInt(key) ?? defaultValue;
+
+  void setDouble(String key, double value) => prefs.setDouble(key, value);
+
+  double getDouble(String key, {double defaultValue: 0.0}) => prefs.getDouble(key) ?? defaultValue;
+
+  void json(String key, dynamic value) => prefs.setString(key, jsonEncode(value));
+
+  dynamic getJson(String key) => jsonDecode(get(key, defaultValue: '{}'));
 }
 
 mixin PrefsProvider {
-  BasePrefs get prefs => ControlProvider.get(BasePrefs);
+  BasePrefs get prefs => Control.get<BasePrefs>() ?? BasePrefs();
 }

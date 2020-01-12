@@ -63,7 +63,7 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
     T item = holder.getArg<T>();
 
     if (item == null) {
-      item = ControlProvider.get<T>(null, holder.args);
+      item = Control.get<T>(args: holder.args);
     }
 
     return item;
@@ -193,7 +193,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   void onStateChanged(dynamic state) {}
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? Control.of(context)?.rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) => root ? Control.root()?.rootContext ?? context : context;
 
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
@@ -207,7 +207,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   /// Returns value by given key or type.
   /// Look up in [controls] and [factory].
   /// Use [getArg] to look up in Widget's arguments.
-  T getControl<T>({dynamic key, dynamic args}) => ControlProvider.resolve<T>(controls, key: key, args: args);
+  T getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(controls, key: key, args: args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]

@@ -9,7 +9,7 @@ export 'package:flutter/material.dart';
 export './src/base_localization.dart';
 export './src/base_prefs.dart';
 export './src/control.dart';
-export './src/control_base.dart';
+export './src/control_root.dart';
 export './src/control_broadcast.dart';
 export './src/controller/action_control.dart';
 export './src/controller/base_model.dart';

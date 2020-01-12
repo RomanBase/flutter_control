@@ -98,14 +98,14 @@ class ControlBroadcast implements Disposable {
 
 class BroadcastSubscription<T> implements Disposable {
   /// Key of global sub.
-  /// [ControlFactory.broadcast]
+  /// [ControlFactory.broadcaster]
   final dynamic key;
 
   /// Parent of this sub - who creates and setup this sub.
   ControlBroadcast _parent;
 
   /// Callback from sub.
-  /// [ControlFactory.broadcast]
+  /// [ControlFactory.broadcaster]
   ValueChanged<T> _onData;
 
   bool _active = true;

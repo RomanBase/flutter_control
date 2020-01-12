@@ -4,21 +4,21 @@ import 'package:flutter_control/core.dart';
 /// Holder of current root context.
 final _context = ActionControl.broadcast<BuildContext>();
 
-const _baseKey = GlobalObjectKey<ControlBaseState>(ControlBase);
-const _scopeKey = GlobalObjectKey(ControlScope);
+const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
+const _appKey = GlobalObjectKey(AppBuilder);
 
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
 
-class ControlScope extends InheritedWidget {
-  ControlScope({Key key, Widget child}) : super(key: key ?? GlobalObjectKey(child), child: child) {
-    Control.factory().swap<ControlScope>(value: this);
-  }
+class ControlScope {
+  const ControlScope();
 
-  factory ControlScope.empty() => ControlScope(child: EmptyWidget());
+  GlobalKey<ControlRootState> get rootKey => _rootKey;
 
-  GlobalKey<ControlBaseState> get baseKey => _baseKey;
+  GlobalKey get appKey => _appKey;
 
-  GlobalKey get scopeKey => _scopeKey;
+  ControlRoot rootWidget() => _rootKey.currentWidget;
+
+  ControlRootState rootState() => _rootKey.currentState;
 
   /// Returns current context from [contextHolder]
   BuildContext get rootContext => _context.value;
@@ -26,13 +26,11 @@ class ControlScope extends InheritedWidget {
   /// Sets new root context to [contextHolder]
   set rootContext(BuildContext context) => _context.value = context;
 
-  ActionSubscription<BuildContext> subscribeContextChanges(ValueCallback<BuildContext> callback) => _context.subscribe(callback);
-
-  ActionSubscription<BuildContext> subscribeNextContextChange(ValueCallback<BuildContext> callback) => _context.once(callback);
+  ActionControlSub get rootContextSub => _context.sub;
 
   bool notifyControlState([dynamic state]) {
-    if (baseKey.currentState != null && baseKey.currentState.mounted) {
-      baseKey.currentState.notifyState(state);
+    if (rootKey.currentState != null && rootKey.currentState.mounted) {
+      rootKey.currentState.notifyState(state);
 
       return true;
     }
@@ -40,13 +38,13 @@ class ControlScope extends InheritedWidget {
     printDebug('ControlBase is not in Widget Tree! (ControlScope.baseKey)');
     printDebug('Trying to notify ControlScope.scopeKey ..');
 
-    if (scopeKey.currentState != null && scopeKey.currentState.mounted) {
-      if (scopeKey.currentState is StateNotifier) {
-        (scopeKey.currentState as StateNotifier).notifyState(state);
+    if (appKey.currentState != null && appKey.currentState.mounted) {
+      if (appKey.currentState is StateNotifier) {
+        (appKey.currentState as StateNotifier).notifyState(state);
       } else {
         printDebug('Found State is not StateNotifier, Trying to call setState directly..');
         // ignore: invalid_use_of_protected_member
-        scopeKey.currentState.setState(() {});
+        appKey.currentState.setState(() {});
       }
 
       return true;
@@ -56,14 +54,9 @@ class ControlScope extends InheritedWidget {
 
     return false;
   }
-
-  @override
-  bool updateShouldNotify(ControlScope oldWidget) {
-    return false;
-  }
 }
 
-class ControlBase extends StatefulWidget {
+class ControlRoot extends StatefulWidget {
   final bool debug;
   final String defaultLocale;
   final Map<String, String> locales;
@@ -74,6 +67,7 @@ class ControlBase extends StatefulWidget {
   final List<PageRouteProvider> routes;
   final Initializer<ControlTheme> theme;
   final WidgetBuilder loader;
+  final bool disableLoader;
   final ControlWidgetBuilder<ControlArgs> root;
   final AppBuilder app;
   final VoidCallback onInit;
@@ -83,14 +77,14 @@ class ControlBase extends StatefulWidget {
   /// [debug] extra debug console prints.
   /// [defaultLocale] key of default locale. First localization will be used if this value is not set.
   /// [locales] map of supported localizations. Key - locale (en, en_US). Value - asset path.
-  /// [loadLocalization] loads localization during [ControlBase] initialization.
+  /// [loadLocalization] loads localization during [ControlRoot] initialization.
   /// [entries] map of Controllers/Models to init and fill into [ControlFactory].
   /// [initializers] map of dynamic initializers to store in [ControlFactory].
   /// [theme] custom [ControlTheme] builder.
   /// [loader] widget to show during loading and initializing control, localization.
   /// [root] first Widget after loading finished.
   /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppBuilder.key] and [AppBuilder.home] from builder to App Widget.
-  const ControlBase({
+  const ControlRoot({
     this.debug: false,
     this.defaultLocale,
     this.locales,
@@ -101,20 +95,21 @@ class ControlBase extends StatefulWidget {
     this.routes,
     this.theme,
     this.loader,
+    this.disableLoader: false,
     @required this.root,
     @required this.app,
     this.onInit,
-  }) : super(key: _baseKey);
+  }) : super(key: _rootKey);
 
   @override
-  State<StatefulWidget> createState() => ControlBaseState();
+  State<StatefulWidget> createState() => ControlRootState();
 }
 
 /// Creates State for BaseApp.
 /// AppControl and MaterialApp is build here.
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
-class ControlBaseState extends State<ControlBase> implements StateNotifier {
+class ControlRootState extends State<ControlRoot> implements StateNotifier {
   final _args = ControlArgs({LoadingStatus: LoadingStatus.progress});
 
   bool _loading = true;
@@ -141,6 +136,12 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   void initState() {
     super.initState();
 
+    Control.factory().swap<ControlRoot>(value: widget);
+
+    if (widget.disableLoader) {
+      _loading = false;
+    }
+
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of(widget.loader);
     } else {
@@ -161,8 +162,8 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
     _rootBuilder = WidgetInitializer.control(widget.root);
 
-    _localeSub = BaseLocalization.subscribeChanges((args) async {
-      if (args.changed && await Control.localization().isSystemLocaleActive(context)) {
+    _localeSub = BaseLocalization.subscribeChanges((args) {
+      if (args.changed && Control.localization().isSystemLocaleActive(context)) {
         setState(() {
           _loading = false;
         });
@@ -174,7 +175,7 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
 
   void _initControl() async {
     if (!Control.isInitialized) {
-      Control.init(
+      await Control.initControl(
         debug: widget.debug,
         defaultLocale: widget.defaultLocale,
         locales: widget.locales ?? {'en': null},
@@ -194,12 +195,19 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
   }
 
   @override
+  void didUpdateWidget(ControlRoot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    Control.factory().swap<ControlRoot>(value: widget);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ControlScope(
-      key: null,
+    return Container(
+      key: ObjectKey(Control.localization()?.locale ?? '-'),
       child: widget.app(
         context,
-        _scopeKey,
+        _appKey,
         Builder(
           builder: (context) => _buildHome(context),
         ),
@@ -214,14 +222,14 @@ class ControlBaseState extends State<ControlBase> implements StateNotifier {
         ? _loadingBuilder.getWidget(
             context,
             args: {
-              ControlBaseState: this,
+              ControlRootState: this,
               ControlArgs: _args,
             },
           )
         : _rootBuilder.getWidget(
             context,
             args: {
-              ControlBaseState: this,
+              ControlRootState: this,
               ControlArgs: _args,
             },
           );

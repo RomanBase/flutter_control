@@ -9,30 +9,25 @@ abstract class Injector {
   static Injector of(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
 }
 
+/// Shortcut class to get objects from [ControlFactory]
 class Control {
+  Control._();
+
   static get isInitialized => factory().isInitialized;
 
   static get debug => factory().debug;
 
   static ControlFactory factory() => ControlFactory._instance;
 
-  static ControlBroadcast broadcast() => factory()._broadcast;
+  static ControlBroadcast broadcaster() => factory()._broadcast;
 
   static Injector injector() => factory()._injector;
 
-  static BaseLocalization localization() => ControlProvider.get<BaseLocalization>();
+  static BaseLocalization localization() => Control.get<BaseLocalization>();
 
-  static ControlScope of([BuildContext context]) {
-    ControlScope scope;
+  static ControlScope root() => ControlScope();
 
-    if (context != null) {
-      scope = context.findAncestorWidgetOfExactType<ControlScope>();
-    }
-
-    return scope ?? ControlProvider.get<ControlScope>();
-  }
-
-  static bool init({
+  static Future<bool> initControl({
     bool debug,
     String defaultLocale,
     Map<String, String> locales,
@@ -41,7 +36,7 @@ class Control {
     Injector injector,
     List<PageRouteProvider> routes,
     Initializer theme,
-  }) {
+  }) async {
     if (isInitialized) {
       return false;
     }
@@ -56,9 +51,8 @@ class Control {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
-    entries[ControlScope] = ControlScope.empty();
-    entries[BasePrefs] = BasePrefs();
-    entries[RouteStorage] = RouteStorage(routes);
+    entries[BasePrefs] = await BasePrefs().init();
+    entries[RouteStore] = RouteStore(routes);
     entries[BaseLocalization] = BaseLocalization(
       defaultLocale ?? localizationAssets[0].locale,
       localizationAssets,
@@ -74,69 +68,36 @@ class Control {
 
     return isInitialized;
   }
-}
 
-/// Shortcut class to get objects from [ControlFactory]
-class ControlProvider<T> extends StatelessWidget {
+  /////
+  /////
+  /////
+
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
   /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
   /// nullable
-  static T get<T>([dynamic key, dynamic args]) => ControlFactory._instance.get<T>(key, args);
+  static T get<T>({dynamic key, dynamic args, bool withInjector: true}) => factory().get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
   /// returns key of stored object.
-  static dynamic set<T>({dynamic key, @required dynamic value}) => ControlFactory._instance.set<T>(key: key, value: value);
+  static dynamic set<T>({dynamic key, @required dynamic value}) => factory().set<T>(key: key, value: value);
 
   /// returns new object of requested [Type] via initializer in [ControlFactory].
   /// nullable
-  static T init<T>([dynamic args]) => ControlFactory._instance.init(args);
+  static T init<T>([dynamic args]) => factory().init(args);
 
   /// Injects and initializes given [item] with [args].
   /// [Initializable.init] is called only when [args] are not null.
-  static void inject<T>(dynamic item, {dynamic args}) => ControlFactory._instance.inject(item, args: args);
+  static void inject<T>(dynamic item, {dynamic args, bool withInjector: true, bool withArgs: true}) => factory().inject(item, args: args, withInjector: withInjector, withArgs: withArgs);
 
   /// Executes sequence of functions to retrieve expect object.
   /// Look up in [source] for item via [Parse.getArg].
   /// Then [ControlFactory.get] / [ControlFactory.init] is executed.
   /// nullable
-  static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => ControlFactory._instance.resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  final dynamic factoryKey;
-  final dynamic args;
-  final ControlWidgetBuilder<T> builder;
-
-  ControlProvider({
-    Key key,
-    this.factoryKey,
-    this.args,
-    @required this.builder,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => builder(context, get<T>(factoryKey, args));
-}
-
-class ControlProviderGroup extends StatelessWidget {
-  final List<dynamic> factoryKeys;
-  final dynamic args;
-  final ControlWidgetBuilder<List> builder;
-
-  ControlProviderGroup({
-    Key key,
-    this.factoryKeys,
-    this.args,
-    @required this.builder,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => builder(context, getControls());
-
-  List getControls() => factoryKeys.map((key) => ControlProvider.get(key, args)).toList();
+  static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => factory().resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].
@@ -160,8 +121,8 @@ class BroadcastProvider {
 /// Factory for initializing and storing objects.
 /// Factory also creates global subscription stream driven by keys. Access this stream via [BroadcastProvider].
 ///
-/// Fill [ControlBase.entries] for initial items to store inside factory.
-/// Fill [ControlBase.initializers] for initial builders to store inside factory.
+/// Fill [ControlRoot.entries] for initial items to store inside factory.
+/// Fill [ControlRoot.initializers] for initial builders to store inside factory.
 class ControlFactory with Disposable {
   /// Instance of AppFactory.
   static final ControlFactory _instance = ControlFactory._();
@@ -212,7 +173,7 @@ class ControlFactory with Disposable {
 
     _items.forEach((key, value) {
       if (value is Initializable) {
-        value.init({});
+        inject(value, args: {});
 
         printDebug('Factory inits $key - ${value.runtimeType.toString()}');
       }
@@ -281,10 +242,8 @@ class ControlFactory with Disposable {
 
   /// Returns object of requested type by given [key] or by [Type].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
-  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
-  /// Finally object is Injected [ControlFactory.inject] with given [args].
   /// nullable
-  T get<T>([dynamic key, dynamic args]) {
+  T get<T>({dynamic key, dynamic args, bool withInjector: false}) {
     final useExactKey = key != null;
     key = keyOf<T>(key: key);
 
@@ -294,17 +253,23 @@ class ControlFactory with Disposable {
       final item = _items[key] as T;
 
       if (item != null) {
-        inject(item, args: args);
+        inject(item, args: args, withInjector: withInjector);
         return item;
       }
     }
 
     if (!useExactKey) {
-      for (final item in _items.values) {
-        if (item is T) {
-          inject(item, args: args);
-          return item;
-        }
+      T item;
+
+      if (T != dynamic) {
+        item = _items.values.firstWhere((item) => item is T, orElse: () => null);
+      } else if (key == Type) {
+        item = _items.values.firstWhere((item) => item.runtimeType == key, orElse: () => null);
+      }
+
+      if (item != null) {
+        inject(item, args: args, withInjector: withInjector);
+        return item;
       }
     }
 
@@ -324,7 +289,7 @@ class ControlFactory with Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= get<ControlScope>()?.rootContext;
+      args ??= Control.root()?.rootContext;
 
       final item = initializer(args);
 
@@ -339,12 +304,12 @@ class ControlFactory with Disposable {
   /// Injects and initializes given [item] with [args].
   /// [Injector.inject] is called even if [args] are null.
   /// [Initializable.init] is called only when [args] are not null.
-  void inject<T>(dynamic item, {dynamic args, bool force: true}) {
-    if (_injector != null) {
+  void inject<T>(dynamic item, {dynamic args, bool withInjector: true, bool withArgs: true}) {
+    if (withInjector && _injector != null) {
       _injector.inject<T>(item, args);
     }
 
-    if (item is Initializable && args != null) {
+    if (withArgs && item is Initializable && args != null) {
       item.init(args is Map ? args : Parse.toMap(args));
     }
   }
@@ -362,7 +327,7 @@ class ControlFactory with Disposable {
       return item;
     }
 
-    return get<T>(key, args) ?? defaultValue;
+    return get<T>(key: key, args: args) ?? defaultValue;
   }
 
   /// Finds [Initializer] of given [Type].

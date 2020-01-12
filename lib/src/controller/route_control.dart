@@ -65,7 +65,7 @@ class RouteHandler {
     final initializer = WidgetInitializer.of(provider.builder);
 
     _result = navigator.openRoute(
-      _route = provider.getRoute(initializer.wrap(args: args)),
+      _route = provider.buildRoute(initializer.wrap(args: args)),
       root: root,
       replacement: replacement,
     );
@@ -82,7 +82,7 @@ class RouteHandler {
     final initializer = WidgetInitializer.of(provider.builder);
 
     _result = navigator.openRoot(
-      _route = provider.getRoute(initializer.wrap(args: args)),
+      _route = provider.buildRoute(initializer.wrap(args: args)),
     );
 
     initializer.data = _route;
@@ -109,27 +109,34 @@ class RouteHandler {
 /// Abstract class for [PageRoute] construction with given settings.
 class PageRouteProvider {
   /// Default [Route] generator.
-  factory PageRouteProvider.of({
-    String identifier,
-    dynamic type,
+  static PageRouteProvider build<T>({
+    dynamic identifier,
+    dynamic settings,
     @required WidgetBuilder builder,
     RouteBuilder routeBuilder,
   }) =>
       PageRouteProvider()
-        ..identifier = identifier
-        ..type = type
+        ..identifier = RouteStore.routeIdentifier<T>(identifier)
+        ..settings = settings
         ..builder = builder
         ..routeBuilder = routeBuilder;
 
-  factory PageRouteProvider.named(String identifier) => ControlProvider.get<RouteStorage>()?.getRoute(identifier);
+  static PageRouteProvider route<T>({
+    dynamic identifier,
+    @required Route route,
+  }) =>
+      PageRouteProvider()
+        ..identifier = RouteStore.routeIdentifier(identifier)
+        ..routeBuilder = (_, __) => route;
 
-  /// Route identifier [RouteSettings].
+  static PageRouteProvider of<T>([dynamic identifier]) => Control.get<RouteStore>()?.getRoute<T>(identifier);
+
   String identifier;
 
   /// Route transition type.
-  dynamic type = 'platform';
+  dynamic settings = 'platform';
 
-  /// Page/Widget builder.
+  /// Widget builder.
   WidgetBuilder builder;
 
   /// Route builder.
@@ -139,35 +146,35 @@ class PageRouteProvider {
   PageRouteProvider();
 
   /// Returns [Route] of given type and with given settings.
-  Route getRoute(WidgetBuilder builder) {
-    final settings = RouteSettings(name: identifier, arguments: type);
+  Route buildRoute(WidgetBuilder builder) {
+    final routeSettings = RouteSettings(name: identifier, arguments: settings);
 
     if (routeBuilder != null) {
-      return routeBuilder(builder, settings);
+      return routeBuilder(builder, routeSettings);
     }
 
-    if (type == 'platform') {
+    if (settings == 'platform') {
       switch (Platform.operatingSystem) {
         case 'android':
-          return MaterialPageRoute(builder: builder, settings: settings);
+          return MaterialPageRoute(builder: builder, settings: routeSettings);
         case 'ios':
-          return CupertinoPageRoute(builder: builder, settings: settings);
+          return CupertinoPageRoute(builder: builder, settings: routeSettings);
       }
     }
 
-    return MaterialPageRoute(builder: builder, settings: settings);
+    return MaterialPageRoute(builder: builder, settings: routeSettings);
   }
 
   /// Initializes [RouteHandler] with given [navigator] and this route provider.
   RouteHandler navigator(ControlNavigator navigator) => RouteHandler(navigator, this);
 
-  void register() => ControlProvider.get<RouteStorage>()?.addProvider(this);
+  void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
 }
 
-class RouteStorage {
+class RouteStore {
   final _routes = Map<String, PageRouteProvider>();
 
-  RouteStorage([List<PageRouteProvider> providers]) {
+  RouteStore([List<PageRouteProvider> providers]) {
     if (providers != null) {
       addProviders(providers);
     }
@@ -177,26 +184,22 @@ class RouteStorage {
     providers.forEach((item) => addProvider(item));
   }
 
-  /// [identifier] is stored without '/' chars
-  void addRoute(String identifier, Route route) {
-    addProvider(
-      PageRouteProvider()
-        ..identifier = identifier
-        ..routeBuilder = (_, __) => route,
-    );
+  String addRoute<T>({dynamic identifier, @required Route route}) {
+    return addProvider<T>(PageRouteProvider.route<T>(
+      identifier: identifier,
+      route: route,
+    ));
   }
 
-  /// [identifier] is stored without '/' chars
-  void addBuilder(String identifier, WidgetBuilder builder) {
-    addProvider(PageRouteProvider.of(
+  String addBuilder<T>({dynamic identifier, @required WidgetBuilder builder}) {
+    return addProvider<T>(PageRouteProvider.build<T>(
       identifier: identifier,
       builder: builder,
     ));
   }
 
-  /// [identifier] is stored without '/' chars
-  void addProvider(PageRouteProvider provider) {
-    final identifier = _identifier(provider.identifier);
+  String addProvider<T>(PageRouteProvider provider) {
+    final identifier = provider.identifier ?? routeIdentifier<T>();
 
     assert(() {
       if (_routes.containsKey(identifier)) {
@@ -206,11 +209,13 @@ class RouteStorage {
     }());
 
     _routes[identifier] = provider;
+
+    return identifier;
   }
 
   /// Returns [PageRouteProvider] of given [identifier].
-  PageRouteProvider getRoute(String identifier) {
-    identifier = _identifier(identifier);
+  PageRouteProvider getRoute<T>([dynamic identifier]) {
+    identifier = routeIdentifier<T>(identifier);
 
     if (_routes.containsKey(identifier)) {
       return _routes[identifier];
@@ -220,20 +225,13 @@ class RouteStorage {
   }
 
   PageRouteProvider getRoot([String identifier]) {
-    identifier = _identifier(identifier ?? '/');
+    identifier ??= '/';
 
     if (_routes.containsKey(identifier)) {
       return _routes[identifier];
     }
 
     return _routes.values.first;
-  }
-
-  /// removes all '/' chars
-  String _identifier(String identifier) {
-    assert(identifier != null);
-
-    return identifier.replaceAll('/', '');
   }
 
   List<String> decompose(String identifier) {
@@ -256,28 +254,25 @@ class RouteStorage {
     return list;
   }
 
-  static List<PageRouteProvider> ofRoutes(Map<String, Route> routes) {
-    final list = List<PageRouteProvider>();
+  static String routeIdentifier<T>([dynamic value]) {
+    if (value == null && T != dynamic) {
+      value = T;
+    }
 
-    routes.forEach(
-      (key, value) => PageRouteProvider()
-        ..identifier = key
-        ..routeBuilder = (_, __) => value,
-    );
+    String id;
 
-    return list;
-  }
+    if (value is String) {
+      id = value;
+    } else if (value is Type) {
+      id = value.toString();
+    } else if (value != null) {
+      id = value.runtimeType.toString();
+    }
 
-  static List<PageRouteProvider> ofBuilders(Map<String, WidgetBuilder> builders) {
-    final list = List<PageRouteProvider>();
+    if (id != null && !id.startsWith('/')) {
+      id = '/$id';
+    }
 
-    builders.forEach(
-      (key, value) => PageRouteProvider.of(
-        identifier: key,
-        builder: value,
-      ),
-    );
-
-    return list;
+    return id;
   }
 }
