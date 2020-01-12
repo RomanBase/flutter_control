@@ -75,11 +75,34 @@ class FieldSubscription<T> implements StreamSubscription<T> {
   }
 }
 
+abstract class FieldControlStream<T> {
+  Stream<T> get stream => null;
+
+  T get value => null;
+
+  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true});
+}
+
+class FieldControlSub<T> implements FieldControlStream<T> {
+  final FieldControl<T> _parent;
+
+  FieldControlSub._(this._parent);
+
+  Stream<T> get stream => _parent.stream;
+
+  T get value => _parent.value;
+
+  @override
+  FieldSubscription subscribe(void Function(T event) onData, {Function onError, void Function() onDone, bool cancelOnError = false, bool current = true}) {
+    return _parent.subscribe(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError, current: current);
+  }
+}
+
 /// Enclosure and adds functionality to standard [Stream] and [StreamBuilder] flow.
 /// Use [FieldBuilder] or basic variants ([StringBuilder], [BoolBuilder], etc.) for easier integration into Widget.
 ///
 /// There is few basic controllers to work with [BoolControl], [StringControl]. etc.
-class FieldControl<T> implements Disposable {
+class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Current broadcast [StreamController].
   final _stream = StreamController<T>.broadcast();
 
@@ -110,6 +133,8 @@ class FieldControl<T> implements Disposable {
   bool get isEmpty => _value == null;
 
   bool get isActive => !_stream.isClosed;
+
+  FieldControlSub<T> get sub => FieldControlSub<T>._(this);
 
   /// Initializes controller and [Stream] with default value.
   FieldControl([T value]) {
@@ -343,11 +368,11 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 class FieldStreamBuilder<T> extends StreamBuilder<T> {
   FieldStreamBuilder({
     Key key,
-    @required FieldControl<T> control,
+    @required FieldControlStream<T> control,
     @required AsyncWidgetBuilder<T> builder,
   }) : super(
           key: key,
-          initialData: control._value,
+          initialData: control.value,
           stream: control.stream,
           builder: builder,
         );
@@ -366,7 +391,7 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 
   FieldBuilder({
     Key key,
-    @required FieldControl<T> control,
+    @required FieldControlStream<T> control,
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
     this.nullOk: false,
@@ -388,7 +413,7 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
-  final List<FieldControl> controls;
+  final List<FieldControlStream> controls;
   final ControlWidgetBuilder builder; //todo: T
 
   const FieldBuilderGroup({Key key, @required this.controls, @required this.builder}) : super(key: key);
@@ -530,10 +555,10 @@ class ListControl<T> extends FieldControl<List<T>> {
     if (replace) {
       value.removeAt(index);
       value.insert(index, item);
-    }
 
-    if (notify) {
-      this.notify();
+      if (notify) {
+        this.notify();
+      }
     }
 
     return replace;

@@ -1,142 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="move default example">
-      <change afterPath="$PROJECT_DIR$/examples/example/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/.metadata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/debug/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/java/cz/apino/flutter_control_example/MainActivity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/drawable/launch_background.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/main/res/values/styles.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/app/src/profile/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/android/settings.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/assets/localization/cs.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/assets/localization/en.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Flutter/AppFrameworkInfo.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Flutter/Debug.xcconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Flutter/Release.xcconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Podfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner.xcodeproj/project.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/AppDelegate.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/AppDelegate.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Base.lproj/LaunchScreen.storyboard" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Base.lproj/Main.storyboard" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/Info.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/ios/Runner/main.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/cards_controller.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/cards_page.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/main.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/menu_page.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/settings_controller.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/lib/settings_page.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/pubspec.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/example/test/widget_test.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/.metadata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/debug/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/kotlin/dev/basecontrol/spends/MainActivity.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/drawable/launch_background.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/main/res/values/styles.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/app/src/profile/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/android/settings.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Flutter/AppFrameworkInfo.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Flutter/Debug.xcconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Flutter/Release.xcconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner.xcodeproj/project.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner.xcworkspace/contents.xcworkspacedata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/AppDelegate.swift" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Base.lproj/LaunchScreen.storyboard" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Base.lproj/Main.storyboard" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Info.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/ios/Runner/Runner-Bridging-Header.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/lib/control/init_control.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/lib/main.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/lib/page/init_page.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/pubspec.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/test/widget_test.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/examples/spends/web/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/flutter_control.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/flutter_control.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+    <list default="true" id="c5886cda-f469-4874-858a-1f20c2692da2" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/base_localization.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/base_localization.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/control/action_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control/action_control.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/control/field_control.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control/field_control.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/control_root.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/control_root.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/control_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/control_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/loader_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/loader_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/widget_provider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/widget/navigation_stack.dart" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -150,23 +22,20 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="Pixel_3_API_28" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/examples/spends/lib/main.dart">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="323">
-              <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
-              <folding>
-                <element signature="e#0#39#0" expanded="true" />
-              </folding>
+            <state>
+              <caret line="15" column="5" selection-start-line="15" selection-start-column="5" selection-end-line="15" selection-end-column="5" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/lib/src/widget/loader_widget.dart">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="167">
-              <caret line="93" column="35" selection-start-line="93" selection-start-column="35" selection-end-line="93" selection-end-column="35" />
+            <state relative-caret-position="646">
+              <caret line="42" column="30" selection-start-line="42" selection-start-column="30" selection-end-line="42" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -222,10 +91,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/TODO.md" />
-        <option value="$PROJECT_DIR$/CHANGELOG.md" />
-        <option value="$PROJECT_DIR$/lib/src/controller/disposable.dart" />
-        <option value="$PROJECT_DIR$/example/lib/settings_controller.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/base_widget.dart" />
         <option value="$PROJECT_DIR$/test/widget_test.dart" />
         <option value="$PROJECT_DIR$/lib/src/control_broadcast.dart" />
@@ -273,6 +138,10 @@
         <option value="$PROJECT_DIR$/lib/src/widget/loader_widget.dart" />
         <option value="$PROJECT_DIR$/lib/src/widget/control_widget.dart" />
         <option value="$PROJECT_DIR$/examples/spends/lib/control/init_control.dart" />
+        <option value="$PROJECT_DIR$/lib/src/control/action_control.dart" />
+        <option value="$PROJECT_DIR$/lib/src/control/field_control.dart" />
+        <option value="$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart" />
+        <option value="$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart" />
       </list>
     </option>
   </component>
@@ -305,6 +174,27 @@
             <path>
               <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
               <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="spends" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
+              <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="spends" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
+              <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+              <item name="spends" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="page" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
+              <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -312,6 +202,13 @@
               <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
               <item name="lib" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
+              <item name="flutter_control" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="control" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="flutter_control" type="b2602c69:ProjectViewProjectNode" />
@@ -411,20 +308,6 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1561479542723</updated>
-    </task>
-    <task id="LOCAL-00089" summary="doc">
-      <created>1576603549770</created>
-      <option name="number" value="00089" />
-      <option name="presentableId" value="LOCAL-00089" />
-      <option name="project" value="LOCAL" />
-      <updated>1576603549770</updated>
-    </task>
-    <task id="LOCAL-00090" summary="+9 args in constructor">
-      <created>1576688895048</created>
-      <option name="number" value="00090" />
-      <option name="presentableId" value="LOCAL-00090" />
-      <option name="project" value="LOCAL" />
-      <updated>1576688895049</updated>
     </task>
     <task id="LOCAL-00091" summary="+10 sub changes">
       <created>1576691321190</created>
@@ -755,7 +638,21 @@
       <option name="project" value="LOCAL" />
       <updated>1578845544457</updated>
     </task>
-    <option name="localTasksCounter" value="138" />
+    <task id="LOCAL-00138" summary="loader update">
+      <created>1578853461437</created>
+      <option name="number" value="00138" />
+      <option name="presentableId" value="LOCAL-00138" />
+      <option name="project" value="LOCAL" />
+      <updated>1578853461437</updated>
+    </task>
+    <task id="LOCAL-00139" summary="examples">
+      <created>1578853587506</created>
+      <option name="number" value="00139" />
+      <option name="presentableId" value="LOCAL-00139" />
+      <option name="project" value="LOCAL" />
+      <updated>1578853587506</updated>
+    </task>
+    <option name="localTasksCounter" value="140" />
     <servers />
   </component>
   <component name="TestHistory">
@@ -801,6 +698,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="54" y="-8" width="2514" height="1096" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info id="Captures" order="0" weight="0.25" />
       <window_info id="Designer" order="1" />
@@ -818,7 +716,7 @@
       <window_info anchor="bottom" id="Flutter Performance" order="5" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="6" weight="0.3287234" />
       <window_info anchor="bottom" id="Messages" order="7" weight="0.31914893" />
-      <window_info anchor="bottom" id="Run" order="8" visible="true" weight="0.2957447" />
+      <window_info anchor="bottom" id="Run" order="8" weight="0.2957447" />
       <window_info anchor="bottom" id="Find" order="9" weight="0.3287234" />
       <window_info anchor="right" id="Capture Analysis" order="0" />
       <window_info anchor="right" id="Theme Preview" order="1" />
@@ -830,8 +728,6 @@
     </layout>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="doc" />
-    <MESSAGE value="+1 minor changes" />
     <MESSAGE value="+2 device" />
     <MESSAGE value="+3 Flutter Control Initializer" />
     <MESSAGE value="+4 Control + Core" />
@@ -855,50 +751,14 @@
     <MESSAGE value="revision v3+1" />
     <MESSAGE value="args and parse" />
     <MESSAGE value="move default example" />
-    <option name="LAST_COMMIT_MESSAGE" value="move default example" />
+    <MESSAGE value="loader update" />
+    <MESSAGE value="examples" />
+    <option name="LAST_COMMIT_MESSAGE" value="examples" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/flutter_control$parse_test_dart.json" NAME="parse_test.dart Coverage Results" MODIFIED="1578820853034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="DartCoverageRunner" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" CONTEXT_FILE_PATH="$PROJECT_DIR$/test/parse_test.dart" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/lib/src/util/platform.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Apps/Flutter/bin/cache/pkg/sky_engine/lib/internal/print.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="18" column="14" selection-start-line="18" selection-start-column="14" selection-end-line="18" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Apps/Flutter/bin/cache/pkg/sky_engine/lib/core/print.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="12" column="12" lean-forward="true" selection-start-line="12" selection-start-column="12" selection-end-line="12" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/foundation/print.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="36" column="7" selection-start-line="36" selection-start-column="7" selection-end-line="36" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/test_api-0.2.11/lib/src/frontend/expect.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="301">
-          <caret line="152" column="29" selection-start-line="152" selection-start-column="29" selection-end-line="152" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/control_broadcast.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1360">
@@ -918,16 +778,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/control/field_control.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="28" column="23" selection-start-line="28" selection-start-column="23" selection-end-line="28" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/util/unit_id.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="558">
@@ -942,28 +792,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/framework.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="212">
-          <caret line="69" column="8" selection-start-line="69" selection-start-column="8" selection-end-line="69" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/theme_control.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="909">
           <caret line="156" column="3" selection-start-line="156" selection-start-column="3" selection-end-line="156" selection-end-column="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/lib/src/control/action_control.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="365">
-          <caret line="373" column="15" lean-forward="true" selection-start-line="373" selection-start-column="15" selection-end-line="373" selection-end-column="15" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#153#1193#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1220,16 +1052,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/examples/spends/lib/main.dart">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="19" column="27" lean-forward="true" selection-start-line="19" selection-start-column="27" selection-end-line="19" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/control_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
@@ -1258,8 +1080,82 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/src/widget/loader_widget.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="167">
+        <state relative-caret-position="371">
           <caret line="93" column="35" selection-start-line="93" selection-start-column="35" selection-end-line="93" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/spends/lib/main.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="391">
+          <caret line="23" column="32" lean-forward="true" selection-start-line="23" selection-start-column="32" selection-end-line="23" selection-end-column="32" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/control/disposable.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="473">
+          <caret line="77" column="7" selection-start-line="77" selection-start-column="7" selection-end-line="77" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/control/action_control.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="65" column="20" lean-forward="true" selection-start-line="65" selection-start-column="20" selection-end-line="65" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#153#1193#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/lib/src/control/field_control.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="85" column="19" lean-forward="true" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#147#1428#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/framework.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1072">
+          <caret line="1710" column="15" selection-start-line="1710" selection-start-column="15" selection-end-line="1710" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/basic.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2075">
+          <caret line="5033" column="42" selection-start-line="5033" selection-start-column="42" selection-end-line="5033" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Apps/Flutter/packages/flutter/lib/src/widgets/text.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="425" column="24" lean-forward="true" selection-start-line="425" selection-start-column="24" selection-end-line="425" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/spends/lib/page/spend_list_page.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="646">
+          <caret line="42" column="30" selection-start-line="42" selection-start-column="30" selection-end-line="42" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/examples/spends/lib/control/spend_control.dart">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="15" column="5" selection-start-line="15" selection-start-column="5" selection-end-line="15" selection-end-column="5" />
         </state>
       </provider>
     </entry>

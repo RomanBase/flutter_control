@@ -48,7 +48,7 @@ class ActionSubscription<T> implements Disposable {
   }
 }
 
-abstract class ActionControlSub<T> {
+abstract class ActionControlStream<T> {
   /// Last value passed to subs.
   T get value;
 
@@ -63,10 +63,10 @@ abstract class ActionControlSub<T> {
   ActionSubscription<T> once(ValueCallback<T> action, {bool current: true});
 }
 
-class ActionControlSubscriber<T> implements ActionControlSub<T> {
+class ActionControlSub<T> implements ActionControlStream<T> {
   final ActionControl<T> _control;
 
-  ActionControlSubscriber._(this._control);
+  ActionControlSub._(this._control);
 
   @override
   T get value => _control.value;
@@ -82,7 +82,7 @@ class ActionControlSubscriber<T> implements ActionControlSub<T> {
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
 /// [ActionControl.asBroadcastProvider] - Subscription to [BroadcastProvider].
-class ActionControl<T> implements ActionControlSub<T>, Disposable {
+class ActionControl<T> implements ActionControlStream<T>, Disposable {
   /// Current value.
   T _value;
 
@@ -103,7 +103,7 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
 
   bool get isLocked => _lock != null;
 
-  ActionControlSub<T> get sub => ActionControlSubscriber<T>._(this);
+  ActionControlStream<T> get sub => ActionControlSub<T>._(this);
 
   ///Default constructor.
   ActionControl._([T value]) {
@@ -309,7 +309,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// [ActionControl.broadcast] - multiple subs.
 /// [ControlWidgetBuilder] - returns Widget based on given value.
 class ActionBuilder<T> extends StatefulWidget {
-  final ActionControlSub<T> control;
+  final ActionControlStream<T> control;
   final ControlWidgetBuilder<T> builder;
 
   const ActionBuilder({
@@ -372,7 +372,7 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
 
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ActionBuilderGroup extends StatefulWidget {
-  final List<ActionControlSub> controls;
+  final List<ActionControlStream> controls;
   final ControlWidgetBuilder<List> builder;
 
   const ActionBuilderGroup({
