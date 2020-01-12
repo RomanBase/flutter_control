@@ -112,11 +112,11 @@ class ControlRoot extends StatefulWidget {
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
   final _args = ControlArgs({LoadingStatus: LoadingStatus.progress});
 
-  bool _loading = true;
+  bool _loadingLocale = true;
 
   LoadingStatus get loadingStatus => _args[LoadingStatus];
 
-  bool get loading => _loading || loadingStatus != LoadingStatus.done;
+  bool get loading => _loadingLocale || loadingStatus != LoadingStatus.done;
 
   WidgetInitializer _rootBuilder;
   WidgetInitializer _loadingBuilder;
@@ -139,7 +139,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     Control.factory().swap<ControlRoot>(value: widget);
 
     if (widget.disableLoader) {
-      _loading = false;
+      _loadingLocale = false;
+      _args[LoadingStatus] = LoadingStatus.done;
     }
 
     if (widget.loader != null) {
@@ -165,7 +166,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _localeSub = BaseLocalization.subscribeChanges((args) {
       if (args.changed && Control.localization().isSystemLocaleActive(context)) {
         setState(() {
-          _loading = false;
+          _loadingLocale = false;
         });
       }
     });
@@ -187,10 +188,12 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       );
     }
 
-    if (widget.loadLocalization && !Control.localization().isActive) {
+    if (widget.loadLocalization && Control.localization().isValid && !Control.localization().isActive) {
       _context.once((context) async => await Control.localization().init(context: context));
     } else {
-      _loading = false;
+      setState(() {
+        _loadingLocale = false;
+      });
     }
   }
 

@@ -14,9 +14,9 @@ abstract class WidgetInitializer {
 
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
+  factory WidgetInitializer.of(WidgetBuilder builder, [Object data]) => _WidgetInitBuilder(builder)..data = data;
 
-  static WidgetInitializer control<T>(ControlWidgetBuilder<T> builder) => _WidgetInitControlBuilder(builder);
+  static WidgetInitializer control<T>(ControlWidgetBuilder<T> builder, [Object data]) => _WidgetInitControlBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
@@ -150,6 +152,8 @@ class ControlFactory with Disposable {
 
   bool debug = false;
 
+  Completer _completer = Completer();
+
   /// Initializes default items and initializers in factory.
   bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector}) {
     if (_initialized) {
@@ -185,8 +189,13 @@ class ControlFactory with Disposable {
       }
     });
 
+    _completer.complete();
+    _completer = null;
+
     return true;
   }
+
+  Future<void> onReady() async => _completer?.future;
 
   dynamic keyOf<T>({dynamic key, dynamic value}) {
     if (key == null) {

@@ -49,9 +49,23 @@ class ControlArgHolder implements Disposable {
   }
 }
 
+//TODO: there is only one scenario when is this async needed - ControlFactory.onReady().
+mixin AsyncWidgetInit on ControlWidget {
+  Future<void> onInitAsync(ControlState<ControlWidget> state);
+
+  void onStateInitialized(ControlState<ControlWidget> state);
+
+  @override
+  void onInitState(ControlState<ControlWidget> state) async {
+    await onInitAsync(state);
+    super.onInitState(state);
+    onStateInitialized(state);
+  }
+}
+
 /// [ControlWidget] with just one init Controller.
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
-  T get control => controls[0];
+  T get control => controls.length > 0 ? controls[0] : null;
 
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
@@ -186,7 +200,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   }
 
   /// Notifies [State] of this [Widget].
-  void notifyState(dynamic state) => holder._state?.notifyState(state);
+  void notifyState([dynamic state]) => holder._state?.notifyState(state);
 
   /// Callback from [State] when state is notified.
   @protected
@@ -237,14 +251,18 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       (widget as ThemeProvider).invalidateTheme(context);
     }
 
+    initControls();
+
+    widget.notifyWidget(this);
+    widget.onInitState(this);
+  }
+
+  void initControls() {
     controls = widget.initControls();
 
     if (controls == null) {
       controls = [];
     }
-
-    widget.notifyWidget(this);
-    widget.onInitState(this);
   }
 
   void addArg(dynamic args) {

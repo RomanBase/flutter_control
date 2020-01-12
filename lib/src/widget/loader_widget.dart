@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-abstract class InitLoaderControl extends ControlModel {
+abstract class InitLoaderControl extends BaseControl {
   final loading = LoadingControl(LoadingStatus.progress);
   final Duration delay;
 
@@ -20,8 +20,8 @@ abstract class InitLoaderControl extends ControlModel {
       );
 
   @override
-  void init(Map args) {
-    super.init(args);
+  void onInit(Map args) {
+    super.onInit(args);
 
     state = args.getArg<StateNotifier>();
 
@@ -36,6 +36,8 @@ abstract class InitLoaderControl extends ControlModel {
     if (delay != null) {
       block = DelayBlock(delay);
     }
+
+    await Control.factory().onReady();
 
     final result = await load();
 
@@ -90,17 +92,17 @@ class _InitLoaderControlEmpty extends InitLoaderControl {
 }
 
 class InitLoader extends SingleControlWidget<InitLoaderControl> {
-  final ControlWidgetBuilder<InitLoaderControl> builder;
+  final WidgetBuilder builder;
 
   InitLoader({
     InitLoaderControl control,
     @required this.builder,
-  }) : super(args: [control ?? InitLoaderControl.empty()]);
+  }) : super(args: control);
 
   factory InitLoader.of({
     Future<dynamic> Function(InitLoaderControl) load,
     Duration delay,
-    @required ControlWidgetBuilder<InitLoaderControl> builder,
+    @required WidgetBuilder builder,
   }) =>
       InitLoader(
         control: InitLoaderControl.of(
@@ -111,5 +113,7 @@ class InitLoader extends SingleControlWidget<InitLoaderControl> {
       );
 
   @override
-  Widget build(BuildContext context) => builder(context, control);
+  Widget build(BuildContext context) {
+    return WidgetInitializer.of((context) => builder(context), control).getWidget(context, args: holder.args);
+  }
 }

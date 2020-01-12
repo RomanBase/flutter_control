@@ -19,6 +19,8 @@ class LocalizationAsset {
 
   String get iso2Locale => locale.substring(0, 2);
 
+  bool get isValid => locale != null && assetPath != null;
+
   /// Default constructor
   LocalizationAsset(
     this.locale,
@@ -69,6 +71,8 @@ class BaseLocalization with PrefsProvider {
 
   /// Checks if any data are stored in localization.
   bool get isActive => _data.length > 0;
+
+  bool get isValid => assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
 
   /// Custom func for [extractLocalization].
   LocalizationExtractor _mapExtractor;
