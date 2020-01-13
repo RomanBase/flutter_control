@@ -29,7 +29,7 @@ class Control {
 
   static ControlScope root() => ControlScope();
 
-  static Future<bool> initControl({
+  static bool initControl({
     bool debug,
     String defaultLocale,
     Map<String, String> locales,
@@ -38,7 +38,7 @@ class Control {
     Injector injector,
     List<ControlRoute> routes,
     Initializer theme,
-  }) async {
+  }) {
     if (isInitialized) {
       return false;
     }
@@ -53,7 +53,9 @@ class Control {
     final localizationAssets = List<LocalizationAsset>();
     locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
 
-    entries[BasePrefs] = await BasePrefs().init();
+    final prefs = BasePrefs();
+
+    entries[BasePrefs] = prefs;
     entries[RouteStore] = RouteStore(routes);
     entries[BaseLocalization] = BaseLocalization(
       defaultLocale ?? localizationAssets[0].locale,
@@ -63,10 +65,12 @@ class Control {
     initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
 
     ControlFactory._instance.initialize(
-      entries: entries,
-      initializers: initializers,
-      injector: injector,
-    );
+        entries: entries,
+        initializers: initializers,
+        injector: injector,
+        initAsync: () async {
+          await prefs.init();
+        });
 
     return isInitialized;
   }
@@ -155,7 +159,7 @@ class ControlFactory with Disposable {
   Completer _completer = Completer();
 
   /// Initializes default items and initializers in factory.
-  bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector}) {
+  bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector, Future Function() initAsync}) {
     if (_initialized) {
       return false;
     }
@@ -189,10 +193,18 @@ class ControlFactory with Disposable {
       }
     });
 
-    _completer.complete();
-    _completer = null;
+    _initializeAsyncs(initAsync);
+
+    _initialized = true;
 
     return true;
+  }
+
+  Future<void> _initializeAsyncs(Future Function() initAsync) async {
+    await initAsync();
+
+    _completer.complete();
+    _completer = null;
   }
 
   Future<void> onReady() async => _completer?.future;

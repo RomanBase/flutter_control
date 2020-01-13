@@ -164,7 +164,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _rootBuilder = WidgetInitializer.control(widget.root);
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
-      if (args.changed && Control.localization().isSystemLocaleActive(context)) {
+      if (args.changed && Control.localization().isSystemLocaleActive(_context.value)) {
         setState(() {
           _loadingLocale = false;
         });
@@ -176,7 +176,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   void _initControl() async {
     if (!Control.isInitialized) {
-      await Control.initControl(
+      Control.initControl(
         debug: widget.debug,
         defaultLocale: widget.defaultLocale,
         locales: widget.locales ?? {'en': null},

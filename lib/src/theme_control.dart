@@ -212,6 +212,6 @@ mixin ThemeProvider<T extends ControlTheme> {
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   void invalidateTheme([BuildContext context]) {
-    theme.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
+    theme?.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
   }
 }

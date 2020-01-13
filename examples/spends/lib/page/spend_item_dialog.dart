@@ -1,7 +1,10 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/main.dart';
+import 'package:spends/widget/input_decoration.dart';
+
 import '../control/spend_item_control.dart';
 
-class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemeProvider, RouteNavigator {
+class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemeProvider<SpendTheme>, RouteNavigator {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -12,7 +15,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
           margin: EdgeInsets.all(theme.padding),
           padding: EdgeInsets.all(theme.padding),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.data.canvasColor,
             borderRadius: BorderRadius.circular(12.0),
           ),
           child: Column(
@@ -21,6 +24,11 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
               InputField(
                 control: control.title,
                 textInputAction: TextInputAction.next,
+                decoration: RoundInputDecoration(color: theme.lightGray),
+                label: localize('title'),
+              ),
+              SizedBox(
+                height: theme.paddingMid,
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -30,6 +38,8 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
                       control: control.value,
                       keyboardType: TextInputType.number,
                       textInputAction: TextInputAction.next,
+                      decoration: RoundInputDecoration(color: theme.lightGray),
+                      label: localize('value'),
                     ),
                   ),
                   Padding(
@@ -44,16 +54,26 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
                   ),
                 ],
               ),
+              SizedBox(
+                height: theme.paddingMid,
+              ),
               InputField(
                 control: control.note,
                 textInputAction: TextInputAction.done,
+                minLines: 2,
+                maxLines: 2,
+                decoration: RoundInputDecoration(color: theme.lightGray),
+                label: localize('note'),
               ),
               SizedBox(
                 height: theme.paddingExtended,
               ),
               FlatButton(
                 onPressed: control.submit,
-                child: Text('submit'),
+                child: Text(
+                  localize('submit'),
+                  style: font.button,
+                ),
               ),
             ],
           ),

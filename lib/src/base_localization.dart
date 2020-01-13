@@ -119,7 +119,11 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Checks if preferred locale is loaded.
-  bool isSystemLocaleActive(BuildContext context) {
+  bool isSystemLocaleActive(BuildContext context, {bool nullOk: true}) {
+    if (locale == null && nullOk) {
+      return true;
+    }
+
     final pref = getSystemLocale(context);
 
     return isActive && isLocaleEqual(pref, locale);
@@ -131,6 +135,8 @@ class BaseLocalization with PrefsProvider {
   /// Changes localization to system language
   /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
   Future<LocalizationArgs> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
+    await Control.factory().onReady();
+
     final pref = preferred ? prefs.get(preference_key) : null;
 
     String locale;
@@ -191,8 +197,10 @@ class BaseLocalization with PrefsProvider {
       return null;
     }
 
+    final iso2Locale = locale.substring(0, 2);
+
     for (final asset in assets) {
-      if (asset.iso2Locale == locale.substring(0, 2)) {
+      if (asset.iso2Locale == iso2Locale) {
         return asset.assetPath;
       }
     }

@@ -5,6 +5,28 @@ import '../control/spend_control.dart';
 import 'spend_item_dialog.dart';
 
 class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider, RouteNavigator {
+  Widget buildHeaderRow({@required String title, @required FieldControl<String> control, TextStyle style}) {
+    style ??= font.body1;
+
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Text(
+            title,
+            style: style,
+          ),
+        ),
+        FieldBuilder<String>(
+          control: control,
+          builder: (context, value) => Text(
+            value,
+            style: style,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,16 +40,21 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
-                  FieldBuilder<String>(
+                  buildHeaderRow(
+                    title: 'Total year spends',
                     control: control.yearSpend,
-                    builder: (context, value) => Text(value),
                   ),
-                  FieldBuilder<String>(
+                  buildHeaderRow(
+                    title: 'Average month spends',
                     control: control.monthAvgSpend,
-                    builder: (context, value) => Text(
-                      value,
-                      style: font.body2,
-                    ),
+                    style: font.body2,
+                  ),
+                  SizedBox(
+                    height: theme.paddingMid,
+                  ),
+                  buildHeaderRow(
+                    title: 'Sub month spends',
+                    control: control.monthSubSpend,
                   ),
                 ],
               ),
@@ -36,6 +63,7 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
               child: ListBuilder(
                 control: control.list,
                 builder: (context, data) => ListView.builder(
+                  physics: BouncingScrollPhysics(),
                   padding: EdgeInsets.all(0.0),
                   itemCount: data.length,
                   itemBuilder: (context, index) => SpendItemWidget(
@@ -70,9 +98,8 @@ class SpendItemWidget extends StatelessWidget with ThemeProvider {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.only(top: 1),
-      color: Colors.grey,
       child: FlatButton(
-        padding: EdgeInsets.all(theme.padding),
+        padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingMid),
         onPressed: () => onPressed(item),
         child: Row(
           children: <Widget>[
@@ -82,7 +109,7 @@ class SpendItemWidget extends StatelessWidget with ThemeProvider {
                 children: <Widget>[
                   Text(
                     item.title,
-                    style: font.headline,
+                    style: font.body1,
                   ),
                   if (item.note != null)
                     Text(
@@ -98,8 +125,14 @@ class SpendItemWidget extends StatelessWidget with ThemeProvider {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
-                Text(item.yearSpend.toInt().toString()),
-                Text(item.monthSpend.toInt().toString()),
+                Text(
+                  item.yearSpend.toInt().toString(),
+                  style: font.body1,
+                ),
+                Text(
+                  item.monthSpend.toInt().toString(),
+                  style: font.body2,
+                ),
               ],
             ),
           ],
