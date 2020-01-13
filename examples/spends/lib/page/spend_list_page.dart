@@ -1,23 +1,33 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/spend_control.dart';
 
-class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider {
+import '../control/spend_control.dart';
+import 'spend_item_dialog.dart';
+
+class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider, RouteNavigator {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.orange,
         child: Column(
           children: <Widget>[
             Container(
+              width: device.width,
               padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
-              color: Colors.blue,
+              color: theme.primaryColor,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: <Widget>[
                   FieldBuilder<String>(
                     control: control.yearSpend,
                     builder: (context, value) => Text(value),
+                  ),
+                  FieldBuilder<String>(
+                    control: control.monthAvgSpend,
+                    builder: (context, value) => Text(
+                      value,
+                      style: font.body2,
+                    ),
                   ),
                 ],
               ),
@@ -26,11 +36,12 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
               child: ListBuilder(
                 control: control.list,
                 builder: (context, data) => ListView.builder(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  padding: EdgeInsets.all(0.0),
                   itemCount: data.length,
                   itemBuilder: (context, index) => SpendItemWidget(
                     key: ObjectKey(data[index]),
                     item: data[index],
+                    onPressed: (item) => routeOf<SpendItemDialog>().openDialog(type: DialogType.popup, args: item),
                   ),
                 ),
               ),
@@ -39,30 +50,61 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          control.addItem(SpendItem(
-            title: UnitId.charId(control.list.length),
-            value: control.list.length,
-            subscription: false,
-          ));
-        },
+        onPressed: () => routeOf<SpendItemDialog>().openDialog(type: DialogType.popup),
       ),
     );
   }
 }
 
-class SpendItemWidget extends StatelessWidget {
+class SpendItemWidget extends StatelessWidget with ThemeProvider {
   final SpendItem item;
+  final ValueCallback<SpendItem> onPressed;
 
-  const SpendItemWidget({Key key, this.item}) : super(key: key);
+  SpendItemWidget({
+    Key key,
+    @required this.item,
+    @required this.onPressed,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      height: 96.0,
+      margin: EdgeInsets.only(top: 1),
       color: Colors.grey,
-      child: Text(item.title),
+      child: FlatButton(
+        padding: EdgeInsets.all(theme.padding),
+        onPressed: () => onPressed(item),
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    item.title,
+                    style: font.headline,
+                  ),
+                  if (item.note != null)
+                    Text(
+                      item.note,
+                      style: font.body2,
+                    ),
+                ],
+              ),
+            ),
+            SizedBox(
+              width: theme.padding,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: <Widget>[
+                Text(item.yearSpend.toInt().toString()),
+                Text(item.monthSpend.toInt().toString()),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

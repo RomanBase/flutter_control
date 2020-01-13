@@ -91,7 +91,7 @@ class RouteHandler {
   }
 
   /// [ControlNavigator.openDialog]
-  Future<dynamic> openDialog({bool root: false, DialogType type, dynamic args}) {
+  Future<dynamic> openDialog({bool root: false, DialogType type: DialogType.popup, dynamic args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
     _route = null;

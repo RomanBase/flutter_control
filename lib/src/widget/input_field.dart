@@ -46,6 +46,8 @@ class InputControl extends ControlModel with StateControl {
   /// Non null
   String get value => _text ?? '';
 
+  set value(String value) => setText(value);
+
   /// Validity of text - regex based.
   bool _isValid = true;
 
@@ -273,7 +275,7 @@ class InputControl extends ControlModel with StateControl {
 class InputField extends ControlWidget with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
-  final InputControl controller;
+  final InputControl control;
 
   /// Text that suggests what sort of input the field accepts.
   ///
@@ -406,7 +408,7 @@ class InputField extends ControlWidget with ThemeProvider {
 
   InputField({
     Key key,
-    @required this.controller,
+    @required this.control,
     this.label,
     this.hint,
     this.decoration,
@@ -445,17 +447,17 @@ class InputField extends ControlWidget with ThemeProvider {
 
   @override
   List<ControlModel> initControls() {
-    controller._obscure = obscureText;
+    control._obscure = obscureText;
 
-    return [controller];
+    return [control];
   }
 
   @override
   void notifyWidget(ControlState state) {
     super.notifyWidget(state);
 
-    controller._initControllers();
-    controller._focusController.setContext(context);
+    control._initControllers();
+    control._focusController.setContext(context);
   }
 
   @override
@@ -463,10 +465,10 @@ class InputField extends ControlWidget with ThemeProvider {
     final cursor = cursorColor ?? theme.data.cursorColor;
 
     return TextField(
-      onChanged: controller._changeText,
-      onSubmitted: (text) => controller.submit(),
-      controller: controller._editController,
-      focusNode: controller._focusController,
+      onChanged: control._changeText,
+      onSubmitted: (text) => control.submit(),
+      controller: control._editController,
+      focusNode: control._focusController,
       decoration: (decoration ??
               InputDecoration(
                 border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
@@ -479,7 +481,7 @@ class InputField extends ControlWidget with ThemeProvider {
           .copyWith(
         labelText: label,
         hintText: hint,
-        errorText: (!controller.isValid) ? controller._error : null,
+        errorText: (!control.isValid) ? control._error : null,
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,
@@ -491,7 +493,7 @@ class InputField extends ControlWidget with ThemeProvider {
       showCursor: showCursor,
       readOnly: readOnly,
       autofocus: autofocus,
-      obscureText: controller._obscure,
+      obscureText: control._obscure,
       autocorrect: autocorrect,
       maxLines: maxLines,
       minLines: minLines,

@@ -5,6 +5,8 @@ import 'package:spends/page/init_page.dart';
 import 'package:spends/page/spend_list_page.dart';
 
 import 'control/init_control.dart';
+import 'control/spend_item_control.dart';
+import 'page/spend_item_dialog.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,6 +19,12 @@ class MyApp extends StatelessWidget {
       entries: {
         SpendControl: SpendControl(),
       },
+      initializers: {
+        SpendItemControl: (_) => SpendItemControl(),
+      },
+      routes: [
+        ControlRoute.build<SpendItemDialog>(builder: (_) => SpendItemDialog()),
+      ],
       loader: (_) => InitLoader(
         control: InitControl(),
         builder: (_) => InitPage(),
@@ -29,4 +37,9 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+class SpendTheme extends ControlTheme {
+
+
 }

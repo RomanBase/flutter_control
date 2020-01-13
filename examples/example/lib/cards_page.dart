@@ -39,7 +39,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteNavigator
             color: Colors.grey,
             padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingHalf),
             child: InputField(
-              controller: control.input,
+              control: control.input,
             ),
           ),
         ],
