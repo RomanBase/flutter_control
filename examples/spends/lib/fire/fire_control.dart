@@ -1,37 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_control/core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
-var firebaseConfig = {
-  'apiKey': "AIzaSyAbYJiHnpb2hWANjFaxVpz-E51RUZVxfgw",
-  'authDomain': "base-control-fire.firebaseapp.com",
-  'databaseURL': "https://base-control-fire.firebaseio.com",
-  'projectId': "base-control-fire",
-  'storageBucket': "base-control-fire.appspot.com",
-  'messagingSenderId': "542744611210",
-  'appId': "1:542744611210:web:c458c579272061cea5e073",
-  'googleAppID': "542744611210",
-  'measurementId': "G-H9CVM1FL5F"
-};
 
 class FireProvider {
   FireControl get fire => Control.get<FireControl>();
 }
 
 class FireControl {
-  FirebaseUser _user;
+  final _user = ActionControl.broadcast<FirebaseUser>();
 
-  FirebaseUser get user => _user;
+  FirebaseUser get user => _user.value;
 
-  bool get isUserSignedIn => _user != null;
+  bool get isUserSignedIn => !_user.isEmpty;
 
-  static Future init() async {
-    return FirebaseApp.configure(
-      name: 'Spend',
-      options: FirebaseOptions.from(firebaseConfig),
-    );
-  }
+  String get uid => _user.value?.uid;
+
+  ActionControlStream<FirebaseUser> get userSub => _user.sub;
 
   Future<FirebaseUser> signUp(String email, String password, String nickname) async {
     final user = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
@@ -40,16 +24,16 @@ class FireControl {
 
     await user.user.updateProfile(info);
 
-    return _user = user.user;
+    return _user.value = user.user;
   }
 
   Future<FirebaseUser> signIn(String email, String password) async {
     final user = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
 
-    return _user = user.user;
+    return _user.value = user.user;
   }
 
-  Future<FirebaseUser> restore() async => _user = await FirebaseAuth.instance.currentUser();
+  Future<FirebaseUser> restore() async => _user.value = await FirebaseAuth.instance.currentUser();
 
   Future<FirebaseUser> signInWithGoogle() async {
     final google = GoogleSignIn(scopes: [
@@ -71,11 +55,11 @@ class FireControl {
 
     await google.signOut();
 
-    return _user = user.user;
+    return _user.value = user.user;
   }
 
   Future<void> signOut() async {
-    _user = null;
+    _user.value = null;
     return FirebaseAuth.instance.signOut();
   }
 

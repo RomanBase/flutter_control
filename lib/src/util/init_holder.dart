@@ -16,7 +16,7 @@ class InitHolder<T> {
 
   bool _isDirty = true;
 
-  /// Is true if current [value] needs rebuild.
+  /// Is true if current [data] needs rebuild.
   bool get isDirty => _isDirty || !isActive;
 
   /// Default constructor

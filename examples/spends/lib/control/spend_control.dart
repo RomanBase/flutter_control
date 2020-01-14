@@ -1,38 +1,46 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/data/spend_repo.dart';
+import 'package:spends/entity/spend_item.dart';
+import 'package:spends/fire/fire_control.dart';
 
-class SpendItem {
-  final String title;
-  final String note;
-  final num value;
-  final num possibleSavings;
-  final bool subscription;
+class SpendItemModel extends BaseModel with StateControl {
+  final loading = LoadingControl();
 
-  num get yearSpend => subscription ? value * 12.0 : value;
+  SpendItem _item;
 
-  num get monthSpend => subscription ? value : value / 12.0;
+  SpendItem get item => _item;
 
-  num get yearSavings => subscription ? possibleSavings * 12.0 : possibleSavings;
+  set item(SpendItem value) {
+    _item = value;
+    notifyState();
+  }
 
-  num get monthSavings => subscription ? possibleSavings : possibleSavings / 12.0;
+  SpendItemModel(SpendItem item) {
+    this.item = item;
+  }
 
-  SpendItem({
-    @required this.title,
-    this.note,
-    this.value: 0.0,
-    this.possibleSavings: 0.0,
-    this.subscription: false,
-  });
+  @override
+  void dispose() {
+    super.dispose();
+
+    loading.dispose();
+  }
 }
 
 class SpendControl extends BaseControl {
-  final list = ListControl<SpendItem>();
+  final loading = LoadingControl();
+
+  final list = ListControl<SpendItemModel>();
 
   final yearSpend = StringControl();
   final monthAvgSpend = StringControl();
   final monthSubSpend = StringControl();
 
+  SpendRepo get spendRepo => Control.get<SpendRepo>();
+
   SpendControl() {
     autoDispose([
+      loading,
       list,
       yearSpend,
       monthAvgSpend,
@@ -45,16 +53,34 @@ class SpendControl extends BaseControl {
     super.onInit(args);
 
     list.subscribe(_recalculateData);
+
+    Control.get<FireControl>().userSub.subscribe((user) {
+      if (user != null) {
+        _fetchData();
+      }
+    });
   }
 
-  void _recalculateData(List<SpendItem> data) {
+  void _fetchData() async {
+    loading.progress();
+
+    await spendRepo.getSpends().then((data) {
+      list.setValue(data.map((item) => SpendItemModel(item)));
+    });
+
+    loading.done();
+  }
+
+  void _recalculateData(List<SpendItemModel> data) {
     double year = 0.0;
     double monthAvg = 0.0;
     double monthSub = 0.0;
     double yearSavings = 0.0;
     double monthSavings = 0.0;
 
-    data.forEach((item) {
+    data.forEach((spend) {
+      final item = spend.item;
+
       year += item.yearSpend;
       monthAvg += item.monthSpend;
 
@@ -71,9 +97,36 @@ class SpendControl extends BaseControl {
     monthSubSpend.value = monthSub.toInt().toString();
   }
 
-  void addItem(SpendItem item) => list.add(item);
+  Future<void> addItem(SpendItem item) async {
+    final model = SpendItemModel(item);
+    list.add(model);
 
-  void removeItem(SpendItem item) => list.remove(item);
+    model.loading.progress();
 
-  void updateItem(SpendItem origin, SpendItem item) => list.replace(item, (listItem) => listItem == origin);
+    await spendRepo.add(model.item).then((data) {
+      model.item = data;
+    });
+
+    model.loading.done();
+  }
+
+  void removeItem(SpendItemModel model) async {
+    model.loading.progress();
+
+    await spendRepo.remove(model.item).then((_) {
+      list.remove(model);
+    });
+
+    model.loading.done();
+  }
+
+  void updateItem(SpendItemModel model, SpendItem item) async {
+    model.loading.progress();
+
+    await spendRepo.update(model.item, item).then((data) {
+      model.item = data;
+    });
+
+    model.loading.done();
+  }
 }

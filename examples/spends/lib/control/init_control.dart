@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_control/core.dart';
-import 'package:spends/data/fire_control.dart';
+import 'package:spends/fire/fire_control.dart';
 
 class InitControl extends InitLoaderControl with FireProvider {
   final Completer _onAuthorized = Completer();

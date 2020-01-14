@@ -1,4 +1,5 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/entity/spend_item.dart';
 
 import 'spend_control.dart';
 
@@ -18,20 +19,22 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
         subscription: sub.value,
       );
 
-  SpendItem origin;
+  SpendItemModel model;
+
+  bool get editMode => model != null;
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
-    origin = args.getArg<SpendItem>();
+    model = args.getArg<SpendItemModel>();
 
-    if (origin != null) {
-      title.value = origin.title;
-      note.value = origin.note;
-      value.value = origin.value.toString();
-      savings.value = origin.value.toString();
-      sub.value = origin.subscription;
+    if (model != null) {
+      title.value = model.item.title;
+      note.value = model.item.note;
+      value.value = model.item.value.toString();
+      savings.value = model.item.value.toString();
+      sub.value = model.item.subscription;
     }
 
     title.done(_updateData).next(note).done(_updateData).next(value).done(_updateData).next(savings).done(_updateData);
@@ -46,10 +49,10 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
       return;
     }
 
-    if (origin == null) {
-      Control.get<SpendControl>().addItem(item);
+    if (editMode) {
+      Control.get<SpendControl>().updateItem(model, item);
     } else {
-      Control.get<SpendControl>().updateItem(origin, item);
+      Control.get<SpendControl>().addItem(item);
     }
 
     close();

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/spend_control.dart';
-import 'package:spends/data/fire_control.dart';
+import 'package:spends/data/spend_repo.dart';
+import 'package:spends/fire/fire_spend.dart';
 import 'package:spends/page/init_page.dart';
 import 'package:spends/page/spend_list_page.dart';
 
 import 'control/init_control.dart';
 import 'control/spend_item_control.dart';
+import 'fire/fire_control.dart';
 import 'page/spend_item_dialog.dart';
 
 void main() => runApp(MyApp());
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
       initializers: {
         SpendItemControl: (_) => SpendItemControl(),
         InitLoaderControl: (_) => InitControl(),
+        SpendRepo: (_) => FireSpendRepo(),
       },
       routes: [
         ControlRoute.build<SpendItemDialog>(builder: (_) => SpendItemDialog()),

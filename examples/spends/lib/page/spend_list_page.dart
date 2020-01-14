@@ -1,5 +1,6 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/spend_control.dart';
+import 'package:spends/entity/spend_item.dart';
 
 import '../control/spend_control.dart';
 import 'spend_item_dialog.dart';
@@ -60,16 +61,15 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
               ),
             ),
             Expanded(
-              child: ListBuilder(
+              child: ListBuilder<SpendItemModel>(
                 control: control.list,
                 builder: (context, data) => ListView.builder(
                   physics: BouncingScrollPhysics(),
                   padding: EdgeInsets.all(0.0),
                   itemCount: data.length,
                   itemBuilder: (context, index) => SpendItemWidget(
-                    key: ObjectKey(data[index]),
-                    item: data[index],
-                    onPressed: (item) => routeOf<SpendItemDialog>().openDialog(type: DialogType.popup, args: item),
+                    model: data[index],
+                    onPressed: (item) => routeOf<SpendItemDialog>().openDialog(args: item),
                   ),
                 ),
               ),
@@ -84,15 +84,15 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
   }
 }
 
-class SpendItemWidget extends StatelessWidget with ThemeProvider {
-  final SpendItem item;
-  final ValueCallback<SpendItem> onPressed;
+class SpendItemWidget extends SingleControlWidget<SpendItemModel> with ThemeProvider {
+  final ValueCallback<SpendItemModel> onPressed;
+
+  SpendItem get item => control.item;
 
   SpendItemWidget({
-    Key key,
-    @required this.item,
+    @required SpendItemModel model,
     @required this.onPressed,
-  }) : super(key: key);
+  }) : super(key: ObjectKey(model), args: model);
 
   @override
   Widget build(BuildContext context) {
@@ -100,9 +100,16 @@ class SpendItemWidget extends StatelessWidget with ThemeProvider {
       margin: EdgeInsets.only(top: 1),
       child: FlatButton(
         padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingMid),
-        onPressed: () => onPressed(item),
+        onPressed: () => onPressed(control),
         child: Row(
           children: <Widget>[
+            LoadingBuilder(
+              control: control.loading,
+              progress: (_) => Padding(
+                padding: EdgeInsets.only(right: theme.padding),
+                child: CircularProgressIndicator(),
+              ),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
