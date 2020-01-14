@@ -3,6 +3,7 @@ import 'package:flutter_control/core.dart';
 
 class SpendItem {
   final String id;
+  final int rank;
   final String title;
   final String note;
   final num value;
@@ -19,6 +20,7 @@ class SpendItem {
 
   SpendItem({
     this.id,
+    this.rank,
     @required this.title,
     this.note,
     this.value: 0.0,
@@ -35,6 +37,7 @@ class SpendItem {
 
     return SpendItem(
       id: snapshot.documentID,
+      rank: Parse.toInteger(data['rank']) ?? 1000,
       title: Parse.string(data['title']),
       note: Parse.string(data['note']),
       value: Parse.toDouble(data['value']),
@@ -44,6 +47,7 @@ class SpendItem {
   }
 
   Map<String, dynamic> asData() => {
+        'rank': rank ?? 1000,
         'title': title,
         'note': note,
         'value': value.toDouble(),
@@ -53,10 +57,43 @@ class SpendItem {
 
   SpendItem withId(String id) => SpendItem(
         id: id,
+        rank: rank,
         title: title,
         note: note,
         value: value,
         possibleSavings: possibleSavings,
         subscription: subscription,
       );
+
+  static int Function(SpendItem a, SpendItem b) get byRank => (a, b) {
+        if (a.rank > b.rank) {
+          return 1;
+        } else if (a.rank < b.rank) {
+          return -1;
+        }
+
+        return 0;
+      };
+
+  static int Function(SpendItem a, SpendItem b) get byTitle => (a, b) => a.title.compareTo(b.title);
+
+  static int Function(SpendItem a, SpendItem b) get byYearSpend => (a, b) {
+        if (a.yearSpend > b.yearSpend) {
+          return -1;
+        } else if (a.yearSpend < b.yearSpend) {
+          return 1;
+        }
+
+        return 0;
+      };
+
+  static int Function(SpendItem a, SpendItem b) get byMonthSpend => (a, b) {
+        if (a.monthSpend > b.monthSpend) {
+          return -1;
+        } else if (a.monthSpend < b.monthSpend) {
+          return 1;
+        }
+
+        return 0;
+      };
 }

@@ -65,6 +65,7 @@ class SpendControl extends BaseControl {
     loading.progress();
 
     await spendRepo.getSpends().then((data) {
+      data.sort(SpendItem.byTitle);
       list.setValue(data.map((item) => SpendItemModel(item)));
     });
 
@@ -126,6 +127,8 @@ class SpendControl extends BaseControl {
     await spendRepo.update(model.item, item).then((data) {
       model.item = data;
     });
+
+    _recalculateData(list.value);
 
     model.loading.done();
   }
