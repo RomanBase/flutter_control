@@ -50,5 +50,7 @@ class BasePrefs {
 }
 
 mixin PrefsProvider {
-  BasePrefs get prefs => Control.get<BasePrefs>() ?? BasePrefs();
+  BasePrefs _prefs;
+
+  BasePrefs get prefs => _prefs ?? (_prefs = Control.get<BasePrefs>() ?? BasePrefs());
 }

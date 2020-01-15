@@ -16,9 +16,11 @@ class ControlScope {
 
   GlobalKey get appKey => _appKey;
 
-  ControlRoot rootWidget() => _rootKey.currentWidget;
+  ControlRoot get rootWidget => _rootKey.currentWidget;
 
-  ControlRootState rootState() => _rootKey.currentState;
+  ControlRootState get rootState => _rootKey.currentState;
+
+  Widget get homeWidget => rootState?._currentWidget;
 
   /// Returns current context from [contextHolder]
   BuildContext get rootContext => _context.value;
@@ -35,7 +37,7 @@ class ControlScope {
       return true;
     }
 
-    printDebug('ControlBase is not in Widget Tree! (ControlScope.baseKey)');
+    printDebug('ControlBase is not in Widget Tree! [ControlScope.baseKey]');
     printDebug('Trying to notify ControlScope.scopeKey ..');
 
     if (appKey.currentState != null && appKey.currentState.mounted) {
@@ -57,20 +59,57 @@ class ControlScope {
 }
 
 class ControlRoot extends StatefulWidget {
+  /// [Control.initControl]
   final bool debug;
+
+  /// [Control.initControl]
   final String defaultLocale;
+
+  /// [Control.initControl]
   final Map<String, String> locales;
+
+  /// extends loader to load default and preferred localization assets.
   final bool loadLocalization;
+
+  /// [Control.initControl]
   final Map entries;
+
+  /// [Control.initControl]
   final Map<Type, Initializer> initializers;
+
+  /// [Control.initControl]
   final Injector injector;
+
+  /// [Control.initControl]
   final List<ControlRoute> routes;
+
+  /// [Control.initControl]
   final Initializer<ControlTheme> theme;
+
+  /// [Control.initControl]
+  final Future Function() initAsync;
+
+  /// Custom loader. Check [InitLoader] to provide more robust loader.
+  ///
+  /// [ControlRootState] is passed as [arg] during Loader initialization..
+  /// If custom Loader is used. It's mandatory to notify [ControlRootState] to finish loading - setState with [ControlArgs] and [LoadingStatus].
+  /// Easies way is to use [InitLoader.of] or extend [InitLoaderControl].
+  ///
+  /// Widget will be passed into [AppBuilder] as [home].
   final WidgetBuilder loader;
+
+  /// Entirely disables loader. [root] widget will be initialized on first build pass.
   final bool disableLoader;
+
+  /// Root widget after loader. Widget will be passed into [AppBuilder] as [home].
+  /// [ControlArgs] are passed from loader.
+  /// It's equal to [ControlScope.homeWidget].
   final ControlWidgetBuilder<ControlArgs> root;
+
+  /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
+  /// Builder provides [Key] and [home] widget.
   final AppBuilder app;
-  final VoidCallback onInit;
+
 
   /// Root [Widget] for whole app.
   ///
@@ -98,7 +137,7 @@ class ControlRoot extends StatefulWidget {
     this.disableLoader: false,
     @required this.root,
     @required this.app,
-    this.onInit,
+    this.initAsync,
   }) : super(key: _rootKey);
 
   @override
@@ -114,14 +153,16 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   bool _loadingLocale = true;
 
-  LoadingStatus get loadingStatus => _args[LoadingStatus];
+  LoadingStatus get _loaderStatus => _args[LoadingStatus];
 
-  bool get loading => _loadingLocale || loadingStatus != LoadingStatus.done;
+  bool get loading => _loadingLocale || _loaderStatus != LoadingStatus.done;
 
   WidgetInitializer _rootBuilder;
   WidgetInitializer _loadingBuilder;
 
   BroadcastSubscription _localeSub;
+
+  Widget get _currentWidget => loading ? _loadingBuilder?.value : _rootBuilder?.value;
 
   @override
   void notifyState([state]) {
@@ -135,8 +176,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   @override
   void initState() {
     super.initState();
-
-    Control.factory().swap<ControlRoot>(value: widget);
 
     if (widget.disableLoader) {
       _loadingLocale = false;
@@ -164,7 +203,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _rootBuilder = WidgetInitializer.control(widget.root);
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
-      if (args.changed && Control.localization().isSystemLocaleActive(_context.value)) {
+      if (args.changed && Control.localization().isSystemLocaleActive()) {
         setState(() {
           _loadingLocale = false;
         });
@@ -174,7 +213,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _initControl();
   }
 
-  void _initControl() async {
+  void _initControl() {
     if (!Control.isInitialized) {
       Control.initControl(
         debug: widget.debug,
@@ -185,23 +224,20 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         injector: widget.injector,
         routes: widget.routes,
         theme: widget.theme,
+        initAsync: widget.initAsync,
       );
     }
 
-    if (widget.loadLocalization && Control.localization().isValid && !Control.localization().isActive) {
-      _context.once((context) async => await Control.localization().init(context: context));
+    if (widget.loadLocalization && Control.localization().isDirty) {
+      _context.once((context) async => await Control.localization().init());
     } else {
-      setState(() {
-        _loadingLocale = false;
-      });
+      _loadingLocale = false;
     }
   }
 
   @override
   void didUpdateWidget(ControlRoot oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    Control.factory().swap<ControlRoot>(value: widget);
   }
 
   @override
