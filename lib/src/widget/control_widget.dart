@@ -17,6 +17,7 @@ class ControlArgHolder implements Disposable {
 
   void init(ControlState state) {
     _state = state;
+    _valid = true;
 
     if (_cache != null) {
       _state.addArg(_cache);
@@ -43,8 +44,8 @@ class ControlArgHolder implements Disposable {
 
   @override
   void dispose() {
+    _cache = argStore;
     _valid = false;
-    _cache = null;
     _state = null;
   }
 }
@@ -192,6 +193,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
       return true;
     }());
 
+    //TODO: restore state (eg. in list builder).
+    //TODO: widget swap.
     if (this.state == state) {
       return;
     }
@@ -246,6 +249,10 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   @override
   void initState() {
     super.initState();
+
+    if (!widget.holder._valid) {
+      //TODO: restore state (eg. in list builder).
+    }
 
     if (widget is ThemeProvider) {
       (widget as ThemeProvider).invalidateTheme(context);
@@ -309,8 +316,6 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     if (widget is ThemeProvider) {
       (widget as ThemeProvider).invalidateTheme(context);
     }
-
-    notifyWidget();
   }
 
   @override
