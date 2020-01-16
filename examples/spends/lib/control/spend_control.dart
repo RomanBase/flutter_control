@@ -36,6 +36,9 @@ class SpendControl extends BaseControl {
   final monthAvgSpend = StringControl();
   final monthSubSpend = StringControl();
 
+  //TODO: group in group - func
+  List<SpendItem> get groups => list.where((model) => model.item.isGroup).map((model) => model.item).toList(growable: false);
+
   SpendRepo get spendRepo => Control.get<SpendRepo>();
 
   SpendControl() {
@@ -85,11 +88,8 @@ class SpendControl extends BaseControl {
       year += item.yearSpend;
       monthAvg += item.monthSpend;
 
-      if (item.subscription) {
+      if (item.isSub) {
         monthSub += item.monthSpend;
-        monthSavings += item.monthSavings;
-      } else {
-        yearSavings += item.yearSavings;
       }
     });
 
@@ -98,7 +98,19 @@ class SpendControl extends BaseControl {
     monthSubSpend.value = monthSub.toInt().toString();
   }
 
+  //TODO: group in group
+  SpendItemModel findGroup(String id) => list.firstWhere((model) => model.item.id == id && model.item.isGroup);
+
   Future<void> addItem(SpendItem item) async {
+    if (item.groupId != null) {
+      final group = findGroup(item.groupId);
+
+      if (group != null) {
+        group.item.items.add(item);
+        return updateItem(group, group.item);
+      }
+    }
+
     final model = SpendItemModel(item);
     list.add(model);
 
@@ -124,9 +136,34 @@ class SpendControl extends BaseControl {
   void updateItem(SpendItemModel model, SpendItem item) async {
     model.loading.progress();
 
-    await spendRepo.update(model.item, item).then((data) {
-      model.item = data;
-    });
+    bool movedToGroup = false;
+    if (model.item.groupId == null && item.groupId != null) {
+      final group = findGroup(item.groupId);
+
+      if (group != null) {
+        group.loading.progress();
+        group.item.items.add(item);
+
+        final remove = spendRepo.remove(model.item).then((_) {
+          list.remove(model);
+        }); //TODO: catch error...
+
+        final update = spendRepo.update(group.item, group.item).then((data) {
+          group.item = data;
+        });
+
+        await Future.wait([remove, update]);
+
+        movedToGroup = true;
+        group.loading.done();
+      }
+    }
+
+    if (!movedToGroup) {
+      await spendRepo.update(model.item, item).then((data) {
+        model.item = data;
+      });
+    }
 
     _recalculateData(list.value);
 

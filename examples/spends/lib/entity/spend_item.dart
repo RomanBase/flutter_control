@@ -1,48 +1,89 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_control/core.dart';
+
+enum SpendType {
+  normal,
+  sub,
+  group,
+}
+
+extension SpendTypeExtension on SpendType {
+  String asData() => this.toString().split('.')[1];
+
+  SpendType asType(dynamic value) => value == null ? this : SpendType.values.firstWhere((item) => item.asData() == value, orElse: () => this);
+}
 
 class SpendItem {
   final String id;
+  final String icon;
   final int rank;
   final String title;
   final String note;
   final num value;
-  final num possibleSavings;
-  final bool subscription;
+  final SpendType type;
+  final List<SpendItem> items;
+  final String groupId;
 
-  num get yearSpend => subscription ? value * 12.0 : value;
+  num get yearSpend {
+    switch (type) {
+      case SpendType.normal:
+        return value;
+      case SpendType.sub:
+        return value * 12.0;
+      case SpendType.group:
+        if (items != null && items.length > 0) {
+          return items.map((item) => item.yearSpend).reduce((a, b) => a + b);
+        }
+    }
 
-  num get monthSpend => subscription ? value : value / 12.0;
+    return value;
+  }
 
-  num get yearSavings => subscription ? possibleSavings * 12.0 : possibleSavings;
+  num get monthSpend {
+    switch (type) {
+      case SpendType.normal:
+        return value / 12;
+      case SpendType.sub:
+        return value;
+      case SpendType.group:
+        if (items != null && items.length > 0) {
+          return items.map((item) => item.monthSpend).reduce((a, b) => a + b);
+        }
+    }
 
-  num get monthSavings => subscription ? possibleSavings : possibleSavings / 12.0;
+    return 0.0;
+  }
+
+  bool get isSub => type == SpendType.sub;
+
+  bool get isGroup => type == SpendType.group;
 
   SpendItem({
     this.id,
+    this.icon,
     this.rank,
     @required this.title,
     this.note,
     this.value: 0.0,
-    this.possibleSavings: 0.0,
-    this.subscription: false,
+    this.type: SpendType.normal,
+    this.items,
+    this.groupId,
   });
 
-  factory SpendItem.fromSnapshot(DocumentSnapshot snapshot) {
-    if (!snapshot.exists) {
-      return null;
-    }
-
-    final data = snapshot.data;
-
+  factory SpendItem.fromData({String id, @required Map data, String groupId}) {
     return SpendItem(
-      id: snapshot.documentID,
+      id: id,
       rank: Parse.toInteger(data['rank']) ?? 1000,
       title: Parse.string(data['title']),
       note: Parse.string(data['note']),
       value: Parse.toDouble(data['value']),
-      possibleSavings: Parse.toDouble(data['saves']),
-      subscription: Parse.toBool(data['sub']),
+      type: SpendType.normal.asType(data['type']),
+      items: Parse.toList<SpendItem>(data['items'],
+          entryConverter: (key, data) => SpendItem.fromData(
+                id: key.toString(),
+                data: data,
+                groupId: id,
+              )),
+      groupId: groupId,
     );
   }
 
@@ -51,8 +92,8 @@ class SpendItem {
         'title': title,
         'note': note,
         'value': value.toDouble(),
-        'saves': possibleSavings.toDouble(),
-        'sub': subscription,
+        'type': type.asData(),
+        'items': (items != null && items.length > 0) ? items.map((item) => item.asData()).toList() : null,
       };
 
   SpendItem withId(String id) => SpendItem(
@@ -61,8 +102,8 @@ class SpendItem {
         title: title,
         note: note,
         value: value,
-        possibleSavings: possibleSavings,
-        subscription: subscription,
+        type: type,
+        items: items,
       );
 
   static int Function(SpendItem a, SpendItem b) get byRank => (a, b) {

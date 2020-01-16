@@ -7,16 +7,19 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
   final title = InputControl(regex: '.{3,}');
   final note = InputControl();
   final value = InputControl();
-  final savings = InputControl();
 
-  final sub = BoolControl();
+  final type = ActionControl.broadcast<SpendType>(SpendType.normal);
+  final group = ActionControl.broadcast<String>('none');
+
+  List<SpendItem> get groups => Control.get<SpendControl>().groups;
 
   SpendItem get item => SpendItem(
         title: title.value,
         note: note.value,
         value: Parse.toDouble(value.value),
-        possibleSavings: Parse.toDouble(value.value),
-        subscription: sub.value,
+        type: type.value,
+        groupId: group.value != 'none' ? group.value : null,
+        items: type.value == SpendType.group ? [] : null,
       );
 
   SpendItemModel model;
@@ -28,18 +31,16 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
     super.onInit(args);
 
     model = args.getArg<SpendItemModel>();
+    group.value = args.getArg<String>(defaultValue: 'none');
 
     if (model != null) {
       title.value = model.item.title;
       note.value = model.item.note;
       value.value = model.item.value.toString();
-      savings.value = model.item.value.toString();
-      sub.value = model.item.subscription;
+      type.value = model.item.type;
     }
 
-    title.done(_updateData).next(note).done(_updateData).next(value).done(_updateData).next(savings).done(_updateData);
-
-    sub.subscribe((_) => _updateData());
+    title.done(_updateData).next(note).done(_updateData).next(value).done(_updateData).done(_updateData);
   }
 
   void _updateData() {}

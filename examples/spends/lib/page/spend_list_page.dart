@@ -168,11 +168,11 @@ class SpendItemWidget extends SingleControlWidget<SpendItemModel> with ThemeProv
                 children: <Widget>[
                   Text(
                     item.yearSpend.toInt().toString(),
-                    style: item.subscription ? font.body2 : font.body1,
+                    style: item.isSub ? font.body2 : font.body1,
                   ),
                   Text(
                     item.monthSpend.toInt().toString(),
-                    style: item.subscription ? font.body1 : font.body2,
+                    style: item.isSub ? font.body1 : font.body2,
                   ),
                 ],
               ),

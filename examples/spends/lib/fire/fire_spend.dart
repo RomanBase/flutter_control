@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter_control/core.dart';
 import 'package:spends/data/spend_repo.dart';
 import 'package:spends/entity/spend_item.dart';
@@ -15,7 +14,16 @@ class FireSpendRepo extends FireDB implements SpendRepo {
   Future<List<SpendItem>> getSpends() async {
     final result = await spendsRef().getDocuments();
 
-    return Parse.toList<SpendItem>(result.documents, converter: (snapshot) => SpendItem.fromSnapshot(snapshot));
+    return Parse.toList<SpendItem>(result.documents, converter: (snapshot) {
+      if (snapshot is DocumentSnapshot && snapshot.exists) {
+        return SpendItem.fromData(
+          id: snapshot.documentID,
+          data: snapshot.data,
+        );
+      }
+
+      return null;
+    });
   }
 
   @override

@@ -1,6 +1,8 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/entity/spend_item.dart';
 import 'package:spends/main.dart';
 import 'package:spends/widget/input_decoration.dart';
+import 'package:spends/widget/menu_picker.dart';
 
 import '../control/spend_item_control.dart';
 
@@ -30,29 +32,71 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
               SizedBox(
                 height: theme.paddingMid,
               ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                    child: InputField(
-                      control: control.value,
-                      keyboardType: TextInputType.number,
-                      textInputAction: TextInputAction.next,
-                      decoration: RoundInputDecoration(color: theme.lightGray),
-                      label: localize('value'),
-                    ),
+              MenuPicker(
+                control: control.type,
+                items: [
+                  MenuPickerItem(
+                    key: SpendType.normal,
+                    title: 'normal',
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: theme.padding),
-                    child: FieldBuilder<bool>(
-                      control: control.sub,
-                      builder: (context, value) => Checkbox(
-                        value: value,
-                        onChanged: control.sub.setValue,
-                      ),
-                    ),
+                  MenuPickerItem(
+                    key: SpendType.sub,
+                    title: 'sub',
+                  ),
+                  MenuPickerItem(
+                    key: SpendType.group,
+                    title: 'group',
                   ),
                 ],
+              ),
+              ActionBuilder(
+                control: control.type,
+                builder: (context, value) {
+                  if (value == SpendType.group) {
+                    return SizedBox(
+                      height: theme.paddingMid,
+                    );
+                  }
+
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: theme.paddingMid),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        Expanded(
+                          child: InputField(
+                            control: control.value,
+                            keyboardType: TextInputType.number,
+                            textInputAction: TextInputAction.next,
+                            decoration: RoundInputDecoration(color: theme.lightGray),
+                            label: localize('value'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: MenuPicker(
+                  control: control.group,
+                  expand: false,
+                  items: [
+                    MenuPickerItem(
+                      key: 'none',
+                      title: 'none',
+                    ),
+                    ...control.groups
+                        .map(
+                          (item) => MenuPickerItem(
+                            key: item.id,
+                            title: item.title,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ],
+                ),
               ),
               SizedBox(
                 height: theme.paddingMid,
