@@ -38,6 +38,7 @@ class Control {
     Injector injector,
     List<ControlRoute> routes,
     Initializer theme,
+    Future Function() initAsync,
   }) {
     if (isInitialized) {
       return false;
@@ -70,9 +71,10 @@ class Control {
         injector: injector,
         initAsync: () async {
           await prefs.init();
+          await initAsync();
         });
 
-    return isInitialized;
+    return true;
   }
 
   /////

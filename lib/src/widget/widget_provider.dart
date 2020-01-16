@@ -6,6 +6,8 @@ abstract class WidgetInitializer {
   /// Current Widget.
   Widget _widget;
 
+  Widget get value => _widget;
+
   /// Init data.
   /// Send to Widget via [_args] with [ControlKey.initData] key.
   Object data;
