@@ -3,29 +3,7 @@ import 'package:spends/data/spend_repo.dart';
 import 'package:spends/entity/spend_item.dart';
 import 'package:spends/fire/fire_control.dart';
 
-class SpendItemModel extends BaseModel with StateControl {
-  final loading = LoadingControl();
-
-  SpendItem _item;
-
-  SpendItem get item => _item;
-
-  set item(SpendItem value) {
-    _item = value;
-    notifyState();
-  }
-
-  SpendItemModel(SpendItem item) {
-    this.item = item;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    loading.dispose();
-  }
-}
+import 'spend_item_model.dart';
 
 class SpendControl extends BaseControl {
   final loading = LoadingControl();
@@ -106,8 +84,7 @@ class SpendControl extends BaseControl {
       final group = findGroup(item.groupId);
 
       if (group != null) {
-        group.item.items.add(item);
-        return updateItem(group, group.item);
+        return group.addItemToGroup(item);
       }
     }
 

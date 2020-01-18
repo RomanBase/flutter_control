@@ -30,16 +30,17 @@ class FireSpendRepo extends FireDB implements SpendRepo {
   Future<SpendItem> add(SpendItem item) async {
     final result = await spendsRef().add(item.asData());
 
-    return item.withId(result.documentID);
+    return item.copyWith(id: result.documentID);
   }
 
   @override
-  Future<SpendItem> update(SpendItem origin, SpendItem item) async {
+  Future<SpendItem> update(SpendItem origin, [SpendItem item]) async {
     assert(origin.id != null);
+    item ??= origin;
 
     await spendRef(origin.id).setData(item.asData());
 
-    return item.withId(origin.id);
+    return item.copyWith(id: origin.id);
   }
 
   @override

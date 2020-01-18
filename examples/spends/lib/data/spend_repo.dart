@@ -5,7 +5,7 @@ abstract class SpendRepo {
 
   Future<SpendItem> add(SpendItem item);
 
-  Future<SpendItem> update(SpendItem origin, SpendItem item);
+  Future<SpendItem> update(SpendItem origin, [SpendItem item]);
 
   Future<void> remove(SpendItem item);
 }

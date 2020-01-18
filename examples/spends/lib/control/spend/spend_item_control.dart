@@ -1,7 +1,9 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/control/spend/spend_group_control.dart';
 import 'package:spends/entity/spend_item.dart';
 
 import 'spend_control.dart';
+import 'spend_item_model.dart';
 
 class SpendItemControl extends BaseControl with RouteControlProvider {
   final title = InputControl(regex: '.{3,}');
@@ -22,22 +24,30 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
         items: type.value == SpendType.group ? [] : null,
       );
 
+  SpendControl get spendControl => Control.get<SpendControl>();
+  SpendGroupControl groupControl;
   SpendItemModel model;
 
   bool get editMode => model != null;
+
+  bool get inGroup => groupControl != null;
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
     model = args.getArg<SpendItemModel>();
-    group.value = args.getArg<String>(defaultValue: 'none');
+    groupControl = args.getArg<SpendGroupControl>();
 
     if (model != null) {
       title.value = model.item.title;
       note.value = model.item.note;
       value.value = model.item.value.toString();
       type.value = model.item.type;
+    }
+
+    if (groupControl != null) {
+      group.value = groupControl.group.item.id;
     }
 
     title.done(_updateData).next(note).done(_updateData).next(value).done(_updateData).done(_updateData);
@@ -50,10 +60,23 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
       return;
     }
 
-    if (editMode) {
-      Control.get<SpendControl>().updateItem(model, item);
+    if (inGroup) {
+      if (editMode) {
+        if (groupControl.group.item.id != group.value) {
+          groupControl.removeItem(model);
+          spendControl.addItem(item);
+        } else {
+          groupControl.updateItem(model, item);
+        }
+      } else {
+        groupControl.addItem(item);
+      }
     } else {
-      Control.get<SpendControl>().addItem(item);
+      if (editMode) {
+        spendControl.updateItem(model, item);
+      } else {
+        spendControl.addItem(item);
+      }
     }
 
     close();

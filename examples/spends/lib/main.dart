@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
-import 'package:spends/control/spend_control.dart';
+import 'package:spends/control/spend/spend_group_control.dart';
 import 'package:spends/data/spend_repo.dart';
 import 'package:spends/fire/fire_spend.dart';
 import 'package:spends/page/init_page.dart';
-import 'package:spends/page/spend_list_page.dart';
+import 'package:spends/page/spend/spend_group_page.dart';
 
 import 'control/init_control.dart';
-import 'control/spend_item_control.dart';
+import 'control/spend/spend_control.dart';
+import 'control/spend/spend_item_control.dart';
 import 'fire/fire_control.dart';
-import 'page/spend_item_dialog.dart';
+import 'page/spend/spend_item_dialog.dart';
+import 'page/spend/spend_list_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -27,12 +29,14 @@ class MyApp extends StatelessWidget {
         SpendControl: SpendControl(),
       },
       initializers: {
-        SpendItemControl: (_) => SpendItemControl(),
         InitLoaderControl: (_) => InitControl(),
         SpendRepo: (_) => FireSpendRepo(),
+        SpendItemControl: (_) => SpendItemControl(),
+        SpendGroupControl: (_) => SpendGroupControl(),
       },
       routes: [
         ControlRoute.build<SpendItemDialog>(builder: (_) => SpendItemDialog()),
+        ControlRoute.build<SpendGroupPage>(builder: (_) => SpendGroupPage()),
       ],
       theme: (context) => SpendTheme(context),
       loader: (_) => InitLoader(
@@ -95,7 +99,6 @@ class SpendTheme extends ControlTheme {
       );
 
   TextTheme buildTextTheme(Color colorA, Color colorB) => TextTheme(
-        title: TextStyle(color: colorA, fontWeight: FontWeight.w500, fontSize: 64.0, letterSpacing: 7.5),
         subtitle: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 14.0, letterSpacing: 1.5),
         body1: TextStyle(color: colorA, fontSize: 14.0),
         body2: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 12.0),

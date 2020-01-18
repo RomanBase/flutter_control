@@ -53,11 +53,26 @@ class SpendItem {
     return 0.0;
   }
 
+  num get subSpend {
+    switch (type) {
+      case SpendType.normal:
+        return 0.0;
+      case SpendType.sub:
+        return value;
+      case SpendType.group:
+        if (items != null && items.length > 0) {
+          return items.map((item) => item.subSpend).reduce((a, b) => a + b);
+        }
+    }
+
+    return 0.0;
+  }
+
   bool get isSub => type == SpendType.sub;
 
   bool get isGroup => type == SpendType.group;
 
-  SpendItem({
+  const SpendItem({
     this.id,
     this.icon,
     this.rank,
@@ -96,14 +111,27 @@ class SpendItem {
         'items': (items != null && items.length > 0) ? items.map((item) => item.asData()).toList() : null,
       };
 
-  SpendItem withId(String id) => SpendItem(
-        id: id,
-        rank: rank,
-        title: title,
-        note: note,
-        value: value,
-        type: type,
-        items: items,
+  SpendItem copyWith({
+    String id,
+    String groupId,
+    String icon,
+    int rank,
+    String title,
+    String note,
+    num value,
+    SpendType type,
+    List<SpendItem> items,
+  }) =>
+      SpendItem(
+        id: id ?? this.id,
+        groupId: groupId ?? this.groupId,
+        icon: icon ?? this.icon,
+        rank: rank ?? this.rank,
+        title: title ?? this.title,
+        note: note ?? this.note,
+        value: value ?? this.value,
+        type: type ?? this.type,
+        items: items ?? this.items,
       );
 
   static int Function(SpendItem a, SpendItem b) get byRank => (a, b) {
