@@ -484,11 +484,9 @@ class BaseLocalization with PrefsProvider {
 }
 
 class LocalizationProvider {
-  BaseLocalization _localization;
-
   ///Instance of [BaseLocalization]
   @protected
-  BaseLocalization get localization => _localization ?? (_localization = Control.localization());
+  BaseLocalization get localization => Control.localization();
 
   ///[BaseLocalization.localize]
   @protected

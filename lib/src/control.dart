@@ -71,7 +71,9 @@ class Control {
         injector: injector,
         initAsync: () async {
           await prefs.init();
-          await initAsync();
+          if (initAsync != null) {
+            await initAsync();
+          }
         });
 
     return true;
@@ -203,7 +205,9 @@ class ControlFactory with Disposable {
   }
 
   Future<void> _initializeAsyncs(Future Function() initAsync) async {
-    await initAsync();
+    if (initAsync != null) {
+      await initAsync();
+    }
 
     _completer.complete();
     _completer = null;
