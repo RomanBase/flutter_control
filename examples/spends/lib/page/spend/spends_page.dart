@@ -3,13 +3,13 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:spends/control/spend/spend_control.dart';
 import 'package:spends/control/spend/spend_item_model.dart';
 import 'package:spends/entity/spend_item.dart';
-import 'package:spends/main.dart';
+import 'package:spends/theme.dart';
 import 'package:spends/widget/tab_row.dart';
 
 import 'spend_group_page.dart';
 import 'spend_item_dialog.dart';
 
-class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider<SpendTheme>, RouteNavigator {
+class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<SpendTheme>, RouteNavigator {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,7 +52,7 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
                   model: data[index],
                   onPressed: (item) {
                     if (item.item.isGroup) {
-                      routeOf<SpendGroupPage>().openRoute(args: item);
+                      routeOf<SpendGroupPage>().openRoute(args: item, root: true);
                     } else {
                       routeOf<SpendItemDialog>().openDialog(args: item);
                     }
@@ -63,37 +63,6 @@ class SpendListPage extends SingleControlWidget<SpendControl> with ThemeProvider
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(
-          Icons.add,
-          //size: theme.iconSizeLarge,
-        ),
-        onPressed: () => routeOf<SpendItemDialog>().openDialog(type: DialogType.popup),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: CircularNotchedRectangle(),
-        color: theme.gray,
-        child: Container(
-          height: theme.buttonHeight,
-          child: Row(
-            children: <Widget>[
-              IconButton(
-                icon: Icon(Icons.sort),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.account_balance),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: Icon(Icons.person),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

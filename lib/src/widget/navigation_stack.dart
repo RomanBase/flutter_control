@@ -144,7 +144,11 @@ class NavigatorStack extends StatefulWidget {
   /// Single navigator. Typically used inside other page to show content progress.
   ///
   /// [NavigatorStack]
-  static Widget single({NavigatorControl control, @required WidgetBuilder builder, bool overrideNavigation: false}) {
+  static Widget single({
+    NavigatorControl control,
+    @required WidgetBuilder builder,
+    bool overrideNavigation: false,
+  }) {
     control ??= NavigatorControl();
 
     return NavigatorStack._(
@@ -165,9 +169,15 @@ class NavigatorStack extends StatefulWidget {
   /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static Widget group({NavigatorStackControl control, @required List<NavigatorStack> items, bool overrideNavigation: true}) {
+  static Widget group({
+    NavigatorStackControl control,
+    int initialIndex,
+    @required List<NavigatorStack> items,
+    bool overrideNavigation: true,
+  }) {
     return NavigatorStackGroup(
       control: control ?? NavigatorStackControl(),
+      initialIndex: initialIndex,
       items: items,
       overrideNavigation: overrideNavigation,
     );
@@ -183,16 +193,22 @@ class NavigatorStack extends StatefulWidget {
   /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
   ///
   /// [NavigatorStack]
-  static Widget menu({NavigatorStackControl control, @required Map<MenuItem, WidgetBuilder> items, bool overrideNavigation: true}) {
+  static Widget menu({
+    NavigatorStackControl control,
+    int initialIndex,
+    @required Map<MenuItem, WidgetBuilder> items,
+    bool overrideNavigation: true,
+  }) {
     final stack = List<NavigatorStack>();
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(menu: key),
-          builder: value,
+          builder: value ?? (_) => Container(),
         )));
 
     return NavigatorStack.group(
       control: control,
+      initialIndex: initialIndex,
       items: stack,
       overrideNavigation: overrideNavigation,
     );
@@ -296,6 +312,8 @@ class NavigatorStackControl extends BaseControl {
   /// Returns current controller - based on [currentPageIndex].
   NavigatorControl get currentControl => _items[currentPageIndex];
 
+  MenuItem get currentMenu => currentControl.menu;
+
   /// Notifies about page changes.
   /// Can be used with [ActionBuilder] to rebuild menu or highlight active widget.
   ///
@@ -308,15 +326,18 @@ class NavigatorStackControl extends BaseControl {
   int get currentPageIndex => _pageIndex.value;
 
   /// Subscription to listen about page index changes.
-  ActionControlStream get pageIndex => _pageIndex.sub;
+  ActionControlStream<int> get pageIndex => _pageIndex.sub;
 
   bool reloadOnReselect;
 
-  NavigatorStackControl({int initialPageIndex: 0, this.reloadOnReselect: true}) {
-    _pageIndex.setValue(initialPageIndex);
-  }
-
   VoidCallback onPagesInitialized;
+
+  int _initialIndex;
+
+  NavigatorStackControl({int initialPageIndex, this.reloadOnReselect: true}) {
+    _initialIndex = initialPageIndex;
+    _pageIndex.value = _initialIndex ?? 0;
+  }
 
   /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
@@ -350,12 +371,16 @@ class NavigatorStackControl extends BaseControl {
     _pageIndex.setValue(index);
   }
 
+  void setMenuItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
+
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack() {
-    if (currentPageIndex > 0) {
+    final rootIndex = _initialIndex ?? 0;
+
+    if (currentPageIndex != rootIndex) {
       if (!currentControl.navigateBack()) {
-        setPageIndex(0);
+        setPageIndex(rootIndex);
       }
 
       return true;
@@ -376,11 +401,13 @@ class NavigatorStackControl extends BaseControl {
 class NavigatorStackGroup extends StatefulWidget {
   final NavigatorStackControl control;
   final List<NavigatorStack> items;
+  final int initialIndex;
   final bool overrideNavigation;
 
   NavigatorStackGroup({
     @required this.control,
     @required this.items,
+    this.initialIndex,
     this.overrideNavigation: true,
   }) : super(key: ObjectKey(control)) {
     assert(items.length > 0);
@@ -400,6 +427,11 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
 
     if (_items == null) {
       _items = widget.items;
+    }
+
+    if (control._initialIndex == null && widget.initialIndex != null) {
+      control._initialIndex = widget.initialIndex;
+      control._pageIndex.value = control._initialIndex;
     }
 
     control.subscribe(this);

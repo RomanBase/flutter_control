@@ -50,10 +50,8 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
       group.value = groupControl.group.item.id;
     }
 
-    title.done(_updateData).next(note).done(_updateData).next(value).done(_updateData).done(_updateData);
+    title.next(value).next(note).done(submit);
   }
-
-  void _updateData() {}
 
   void submit() {
     if (!title.validateChain()) {

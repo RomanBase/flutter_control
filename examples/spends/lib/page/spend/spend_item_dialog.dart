@@ -1,7 +1,8 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/spend/spend_item_control.dart';
 import 'package:spends/entity/spend_item.dart';
-import 'package:spends/main.dart';
+import 'package:spends/theme.dart';
+import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 import 'package:spends/widget/menu_picker.dart';
 
@@ -62,46 +63,47 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
 
                       return Padding(
                         padding: EdgeInsets.symmetric(vertical: theme.paddingMid),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        child: Column(
                           children: <Widget>[
-                            Expanded(
-                              child: InputField(
-                                control: control.value,
-                                keyboardType: TextInputType.number,
-                                textInputAction: TextInputAction.next,
-                                decoration: RoundInputDecoration(color: theme.lightGray),
-                                label: localize('value'),
-                              ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: <Widget>[
+                                Expanded(
+                                  child: InputField(
+                                    control: control.value,
+                                    keyboardType: TextInputType.number,
+                                    textInputAction: TextInputAction.next,
+                                    decoration: RoundInputDecoration(color: theme.lightGray),
+                                    label: localize('value'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: theme.paddingMid,
+                            ),
+                            MenuPicker(
+                              control: control.group,
+                              wrap: true,
+                              items: [
+                                MenuPickerItem(
+                                  key: 'none',
+                                  title: 'none',
+                                ),
+                                ...control.groups
+                                    .map(
+                                      (item) => MenuPickerItem(
+                                        key: item.id,
+                                        title: item.title,
+                                      ),
+                                    )
+                                    .toList(growable: false),
+                              ],
                             ),
                           ],
                         ),
                       );
                     },
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: MenuPicker(
-                      control: control.group,
-                      expand: false,
-                      items: [
-                        MenuPickerItem(
-                          key: 'none',
-                          title: 'none',
-                        ),
-                        ...control.groups
-                            .map(
-                              (item) => MenuPickerItem(
-                                key: item.id,
-                                title: item.title,
-                              ),
-                            )
-                            .toList(growable: false),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: theme.paddingMid,
                   ),
                   InputField(
                     control: control.note,
@@ -114,7 +116,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
                   SizedBox(
                     height: theme.paddingExtended,
                   ),
-                  FlatButton(
+                  FadeButton(
                     onPressed: control.submit,
                     child: Text(
                       localize('submit'),

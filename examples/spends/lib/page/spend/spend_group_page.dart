@@ -1,11 +1,11 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/spend/spend_group_control.dart';
 import 'package:spends/control/spend/spend_item_model.dart';
-import 'package:spends/main.dart';
+import 'package:spends/theme.dart';
 import 'package:spends/widget/tab_row.dart';
 
 import 'spend_item_dialog.dart';
-import 'spend_list_page.dart';
+import 'spends_page.dart';
 
 class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemeProvider<SpendTheme>, RouteNavigator {
   @override

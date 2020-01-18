@@ -1,4 +1,6 @@
 import 'package:flutter_control/core.dart';
+import 'package:spends/theme.dart';
+import 'package:spends/widget/button.dart';
 
 class MenuPickerItem {
   final dynamic key;
@@ -12,16 +14,16 @@ class MenuPickerItem {
   });
 }
 
-class MenuPicker extends StatelessWidget {
+class MenuPicker extends StatelessWidget with ThemeProvider<SpendTheme> {
   final ActionControl control;
   final List<MenuPickerItem> items;
-  final bool expand;
+  final bool wrap;
 
   MenuPicker({
     Key key,
     @required this.control,
     this.items: const [],
-    this.expand: true,
+    this.wrap: false,
   }) : super(key: key);
 
   @override
@@ -29,28 +31,40 @@ class MenuPicker extends StatelessWidget {
     return ActionBuilder(
         control: control,
         builder: (context, value) {
-          return Row(
-            children: <Widget>[
-              for (MenuPickerItem item in items) _buildItem(context, item, value),
-            ],
-          );
+          final buttons = items.map((item) => _buildItem(context, item, value == item.key)).toList(growable: false);
+
+          return wrap
+              ? Wrap(
+                  spacing: theme.paddingHalf,
+                  runSpacing: theme.paddingHalf,
+                  children: buttons,
+                )
+              : Row(
+                  children: buttons,
+                );
         });
   }
 
-  Widget _buildItem(BuildContext context, MenuPickerItem item, dynamic value) {
-    final button = FlatButton(
+  Widget _buildItem(BuildContext context, MenuPickerItem item, bool selected) {
+    final button = RoundedButton(
       onPressed: () => control.value = item.key,
-      padding: EdgeInsets.all(0.0),
-      color: item.key == value ? Theme.of(context).primaryColorLight : Colors.transparent,
-      child: Text(item.title ?? ''),
+      padding: EdgeInsets.symmetric(horizontal: theme.paddingMid),
+      height: 32.0,
+      color: selected ? theme.primaryColorLight : Colors.transparent,
+      outline: selected ? theme.primaryColorLight : theme.gray.withOpacity(0.5),
+      title: item.title ?? '-',
+      style: font.button.copyWith(fontWeight: FontWeight.w300),
     );
 
-    if (expand) {
-      return Expanded(
-        child: button,
-      );
+    if (wrap) {
+      return button;
     }
 
-    return button;
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: theme.paddingQuad),
+        child: button,
+      ),
+    );
   }
 }
