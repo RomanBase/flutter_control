@@ -170,7 +170,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
       control.subscribe(this);
 
       if (state is TickerProvider) {
-        (control as BaseControl).onTickerInitialized(state as TickerProvider);
+        control.onTickerInitialized(state as TickerProvider);
       }
 
       if (control is StateControl) {

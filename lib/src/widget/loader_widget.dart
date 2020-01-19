@@ -46,7 +46,6 @@ abstract class InitLoaderControl extends BaseControl {
     }
 
     notifyControl(LoadingStatus.done, result);
-    loading.done();
   }
 
   Future<dynamic> load();

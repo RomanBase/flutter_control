@@ -1,27 +1,27 @@
 import 'package:flutter_control/core.dart';
 
 class SpendTheme extends ControlTheme {
-  final dark = Color(0xFF454545);
+  final dark = Color(0xFF353535);
   final gray = Color(0xFFB3B3B3);
   final lightGray = Color(0xFFECECEC);
   final white = Color(0xFFFAFAFA);
 
-  final red = Color(0xFFCE0000);
+  final red = Color(0xEEAA0000);
   final yellow = Color(0xFFFFCC00);
 
-  final blue = Color(0xFF00A1A7);
-  final darkBlue = Color(0xFF017677);
-  final green = Color(0xFF00A886);
+  final green = Color(0xFF006560);
+  final blue = Color(0xFF006065);
+  final lightGreen = Color(0xFF00A175);
 
-  List<Color> get gradient => [blue, darkBlue, green];
+  List<Color> get gradient => [green, blue, lightGreen];
 
   SpendTheme([BuildContext context]) : super(context);
 
   ThemeData get darkTheme => ThemeData(
-        primaryColor: darkBlue,
-        primaryColorLight: blue,
-        primaryColorDark: darkBlue,
-        accentColor: green,
+        primaryColor: blue,
+        primaryColorLight: green,
+        primaryColorDark: blue,
+        accentColor: lightGreen,
         canvasColor: dark,
         indicatorColor: white,
         fontFamily: 'Oswald',
@@ -32,10 +32,10 @@ class SpendTheme extends ControlTheme {
       );
 
   ThemeData get lightTheme => ThemeData(
-        primaryColor: darkBlue,
-        primaryColorLight: blue,
-        primaryColorDark: darkBlue,
-        accentColor: green,
+        primaryColor: blue,
+        primaryColorLight: green,
+        primaryColorDark: blue,
+        accentColor: lightGreen,
         canvasColor: lightGray,
         fontFamily: 'Oswald',
         textTheme: buildTextTheme(

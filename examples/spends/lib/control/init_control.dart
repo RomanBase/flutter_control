@@ -19,7 +19,7 @@ class InitControl extends InitLoaderControl with FireProvider {
       password.value = '12345678';
     }
 
-    username.next(password).done(submit);
+    loading.subscribe((value) => printDebug(value));
   }
 
   @override
@@ -28,35 +28,38 @@ class InitControl extends InitLoaderControl with FireProvider {
 
     await fire.restore();
 
-    if (!fire.isUserSignedIn) {
-      loading.done();
-      await _onAuthorized.future;
-    }
-  }
+    while (Control.localization().loading) {}
 
-  void submit() {
-    if (username.validateChain()) {
-      signIn();
-    }
+    loading.done();
+
+    await _onAuthorized.future;
   }
 
   void signIn() async {
     loading.progress();
 
     await fire.signIn(username.value, password.value).then((user) {
-      _onAuthorized.complete();
+      loading.done();
+    }).catchError((err) {
+      loading.error();
     });
-
-    loading.done();
   }
 
   void signUp() async {
     loading.progress();
 
     await fire.signUp(username.value, password.value, nickname.value).then((user) {
-      _onAuthorized.complete();
+      loading.done();
+    }).catchError((err) {
+      loading.error();
     });
+  }
 
-    loading.done();
+  void resetPass() async {}
+
+  void complete() {
+    if (!_onAuthorized.isCompleted) {
+      _onAuthorized.complete();
+    }
   }
 }

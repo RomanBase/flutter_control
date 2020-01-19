@@ -41,22 +41,11 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteNavi
           ): null,
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(
-          Icons.add,
-        ),
-        onPressed: () {
-          switch (control.currentMenu.key) {
-            case 'spends':
-              routeOf<SpendItemDialog>().openDialog(type: DialogType.popup);
-              break;
-            case 'earnings':
-              routeOf<EarningsItemDialog>().openDialog(type: DialogType.popup);
-              break;
-          }
-        },
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButton: ActionBuilder<int>(
+        control: control.pageIndex,
+        builder: (context, value) => _actionButton(value == 2),
+      ),
       bottomNavigationBar: BottomAppBar(
         shape: CircularNotchedRectangle(),
         color: theme.gray,
@@ -83,6 +72,33 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteNavi
           ),
         ),
       ),
+    );
+  }
+
+  Widget _actionButton(bool toAccent) {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0.0, end: toAccent ? 1.0 : 0.0),
+      duration: theme.animDurationFast,
+      curve: Curves.easeIn,
+      builder: (context, value, child) {
+        return FloatingActionButton(
+          backgroundColor: Color.lerp(theme.red, theme.yellow, value),
+          child: Icon(
+            Icons.add,
+            color: Color.lerp(theme.white, theme.dark, value),
+          ),
+          onPressed: () {
+            switch (control.currentMenu.key) {
+              case 'spends':
+                routeOf<SpendItemDialog>().openDialog(type: DialogType.popup);
+                break;
+              case 'earnings':
+                routeOf<EarningsItemDialog>().openDialog(type: DialogType.popup);
+                break;
+            }
+          },
+        );
+      },
     );
   }
 }

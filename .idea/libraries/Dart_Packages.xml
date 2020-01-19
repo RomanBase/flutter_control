@@ -37,6 +37,20 @@
             </list>
           </value>
         </entry>
+        <entry key="cloud_firestore">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.13.0+1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="cloud_functions">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-0.4.1+6/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="collection">
           <value>
             <list>
@@ -65,10 +79,73 @@
             </list>
           </value>
         </entry>
+        <entry key="firebase">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase-7.2.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_analytics">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_analytics-5.0.9/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_auth">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.15.3+1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_auth_platform_interface">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_platform_interface-1.1.5/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_auth_web">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-0.1.1+2/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_core">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.4.3+2/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_core_platform_interface">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_platform_interface-1.0.2/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="firebase_core_web">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-0.1.1+2/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="flutter">
           <value>
             <list>
               <option value="C:/Apps/Flutter/packages/flutter/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="flutter_slidable">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/flutter_slidable-0.5.4/lib" />
             </list>
           </value>
         </entry>
@@ -90,6 +167,41 @@
           <value>
             <list>
               <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/glob-1.2.0/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="google_sign_in">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-4.1.1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="google_sign_in_platform_interface">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_platform_interface-1.0.3/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="google_sign_in_web">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_web-0.8.3/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="http">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/http-0.12.0+4/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="http_parser">
+          <value>
+            <list>
+              <option value="C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/http_parser-3.1.3/lib" />
             </list>
           </value>
         </entry>
@@ -319,11 +431,27 @@
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/async-2.4.0/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/boolean_selector-1.0.5/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/charcode-1.1.2/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/cloud_firestore-0.13.0+1/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/cloud_functions-0.4.1+6/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/collection-1.14.11/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/convert-2.1.1/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/coverage-0.13.3+3/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/crypto-2.1.3/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase-7.2.0/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_analytics-5.0.9/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth-0.15.3+1/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_platform_interface-1.1.5/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_auth_web-0.1.1+2/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core-0.4.3+2/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_platform_interface-1.0.2/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/firebase_core_web-0.1.1+2/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/flutter_slidable-0.5.4/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/glob-1.2.0/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in-4.1.1/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_platform_interface-1.0.3/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/google_sign_in_web-0.8.3/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/http-0.12.0+4/lib" />
+      <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/http_parser-3.1.3/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/image-2.1.4/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/js-0.6.1+1/lib" />
       <root url="file://C:/Apps/Flutter/.pub-cache/hosted/pub.dartlang.org/json_annotation-3.0.0/lib" />

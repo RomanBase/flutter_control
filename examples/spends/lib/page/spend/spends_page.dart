@@ -17,7 +17,7 @@ class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<Sp
           Container(
             width: device.width,
             padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
-            color: theme.primaryColor,
+            color: theme.primaryColorDark,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[

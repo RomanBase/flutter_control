@@ -124,15 +124,15 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
-  static ActionControl single<T>([T value]) => ActionControl<T>._(value);
+  static ActionControl<T> single<T>([T value]) => ActionControl<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  static ActionControl broadcast<T>([T value]) => _ActionControlBroadcast<T>._(value);
+  static ActionControl<T> broadcast<T>([T value]) => _ActionControlBroadcast<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  static ActionControl asBroadcastProvider<T>({@required dynamic key, bool broadcast: false, T defaultValue}) {
+  static ActionControl<T> asBroadcastProvider<T>({@required dynamic key, bool broadcast: false, T defaultValue}) {
     ActionControl control = broadcast ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
