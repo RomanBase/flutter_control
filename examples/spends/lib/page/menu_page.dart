@@ -3,6 +3,7 @@ import 'package:spends/page/spend/spends_page.dart';
 import 'package:spends/theme.dart';
 
 import 'account/account_page.dart';
+import 'earnings/earnings_item_dialog.dart';
 import 'earnings/earnings_page.dart';
 import 'spend/spend_item_dialog.dart';
 
@@ -50,7 +51,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteNavi
               routeOf<SpendItemDialog>().openDialog(type: DialogType.popup);
               break;
             case 'earnings':
-              printDebug('open earnings add popup');
+              routeOf<EarningsItemDialog>().openDialog(type: DialogType.popup);
               break;
           }
         },

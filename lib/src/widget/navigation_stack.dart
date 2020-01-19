@@ -373,6 +373,8 @@ class NavigatorStackControl extends BaseControl {
 
   void setMenuItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
 
+  void setInitialPage() => setPageIndex(_initialIndex ?? 0);
+
   /// Navigates back withing active [NavigatorStack] or sets page index to 0.
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack() {
@@ -392,6 +394,21 @@ class NavigatorStackControl extends BaseControl {
   /// Helper function for [WillPopScope].
   /// Returns negation of [navigateBack] as Future.
   Future<bool> popScope() async => !navigateBack();
+
+  @override
+  void softDispose() {
+    super.softDispose();
+
+    setInitialPage();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _items?.clear();
+    _pageIndex.dispose();
+  }
 }
 
 //TODO: custom animation in/out

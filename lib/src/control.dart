@@ -191,9 +191,9 @@ class ControlFactory with Disposable {
       }
 
       if (value is DisposeHandler) {
-        value.preventDispose = true;
+        value.preferSoftDispose = true;
 
-        printDebug('Factory prevents dispose of $key - ${value.runtimeType.toString()}');
+        printDebug('Factory prefers soft dispose of $key - ${value.runtimeType.toString()}');
       }
     });
 

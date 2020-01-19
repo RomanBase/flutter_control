@@ -1,10 +1,8 @@
 import 'package:flutter_control/core.dart';
-import 'package:spends/data/spend_repo.dart';
+import 'package:spends/data/repo_provider.dart';
 import 'package:spends/entity/spend_item.dart';
 
-class SpendItemModel extends BaseModel with StateControl {
-  SpendRepo get spendRepo => Control.get<SpendRepo>();
-
+class SpendItemModel extends BaseModel with StateControl, RepoProvider {
   final loading = LoadingControl();
 
   SpendItem _item;
@@ -17,7 +15,7 @@ class SpendItemModel extends BaseModel with StateControl {
   }
 
   SpendItemModel(SpendItem item) {
-    this.item = item;
+    _item = item;
   }
 
   Future<void> addItemToGroup(SpendItem item) async {
@@ -31,7 +29,6 @@ class SpendItemModel extends BaseModel with StateControl {
 
     await spendRepo.update(_item);
 
-    notifyState();
     loading.done();
   }
 
@@ -49,8 +46,6 @@ class SpendItemModel extends BaseModel with StateControl {
 
     await spendRepo.update(_item);
 
-    notifyState();
-
     loading.done();
   }
 
@@ -60,7 +55,6 @@ class SpendItemModel extends BaseModel with StateControl {
     _item.items.remove(item);
     await spendRepo.update(_item);
 
-    notifyState();
     loading.done();
   }
 

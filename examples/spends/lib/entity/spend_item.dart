@@ -28,7 +28,7 @@ class SpendItem {
       case SpendType.normal:
         return value;
       case SpendType.sub:
-        return value * 12.0;
+        return value * 12;
       case SpendType.group:
         if (items != null && items.length > 0) {
           return items.map((item) => item.yearSpend).reduce((a, b) => a + b);
@@ -71,6 +71,8 @@ class SpendItem {
   bool get isSub => type == SpendType.sub;
 
   bool get isGroup => type == SpendType.group;
+
+  bool get hasNote => note != null && note.isNotEmpty;
 
   const SpendItem({
     this.id,

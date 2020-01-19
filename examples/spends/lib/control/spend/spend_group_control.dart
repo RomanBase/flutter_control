@@ -51,7 +51,9 @@ class SpendGroupControl extends BaseControl {
 
     await group.updateGroupItem(model, item);
 
+    model.item = item;
     _updateData();
+
     model.loading.done();
   }
 

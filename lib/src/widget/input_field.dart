@@ -243,6 +243,7 @@ class InputControl extends ControlModel with StateControl {
   /// Clears text and notifies [TextField]
   void clear() => setText(null);
 
+  //TODO: WTF 2 ?
   @override
   void notifyState([state]) {
     if (value != null) {

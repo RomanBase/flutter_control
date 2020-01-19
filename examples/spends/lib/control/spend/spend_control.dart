@@ -1,11 +1,11 @@
 import 'package:flutter_control/core.dart';
-import 'package:spends/data/spend_repo.dart';
+import 'package:spends/data/repo_provider.dart';
 import 'package:spends/entity/spend_item.dart';
 import 'package:spends/fire/fire_control.dart';
 
 import 'spend_item_model.dart';
 
-class SpendControl extends BaseControl {
+class SpendControl extends BaseControl with RepoProvider {
   final loading = LoadingControl();
 
   final list = ListControl<SpendItemModel>();
@@ -16,8 +16,6 @@ class SpendControl extends BaseControl {
 
   //TODO: group in group - func
   List<SpendItem> get groups => list.where((model) => model.item.isGroup).map((model) => model.item).toList(growable: false);
-
-  SpendRepo get spendRepo => Control.get<SpendRepo>();
 
   SpendControl() {
     autoDispose([
@@ -57,18 +55,13 @@ class SpendControl extends BaseControl {
     double year = 0.0;
     double monthAvg = 0.0;
     double monthSub = 0.0;
-    double yearSavings = 0.0;
-    double monthSavings = 0.0;
 
     data.forEach((spend) {
       final item = spend.item;
 
       year += item.yearSpend;
       monthAvg += item.monthSpend;
-
-      if (item.isSub) {
-        monthSub += item.monthSpend;
-      }
+      monthSub += item.subSpend;
     });
 
     yearSpend.value = year.toInt().toString();
@@ -89,9 +82,8 @@ class SpendControl extends BaseControl {
     }
 
     final model = SpendItemModel(item);
-    list.add(model);
-
     model.loading.progress();
+    list.add(model);
 
     await spendRepo.add(model.item).then((data) {
       model.item = data;
@@ -145,5 +137,13 @@ class SpendControl extends BaseControl {
     _recalculateData(list.value);
 
     model.loading.done();
+  }
+
+  @override
+  void softDispose() {
+    list.clear();
+    yearSpend.value = null;
+    monthAvgSpend.value = null;
+    monthSubSpend.value = null;
   }
 }

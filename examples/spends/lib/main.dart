@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
+import 'package:spends/control/account/account_control.dart';
+import 'package:spends/control/earnings/earnings_control.dart';
+import 'package:spends/control/earnings/earnings_item_control.dart';
 import 'package:spends/control/spend/spend_group_control.dart';
-import 'package:spends/data/spend_repo.dart';
+import 'package:spends/data/repo_provider.dart';
+import 'package:spends/fire/fire_earnings.dart';
 import 'package:spends/fire/fire_spend.dart';
+import 'package:spends/page/earnings/earnings_item_dialog.dart';
 import 'package:spends/page/init_page.dart';
 import 'package:spends/page/menu_page.dart';
+import 'package:spends/page/spend/spend_group_edit_dialog.dart';
 import 'package:spends/page/spend/spend_group_page.dart';
 import 'package:spends/theme.dart';
 
@@ -31,16 +37,28 @@ class MyApp extends StatelessWidget {
         NavigatorStackControl: NavigatorStackControl(),
         FireControl: FireControl(),
         SpendControl: SpendControl(),
+        EarningsControl: EarningsControl(),
       },
       initializers: {
+        ...RepoProvider.initializers(
+          spendRepo: (_) => FireSpendRepo(),
+          earningsRepo: (_) => FireEarningsRepo(),
+        ),
+        // ---
         InitLoaderControl: (_) => InitControl(),
-        SpendRepo: (_) => FireSpendRepo(),
+        // ---
         SpendItemControl: (_) => SpendItemControl(),
         SpendGroupControl: (_) => SpendGroupControl(),
+        // ---
+        EarningsItemControl: (_) => EarningsItemControl(),
+        // ---
+        AccountControl: (_) => AccountControl(),
       },
       routes: [
         ControlRoute.build<SpendItemDialog>(builder: (_) => SpendItemDialog()),
         ControlRoute.build<SpendGroupPage>(builder: (_) => SpendGroupPage()),
+        ControlRoute.build<SpendGroupEditDialog>(builder: (_) => SpendGroupEditDialog()),
+        ControlRoute.build<EarningsItemDialog>(builder: (_) => EarningsItemDialog()),
         ControlRoute.build<AccountPage>(builder: (_) => AccountPage()),
         ControlRoute.build<EarningsPage>(builder: (_) => EarningsPage()),
       ],
@@ -54,7 +72,7 @@ class MyApp extends StatelessWidget {
         key: key,
         home: home,
         title: 'Spend List',
-        theme: SpendTheme().darkTheme,
+        theme: ThemeProvider.of<SpendTheme>(context).darkTheme,
       ),
     );
   }

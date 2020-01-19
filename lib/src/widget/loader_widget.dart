@@ -91,11 +91,11 @@ class _InitLoaderControlEmpty extends InitLoaderControl {
   Future<void> load() => null;
 }
 
-class InitLoader extends SingleControlWidget<InitLoaderControl> {
+class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
   final WidgetBuilder builder;
 
   InitLoader({
-    InitLoaderControl control,
+    T control,
     @required this.builder,
   }) : super(args: control);
 

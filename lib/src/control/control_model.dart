@@ -101,7 +101,7 @@ class BaseControl extends ControlModel {
   }
 }
 
-mixin StateControl on ControlModel implements StateNotifier {
+mixin StateControl on ControlModel implements StateNotifier, Listenable {
   /// Notify listeners.
   final _notifier = BaseNotifier();
 
@@ -114,6 +114,12 @@ mixin StateControl on ControlModel implements StateNotifier {
   void subscribeStateNotifier(VoidCallback action) => _notifier.addListener(action);
 
   void cancelStateNotifier(VoidCallback action) => _notifier.removeListener(action);
+
+  @override
+  void addListener(VoidCallback listener) => subscribeStateNotifier(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => cancelStateNotifier(listener);
 
   @override
   void dispose() {

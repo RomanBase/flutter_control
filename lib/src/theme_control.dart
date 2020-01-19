@@ -154,6 +154,8 @@ class ControlTheme {
     _data = null;
     _device = null;
     _context = context ?? Control.root()?.rootContext;
+
+    assert(_context != null);
   }
 
   @override
