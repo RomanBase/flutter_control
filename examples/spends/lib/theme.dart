@@ -18,8 +18,8 @@ class SpendTheme extends ControlTheme {
   SpendTheme([BuildContext context]) : super(context);
 
   ThemeData get darkTheme => ThemeData(
-        primaryColor: blue,
-        primaryColorLight: green,
+        primaryColor: green,
+        primaryColorLight: lightGreen,
         primaryColorDark: blue,
         accentColor: lightGreen,
         canvasColor: dark,
@@ -34,7 +34,7 @@ class SpendTheme extends ControlTheme {
   ThemeData get lightTheme => ThemeData(
         primaryColor: blue,
         primaryColorLight: green,
-        primaryColorDark: blue,
+        primaryColorDark: green,
         accentColor: lightGreen,
         canvasColor: lightGray,
         fontFamily: 'Oswald',

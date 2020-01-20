@@ -14,30 +14,33 @@ class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<Sp
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Container(
-            width: device.width,
-            padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
-            color: theme.primaryColorDark,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: <Widget>[
-                TabRow(
-                  title: 'Total year spends',
-                  control: control.yearSpend,
-                ),
-                TabRow(
-                  title: 'Average month spends',
-                  control: control.monthAvgSpend,
-                  style: font.body2,
-                ),
-                SizedBox(
-                  height: theme.paddingQuarter,
-                ),
-                TabRow(
-                  title: 'Sub month spends',
-                  control: control.monthSubSpend,
-                ),
-              ],
+          Hero(
+            tag: 'toolbar',
+            child: Container(
+              width: device.width,
+              padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
+              color: theme.primaryColorDark,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  TabRow(
+                    title: 'Total year spends',
+                    control: control.yearSpend,
+                  ),
+                  TabRow(
+                    title: 'Average month spends',
+                    control: control.monthAvgSpend,
+                    style: font.body2,
+                  ),
+                  SizedBox(
+                    height: theme.paddingQuarter,
+                  ),
+                  TabRow(
+                    title: 'Sub month spends',
+                    control: control.monthSubSpend,
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
