@@ -6,12 +6,15 @@ import 'package:flutter_control/core.dart';
 class ActionSubscription<T> implements Disposable {
   ActionControl<T> _parent;
   ValueCallback<T> _action;
+  Predicate<T> _until;
 
   bool _keep = true;
   bool _active = true;
 
+  bool get isValid => _parent != null && _action != null;
+
   /// Checks if parent and action is valid and sub is active.
-  bool get isActive => _active && _parent != null && _active != null;
+  bool get isActive => _active && isValid;
 
   /// Removes parent and action reference.
   /// Can be called multiple times.
@@ -19,6 +22,8 @@ class ActionSubscription<T> implements Disposable {
     _parent = null;
     _action = null;
   }
+
+  void until(Predicate<T> predicate) => _until = predicate;
 
   /// Sets subscription to listen just for one more time, then will be canceled by [ActionControl].
   void onceMore() => _keep = false;
@@ -28,6 +33,8 @@ class ActionSubscription<T> implements Disposable {
 
   /// Resumes this subscription and [ActionControl] broadcast will again starts notifying this sub.
   void resume() => _active = true;
+
+  bool _readyToClose(T value) => _until == null ? !_keep : _until(value);
 
   /// Cancels subscription to [ActionControl]
   /// Can be called multiple times
@@ -60,7 +67,7 @@ abstract class ActionControlStream<T> {
   /// Subscribes event for just one next change.
   /// Returns [ActionSubscription] for later cancellation.
   /// If [current] is true and [value] isn't null, then given listener is notified immediately.
-  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true});
+  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true});
 }
 
 class ActionControlSub<T> implements ActionControlStream<T> {
@@ -75,7 +82,7 @@ class ActionControlSub<T> implements ActionControlStream<T> {
   ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) => _control.subscribe(action, current: current);
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) => _control.once(action, current: current);
+  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _control.once(action, current: current);
 }
 
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
@@ -154,10 +161,11 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
+  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) {
     final sub = ActionSubscription<T>()
       .._parent = this
       .._action = action
+      .._until = until
       .._keep = false;
 
     if (_value != null && current) {
@@ -210,7 +218,7 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
     if (_sub != null && _sub.isActive) {
       _sub._action(value);
 
-      if (!_sub._keep) {
+      if (_sub._readyToClose(value)) {
         cancel();
       }
     }
@@ -262,8 +270,8 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {bool current: true}) {
-    final sub = super.once(action, current: current);
+  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) {
+    final sub = super.once(action, until: until, current: current);
     _sub = null; // just clear unused sub reference
 
     if (sub.isActive) {
@@ -275,13 +283,19 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 
   @override
   void notify() {
-    _list.forEach((sub) => sub._action(_value));
+    final onceList = _list.where((sub) {
+      sub._action(_value);
 
-    final onceList = _list.where((sub) => !sub._keep);
+      if (sub._readyToClose(value)) {
+        sub._clear();
+        return true;
+      }
+
+      return false;
+    });
 
     if (onceList.isNotEmpty) {
-      onceList.forEach((sub) => sub._clear());
-      _list.removeWhere((sub) => !sub._keep);
+      _list.removeWhere((sub) => !sub.isValid);
     }
   }
 

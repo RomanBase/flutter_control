@@ -26,6 +26,24 @@ class LocalizationAsset {
     this.locale,
     this.assetPath,
   );
+
+  Locale toLocale() {
+    if (locale.contains("_")) {
+      final parts = locale.split("_");
+
+      if (parts.length == 1) {
+        return Locale(parts[0]);
+      }
+
+      if (parts.length == 2) {
+        return Locale(parts[0], parts[1]);
+      }
+
+      return Locale(parts[0], locale.substring(parts[0].length));
+    }
+
+    return Locale(locale);
+  }
 }
 
 /// Defines result of localization change.
@@ -72,14 +90,14 @@ class BaseLocalization with PrefsProvider {
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
-  bool loading = false;
+  final loading = ActionControl.broadcast<bool>(false);
 
   /// Checks if any data are stored in localization.
   bool get isActive => _data.length > 0;
 
   bool get hasValidAsset => assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
 
-  bool get isDirty => !loading && !isActive && hasValidAsset;
+  bool get isDirty => !loading.value && !isActive && hasValidAsset;
 
   /// Custom func for [extractLocalization].
   LocalizationExtractor _mapExtractor;
@@ -95,7 +113,7 @@ class BaseLocalization with PrefsProvider {
       );
 
   Future<LocalizationArgs> init({bool loadDefaultLocale: true}) async {
-    loading = true;
+    loading.value = true;
 
     await prefs.mount();
 
@@ -109,7 +127,7 @@ class BaseLocalization with PrefsProvider {
       args = await changeToSystemLocale();
     }
 
-    loading = false;
+    loading.value = false;
 
     WidgetsBinding.instance.window.onLocaleChanged = () {
       if (!isSystemLocaleActive()) {
@@ -163,7 +181,7 @@ class BaseLocalization with PrefsProvider {
   /// Changes localization to system language
   /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
   Future<LocalizationArgs> changeToSystemLocale() async {
-    loading = true;
+    loading.value = true;
 
     final locale = getSystemLocale();
 
@@ -171,7 +189,7 @@ class BaseLocalization with PrefsProvider {
       return await changeLocale(locale);
     }
 
-    loading = false;
+    loading.value = false;
     return LocalizationArgs(
       locale: locale,
       isActive: false,
@@ -222,11 +240,15 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Changes manually localization data, but only for current app session.
-  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data) async {
+  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data, {String locale}) async {
     data.forEach((key, value) => _data[key] = value);
 
+    if (locale != null) {
+      _locale = locale;
+    }
+
     final args = LocalizationArgs(
-      locale: locale,
+      locale: _locale,
       isActive: true,
       changed: true,
       source: 'runtime',
@@ -241,11 +263,11 @@ class BaseLocalization with PrefsProvider {
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
   Future<LocalizationArgs> changeLocale(String locale, {bool preferred: true}) async {
-    loading = true;
+    loading.value = true;
 
     if (locale == null || !isLocalizationAvailable(locale)) {
       print('localization not available: $locale');
-      loading = false;
+      loading.value = false;
       return LocalizationArgs(
         locale: locale,
         isActive: false,
@@ -255,7 +277,7 @@ class BaseLocalization with PrefsProvider {
     }
 
     if (isLocaleEqual(this.locale, locale)) {
-      loading = false;
+      loading.value = false;
       return LocalizationArgs(
         locale: locale,
         isActive: true,
@@ -266,7 +288,7 @@ class BaseLocalization with PrefsProvider {
 
     final args = await _loadAssetLocalization(locale, getAssetPath(locale));
 
-    loading = false;
+    loading.value = false;
 
     if (args.isActive) {
       _locale = locale;
@@ -530,4 +552,14 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 
   @override
   bool shouldReload(LocalizationsDelegate old) => false;
+
+  List<Locale> supportedLocales() {
+    final list = List<Locale>();
+
+    localization.assets.forEach((asset) {
+      list.add(asset.toLocale());
+    });
+
+    return list;
+  }
 }

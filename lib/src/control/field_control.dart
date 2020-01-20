@@ -742,35 +742,36 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   /// Return true if status is error.
   bool get hasError => value == LoadingStatus.error;
 
-  bool get hasMessage => message?.isNotEmpty ?? false;
+  bool get hasMessage => message != null;
 
   /// Inner message of LoadingStatus.
-  String message;
+  dynamic message;
 
   LoadingControl([LoadingStatus status = LoadingStatus.done]) : super(status);
 
   /// Change status of FieldController and sets inner message.
-  void setStatus(LoadingStatus status, {String msg}) {
-    if (msg != null) {
-      message = msg;
-    }
+  void setStatus(LoadingStatus status, {dynamic msg}) {
+    message = msg;
+
     setValue(status);
   }
 
   /// Change status of FieldController to progress and sets inner message.
-  void progress({String msg}) => setStatus(LoadingStatus.progress, msg: msg);
+  void progress({dynamic msg}) => setStatus(LoadingStatus.progress, msg: msg);
 
   /// Change status of FieldController to done and sets inner message.
-  void done({String msg}) => setStatus(LoadingStatus.done, msg: msg);
+  void done({dynamic msg}) => setStatus(LoadingStatus.done, msg: msg);
 
   /// Change status of FieldController to error and sets inner message.
-  void error({String msg}) => setStatus(LoadingStatus.error, msg: msg);
+  void error({dynamic msg}) => setStatus(LoadingStatus.error, msg: msg);
 
   /// Change status of FieldController to outdated and sets inner message.
-  void outdated({String msg}) => setStatus(LoadingStatus.outdated, msg: msg);
+  void outdated({dynamic msg}) => setStatus(LoadingStatus.outdated, msg: msg);
 
   /// Change status of FieldController to unknown and sets inner message.
-  void unknown({String msg}) => setStatus(LoadingStatus.unknown, msg: msg);
+  void unknown({dynamic msg}) => setStatus(LoadingStatus.unknown, msg: msg);
+
+  void status(bool loading, {dynamic msg}) => loading ? progress(msg: msg) : done(msg: msg);
 }
 
 //TODO: refactor

@@ -3,6 +3,12 @@ import 'dart:async';
 import 'package:flutter_control/core.dart';
 import 'package:spends/fire/fire_control.dart';
 
+enum SignMode {
+  sign_in,
+  sign_up,
+  sign_pass,
+}
+
 class InitControl extends InitLoaderControl with FireProvider {
   final Completer _onAuthorized = Completer();
 
@@ -18,8 +24,6 @@ class InitControl extends InitLoaderControl with FireProvider {
       username.value = 'test@test.test';
       password.value = '12345678';
     }
-
-    loading.subscribe((value) => printDebug(value));
   }
 
   @override
@@ -28,9 +32,7 @@ class InitControl extends InitLoaderControl with FireProvider {
 
     await fire.restore();
 
-    while (Control.localization().loading) {}
-
-    loading.done();
+    Control.localization().loading.once((value) => loading.status(value), until: (value) => !value);
 
     await _onAuthorized.future;
   }
@@ -55,7 +57,15 @@ class InitControl extends InitLoaderControl with FireProvider {
     });
   }
 
-  void resetPass() async {}
+  void resetPass() async {
+    loading.progress();
+
+    await fire.requestPasswordReset(username.value).then((_) {
+      loading.done(msg: SignMode.sign_in);
+    }).catchError((err) {
+      loading.error();
+    });
+  }
 
   void complete() {
     if (!_onAuthorized.isCompleted) {

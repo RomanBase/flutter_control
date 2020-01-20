@@ -5,12 +5,6 @@ import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 
-enum SignMode {
-  sign_in,
-  sign_up,
-  sign_pass,
-}
-
 class _UIControl extends ControlModel with FireProvider {
   final signMode = ActionControl.broadcast<SignMode>(SignMode.sign_in);
   SignMode prevMode = SignMode.sign_in;
@@ -42,17 +36,27 @@ class _UIControl extends ControlModel with FireProvider {
         case LoadingStatus.progress:
           loadingAnim.forward();
           break;
-        case LoadingStatus.none:
         case LoadingStatus.done:
-        case LoadingStatus.error:
-        case LoadingStatus.outdated:
-        case LoadingStatus.unknown:
-          if (!fire.isUserSignedIn) {
+          if (control.loading.message is SignMode) {
+            setSignMode(control.loading.message);
             loadingAnim.reverse();
-          } else {
+            break;
+          }
+
+          if (fire.isUserSignedIn) {
             transferToApp();
+          } else {
+            loadingAnim.reverse();
           }
           break;
+        case LoadingStatus.error:
+          //TODO: show error message.
+          loadingAnim.reverse();
+          break;
+        case LoadingStatus.none:
+        case LoadingStatus.outdated:
+        case LoadingStatus.unknown:
+          loadingAnim.reverse();
       }
     });
   }
