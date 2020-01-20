@@ -1,7 +1,7 @@
 
-**Release version (1.0) available soon [![Structure](https://github.com/RomanBase/flutter_control/tree/pre-release)](pre-release branche)**
+**Release version (1.0) will be available soon, currently in pre-release branche (https://github.com/RomanBase/flutter_control/tree/pre-release)**
 
-Current version will have one more update (0.17.3).
+Current beta version will have one last update (0.17.3).
 
 ---
 
