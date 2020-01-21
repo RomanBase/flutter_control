@@ -36,12 +36,12 @@ class CounterControl extends BaseControl {
 
   void incrementCounter() {
     counter.value++;
-    message.value = counter.isMax ? "Counter value at Maximum !" : "Counter value Increasing...";
+    message.value = counter.atMax ? "Counter value at Maximum !" : "Counter value Increasing...";
   }
 
   void decrementCounter() {
     counter.value--;
-    message.value = counter.isMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
+    message.value = counter.atMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
   }
 
   @override

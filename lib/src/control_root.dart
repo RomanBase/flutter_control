@@ -228,7 +228,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       theme: widget.theme,
       initAsync: () => FutureBlock.wait([
         widget.initAsync != null ? widget.initAsync() : null,
-        widget.loadLocalization ? _loadLocalization() : null,
+        (widget.loadLocalization && widget.locales != null) ? _loadLocalization() : null,
       ]),
     );
 

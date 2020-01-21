@@ -967,9 +967,13 @@ class IntegerControl extends FieldControl<int> {
 
   bool get requestRange => min + max != 0;
 
+  bool get atMin => requestRange && value == min;
+
+  bool get atMax => requestRange && value == max;
+
   IntegerControl([int value = 0]) : super(value);
 
-  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp}) {
+  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp: true}) {
     setInRange(value);
   }
 
