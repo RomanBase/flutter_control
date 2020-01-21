@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/fire/fire_control.dart';
 
-class AccountControl extends BaseControl with RouteControlProvider, FireProvider {
+class AccountControl extends BaseControl with RouteControl, FireProvider {
   final loading = LoadingControl();
 
   void signOut() async {

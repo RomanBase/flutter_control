@@ -3,7 +3,7 @@ import 'package:spends/control/earnings/earnings_control.dart';
 import 'package:spends/control/earnings/earnings_item_model.dart';
 import 'package:spends/entity/earnings_item.dart';
 
-class EarningsItemControl extends BaseControl with RouteControlProvider {
+class EarningsItemControl extends BaseControl with RouteControl {
   final title = InputControl(regex: '.{3,}');
 
   var note = InputControl();

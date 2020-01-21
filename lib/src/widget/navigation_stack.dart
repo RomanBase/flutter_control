@@ -61,7 +61,7 @@ abstract class _StackNavigator {
 ///
 /// [NavigatorStackControl]
 /// [WillPopScope]
-/// [RouteHandler]  [RouteControlProvider]
+/// [RouteHandler]  [RouteControl]
 class NavigatorControl extends BaseControl implements _StackNavigator {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
@@ -124,7 +124,7 @@ class NavigatorControl extends BaseControl implements _StackNavigator {
 ///
 /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
 ///
-/// [RouteHandler] [RouteControlProvider]
+/// [RouteHandler] [RouteControl]
 class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
   final WidgetInitializer initializer;

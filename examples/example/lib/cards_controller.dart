@@ -2,7 +2,7 @@ import 'package:flutter_control/core.dart';
 
 import 'cards_page.dart';
 
-class CardsController extends BaseControl with RouteControlProvider, LocalizationProvider {
+class CardsController extends BaseControl with RouteControl, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
   final input = InputControl();
@@ -61,7 +61,7 @@ class CardsController extends BaseControl with RouteControlProvider, Localizatio
   }
 }
 
-class DetailController extends BaseControl with RouteControlProvider, LocalizationProvider {
+class DetailController extends BaseControl with RouteControl, LocalizationProvider {
   CardModel _model;
 
   ListControl<CardItemModel> get items => _model.items;

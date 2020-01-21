@@ -133,29 +133,29 @@ mixin StateControl on ControlModel implements StateNotifier, Listenable {
 /// Enables navigation from Controller.
 ///
 /// [ControlWidget] with [RouteNavigator]
-/// [ControlNavigator]
+/// [DirectNavigator]
 /// [RouteHandler] & [PageRouteProvider]
-mixin RouteControlProvider on ControlModel {
-  /// Implementation of [ControlNavigator] where [Navigator] is used.
-  ControlNavigator _navigator;
+mixin RouteControl on ControlModel {
+  /// Implementation of [DirectNavigator] where [Navigator] is used.
+  DirectNavigator _navigator;
 
-  /// Check if is [ControlNavigator] valid.
+  /// Check if is [DirectNavigator] valid.
   bool get isNavigatorAvailable => _navigator != null;
 
-  /// Subscribes [ControlNavigator] for later user.
+  /// Subscribes [DirectNavigator] for later user.
   @override
   @mustCallSuper
   void subscribe(dynamic object) {
     super.subscribe(object);
 
-    if (object is ControlNavigator) {
+    if (object is DirectNavigator) {
       _navigator = object;
     }
   }
 
   RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(_navigator);
 
-  /// [ControlNavigator.openRoute].
+  /// [DirectNavigator.openRoute].
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openRoute(
     ControlRoute route, {
@@ -175,7 +175,7 @@ mixin RouteControlProvider on ControlModel {
     return handler;
   }
 
-  /// [ControlNavigator.openRoot].
+  /// [DirectNavigator.openRoot].
   /// [RouteHandler] -> [PageRouteProvider]
   RouteHandler openRoot(
     ControlRoute route, {
@@ -193,7 +193,7 @@ mixin RouteControlProvider on ControlModel {
     return handler;
   }
 
-  /// [ControlNavigator.openDialog].
+  /// [DirectNavigator.openDialog].
   /// [RouteHandler] -> [PageRouteProvider]
   Future<dynamic> openDialog(
     ControlRoute route, {
@@ -204,10 +204,10 @@ mixin RouteControlProvider on ControlModel {
     return RouteHandler(_navigator, route).openDialog(root: root, type: type, args: args);
   }
 
-  /// [ControlNavigator.close].
+  /// [DirectNavigator.close].
   void close([dynamic result]) => _navigator?.close(result);
 
-  /// [ControlNavigator.backTo].
+  /// [DirectNavigator.backTo].
   void backTo({
     Route route,
     String identifier,
@@ -219,10 +219,10 @@ mixin RouteControlProvider on ControlModel {
         predicate: predicate,
       );
 
-  /// [ControlNavigator.openRoot].
+  /// [DirectNavigator.openRoot].
   void backToRoot() => _navigator?.backToRoot();
 
-  /// Disables [ControlNavigator].
+  /// Disables [DirectNavigator].
   @override
   void dispose() {
     super.dispose();

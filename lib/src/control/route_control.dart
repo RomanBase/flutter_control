@@ -5,9 +5,8 @@ import 'package:flutter_control/core.dart';
 
 typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
-//TODO: documentation is old and don't match now..
 /// Abstract class for basic type of navigation.
-abstract class ControlNavigator {
+abstract class DirectNavigator {
   /// Pushes route into current Navigator.
   /// [route] - specific route: type, settings, transition etc.
   /// [root] - pushes route into root Navigator - onto top of everything.
@@ -17,7 +16,6 @@ abstract class ControlNavigator {
   /// Clears current [Navigator] and opens new [Route].
   Future<dynamic> openRoot(Route route);
 
-  /// Opens Dialog/ModalSheet/BottomSheet etc. as custom Widget Dialog via Controller.
   Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
 
   /// Goes back in navigation stack until first [Route].
@@ -34,11 +32,11 @@ abstract class ControlNavigator {
   void closeRoute(Route route, [dynamic result]);
 }
 
-/// Ties up [ControlNavigator] and [ControlRoute].
+/// Ties up [DirectNavigator] and [ControlRoute].
 /// [ControlRoute.builder] is wrapped and Widget is initialized during build phase.
 class RouteHandler {
   /// Implementation of navigator.
-  final ControlNavigator navigator;
+  final DirectNavigator navigator;
 
   /// Implementation of provider.
   final ControlRoute provider;
@@ -58,7 +56,7 @@ class RouteHandler {
     assert(provider != null);
   }
 
-  /// [ControlNavigator.openRoute]
+  /// [DirectNavigator.openRoute]
   Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
     debugPrint("open route: ${provider.identifier} from $navigator");
 
@@ -75,7 +73,7 @@ class RouteHandler {
     return _result;
   }
 
-  /// [ControlNavigator.openRoot]
+  /// [DirectNavigator.openRoot]
   Future<dynamic> openRoot({dynamic args}) {
     debugPrint("open root: ${provider.identifier} from $navigator");
 
@@ -90,7 +88,7 @@ class RouteHandler {
     return _result;
   }
 
-  /// [ControlNavigator.openDialog]
+  /// [DirectNavigator.openDialog]
   Future<dynamic> openDialog({bool root: false, DialogType type: DialogType.popup, dynamic args}) {
     debugPrint("open dialog: ${provider.identifier} from $navigator");
 
@@ -166,7 +164,7 @@ class ControlRoute {
   }
 
   /// Initializes [RouteHandler] with given [navigator] and this route provider.
-  RouteHandler navigator(ControlNavigator navigator) => RouteHandler(navigator, this);
+  RouteHandler navigator(DirectNavigator navigator) => RouteHandler(navigator, this);
 
   void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
 }
@@ -222,16 +220,6 @@ class RouteStore {
     }
 
     return null;
-  }
-
-  ControlRoute getRoot([String identifier]) {
-    identifier ??= '/';
-
-    if (_routes.containsKey(identifier)) {
-      return _routes[identifier];
-    }
-
-    return _routes.values.first;
   }
 
   List<String> decompose(String identifier) {

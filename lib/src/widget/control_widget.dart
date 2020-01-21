@@ -97,7 +97,7 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [BaseControl]
 /// [StateControl]
 ///
-/// [RouteNavigator] & [RouteControlProvider]
+/// [RouteNavigator] & [RouteControl]
 /// [RouteHandler] & [PageRouteProvider]
 ///
 /// [ControlFactory]
@@ -378,7 +378,7 @@ mixin SingleTickerControl on ControlWidget {
 }
 
 /// Mixin class to enable navigation for [ControlWidget]
-mixin RouteNavigator on ControlWidget implements ControlNavigator {
+mixin RouteNavigator on ControlWidget implements DirectNavigator {
   NavigatorState get navigator => Navigator.of(context);
 
   NavigatorState get rootNavigator => Navigator.of(getContext(root: true));
