@@ -66,15 +66,14 @@ class Control {
     initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
 
     ControlFactory._instance.initialize(
-        entries: entries,
-        initializers: initializers,
-        injector: injector,
-        initAsync: () async {
-          await prefs.init();
-          if (initAsync != null) {
-            await initAsync();
-          }
-        });
+      entries: entries,
+      initializers: initializers,
+      injector: injector,
+      initAsync: () => FutureBlock.wait([
+        prefs.init(),
+        initAsync != null ? initAsync() : null,
+      ]),
+    );
 
     return true;
   }

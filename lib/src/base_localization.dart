@@ -90,14 +90,15 @@ class BaseLocalization with PrefsProvider {
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
-  final loading = ActionControl.broadcast<bool>(false);
+  /// TODO: prevent concurrent loading
+  bool loading = false;
 
   /// Checks if any data are stored in localization.
   bool get isActive => _data.length > 0;
 
   bool get hasValidAsset => assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
 
-  bool get isDirty => !loading.value && !isActive && hasValidAsset;
+  bool get isDirty => !loading && !isActive && hasValidAsset;
 
   /// Custom func for [extractLocalization].
   LocalizationExtractor _mapExtractor;
@@ -113,7 +114,7 @@ class BaseLocalization with PrefsProvider {
       );
 
   Future<LocalizationArgs> init({bool loadDefaultLocale: true}) async {
-    loading.value = true;
+    loading = true;
 
     await prefs.mount();
 
@@ -127,7 +128,7 @@ class BaseLocalization with PrefsProvider {
       args = await changeToSystemLocale();
     }
 
-    loading.value = false;
+    loading = false;
 
     WidgetsBinding.instance.window.onLocaleChanged = () {
       if (!isSystemLocaleActive()) {
@@ -181,7 +182,7 @@ class BaseLocalization with PrefsProvider {
   /// Changes localization to system language
   /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
   Future<LocalizationArgs> changeToSystemLocale() async {
-    loading.value = true;
+    loading = true;
 
     final locale = getSystemLocale();
 
@@ -189,7 +190,7 @@ class BaseLocalization with PrefsProvider {
       return await changeLocale(locale);
     }
 
-    loading.value = false;
+    loading = false;
     return LocalizationArgs(
       locale: locale,
       isActive: false,
@@ -263,11 +264,11 @@ class BaseLocalization with PrefsProvider {
   /// If localization isn't available, default localization is then used.
   /// It can take a while because localization is loaded from json file.
   Future<LocalizationArgs> changeLocale(String locale, {bool preferred: true}) async {
-    loading.value = true;
+    loading = true;
 
     if (locale == null || !isLocalizationAvailable(locale)) {
       print('localization not available: $locale');
-      loading.value = false;
+      loading = false;
       return LocalizationArgs(
         locale: locale,
         isActive: false,
@@ -277,7 +278,7 @@ class BaseLocalization with PrefsProvider {
     }
 
     if (isLocaleEqual(this.locale, locale)) {
-      loading.value = false;
+      loading = false;
       return LocalizationArgs(
         locale: locale,
         isActive: true,
@@ -288,7 +289,7 @@ class BaseLocalization with PrefsProvider {
 
     final args = await _loadAssetLocalization(locale, getAssetPath(locale));
 
-    loading.value = false;
+    loading = false;
 
     if (args.isActive) {
       _locale = locale;

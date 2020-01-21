@@ -110,7 +110,6 @@ class ControlRoot extends StatefulWidget {
   /// Builder provides [Key] and [home] widget.
   final AppBuilder app;
 
-
   /// Root [Widget] for whole app.
   ///
   /// [debug] extra debug console prints.
@@ -121,6 +120,7 @@ class ControlRoot extends StatefulWidget {
   /// [initializers] map of dynamic initializers to store in [ControlFactory].
   /// [theme] custom [ControlTheme] builder.
   /// [loader] widget to show during loading and initializing control, localization.
+  /// [initAsync] extra async function - this function is executed during [ControlFactory.initialize].
   /// [root] first Widget after loading finished.
   /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppBuilder.key] and [AppBuilder.home] from builder to App Widget.
   const ControlRoot({
@@ -135,9 +135,9 @@ class ControlRoot extends StatefulWidget {
     this.theme,
     this.loader,
     this.disableLoader: false,
+    this.initAsync,
     @required this.root,
     @required this.app,
-    this.initAsync,
   }) : super(key: _rootKey);
 
   @override
@@ -173,6 +173,17 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     });
   }
 
+  void updateLoading({bool loadingLocale, LoadingStatus loaderStatus}) {
+    final currentStatus = loading;
+
+    _loadingLocale = loadingLocale ?? _loadingLocale;
+    _args[LoadingStatus] = loaderStatus ?? _loaderStatus;
+
+    if (currentStatus != loading) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -202,36 +213,41 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _rootBuilder = WidgetInitializer.control(widget.root);
 
-    _localeSub = BaseLocalization.subscribeChanges((args) {
-      if (args.changed && Control.localization().isSystemLocaleActive()) {
-        setState(() {
-          _loadingLocale = false;
-        });
-      }
-    });
-
     _initControl();
   }
 
-  void _initControl() {
-    if (!Control.isInitialized) {
-      Control.initControl(
-        debug: widget.debug,
-        defaultLocale: widget.defaultLocale,
-        locales: widget.locales ?? {'en': null},
-        entries: widget.entries ?? {},
-        initializers: widget.initializers ?? {},
-        injector: widget.injector,
-        routes: widget.routes,
-        theme: widget.theme,
-        initAsync: widget.initAsync,
-      );
+  void _initControl() async {
+    final initialized = Control.initControl(
+      debug: widget.debug,
+      defaultLocale: widget.defaultLocale,
+      locales: widget.locales ?? {'en': null},
+      entries: widget.entries ?? {},
+      initializers: widget.initializers ?? {},
+      injector: widget.injector,
+      routes: widget.routes,
+      theme: widget.theme,
+      initAsync: () => FutureBlock.wait([
+        widget.initAsync != null ? widget.initAsync() : null,
+        widget.loadLocalization ? _loadLocalization() : null,
+      ]),
+    );
+
+    if (initialized) {
+      await Control.factory().onReady();
     }
 
+    _localeSub = BaseLocalization.subscribeChanges((args) {
+      if (args.changed) {
+        updateLoading(loadingLocale: false);
+      }
+    });
+
+    updateLoading(loadingLocale: false);
+  }
+
+  Future<void> _loadLocalization() async {
     if (widget.loadLocalization && Control.localization().isDirty) {
-      _context.once((context) async => await Control.localization().init());
-    } else {
-      _loadingLocale = false;
+      await Control.localization().init();
     }
   }
 
@@ -279,24 +295,5 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     super.dispose();
     _localeSub?.dispose();
     _localeSub = null;
-  }
-}
-
-class EmptyWidget extends Widget {
-  @override
-  Element createElement() => EmptyElement(this);
-}
-
-class EmptyElement extends Element {
-  EmptyElement(Widget widget) : super(widget);
-
-  @override
-  void forgetChild(Element child) {
-    printDebug('empty element: forget');
-  }
-
-  @override
-  void performRebuild() {
-    printDebug('empty element: rebuild');
   }
 }
