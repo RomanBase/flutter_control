@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 
 import 'list_control.dart';
 
-class TodoListPage extends SingleControlWidget<TodoListControl> with RouteNavigator {
+class TodoListPage extends SingleControlWidget<TodoListControl> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,9 +26,7 @@ class TodoListPage extends SingleControlWidget<TodoListControl> with RouteNaviga
               onEditPressed: (model) {
                 showDialog(
                   context: context,
-                  builder: WidgetInitializer.of(
-                    (context) => ItemDialog(),
-                  ).wrap(args: model),
+                  builder: (context) => ItemDialog(model: model),
                 );
               },
             ),
@@ -54,9 +52,7 @@ class TodoListPage extends SingleControlWidget<TodoListControl> with RouteNaviga
         onPressed: () {
           showDialog(
             context: context,
-            builder: WidgetInitializer.of(
-              (context) => ItemDialog(),
-            ).wrap(),
+            builder: (context) => ItemDialog(),
           );
         },
         child: Icon(Icons.add),
@@ -107,6 +103,8 @@ class ItemWidget extends StatelessWidget {
 }
 
 class ItemDialog extends SingleControlWidget<ItemDialogControl> {
+  ItemDialog({Key key, TodoItemModel model}) : super(key: key, args: model);
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -138,6 +136,7 @@ class ItemDialog extends SingleControlWidget<ItemDialogControl> {
                       autofocus: true,
                       textAlign: TextAlign.center,
                       label: 'item name',
+                      //TODO: submit from UI
                     ),
                     SizedBox(
                       height: 16.0,

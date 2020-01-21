@@ -70,8 +70,6 @@ class ItemDialogControl extends BaseControl {
     if (model != null) {
       title.value = model.title;
     }
-
-    title.done(submit);
   }
 
   bool submit() {
