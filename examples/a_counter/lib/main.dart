@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       app: (context, key, home) => MaterialApp(
         key: key,
         home: home,
-        title: 'Flutter Control - Counter App',
+        title: 'Counter - Flutter Control',
       ),
     );
   }
