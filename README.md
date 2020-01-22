@@ -1,3 +1,9 @@
+**Release version (1.0) will be available soon, currently in pre-release branche (https://github.com/RomanBase/flutter_control/tree/pre-release)**
+
+Current beta version will have one last update (0.17.3).
+
+---
+
 [![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
 
 ---
