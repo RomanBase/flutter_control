@@ -52,7 +52,7 @@ class Control {
     initializers ??= {};
 
     final localizationAssets = List<LocalizationAsset>();
-    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key, value)));
+    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key.replaceAll('-', '_'), value)));
 
     final prefs = BasePrefs();
 

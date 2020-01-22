@@ -164,6 +164,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   Widget get _currentWidget => loading ? _loadingBuilder?.value : _rootBuilder?.value;
 
+  //TODO: set state loading/loader/locale
   @override
   void notifyState([state]) {
     setState(() {
@@ -171,17 +172,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         _args.combine(state);
       }
     });
-  }
-
-  void updateLoading({bool loadingLocale, LoadingStatus loaderStatus}) {
-    final currentStatus = loading;
-
-    _loadingLocale = loadingLocale ?? _loadingLocale;
-    _args[LoadingStatus] = loaderStatus ?? _loaderStatus;
-
-    if (currentStatus != loading) {
-      setState(() {});
-    }
   }
 
   @override
@@ -238,11 +228,17 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
       if (args.changed) {
-        updateLoading(loadingLocale: false);
+        setState(() {});
       }
     });
 
-    updateLoading(loadingLocale: false);
+    if (initialized) {
+      setState(() {
+        _loadingLocale = false;
+      });
+    } else {
+      _loadingLocale = false;
+    }
   }
 
   Future<void> _loadLocalization() async {

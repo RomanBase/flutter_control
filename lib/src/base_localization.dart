@@ -44,6 +44,14 @@ class LocalizationAsset {
 
     return Locale(locale);
   }
+
+  static Map<String, String> build({AssetPath path: const AssetPath(), List<String> locales}) {
+    final map = Map<String, String>();
+
+    locales.forEach((locale) => map[locale] = path.localization(locale));
+
+    return map;
+  }
 }
 
 /// Defines result of localization change.
@@ -216,11 +224,15 @@ class BaseLocalization with PrefsProvider {
     return getAssetPath(a) == getAssetPath(b);
   }
 
-  /// Returns asset path for given locale or null if localization asset is not available.
-  String getAssetPath(String locale) {
+  /// Returns [LocalizationAsset] for given locale or null if localization asset is not available.
+  LocalizationAsset getAsset(String locale) {
+    if (locale == null) {
+      return null;
+    }
+
     for (final asset in assets) {
       if (asset.locale == locale) {
-        return asset.assetPath;
+        return asset;
       }
     }
 
@@ -233,12 +245,17 @@ class BaseLocalization with PrefsProvider {
 
     for (final asset in assets) {
       if (asset.iso2Locale == iso2Locale) {
-        return asset.assetPath;
+        return asset;
       }
     }
 
     return null;
   }
+
+  /// Returns asset path for given locale or null if localization asset is not available.
+  String getAssetPath(String locale) => getAsset(locale)?.assetPath;
+
+  Locale getLocale(String locale) => getAsset(locale)?.toLocale();
 
   /// Changes manually localization data, but only for current app session.
   Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data, {String locale}) async {
@@ -314,22 +331,26 @@ class BaseLocalization with PrefsProvider {
       );
     }
 
-    final json = await rootBundle.loadString(path, cache: false);
-    final data = jsonDecode(json);
+    try {
+      final json = await rootBundle.loadString(path, cache: false);
+      final data = jsonDecode(json);
 
-    if (data != null) {
-      data.forEach((key, value) => _data[key] = value);
+      if (data != null) {
+        data.forEach((key, value) => _data[key] = value);
 
-      print('localization changed to: $path');
+        print('localization changed to: $path');
 
-      final args = LocalizationArgs(
-        locale: locale,
-        isActive: true,
-        changed: true,
-        source: 'asset',
-      );
+        final args = LocalizationArgs(
+          locale: locale,
+          isActive: true,
+          changed: true,
+          source: 'asset',
+        );
 
-      return args;
+        return args;
+      }
+    } catch (ex) {
+      printDebug(ex.toString());
     }
 
     print('localization failed to change: $path');
@@ -368,7 +389,7 @@ class BaseLocalization with PrefsProvider {
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizePlural(String key, int plural) {
+  String localizePlural(String key, int plural, [Map<String, String> params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final data = _data[key];
@@ -377,14 +398,25 @@ class BaseLocalization with PrefsProvider {
         data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
         nums.sort();
 
+        String output;
+
         for (final num in nums.reversed) {
           if (plural >= num) {
-            return data[num.toString()];
+            output = data[num.toString()];
+            break;
           }
         }
 
-        if (data.contains['other']) {
-          return data['other'];
+        if (output == null && data.containsKey('other')) {
+          output = data['other'];
+        }
+
+        if (output != null) {
+          if (params != null) {
+            output = withParams(output, params);
+          }
+
+          return output;
         }
       }
 
@@ -503,43 +535,21 @@ class BaseLocalization with PrefsProvider {
   /// This update is only runtime and isn't stored to localization file.
   void update(String key, dynamic value) => _data[key] = value;
 
-  BaseLocalizationDelegate asDelegate() => BaseLocalizationDelegate(this);
-}
+  String withParams(String input, Map<String, String> params) {
+    params.forEach((key, value) => input = input.replaceFirst(key, value));
 
-class LocalizationProvider {
-  ///Instance of [BaseLocalization]
-  @protected
-  BaseLocalization get localization => Control.localization();
+    return input;
+  }
 
-  ///[BaseLocalization.localize]
-  @protected
-  String localize(String key) => localization.localize(key);
-
-  ///[BaseLocalization.localizePlural]
-  @protected
-  String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
-
-  ///[BaseLocalization.localizeGender]
-  @protected
-  String localizeGender(String key, String gender) => localization.localizeGender(key, gender);
-
-  ///[BaseLocalization.localizeList]
-  @protected
-  List<String> localizeList(String key) => localization.localizeList(key);
-
-  ///[BaseLocalization.localizeDynamic]
-  @protected
-  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) => localization.localizeDynamic(key, parser: parser, defaultValue: defaultValue);
-
-  ///[BaseLocalization.extractLocalization]
-  @protected
-  String extractLocalization(dynamic data, {String locale, String defaultLocale}) => localization.extractLocalization(data, locale: locale, defaultLocale: defaultLocale);
+  BaseLocalizationDelegate get delegate => BaseLocalizationDelegate(this);
 }
 
 class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
   final BaseLocalization localization;
 
   BaseLocalizationDelegate(this.localization);
+
+  Locale get locale => localization.getAsset(localization.locale)?.toLocale();
 
   @override
   bool isSupported(Locale locale) => localization.isLocalizationAvailable(locale.toString());
@@ -563,4 +573,41 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 
     return list;
   }
+}
+
+mixin LocalizationProvider {
+  static BaseLocalizationDelegate get delegate => Control.localization().delegate;
+
+  /// Usable only with [LocalizationsDelegate]
+  static BaseLocalization of(BuildContext context) {
+    return Localizations.of<BaseLocalization>(context, BaseLocalization);
+  }
+
+  ///Instance of [BaseLocalization]
+  @protected
+  BaseLocalization get localization => Control.localization();
+
+  ///[BaseLocalization.localize]
+  @protected
+  String localize(String key) => localization.localize(key);
+
+  ///[BaseLocalization.localizePlural]
+  @protected
+  String localizePlural(String key, int plural, [Map<String, String> params]) => localization.localizePlural(key, plural, params);
+
+  ///[BaseLocalization.localizeGender]
+  @protected
+  String localizeGender(String key, String gender) => localization.localizeGender(key, gender);
+
+  ///[BaseLocalization.localizeList]
+  @protected
+  List<String> localizeList(String key) => localization.localizeList(key);
+
+  ///[BaseLocalization.localizeDynamic]
+  @protected
+  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) => localization.localizeDynamic(key, parser: parser, defaultValue: defaultValue);
+
+  ///[BaseLocalization.extractLocalization]
+  @protected
+  String extractLocalization(dynamic data, {String locale, String defaultLocale}) => localization.extractLocalization(data, locale: locale, defaultLocale: defaultLocale);
 }
