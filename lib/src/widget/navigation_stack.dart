@@ -254,7 +254,7 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
     final navigator = Navigator(
       key: _navigator,
       onGenerateRoute: (routeSettings) {
-        return MaterialPageRoute(builder: (context) {
+        return _InstantRoute(builder: (context) {
           _ctx = context;
 
           return widget.initializer.getWidget(context);
@@ -547,4 +547,28 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       },
     );
   }
+}
+
+class _InstantRoute extends PageRoute {
+  final WidgetBuilder builder;
+
+  _InstantRoute({@required this.builder}) : super();
+
+  @override
+  Color get barrierColor => null;
+
+  @override
+  String get barrierLabel => null;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => builder(context);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) => child;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Duration get transitionDuration => Duration();
 }

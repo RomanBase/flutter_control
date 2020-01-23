@@ -56,9 +56,17 @@ class RouteHandler {
     assert(provider != null);
   }
 
+  RouteHandler viaRoute(RouteBuilder route) => RouteHandler(navigator, provider.viaRoute(route));
+
+  RouteHandler viaTransition(RouteTransitionsBuilder transition) => RouteHandler(navigator, provider.viaTransition(transition));
+
+  RouteHandler path(String path) => RouteHandler(navigator, provider.path(path));
+
+  RouteHandler named(String identifier) => RouteHandler(navigator, provider.named(identifier));
+
   /// [DirectNavigator.openRoute]
   Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
-    debugPrint("open route: ${provider.identifier} from $navigator");
+    printDebug("open route: ${provider.identifier} from $navigator");
 
     final initializer = WidgetInitializer.of(provider.builder);
 
@@ -75,7 +83,7 @@ class RouteHandler {
 
   /// [DirectNavigator.openRoot]
   Future<dynamic> openRoot({dynamic args}) {
-    debugPrint("open root: ${provider.identifier} from $navigator");
+    printDebug("open root: ${provider.identifier} from $navigator");
 
     final initializer = WidgetInitializer.of(provider.builder);
 
@@ -90,7 +98,7 @@ class RouteHandler {
 
   /// [DirectNavigator.openDialog]
   Future<dynamic> openDialog({bool root: false, DialogType type: DialogType.popup, dynamic args}) {
-    debugPrint("open dialog: ${provider.identifier} from $navigator");
+    printDebug("open dialog: ${provider.identifier} from $navigator");
 
     _route = null;
     return _result = navigator.openDialog(
@@ -111,13 +119,11 @@ class ControlRoute {
     dynamic identifier,
     dynamic settings,
     @required WidgetBuilder builder,
-    RouteBuilder routeBuilder,
   }) =>
       ControlRoute()
         ..identifier = RouteStore.routeIdentifier<T>(identifier)
         ..settings = settings
-        ..builder = builder
-        ..routeBuilder = routeBuilder;
+        ..builder = builder;
 
   static ControlRoute route<T>({
     dynamic identifier,
@@ -163,10 +169,61 @@ class ControlRoute {
     return MaterialPageRoute(builder: builder, settings: routeSettings);
   }
 
+  ControlRoute viaRoute(RouteBuilder route) => _copyWith(routeBuilder: route);
+
+  ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
+      routeBuilder: (builder, settings) => ControlTransitionRoute(
+            builder: builder,
+            transition: transition,
+            duration: duration,
+            settings: settings,
+          ));
+
+  ControlRoute path(String path) => _copyWith(identifier: '$identifier$path');
+
+  ControlRoute named(String identifier) => _copyWith(identifier: identifier);
+
+  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteBuilder routeBuilder}) => ControlRoute()
+    ..identifier = identifier ?? this.identifier
+    ..settings = settings ?? this.settings
+    ..builder = builder
+    ..routeBuilder = routeBuilder ?? this.routeBuilder;
+
   /// Initializes [RouteHandler] with given [navigator] and this route provider.
   RouteHandler navigator(DirectNavigator navigator) => RouteHandler(navigator, this);
 
   void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
+}
+
+class ControlTransitionRoute extends PageRoute {
+  final WidgetBuilder builder;
+  final RouteTransitionsBuilder transition;
+  final Duration duration;
+
+  ControlTransitionRoute({
+    @required this.builder,
+    @required this.transition,
+    this.duration: const Duration(milliseconds: 300),
+    RouteSettings settings,
+  }) : super(settings: settings);
+
+  @override
+  Color get barrierColor => null;
+
+  @override
+  String get barrierLabel => null;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => builder(context);
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) => transition(context, animation, secondaryAnimation, child);
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  Duration get transitionDuration => duration;
 }
 
 class RouteStore {
