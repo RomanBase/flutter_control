@@ -61,7 +61,7 @@ abstract class _StackNavigator {
 ///
 /// [NavigatorStackControl]
 /// [WillPopScope]
-/// [RouteHandler]  [RouteControl]
+/// [RouteHandler]  [RouteControlProvider]
 class NavigatorControl extends BaseControl implements _StackNavigator {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
@@ -124,7 +124,7 @@ class NavigatorControl extends BaseControl implements _StackNavigator {
 ///
 /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
 ///
-/// [RouteHandler] [RouteControl]
+/// [RouteHandler] [RouteControlProvider]
 class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
   final WidgetInitializer initializer;
@@ -219,13 +219,9 @@ class NavigatorStack extends StatefulWidget {
 }
 
 class _NavigatorStackState extends State<NavigatorStack> implements _StackNavigator {
-  GlobalKey<NavigatorState> _navigator;
+  GlobalKey<NavigatorState> _navigatorKey;
 
-  BuildContext _ctx;
-
-  BuildContext get navContext => _ctx;
-
-  NavigatorState get navigator => Navigator.of(navContext);
+  NavigatorState get navigator => _navigatorKey?.currentState;
 
   @override
   void initState() {
@@ -245,18 +241,15 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
   }
 
   void _updateNavigator() {
-    _navigator ??= GlobalObjectKey<NavigatorState>(this);
-    widget.control.subscribe(_navigator);
+    _navigatorKey ??= GlobalObjectKey<NavigatorState>(this);
   }
 
   @override
   Widget build(BuildContext context) {
     final navigator = Navigator(
-      key: _navigator,
+      key: _navigatorKey,
       onGenerateRoute: (routeSettings) {
         return _InstantRoute(builder: (context) {
-          _ctx = context;
-
           return widget.initializer.getWidget(context);
         });
       },
@@ -274,10 +267,8 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 
   @override
   bool navigateBack() {
-    if (navigator.canPop()) {
-      navigator.pop();
-
-      return true;
+    if (navigator != null && navigator.canPop()) {
+      return navigator.pop();
     }
 
     return false;
@@ -285,7 +276,9 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 
   @override
   void navigateToRoot() {
-    navigator.popUntil((route) => route.isFirst);
+    if (navigator != null) {
+      navigator.popUntil((route) => route.isFirst);
+    }
   }
 }
 

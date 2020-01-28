@@ -6,7 +6,7 @@ import 'package:flutter_control/core.dart';
 typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
 
 /// Abstract class for basic type of navigation.
-abstract class DirectNavigator {
+abstract class RouteNavigator {
   /// Pushes route into current Navigator.
   /// [route] - specific route: type, settings, transition etc.
   /// [root] - pushes route into root Navigator - onto top of everything.
@@ -16,7 +16,7 @@ abstract class DirectNavigator {
   /// Clears current [Navigator] and opens new [Route].
   Future<dynamic> openRoot(Route route);
 
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup});
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: true, dynamic type});
 
   /// Goes back in navigation stack until first [Route].
   void backToRoot();
@@ -26,17 +26,17 @@ abstract class DirectNavigator {
 
   /// Pops [Route] from navigation stack.
   /// result is send back to parent.
-  void close([dynamic result]);
+  bool close([dynamic result]);
 
   /// Removes given [route] from navigator.
-  void closeRoute(Route route, [dynamic result]);
+  bool closeRoute(Route route, [dynamic result]);
 }
 
-/// Ties up [DirectNavigator] and [ControlRoute].
+/// Ties up [RouteNavigator] and [ControlRoute].
 /// [ControlRoute.builder] is wrapped and Widget is initialized during build phase.
 class RouteHandler {
   /// Implementation of navigator.
-  final DirectNavigator navigator;
+  final RouteNavigator navigator;
 
   /// Implementation of provider.
   final ControlRoute provider;
@@ -64,52 +64,39 @@ class RouteHandler {
 
   RouteHandler named(String identifier) => RouteHandler(navigator, provider.named(identifier));
 
-  /// [DirectNavigator.openRoute]
+  /// [RouteNavigator.openRoute]
   Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
     printDebug("open route: ${provider.identifier} from $navigator");
 
-    final initializer = WidgetInitializer.of(provider.builder);
-
     _result = navigator.openRoute(
-      _route = provider.buildRoute(initializer.wrap(args: args)),
+      _route = provider.init(args: args),
       root: root,
       replacement: replacement,
     );
 
-    initializer.data = _route;
-
     return _result;
   }
 
-  /// [DirectNavigator.openRoot]
+  /// [RouteNavigator.openRoot]
   Future<dynamic> openRoot({dynamic args}) {
     printDebug("open root: ${provider.identifier} from $navigator");
 
-    final initializer = WidgetInitializer.of(provider.builder);
-
-    _result = navigator.openRoot(
-      _route = provider.buildRoute(initializer.wrap(args: args)),
-    );
-
-    initializer.data = _route;
+    _result = navigator.openRoot(provider.init(args: args));
 
     return _result;
   }
 
-  /// [DirectNavigator.openDialog]
-  Future<dynamic> openDialog({bool root: false, DialogType type: DialogType.popup, dynamic args}) {
+  /// [RouteNavigator.openDialog]
+  Future<dynamic> openDialog({bool root: true, dynamic type, dynamic args}) {
     printDebug("open dialog: ${provider.identifier} from $navigator");
 
     _route = null;
     return _result = navigator.openDialog(
-      _initBuilder(provider.builder, args),
+      WidgetInitializer.of(provider.builder).wrap(args: args),
       root: root,
       type: type,
     );
   }
-
-  /// Wraps [builder] and init widget during build phase.
-  WidgetBuilder _initBuilder(WidgetBuilder builder, dynamic args) => WidgetInitializer.of(builder).wrap(args: args);
 }
 
 /// Abstract class for [PageRoute] construction with given settings.
@@ -169,6 +156,16 @@ class ControlRoute {
     return MaterialPageRoute(builder: builder, settings: routeSettings);
   }
 
+  Route init({dynamic args}) {
+    final initializer = WidgetInitializer.of(builder);
+
+    final route = buildRoute(initializer.wrap(args: args));
+
+    initializer.data = route;
+
+    return route;
+  }
+
   ControlRoute viaRoute(RouteBuilder route) => _copyWith(routeBuilder: route);
 
   ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
@@ -190,7 +187,7 @@ class ControlRoute {
     ..routeBuilder = routeBuilder ?? this.routeBuilder;
 
   /// Initializes [RouteHandler] with given [navigator] and this route provider.
-  RouteHandler navigator(DirectNavigator navigator) => RouteHandler(navigator, this);
+  RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
 
   void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
 }

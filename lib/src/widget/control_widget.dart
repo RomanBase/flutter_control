@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 class ControlArgHolder implements Disposable {
@@ -71,10 +72,10 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControls() => [initController()];
+  List<ControlModel> initControls() => [initControl()];
 
   @protected
-  T initController() {
+  T initControl() {
     T item = holder.getArg<T>();
 
     if (item == null) {
@@ -97,7 +98,7 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [BaseControl]
 /// [StateControl]
 ///
-/// [RouteNavigator] & [RouteControl]
+/// [RouteControl] & [RouteControlProvider]
 /// [RouteHandler] & [PageRouteProvider]
 ///
 /// [ControlFactory]
@@ -378,24 +379,12 @@ mixin SingleTickerControl on ControlWidget {
 }
 
 /// Mixin class to enable navigation for [ControlWidget]
-mixin RouteNavigator on ControlWidget implements DirectNavigator {
-  NavigatorState get navigator => Navigator.of(context);
+mixin RouteControl on ControlWidget implements RouteNavigator {
+  Route get activeRoute => getArg<Route>(); //TODO: ModalRoute.of
 
-  NavigatorState get rootNavigator => Navigator.of(getContext(root: true));
-
-  Route get activeRoute => findRoute(context);
-
-  Route findRoute([BuildContext context]) {
-    Route _route;
-
-    _route = getArg<Route>();
-
-    if (_route == null && context != null) {
-      _route = ModalRoute.of(context);
-    }
-
-    return _route;
-  }
+  // TODO: return Navigator.of(context, rootNavigator: true) if ControlScope.rootContext is not available or invalid.
+  @protected
+  NavigatorState getNavigator({bool root: false}) => Navigator.of(getContext(root: root));
 
   @override
   void init(Map args) {
@@ -409,77 +398,66 @@ mixin RouteNavigator on ControlWidget implements DirectNavigator {
 
   RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(this);
 
+  Route initRouteOf<T>({dynamic identifier, dynamic args}) => ControlRoute.of<T>(identifier)?.init(args: args);
+
   @override
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {
     if (replacement) {
-      return navigator.pushReplacement(route);
+      return getNavigator().pushReplacement(route);
     } else {
-      return (root ? rootNavigator : navigator).push(route);
+      return getNavigator(root: root).push(route);
     }
   }
 
   @override
   Future<dynamic> openRoot(Route route) {
-    return navigator.pushAndRemoveUntil(route, (pop) => false);
+    return getNavigator().pushAndRemoveUntil(route, (pop) => false);
   }
 
   @override
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: false, DialogType type: DialogType.popup}) async {
-    final dialogContext = getContext(root: root);
-
-    //TODO: more options
-    switch (type) {
-      case DialogType.popup:
-        return await showDialog(context: dialogContext, builder: (context) => builder(context));
-      case DialogType.sheet:
-        return await showModalBottomSheet(context: dialogContext, builder: (context) => builder(context));
-      case DialogType.dialog:
-        return await Navigator.of(dialogContext).push(MaterialPageRoute(builder: (BuildContext context) => builder(context), fullscreenDialog: true));
-      case DialogType.dock:
-        return showBottomSheet(context: dialogContext, builder: (context) => builder(context));
-    }
-
-    return null;
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: true, dynamic type}) async {
+    return showDialog(context: getContext(root: root), builder: (context) => builder(context), useRootNavigator: false);
   }
 
   void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate}) {
     if (route != null) {
-      navigator.popUntil((item) => item == route);
+      getNavigator().popUntil((item) => item == route);
     }
 
     if (identifier != null) {
-      navigator.popUntil((item) => item.settings.name == identifier);
+      getNavigator().popUntil((item) => item.settings.name == identifier);
     }
 
     if (predicate != null) {
-      navigator.popUntil(predicate);
+      getNavigator().popUntil(predicate);
     }
   }
 
   @override
   void backToRoot() {
-    navigator.popUntil((route) => route.isFirst);
+    getNavigator().popUntil((route) => route.isFirst);
   }
 
   @override
-  void close([dynamic result]) {
+  bool close([dynamic result]) {
     final route = activeRoute;
 
     if (route != null) {
-      closeRoute(route, result);
+      return closeRoute(route, result);
     } else {
-      navigator.pop(result);
+      return getNavigator().pop(result);
     }
   }
 
   @override
-  void closeRoute(Route route, [dynamic result]) {
+  bool closeRoute(Route route, [dynamic result]) {
     if (route.isCurrent) {
-      navigator.pop(result);
+      return getNavigator().pop(result);
     } else {
       // ignore: invalid_use_of_protected_member
       route.didComplete(result);
-      navigator.removeRoute(route);
+      getNavigator().removeRoute(route);
+      return true;
     }
   }
 }

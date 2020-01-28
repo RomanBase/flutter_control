@@ -32,8 +32,6 @@ export './src/widget/notifier_widget.dart';
 export './src/widget/stable_widget.dart';
 export './src/widget/widget_provider.dart';
 
-enum DialogType { popup, sheet, dialog, dock }
-
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 
 typedef Initializer<T> = T Function(dynamic args);
