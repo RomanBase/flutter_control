@@ -4,7 +4,7 @@ import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 
-class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl> with ThemeProvider<SpendTheme>, RouteNavigator {
+class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl> with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

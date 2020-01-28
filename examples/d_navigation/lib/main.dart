@@ -1,3 +1,4 @@
+import 'package:d_navigation/page/dialog_page.dart';
 import 'package:flutter_control/core.dart';
 
 import './page/number_page.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
       routes: [
         ControlRoute.build<NumberPage>(builder: (_) => NumberPage()),
         ControlRoute.build<NumberPage>(builder: (_) => NumberPage()).path('/scale').viaTransition(NavTransitions.scaleTransition, Duration(milliseconds: 750)),
+        ControlRoute.build<CustomDialog>(builder: (_) => CustomDialog()),
       ],
       root: (_, __) => MenuPage(),
       app: (context, key, home) => MaterialApp(

@@ -7,7 +7,7 @@ import 'earnings/earnings_item_dialog.dart';
 import 'earnings/earnings_page.dart';
 import 'spend/spend_item_dialog.dart';
 
-class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteNavigator, ThemeProvider<SpendTheme> {
+class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteControl, ThemeProvider<SpendTheme> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,10 +90,10 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteNavi
           onPressed: () {
             switch (control.currentMenu.key) {
               case 'spends':
-                routeOf<SpendItemDialog>().openDialog(type: DialogType.popup);
+                routeOf<SpendItemDialog>().openDialog();
                 break;
               case 'earnings':
-                routeOf<EarningsItemDialog>().openDialog(type: DialogType.popup);
+                routeOf<EarningsItemDialog>().openDialog();
                 break;
             }
           },

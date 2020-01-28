@@ -7,7 +7,7 @@ import 'package:spends/widget/tab_row.dart';
 import 'earnings_item_dialog.dart';
 import 'earnings_list_item.dart';
 
-class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvider<SpendTheme>, RouteNavigator {
+class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

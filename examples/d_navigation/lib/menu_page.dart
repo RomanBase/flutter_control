@@ -1,18 +1,39 @@
+import 'package:d_navigation/page/dialog_page.dart';
 import 'package:flutter_control/core.dart';
 
 import './page/main_page.dart';
 import './page/template_page.dart';
 
-const _menu = ['main', 'inside', 'dialog', 'hello'];
+class TabItem {
+  final String key;
+  final WidgetBuilder builder;
 
-final _menu2 = <String, dynamic>{
-  'main': (_) => MainPage(),
-  'inside': (_) => NavigatorStack.single(builder: (_) => MainPage()),
-  'dialog': (_) => null,
-  'hello': (_) => null,
-};
+  const TabItem({this.key, this.builder});
+}
 
-class TabControl extends ControlModel {
+final _insideControl = NavigatorControl();
+final _dialogControl = NavigatorControl();
+
+final _menu = [
+  TabItem(
+    key: 'main',
+    builder: (_) => MainPage(),
+  ),
+  TabItem(
+    key: 'inside',
+    builder: (_) => NavigatorStack.single(builder: (_) => MainPage(), control: _insideControl),
+  ),
+  TabItem(
+    key: 'dialog',
+    builder: (_) => NavigatorStack.single(builder: (_) => DialogPage(), control: _dialogControl),
+  ),
+  TabItem(
+    key: 'hello',
+    builder: (_) => TemplatePage(title: 'hello'),
+  ),
+];
+
+class TabControl extends ControlModel with RouteControlProvider {
   TabController tab;
 
   @override
@@ -23,7 +44,15 @@ class TabControl extends ControlModel {
     );
   }
 
-  Future<bool> navigateBack() async {
+  Future<bool> popScope() async {
+    if (_insideControl.navigateBack()) {
+      return false;
+    }
+
+    if (_dialogControl.navigateBack()) {
+      return false;
+    }
+
     if (tab.index > 0) {
       tab.index = 0;
       return false;
@@ -40,66 +69,40 @@ class TabControl extends ControlModel {
   }
 }
 
-class MenuPage extends SingleControlWidget<TabControl> with TickerControl, RouteNavigator {
+class MenuPage extends SingleControlWidget<TabControl> with TickerControl, RouteControl {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: control.navigateBack,
-      child: Column(
-        children: <Widget>[
-          Expanded(
-            child: TabBarView(
-              controller: control.tab,
-              children: [
-                _menu2['main'](context),
-                _menu2['inside'](context),
-                TemplatePage(
-                  title: 'dialogs',
-                  color: Colors.green,
-                  child: Column(
-                    children: <Widget>[
-                      RaisedButton(
-                        onPressed: () {},
-                        child: Text('popup'),
-                      ),
-                      RaisedButton(
-                        onPressed: () {},
-                        child: Text('popup inside'),
-                      ),
-                      RaisedButton(
-                        onPressed: () {},
-                        child: Text('dialog'),
-                      ),
-                      RaisedButton(
-                        onPressed: () {},
-                        child: Text('sheet'),
-                      ),
-                    ],
-                  ),
-                ),
-                TemplatePage(
-                  title: 'hello',
-                ),
-              ],
-            ),
-          ),
-          NotifierBuilder<TabController>(
-            control: control.tab,
-            builder: (context, tab) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  for (int i = 0; i < _menu.length; i++)
-                    RaisedButton(
-                      onPressed: () => tab.index = i,
-                      color: tab.index == i ? Colors.amberAccent : Colors.grey,
-                      child: Text(_menu[i]),
-                    ),
+      onWillPop: control.popScope,
+      child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: TabBarView(
+                controller: control.tab,
+                children: [
+                  for (final item in _menu) item.builder(context),
                 ],
-              );
-            },
-          ),
-        ],
+              ),
+            ),
+            NotifierBuilder<TabController>(
+              control: control.tab,
+              builder: (context, tab) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    for (int i = 0; i < _menu.length; i++)
+                      RaisedButton(
+                        onPressed: () => tab.index = i,
+                        color: tab.index == i ? Colors.amberAccent : Colors.grey,
+                        child: Text(_menu[i].key),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

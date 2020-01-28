@@ -8,7 +8,7 @@ import 'spend_group_page.dart';
 import 'spend_item_dialog.dart';
 import 'spend_list_item.dart';
 
-class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<SpendTheme>, RouteNavigator {
+class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

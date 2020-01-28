@@ -6,7 +6,7 @@ import '../transition/nav_transitions.dart';
 import 'number_page.dart';
 import 'template_page.dart';
 
-class MainPage extends ControlWidget with RouteNavigator {
+class MainPage extends ControlWidget with RouteControl {
   @override
   Widget build(BuildContext context) {
     return TemplatePage(
@@ -15,8 +15,12 @@ class MainPage extends ControlWidget with RouteNavigator {
       child: Column(
         children: <Widget>[
           RaisedButton(
+            onPressed: () => Navigator.of(context).push(initRouteOf<NumberPage>(args: math.Random().nextInt(42))),
+            child: Text('open page - nav'),
+          ),
+          RaisedButton(
             onPressed: () => routeOf<NumberPage>().openRoute(args: math.Random().nextInt(42)),
-            child: Text('open page'),
+            child: Text('open page - control'),
           ),
           RaisedButton(
             onPressed: () => routeOf('/NumberPage/scale').openRoute(args: math.Random().nextInt(42)),

@@ -2,7 +2,7 @@ import 'package:flutter_control/core.dart';
 
 import 'settings_page.dart';
 
-class MainPage extends ControlWidget with RouteNavigator {
+class MainPage extends ControlWidget with RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

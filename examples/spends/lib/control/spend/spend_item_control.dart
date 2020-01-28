@@ -5,7 +5,7 @@ import 'package:spends/entity/spend_item.dart';
 import 'spend_control.dart';
 import 'spend_item_model.dart';
 
-class SpendItemControl extends BaseControl with RouteControl {
+class SpendItemControl extends BaseControl with RouteControlProvider {
   final title = InputControl(regex: '.{3,}');
   final note = InputControl();
   final value = InputControl();

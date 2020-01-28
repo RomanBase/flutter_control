@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-class NumberControl extends ControlModel with RouteControl {
+class NumberControl extends ControlModel with RouteControlProvider {
   final number = IntegerControl();
   bool closeable;
 
@@ -51,9 +51,9 @@ class NumberControl extends ControlModel with RouteControl {
   }
 }
 
-class NumberPage extends SingleControlWidget<NumberControl> with RouteNavigator {
+class NumberPage extends SingleControlWidget<NumberControl> with RouteControl {
   @override
-  NumberControl initController() => NumberControl();
+  NumberControl initControl() => NumberControl();
 
   @override
   Widget build(BuildContext context) {
