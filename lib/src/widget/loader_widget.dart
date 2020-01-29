@@ -41,6 +41,10 @@ abstract class InitLoaderControl extends BaseControl {
 
     final result = await load();
 
+    if (loading.hasError) {
+      return;
+    }
+
     if (block != null) {
       await block.finish();
     }

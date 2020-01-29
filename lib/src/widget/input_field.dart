@@ -61,6 +61,8 @@ class InputControl extends ControlModel with StateControl {
   /// returns true if Field is focused.
   bool get hasFocus => _focusController?.hasFocus ?? false;
 
+  bool get isObscured => _obscure;
+
   /// Next InputController.
   InputControl _next;
 
