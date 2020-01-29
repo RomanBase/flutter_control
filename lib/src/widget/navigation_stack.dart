@@ -49,6 +49,8 @@ class MenuItem {
 
 /// Helper interface to notify [State]
 abstract class _StackNavigator {
+  BuildContext get navigatorContext;
+
   /// Navigate back withing [NavigatorStack]
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack();
@@ -62,7 +64,7 @@ abstract class _StackNavigator {
 /// [NavigatorStackControl]
 /// [WillPopScope]
 /// [RouteHandler]  [RouteControlProvider]
-class NavigatorControl extends BaseControl implements _StackNavigator {
+class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
   MenuItem menu = MenuItem();
@@ -103,10 +105,8 @@ class NavigatorControl extends BaseControl implements _StackNavigator {
     }
   }
 
-  @override
   bool navigateBack() => _navigator != null ? _navigator.navigateBack() : false;
 
-  @override
   void navigateToRoot() => _navigator?.navigateToRoot();
 
   /// Helper function for [WillPopScope].
@@ -203,7 +203,7 @@ class NavigatorStack extends StatefulWidget {
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(menu: key),
-          builder: value ?? (_) => Container(),
+          builder: value,
         )));
 
     return NavigatorStack.group(
@@ -219,6 +219,11 @@ class NavigatorStack extends StatefulWidget {
 }
 
 class _NavigatorStackState extends State<NavigatorStack> implements _StackNavigator {
+  BuildContext _navigatorContext;
+
+  @override
+  BuildContext get navigatorContext => _navigatorContext;
+
   GlobalKey<NavigatorState> _navigatorKey;
 
   NavigatorState get navigator => _navigatorKey?.currentState;
@@ -250,7 +255,8 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
       key: _navigatorKey,
       onGenerateRoute: (routeSettings) {
         return _InstantRoute(builder: (context) {
-          return widget.initializer.getWidget(context);
+          _navigatorContext = context;
+          return widget.initializer.getWidget(context) ?? Container();
         });
       },
     );
