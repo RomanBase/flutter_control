@@ -19,7 +19,6 @@ export './src/controller/base_model.dart';
 export './src/controller/disposable.dart';
 export './src/controller/field_control.dart';
 export './src/controller/route_control.dart';
-export './src/entity/menu.dart';
 export './src/factory.dart';
 export './src/theme_control.dart';
 export './src/util/device.dart';

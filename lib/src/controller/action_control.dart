@@ -201,6 +201,8 @@ class ActionControl<T> implements ActionControlSub<T>, Disposable {
     notify();
   }
 
+  void pushValue(T value) => _value = value;
+
   /// Notifies listeners with current value.
   void notify() {
     if (_sub != null && _sub.isActive) {
@@ -329,11 +331,31 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
   void initState() {
     super.initState();
 
-    _sub = widget.controller.subscribe((value) {
+    _initSub();
+  }
+
+  void _initSub() {
+    _sub = widget.controller.subscribe(
+      (value) {
+        setState(() {
+          _value = value;
+        });
+      },
+    );
+  }
+
+  @override
+  void didUpdateWidget(ControlBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controller != oldWidget.controller) {
+      _sub.cancel();
+      _initSub();
+    } else if (oldWidget.controller.value != _value) {
       setState(() {
-        _value = value;
+        _value = widget.controller.value;
       });
-    });
+    }
   }
 
   @override

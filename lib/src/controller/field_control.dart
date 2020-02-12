@@ -918,7 +918,7 @@ class IntegerControl extends FieldControl<int> {
 
   IntegerControl([int value = 0]) : super(value);
 
-  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp}) {
+  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp: true}) {
     setInRange(value);
   }
 
