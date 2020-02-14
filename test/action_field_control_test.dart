@@ -109,36 +109,6 @@ void main() {
       expect(controller.value, 2);
     });
 
-    test('value lock', () {
-      final controller = ActionControl.single<int>(1);
-
-      controller.lock(key);
-      controller.setValue(controller.value + 1);
-
-      expect(controller.value, 1);
-    });
-
-    test('value unlock', () {
-      final controller = ActionControl.single<int>(1);
-
-      controller.lock(key);
-      controller.setValue(controller.value + 1);
-
-      controller.unlock(key);
-      controller.setValue(controller.value + 1);
-
-      expect(controller.value, 2);
-    });
-
-    test('value with lock', () {
-      final controller = ActionControl.single<int>(1);
-
-      controller.lock(key);
-      controller.setValue(controller.value + 1, key: key);
-
-      expect(controller.value, 2);
-    });
-
     test('value with sub', () {
       final controller = ActionControl.single<int>(1);
       final sub = controller.sub;

@@ -174,13 +174,16 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Sets the value and adds it to the stream.
   /// If given object is same as current value nothing happens.
   /// [FieldControl.notify]
-  void setValue(T value) {
+  void setValue(T value, {bool notifyListeners: true}) {
     if (_value == value) {
       return;
     }
 
     _value = value;
-    notify();
+
+    if (notifyListeners) {
+      notify();
+    }
   }
 
   /// Notifies current [Stream].
@@ -414,9 +417,13 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
   final List<FieldControlStream> controls;
-  final ControlWidgetBuilder builder; //todo: T
+  final ControlWidgetBuilder builder;
 
-  const FieldBuilderGroup({Key key, @required this.controls, @required this.builder}) : super(key: key);
+  const FieldBuilderGroup({
+    Key key,
+    @required this.controls,
+    @required this.builder,
+  }) : super(key: key);
 
   @override
   _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
@@ -433,13 +440,30 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
     super.initState();
 
     _values = _mapValues();
+    _initSubs();
+  }
 
+  void _initSubs() {
     widget.controls.forEach((controller) => _subs.add(controller.subscribe(
           (data) => setState(() {
             _values = _mapValues();
           }),
           current: false,
         )));
+  }
+
+  @override
+  void didUpdateWidget(FieldBuilderGroup oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.controls != oldWidget.controls) {
+      _subs.forEach((item) => item.cancel());
+      _subs.clear();
+
+      _initSubs();
+    }
+
+    //TODO: check values
   }
 
   @override
@@ -515,14 +539,16 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 
   @override
-  void setValue(Iterable<T> items) {
+  void setValue(Iterable<T> items, {bool notifyListeners: true}) {
     value.clear();
 
     if (items != null) {
       value.addAll(items);
     }
 
-    notify();
+    if (notifyListeners) {
+      notify();
+    }
   }
 
   /// Adds item to List and notifies stream.
@@ -901,19 +927,19 @@ class StringControl extends FieldControl<String> {
   }
 
   @override
-  void setValue(String value) {
+  void setValue(String value, {bool notifyListeners: true}) {
     if (requestValidation) {
-      setWithRegex(value);
+      setWithRegex(value, notifyListeners: notifyListeners);
     } else {
-      super.setValue(value);
+      super.setValue(value, notifyListeners: notifyListeners);
     }
   }
 
-  void setWithRegex(String value, {String regex}) {
+  void setWithRegex(String value, {String regex, bool notifyListeners: true}) {
     regex ??= this.regex;
 
     if (RegExp(regex).hasMatch(value ?? '')) {
-      super.setValue(value);
+      super.setValue(value, notifyListeners: notifyListeners);
     } else {
       printDebug('value is not within regex $regex');
     }
@@ -936,20 +962,20 @@ class DoubleControl extends FieldControl<double> {
     setInRange(value);
   }
 
-  void setValue(double value) {
+  void setValue(double value, {bool notifyListeners: true}) {
     if (requestRange) {
-      setInRange(value);
+      setInRange(value, notifyListeners: notifyListeners);
     } else {
-      super.setValue(value);
+      super.setValue(value, notifyListeners: notifyListeners);
     }
   }
 
-  void setInRange(double value, {double min, double max}) {
+  void setInRange(double value, {double min, double max, bool notifyListeners: true}) {
     if (clamp) {
       super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
-        super.setValue(value);
+        super.setValue(value, notifyListeners: notifyListeners);
       } else {
         printDebug('value is not within range $min - $max');
       }
@@ -977,20 +1003,20 @@ class IntegerControl extends FieldControl<int> {
     setInRange(value);
   }
 
-  void setValue(int value) {
+  void setValue(int value, {bool notifyListeners: true}) {
     if (requestRange) {
-      setInRange(value);
+      setInRange(value, notifyListeners: notifyListeners);
     } else {
-      super.setValue(value);
+      super.setValue(value, notifyListeners: notifyListeners);
     }
   }
 
-  void setInRange(int value, {int min, int max}) {
+  void setInRange(int value, {int min, int max, bool notifyListeners: true}) {
     if (clamp) {
       super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
-        super.setValue(value);
+        super.setValue(value, notifyListeners: notifyListeners);
       } else {
         printDebug('value is not within range $min - $max');
       }

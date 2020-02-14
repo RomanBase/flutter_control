@@ -68,6 +68,10 @@ abstract class ActionControlStream<T> {
   /// Returns [ActionSubscription] for later cancellation.
   /// If [current] is true and [value] isn't null, then given listener is notified immediately.
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true});
+
+  /// Checks if given object is same as this one.
+  /// Returns true if objects are same.
+  bool equal(other);
 }
 
 class ActionControlSub<T> implements ActionControlStream<T> {
@@ -83,6 +87,19 @@ class ActionControlSub<T> implements ActionControlStream<T> {
 
   @override
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _control.once(action, current: current);
+
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is ActionControlStream && other.value == value || other == value;
+  }
+
+  /// Checks if given object is same as this one.
+  /// Returns true if objects are same.
+  bool equal(other) => identityHashCode(this) == identityHashCode(other);
 }
 
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
@@ -106,10 +123,6 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
   /// Global subscription.
   BroadcastSubscription<T> _globalSub;
 
-  Object _lock;
-
-  bool get isLocked => _lock != null;
-
   ActionControlStream<T> get sub => ActionControlSub<T>._(this);
 
   ///Default constructor.
@@ -122,7 +135,7 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   @override
   bool operator ==(other) {
-    return other is ActionControl && other.value == value || other == value;
+    return other is ActionControlStream && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -139,8 +152,9 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  static ActionControl<T> asBroadcastProvider<T>({@required dynamic key, bool broadcast: false, T defaultValue}) {
-    ActionControl control = broadcast ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
+  //TODO: Do we need this ??!!
+  static ActionControl<T> asBroadcastProvider<T>({@required dynamic key, bool single: true, T defaultValue}) {
+    ActionControl control = single ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
 
@@ -178,31 +192,8 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
     return sub;
   }
 
-  /// Sets lock for this control.
-  /// Value now can't be changed without proper [key].
-  ActionControl lock(Object key) {
-    _lock = key;
-
-    return this;
-  }
-
-  /// Unlocks this control.
-  /// If proper [key] is passed, then no more key is required to change value.
-  /// Returns true if control is unlocked.
-  bool unlock(Object key) {
-    if (_lock == key) {
-      _lock = null;
-    }
-
-    return !isLocked;
-  }
-
   /// Sets new value and notifies listeners.
-  void setValue(T value, {Object key}) {
-    if (isLocked && _lock != key) {
-      printDebug('This control is locked. You need proper key to change value.');
-      return;
-    }
+  void setValue(T value, {bool notifyListeners: true}) {
 
     if (_value == value) {
       return;
@@ -210,7 +201,9 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
     _value = value;
 
-    notify();
+    if(notifyListeners) {
+      notify();
+    }
   }
 
   /// Notifies listeners with current value.
@@ -347,11 +340,11 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   void initState() {
     super.initState();
 
+    _value = widget.control.value;
     _initSub();
   }
 
   void _initSub() {
-    _value = widget.control.value;
     _sub = widget.control.subscribe(
       (value) {
         setState(() {
@@ -366,9 +359,15 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   void didUpdateWidget(ActionBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.control != oldWidget.control) {
+    if (widget.control.equal(oldWidget.control)) {
       _sub.cancel();
       _initSub();
+    }
+
+    if (_value != widget.control.value) {
+      setState(() {
+        _value = widget.control.value;
+      });
     }
   }
 
@@ -411,12 +410,11 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   void initState() {
     super.initState();
 
+    _values = _mapValues();
     _initSubs();
   }
 
   void _initSubs() {
-    _values = _mapValues();
-
     widget.controls.forEach((control) => _subs.add(control.subscribe(
           (data) => setState(() {
             _values = _mapValues();
@@ -435,6 +433,8 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
 
       _initSubs();
     }
+
+    //TODO: check values
   }
 
   @override
@@ -449,6 +449,7 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   }
 }
 
+//TODO: Do we need this ??!!
 class BroadcastBuilder<T> extends StatefulWidget {
   final ControlWidgetBuilder<T> builder;
   final T defaultValue;
@@ -477,12 +478,20 @@ class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
     super.initState();
 
     _control = ActionControl.asBroadcastProvider<T>(key: widget.broadcastKey, defaultValue: widget.defaultValue);
+    _value = _control.value;
 
     _control.subscribe((value) {
       setState(() {
         _value = value;
       });
-    });
+    }, current: false);
+  }
+
+  @override
+  void didUpdateWidget(BroadcastBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    //TODO: check key
   }
 
   @override
