@@ -40,6 +40,7 @@ class ControlModel with DisposeHandler, Disposer implements Initializable {
 
   /// Called during State initialization.
   /// Check [TickerControl] mixin.
+  //TODO: remove and switch to TickerComponent
   void onTickerInitialized(TickerProvider ticker) {}
 
   @override
@@ -98,6 +99,42 @@ class BaseControl extends ControlModel {
   void dispose() {
     super.dispose();
     _isInitialized = false;
+  }
+}
+
+/// Lightweight version of Controller. Mainly used for Items in dynamic List or to separate/reuse Logic.
+/// Mixin your model with [LocalizationProvider] to enable localization.
+class BaseModel extends ControlModel {
+  @override
+  bool preferSoftDispose = true;
+
+  /// Default constructor.
+  BaseModel();
+}
+
+mixin TickerComponent on ControlModel {
+  TickerProvider _ticker;
+
+  @protected
+  TickerProvider get ticker => _ticker;
+
+  bool get isTickerAvailable => _ticker != null;
+
+  void provideTicker(TickerProvider ticker) {
+    _ticker = ticker;
+
+    onTickerInitialized(ticker);
+  }
+
+  /// Called during State initialization.
+  /// Check [TickerControl] mixin.
+  void onTickerInitialized(TickerProvider ticker);
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _ticker = null;
   }
 }
 

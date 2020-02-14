@@ -51,20 +51,6 @@ class ControlArgHolder implements Disposable {
   }
 }
 
-//TODO: there is only one scenario when is this async needed - ControlFactory.onReady().
-mixin AsyncWidgetInit on ControlWidget {
-  Future<void> onInitAsync(ControlState<ControlWidget> state);
-
-  void onStateInitialized(ControlState<ControlWidget> state);
-
-  @override
-  void onInitState(ControlState<ControlWidget> state) async {
-    await onInitAsync(state);
-    super.onInitState(state);
-    onStateInitialized(state);
-  }
-}
-
 /// [ControlWidget] with just one init Controller.
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
   T get control => controls.length > 0 ? controls[0] : null;
@@ -170,8 +156,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
       control.init(holder.args);
       control.subscribe(this);
 
-      if (state is TickerProvider) {
-        control.onTickerInitialized(state as TickerProvider);
+      if (state is TickerProvider && control is TickerComponent) {
+        control.provideTicker(state as TickerProvider);
       }
 
       if (control is StateControl) {

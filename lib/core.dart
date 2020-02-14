@@ -10,7 +10,6 @@ export './src/base_localization.dart';
 export './src/base_prefs.dart';
 export './src/control.dart';
 export './src/control/action_control.dart';
-export './src/control/base_model.dart';
 export './src/control/control_model.dart';
 export './src/control/disposable.dart';
 export './src/control/field_control.dart';
