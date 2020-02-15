@@ -146,7 +146,7 @@ mixin StateControl on ControlModel implements StateNotifier, Listenable {
   void onStateInitialized() {}
 
   @override
-  void notifyState([dynamic state]) => _notifier.notifyState(state);
+  void notifyState([dynamic state]) => _notifier.value = state;
 
   void subscribeStateNotifier(VoidCallback action) => _notifier.addListener(action);
 

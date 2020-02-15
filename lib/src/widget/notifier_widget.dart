@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class BaseNotifier<T> extends ChangeNotifier implements StateNotifier, ValueListenable<T> {
+class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   T _value;
 
   @override
@@ -12,10 +12,9 @@ class BaseNotifier<T> extends ChangeNotifier implements StateNotifier, ValueList
     notifyListeners();
   }
 
-  BaseNotifier([T value]);
-
-  @override
-  void notifyState([state]) => value = state;
+  BaseNotifier([T value]) {
+    _value = value;
+  }
 }
 
 class NotifierBuilder<T> extends StatefulWidget {
