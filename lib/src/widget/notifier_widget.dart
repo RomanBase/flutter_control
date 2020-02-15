@@ -15,6 +15,8 @@ class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   BaseNotifier([T value]) {
     _value = value;
   }
+
+  void notify() => notifyListeners();
 }
 
 class NotifierBuilder<T> extends StatefulWidget {
@@ -27,15 +29,30 @@ class NotifierBuilder<T> extends StatefulWidget {
     @required this.builder,
   }) : super(key: key);
 
+  factory NotifierBuilder.of({
+    Key key,
+    @required StateControl control,
+    @required ControlWidgetBuilder<T> builder,
+  }) =>
+      NotifierBuilder(key: key, control: control.state, builder: builder);
+
   @override
   State<StatefulWidget> createState() => _NotifierBuilderState();
 
   Widget build(BuildContext context) {
     if (control is ValueNotifier) {
-      return builder(context, (control as ValueListenable).value as T);
+      final value = (control as ValueListenable).value;
+
+      if (value is T) {
+        return builder(context, value);
+      }
     }
 
-    return builder(context, control as T);
+    if (control is T) {
+      return builder(context, control as T);
+    } else {
+      return builder(context, null);
+    }
   }
 }
 
@@ -47,9 +64,7 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
     widget.control.addListener(_updateState);
   }
 
-  void _updateState() {
-    setState(() {});
-  }
+  void _updateState() => setState(() {});
 
   @override
   void didUpdateWidget(NotifierBuilder oldWidget) {

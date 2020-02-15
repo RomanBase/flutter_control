@@ -5,7 +5,7 @@ import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 
-class _UIControl extends ControlModel with FireProvider {
+class _UIControl extends ControlModel with FireProvider, TickerComponent {
   final signMode = ActionControl.broadcast<SignMode>(SignMode.sign_in);
   SignMode prevMode = SignMode.sign_in;
 

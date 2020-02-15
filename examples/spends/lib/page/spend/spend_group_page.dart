@@ -90,7 +90,7 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
                 width: theme.padding,
               ),
               NotifierBuilder(
-                control: control.group,
+                control: control.group.state,
                 builder: (context, state) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

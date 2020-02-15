@@ -36,12 +36,8 @@ class ControlModel with DisposeHandler, Disposer implements Initializable {
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
+  //TODO: revisit
   void subscribe(dynamic object) {}
-
-  /// Called during State initialization.
-  /// Check [TickerControl] mixin.
-  //TODO: remove and switch to TickerComponent
-  void onTickerInitialized(TickerProvider ticker) {}
 
   @override
   void dispose() {
@@ -72,16 +68,13 @@ class BaseControl extends ControlModel {
   /// Set [preventMultiInit] enable multi init / re-init
   @override
   @mustCallSuper
-  BaseControl init([Map args]) {
+  void init([Map args]) {
     if (isInitialized && preventMultiInit) {
       printDebug('controller is already initialized: ${this.runtimeType.toString()}');
-      return this;
     }
 
     _isInitialized = true;
     onInit(args);
-
-    return this;
   }
 
   /// Is typically called right after constructor or when init is available.
@@ -138,9 +131,11 @@ mixin TickerComponent on ControlModel {
   }
 }
 
-mixin StateControl on ControlModel implements StateNotifier, Listenable {
+mixin StateControl on ControlModel implements StateNotifier {
   /// Notify listeners.
   final _notifier = BaseNotifier();
+
+  Listenable get state => _notifier;
 
   /// Called during State initialization.
   void onStateInitialized() {}
@@ -151,12 +146,6 @@ mixin StateControl on ControlModel implements StateNotifier, Listenable {
   void subscribeStateNotifier(VoidCallback action) => _notifier.addListener(action);
 
   void cancelStateNotifier(VoidCallback action) => _notifier.removeListener(action);
-
-  @override
-  void addListener(VoidCallback listener) => subscribeStateNotifier(listener);
-
-  @override
-  void removeListener(VoidCallback listener) => cancelStateNotifier(listener);
 
   @override
   void dispose() {

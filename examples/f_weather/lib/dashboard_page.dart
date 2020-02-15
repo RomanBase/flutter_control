@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:f_weather/dashboard_control.dart';
 import 'package:flutter_control/core.dart';
 
-class _UIControl extends ControlModel {
+class _UIControl extends ControlModel with TickerComponent {
   AnimationController inputAnim;
 
   DashboardControl get control => Control.get<DashboardControl>();
@@ -68,7 +68,7 @@ class DashboardPage extends ControlWidget with TickerControl {
           children: <Widget>[
             SingleChildScrollView(
               child: NotifierBuilder<TemperatureModel>(
-                control: control.temperature,
+                control: control.temperature.state,
                 builder: (context, temperature) {
                   return TweenAnimationBuilder(
                     duration: Duration(milliseconds: 500),
@@ -208,7 +208,7 @@ class WeatherInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotifierBuilder<TemperatureModel>(
-      control: model,
+      control: model.state,
       builder: (context, model) {
         if (model.isAvailable) {
           return Column(
@@ -271,7 +271,7 @@ class LocationInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotifierBuilder<LocationModel>(
-      control: model,
+      control: model.state,
       builder: (context, model) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

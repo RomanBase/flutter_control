@@ -90,7 +90,7 @@ class ItemWidget extends StatelessWidget {
             ),
           ),
           NotifierBuilder(
-            control: model,
+            control: model.state,
             builder: (context, value) => Checkbox(
               value: model.isDone,
               onChanged: (checked) => model.isDone = checked,
