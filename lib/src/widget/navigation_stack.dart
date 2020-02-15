@@ -445,12 +445,9 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       _items = widget.items;
     }
 
-    if (control._initialIndex == null && widget.initialIndex != null) {
-      control._initialIndex = widget.initialIndex;
-      control._pageIndex.value = control._initialIndex;
-    }
-
     control.subscribe(this);
+
+    _updateIndex();
     _initControl();
   }
 
@@ -464,9 +461,18 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     }
   }
 
+  void _updateIndex() {
+    if (control._initialIndex == null && widget.initialIndex != null) {
+      control._initialIndex = widget.initialIndex;
+      control._pageIndex.setValue(control._initialIndex, notifyListeners: false);
+    }
+  }
+
   @override
   void didUpdateWidget(NavigatorStackGroup oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    _updateIndex();
 
     if (control != oldWidget.control) {
       _items = widget.items;
