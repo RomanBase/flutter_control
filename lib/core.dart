@@ -6,6 +6,7 @@ import 'core.dart';
 
 export 'package:flutter/material.dart';
 
+export './src/base_injector.dart';
 export './src/base_localization.dart';
 export './src/base_prefs.dart';
 export './src/control.dart';
