@@ -107,6 +107,8 @@ class Control {
   /// Then [ControlFactory.get] / [ControlFactory.init] is executed.
   /// nullable
   static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => factory().resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
+
+  static void remove<T>({dynamic key}) => factory().remove<T>(key: key);
 }
 
 /// Shortcut class to work with global stream of [ControlFactory].
@@ -301,7 +303,8 @@ class ControlFactory with Disposable {
 
     final item = init<T>(args ?? key);
 
-    if (useExactKey && item != null) {
+    if (item is LazyControl) {
+      item._factoryKey = key;
       set<T>(key: key, value: item);
     }
 
@@ -558,5 +561,18 @@ class BaseInjector implements Injector, Disposable {
   void dispose() {
     _injectors.clear();
     _other = null;
+  }
+}
+
+mixin LazyControl on Disposable {
+  dynamic _factoryKey;
+
+  dynamic get factoryKey => _factoryKey;
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    Control.remove(key: factoryKey);
   }
 }
