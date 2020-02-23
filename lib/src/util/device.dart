@@ -38,8 +38,12 @@ class Device {
 
   double get bottomBorderSize => data.padding.bottom;
 
+  /// Converts px to logical display points
+  /// PX -> DP
   double px(double value) => value * ratio;
 
+  /// Converts logical display points to px
+  /// DP -> PX
   double dp(double value) => value / ratio;
 
   Size pxSize(Size size) => Size(px(size.width), px(size.height));

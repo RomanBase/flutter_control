@@ -168,6 +168,9 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
     });
   }
 
+  @protected
+  void onStateInitialized() {}
+
   /// Called by State whenever [holder] isn't initialized or when something has dramatically changed in Widget - State relationship.
   @protected
   void notifyWidget(ControlState state) {
@@ -299,6 +302,8 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    widget.onStateInitialized();
 
     if (widget is ThemeProvider) {
       (widget as ThemeProvider).invalidateTheme(context);

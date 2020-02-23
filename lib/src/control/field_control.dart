@@ -621,6 +621,20 @@ class ListControl<T> extends FieldControl<List<T>> {
     notify();
   }
 
+  /// Swaps position of items at given indexes
+  void swap(int indexA, int indexB) {
+    T a = value[indexA];
+    T b = value[indexB];
+
+    value.removeAt(indexA);
+    value.insert(indexA, b);
+
+    value.removeAt(indexB);
+    value.insert(indexB, a);
+
+    notify();
+  }
+
   /// [Iterable.clear].
   void clear({bool disposeItems: false}) {
     if (disposeItems) {
@@ -759,15 +773,16 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
 
 /// Shortcut for LoadingStatus Controller.
 class LoadingControl extends FieldControl<LoadingStatus> {
-  /// Return true if status is done.
+  /// Returns true if [value] is [LoadingStatus.done].
   bool get isDone => value == LoadingStatus.done;
 
-  /// Return true if status is progress.
+  /// Returns true if [value] is [LoadingStatus.progress].
   bool get inProgress => value == LoadingStatus.progress;
 
-  /// Return true if status is error.
+  /// Returns true if [value] is [LoadingStatus.error].
   bool get hasError => value == LoadingStatus.error;
 
+  /// Returns true if [message] is not null.
   bool get hasMessage => message != null;
 
   /// Inner message of LoadingStatus.
