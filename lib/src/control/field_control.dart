@@ -81,6 +81,8 @@ abstract class FieldControlStream<T> {
   T get value => null;
 
   FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true});
+
+  bool equal(FieldControlStream other);
 }
 
 class FieldControlSub<T> implements FieldControlStream<T> {
@@ -96,6 +98,16 @@ class FieldControlSub<T> implements FieldControlStream<T> {
   FieldSubscription subscribe(void Function(T event) onData, {Function onError, void Function() onDone, bool cancelOnError = false, bool current = true}) {
     return _parent.subscribe(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError, current: current);
   }
+
+  @override
+  int get hashCode => super.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return other is FieldControlStream && other.value == value || other == value;
+  }
+
+  bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
 }
 
 /// Enclosure and adds functionality to standard [Stream] and [StreamBuilder] flow.
@@ -148,12 +160,12 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
 
   @override
   bool operator ==(other) {
-    return other is FieldControl && other.value == value || other == value;
+    return other is FieldControlStream && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
-  bool equal(FieldControl other) => identityHashCode(this) == identityHashCode(other);
+  bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
 
   /// Initializes [FieldControl] and subscribes it to given [stream].
   /// Check [subscribeTo] function for more info.
