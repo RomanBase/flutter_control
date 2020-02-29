@@ -154,22 +154,25 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
     controls?.remove(null);
     controls?.forEach((control) {
       control.init(holder.args);
-      control.subscribe(this);
 
       if (state is TickerProvider && control is TickerComponent) {
         control.provideTicker(state as TickerProvider);
       }
 
       if (control is StateControl) {
-        control.subscribe(state);
         state._subscribeStateNotifier(control);
-        control.onStateInitialized();
       }
     });
   }
 
   @protected
-  void onStateInitialized() {}
+  void onStateInitialized() {
+    controls?.forEach((control) {
+      if (control is StateControl) {
+        control.onStateInitialized();
+      }
+    });
+  }
 
   /// Called by State whenever [holder] isn't initialized or when something has dramatically changed in Widget - State relationship.
   @protected
@@ -315,7 +318,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
   /// Subscribes to [StateControl]
   void _subscribeStateNotifier(StateControl control) {
-    control.subscribeStateNotifier(notifyState);
+    control.addListener(notifyState);
   }
 
   /// Disposes and removes all [controls].
@@ -329,7 +332,7 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
     if (controls != null) {
       controls.forEach((controller) {
         if (controller is StateControl) {
-          controller.cancelStateNotifier(notifyState);
+          controller.removeListener(notifyState);
         }
 
         controller.requestDispose();

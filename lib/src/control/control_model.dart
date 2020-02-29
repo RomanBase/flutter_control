@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Standard initialization of object right after constructor.
@@ -131,21 +132,23 @@ mixin TickerComponent on ControlModel {
   }
 }
 
-mixin StateControl on ControlModel implements StateNotifier {
+mixin StateControl on ControlModel implements StateNotifier, Listenable {
   /// Notify listeners.
   final _notifier = BaseNotifier();
 
-  Listenable get state => _notifier;
+  ValueListenable get state => _notifier;
 
-  /// Called during State initialization.
+  /// Called right after [State.initState] and whenever dependency of state changes [State.didChangeDependencies].
   void onStateInitialized() {}
 
   @override
   void notifyState([dynamic state]) => _notifier.value = state;
 
-  void subscribeStateNotifier(VoidCallback action) => _notifier.addListener(action);
+  @override
+  void addListener(VoidCallback listener) => _notifier.addListener(listener);
 
-  void cancelStateNotifier(VoidCallback action) => _notifier.removeListener(action);
+  @override
+  void removeListener(VoidCallback listener) => _notifier.removeListener(listener);
 
   @override
   void dispose() {
@@ -155,7 +158,7 @@ mixin StateControl on ControlModel implements StateNotifier {
   }
 }
 
-/// Mixin for [BaseControl]
+/// Mixin for [ControlModel]
 /// Enables navigation from Controller.
 ///
 /// [ControlWidget] with [RouteControl]
