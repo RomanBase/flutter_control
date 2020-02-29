@@ -88,7 +88,6 @@ class ActionControlSub<T> implements ActionControlStream<T> {
   @override
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _control.once(action, current: current);
 
-
   @override
   int get hashCode => super.hashCode;
 
@@ -194,14 +193,13 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   /// Sets new value and notifies listeners.
   void setValue(T value, {bool notifyListeners: true}) {
-
     if (_value == value) {
       return;
     }
 
     _value = value;
 
-    if(notifyListeners) {
+    if (notifyListeners) {
       notify();
     }
   }
@@ -434,7 +432,23 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
       _initSubs();
     }
 
-    //TODO: check values
+    List initial = _values;
+    List current = _mapValues();
+
+    if (initial.length == current.length) {
+      for (int i = 0; i < initial.length; i++) {
+        if (initial[i] != current[i]) {
+          setState(() {
+            _values = current;
+          });
+          break;
+        }
+      }
+    } else {
+      setState(() {
+        _values = current;
+      });
+    }
   }
 
   @override
@@ -449,7 +463,7 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   }
 }
 
-//TODO: Do we need this ??!!
+//TODO: Do we need this ??!! Will be removed or refactored..
 class BroadcastBuilder<T> extends StatefulWidget {
   final ControlWidgetBuilder<T> builder;
   final T defaultValue;
@@ -485,13 +499,6 @@ class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
         _value = value;
       });
     }, current: false);
-  }
-
-  @override
-  void didUpdateWidget(BroadcastBuilder<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    //TODO: check key
   }
 
   @override

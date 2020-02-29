@@ -37,7 +37,7 @@ class ControlModel with DisposeHandler, Disposer implements Initializable {
 
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  //TODO: revisit
+  /// Will be revisited - unused from v1.0.
   void subscribe(dynamic object) {}
 
   @override

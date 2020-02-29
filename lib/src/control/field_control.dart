@@ -475,7 +475,23 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
       _initSubs();
     }
 
-    //TODO: check values
+    List initial = _values;
+    List current = _mapValues();
+
+    if (initial.length == current.length) {
+      for (int i = 0; i < initial.length; i++) {
+        if (initial[i] != current[i]) {
+          setState(() {
+            _values = current;
+          });
+          break;
+        }
+      }
+    } else {
+      setState(() {
+        _values = current;
+      });
+    }
   }
 
   @override

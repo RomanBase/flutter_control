@@ -98,7 +98,6 @@ class BaseLocalization with PrefsProvider {
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
-  /// TODO: prevent concurrent loading
   bool loading = false;
 
   /// Checks if any data are stored in localization.
@@ -113,13 +112,6 @@ class BaseLocalization with PrefsProvider {
 
   /// Default constructor
   BaseLocalization(this.defaultLocale, this.assets);
-
-  LocalizationArgs asArgs() => LocalizationArgs(
-        locale: locale,
-        isActive: isActive,
-        changed: false,
-        source: 'runtime',
-      );
 
   Future<LocalizationArgs> init({bool loadDefaultLocale: true}) async {
     loading = true;
