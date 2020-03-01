@@ -133,6 +133,10 @@ class BaseLocalization with PrefsProvider {
   /// Default extractor is [Map] based: {'locale': 'value'}.
   LocalizationExtractor _mapExtractor;
 
+  /// Custom param decorator.
+  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
+  ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
+
   /// Json/Map based localization.
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
@@ -451,6 +455,33 @@ class BaseLocalization with PrefsProvider {
     return debug ? '${key}_$_locale' : '';
   }
 
+  /// Tries to localize text by given [key].
+  /// Then format string with given [params].
+  ///
+  /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
+  /// Set custom [ParamDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
+  ///
+  /// Default decorator is set to [ParamDecorator.curl]
+  ///
+  /// 'Weather in {city} is {temp}°{symbol}'
+  /// Then [params] are:
+  /// {
+  /// {'city': 'California'},
+  /// {'temp': '25.5'},
+  /// {'symbol': 'C'},
+  /// }
+  ///
+  /// Returns formatted string.
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  String localizeFormat(String key, Map<String, String> params) {
+    if (_data.containsKey(key)) {
+      return Parse.format(_data[key], params, _paramDecorator);
+    }
+
+    return debug ? '${key}_$_locale' : '';
+  }
+
   /// Tries to localize text by given [key] and [plural].
   ///
   /// count: {
@@ -491,7 +522,7 @@ class BaseLocalization with PrefsProvider {
 
         if (output != null) {
           if (params != null) {
-            output = _withParams(output, params);
+            output = Parse.format(output, params, _paramDecorator);
           }
 
           return output;
@@ -611,36 +642,37 @@ class BaseLocalization with PrefsProvider {
   /// Default extractor is [Map] based: {'locale': 'value'}.
   void setCustomExtractor(LocalizationExtractor extractor) => _mapExtractor = extractor;
 
+  /// Sets custom decorator for string formatting
+  ///
+  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
+  void setCustomParamDecorator(ParamDecoratorFormat decorator) => _paramDecorator = decorator;
+
   /// Updates value in current localization set.
   /// This update is only runtime and isn't stored to localization file.
   void update(String key, dynamic value) => _data[key] = value;
 
-  /// Replaces [params] in [input] string
+  /// Delegate of [BaseLocalization] to use this localization as [LocalizationsDelegate].
   ///
-  /// 'Weather in {city} is {temp}°{symbol}'
-  /// Then [params] are:
-  /// {
-  /// {'city': 'California'},
-  /// {'temp': '25.5'},
-  /// {'symbol': 'C'},
-  /// }
-  ///
-  /// Returns formatted string.
-  String _withParams(String input, Map<String, String> params) {
-    params.forEach((key, value) => input = input.replaceFirst(key, value));
-
-    return input;
-  }
-
+  /// Use [LocalizationProvider.of(context)] to find delegate in current widget scope.
   BaseLocalizationDelegate get delegate => BaseLocalizationDelegate(this);
 }
 
+/// Delegate of [BaseLocalization] to use with [LocalizationsDelegate].
+///
+/// Use [LocalizationProvider.of(context)] to find delegate in the widget tree that corresponds to the given [context].
 class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
+  /// Localization to work with.
   final BaseLocalization localization;
 
+  /// Creates delegate of [BaseLocalization].
+  ///
+  /// Typically this constructor is not called directly, but instance of delegate is created with [BaseLocalization.delegate].
   BaseLocalizationDelegate(this.localization);
 
-  Locale get locale => localization.getAsset(localization.locale)?.toLocale();
+  /// Active locale of [BaseLocalization].
+  ///
+  /// Returns [BaseLocalization.getLocale].
+  Locale get locale => localization.getLocale(localization.locale);
 
   @override
   bool isSupported(Locale locale) => localization.isLocalizationAvailable(locale.toString());
@@ -666,21 +698,31 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
   }
 }
 
+/// Mixin class to provide [BaseLocalization] - localize functions.
+///
+/// Access to [BaseLocalizationDelegate] is handled via static functions.
 mixin LocalizationProvider {
+  /// Shortcut for delegate of default [BaseLocalization].
   static BaseLocalizationDelegate get delegate => Control.localization().delegate;
 
-  /// Usable only with [LocalizationsDelegate]
+  /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
+  ///
+  /// Note: usable only with [LocalizationsDelegate].
   static BaseLocalization of(BuildContext context) {
     return Localizations.of<BaseLocalization>(context, BaseLocalization);
   }
 
-  ///Instance of [BaseLocalization]
+  ///Instance of default [BaseLocalization]
   @protected
   BaseLocalization get localization => Control.localization();
 
   ///[BaseLocalization.localize]
   @protected
   String localize(String key) => localization.localize(key);
+
+  ///[BaseLocalization.localizeFormat]
+  @protected
+  String localizeFormat(String key, Map<String, String> params) => localization.localizeFormat(key, params);
 
   ///[BaseLocalization.localizePlural]
   @protected

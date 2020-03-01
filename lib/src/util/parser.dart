@@ -2,8 +2,43 @@ import 'dart:convert';
 
 import 'package:flutter_control/core.dart';
 
+typedef ParamDecoratorFormat = String Function(String input);
+
+class ParamDecorator {
+  static ParamDecoratorFormat get none => (input) => input;
+
+  static ParamDecoratorFormat get curl => (input) => '\{$input\}';
+
+  static ParamDecoratorFormat get dollar => (input) => '\$$input';
+
+  static ParamDecoratorFormat get percent => (input) => '\%$input';
+}
+
 /// Helps to parse basic objects.
 class Parse {
+  /// Replaces [params] in [input] string
+  /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
+  /// Set custom [ParamDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
+  ///
+  /// Default decorator is set to [ParamDecorator.curl]
+  ///
+  /// 'Weather in {city} is {temp}°{symbol}'
+  /// Then [params] are:
+  /// {
+  /// {'city': 'California'},
+  /// {'temp': '25.5'},
+  /// {'symbol': 'C'},
+  /// }
+  ///
+  /// Returns formatted string.
+  static String format(String input, Map<String, String> params, [ParamDecoratorFormat decorator]) {
+    decorator ??= ParamDecorator.curl;
+
+    params.forEach((key, value) => input = input.replaceFirst(decorator(key), value));
+
+    return input;
+  }
+
   /// Tries to parse value into [String].
   ///
   /// If none found, then [defaultValue] is returned.
