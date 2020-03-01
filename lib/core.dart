@@ -17,11 +17,13 @@ export './src/control/route_control.dart';
 export './src/control_broadcast.dart';
 export './src/theme_control.dart';
 export './src/util/args.dart';
+export './src/util/base_prefs.dart';
 export './src/util/device.dart';
 export './src/util/future_block.dart';
 export './src/util/init_holder.dart';
 export './src/util/parser.dart';
 export './src/util/unit_id.dart';
+export './src/widget/control_root.dart';
 export './src/widget/control_widget.dart';
 export './src/widget/input_field.dart';
 export './src/widget/loader_widget.dart';
@@ -29,8 +31,6 @@ export './src/widget/navigation_stack.dart';
 export './src/widget/notifier_widget.dart';
 export './src/widget/stable_widget.dart';
 export './src/widget/widget_provider.dart';
-export 'src/util/base_prefs.dart';
-export 'src/widget/control_root.dart';
 
 enum LoadingStatus { none, progress, done, error, outdated, unknown }
 

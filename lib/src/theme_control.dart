@@ -130,14 +130,14 @@ class ControlTheme {
   ThemeData _data;
   AssetPath _asset;
 
+  @protected
+  BuildContext get context => _context;
+
   Device get device => _device ?? (_device = Device.of(_context));
 
   ThemeData get data => _data ?? (_data = Theme.of(_context));
 
   AssetPath get asset => _asset ?? (_asset = AssetPath());
-
-  @protected
-  BuildContext get context => _context;
 
   @protected
   set asset(value) => _asset = value;
@@ -179,7 +179,7 @@ mixin ThemeProvider<T extends ControlTheme> {
 
   /// Instance of [AssetPath].
   ///
-  /// Custom [AssetPath] can be set to [ControlTheme] - [theme].
+  /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
   AssetPath get asset => theme.asset;
 
