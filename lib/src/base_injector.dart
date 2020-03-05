@@ -2,6 +2,7 @@ import 'package:flutter_control/core.dart';
 
 typedef InitInjection<T> = void Function(T item, dynamic args);
 
+/// TODO: purpose
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
@@ -66,12 +67,12 @@ class BaseInjector implements Injector, Disposable {
   }
 
   BaseInjector combine(BaseInjector other) => BaseInjector(
-    injectors: {
-      ..._injectors,
-      ...other._injectors,
-    },
-    other: _other ?? other._other,
-  );
+        injectors: {
+          ..._injectors,
+          ...other._injectors,
+        },
+        other: _other ?? other._other,
+      );
 
   @override
   void dispose() {

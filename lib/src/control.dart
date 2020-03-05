@@ -3,24 +3,65 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-/// Shortcut class to get objects from [ControlFactory]
+/// Main [Control] static class.
+/// Provides easy access to most usable [Control] classes. This objects are mostly stored in [ControlFactory] with their [Type] key.
+/// Some of this classes also has custom Provider with base functionality.
+///
+/// Start with [Control.initControl] to initialize [ControlFactory] and other core [Control] objects.
+///
+/// [ControlBroadcast] - Sends data and events via global broadcast. Use [BroadcastProvider] for base and direct workflow.
+/// [BaseLocalization] - Loads and stores localization data. Use it directly via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
+/// [RouteStore] - Stores route builders and their paths and settings. Use [ControlRoute.of] to retrieve route. Then is possible to alter this route with new settings, path or transition.
+/// [ControlScope] - This class provides access to root of Widget Tree and to [ControlRootState]. But only if [ControlRoot] Widget is used.
+/// [BasePrefs] - Wrapper around [SharedPreferences].
 class Control {
+  /// Control is static class.
+  /// Just hidden constructor.
   Control._();
 
+  /// Checks if [ControlFactory] is initialized.
   static get isInitialized => factory().isInitialized;
 
+  /// Checks if current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
+  /// This value is also provided to [BaseLocalization] during [initControl].
   static get debug => factory().debug;
 
+  /// Returns instance of [ControlFactory].
   static ControlFactory factory() => ControlFactory._instance;
 
+  /// Returns default instance of [ControlBroadcast] - this instance is stored in [ControlFactory].
+  /// Use [BroadcastProvider] for base broadcast operations.
   static ControlBroadcast broadcaster() => factory()._broadcast;
 
+  /// Returns default instance of [Injector] - this instance is stored in [ControlFactory].
+  /// Injector is set via [Control.initControl] or [ControlFactory.setInjector].
   static Injector injector() => factory()._injector;
 
+  /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
+  /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
   static BaseLocalization localization() => Control.get<BaseLocalization>();
 
+  /// Returns scope of [ControlRoot].
+  /// This scope provides access to root of Widget Tree and to [ControlRootState].
+  /// But only if [ControlRoot] Widget is used.
   static ControlScope root() => ControlScope();
 
+  /////
+  /////
+  /////
+
+  /// Initializes [ControlFactory] and other core [Control] objects.
+  /// Loads [BasePrefs] and [BaseLocalization], also builds [RouteStore].
+  ///
+  /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
+  /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
+  /// [locales] - Map of locale assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones.
+  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
+  /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
+  /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
+  /// [theme] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
+  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
     bool debug,
     String defaultLocale,
@@ -100,10 +141,11 @@ class Control {
   /// nullable
   static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => factory().resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 
+  /// Removes specific object with given [key] or by [Type] from [ControlFactory].
   static void remove<T>({dynamic key}) => factory().remove<T>(key: key);
 }
 
-/// Shortcut class to work with global stream of [ControlFactory].
+/// TODO: doc
 class BroadcastProvider {
   /// Subscription to global stream.
   static BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
@@ -121,11 +163,7 @@ class BroadcastProvider {
   static void broadcastEvent(dynamic key) => ControlFactory._instance._broadcast.broadcastEvent(key);
 }
 
-/// Factory for initializing and storing objects.
-/// Factory also creates global subscription stream driven by keys. Access this stream via [BroadcastProvider].
-///
-/// Fill [ControlRoot.entries] for initial items to store inside factory.
-/// Fill [ControlRoot.initializers] for initial builders to store inside factory.
+/// TODO: doc
 class ControlFactory with Disposable {
   /// Instance of AppFactory.
   static final ControlFactory _instance = ControlFactory._();
@@ -484,6 +522,7 @@ class ControlFactory with Disposable {
   }
 }
 
+/// TODO: doc
 mixin LazyControl on Disposable {
   dynamic _factoryKey;
 
