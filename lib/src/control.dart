@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Main [Control] static class.
-/// Provides easy access to most usable [Control] classes. This objects are mostly stored in [ControlFactory] with their [Type] key.
+/// Provides easy access to most usable [Control] classes. These objects are stored in [ControlFactory] with their [Type] key.
 /// Some of this classes also has custom Provider with base functionality.
 ///
 /// Start with [Control.initControl] to initialize [ControlFactory] and other core [Control] objects.
@@ -15,15 +15,17 @@ import 'package:flutter_control/core.dart';
 /// [ControlScope] - This class provides access to root of Widget Tree and to [ControlRootState]. But only if [ControlRoot] Widget is used.
 /// [BasePrefs] - Wrapper around [SharedPreferences].
 class Control {
-  /// Control is static class.
+  /// Control is pure static class.
   /// Just hidden constructor.
   Control._();
 
   /// Checks if [ControlFactory] is initialized.
+  ///
+  /// Factory can be initialized via [Control.initControl] or [ControlFactory.initialize].
   static get isInitialized => factory().isInitialized;
 
   /// Checks if current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
-  /// This value is also provided to [BaseLocalization] during [initControl].
+  /// This value is also provided to [BaseLocalization] during [Control.initControl] and to various other classes.
   static get debug => factory().debug;
 
   /// Returns instance of [ControlFactory].
@@ -117,32 +119,56 @@ class Control {
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
+  /// Set [withInjector] to re-inject stored object.
+  ///
+  /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
   /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
+  /// And when initialized object is [LazyControl] then this object is stored into Factory.
+  ///
+  /// [Control] provides static call for this function via [Control.get].
+  ///
   /// nullable
   static T get<T>({dynamic key, dynamic args, bool withInjector: true}) => factory().get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
-  /// returns key of stored object.
+  /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
+  /// Returns [key] of stored [value].
   static dynamic set<T>({dynamic key, @required dynamic value}) => factory().set<T>(key: key, value: value);
 
-  /// returns new object of requested [Type] via initializer in [ControlFactory].
+  /// Returns new object of requested [Type] via initializer in [ControlFactory].
+  /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
+  ///
+  /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
+  /// In most of cases is preferred to use more powerful [ControlFactory.get].
+  ///
+  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.setInitializer].
+  ///
+  /// [Control] provides static call for this function via [Control.init].
+  ///
   /// nullable
   static T init<T>([dynamic args]) => factory().init(args);
 
   /// Injects and initializes given [item] with [args].
-  /// [Initializable.init] is called only when [args] are not null.
-  static void inject<T>(dynamic item, {dynamic args, bool withInjector: true, bool withArgs: true}) => factory().inject(item, args: args, withInjector: withInjector, withArgs: withArgs);
 
-  /// Executes sequence of functions to retrieve expect object.
-  /// Look up in [source] for item via [Parse.getArg].
-  /// Then [ControlFactory.get] / [ControlFactory.init] is executed.
+  /// [Initializable.init] is called only when [args] are not null.
+  ///
+  /// [Control] provides static call for this function via [Control.inject].
+  static void inject<T>(dynamic item, {dynamic args}) => factory().inject(item, args: args, withInjector: true, withArgs: true);
+
+  /// Executes sequence of functions to retrieve expected object.
+  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] / [ControlFactory.init] is executed.
+  /// Returns object from [source] or via [ControlFactory] or [defaultValue].
   /// nullable
   static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => factory().resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
-  static void remove<T>({dynamic key}) => factory().remove<T>(key: key);
+  /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
+  /// If object of given [key] is not found, then all instances of [T] are removed.
+  /// Set [dispose] to dispose removed object/s.
+  ///
+  /// Returns number of removed items.
+  static int remove<T>({dynamic key, bool dispose: false}) => factory().remove<T>(key: key, dispose: dispose);
 }
 
 /// TODO: doc
@@ -278,10 +304,12 @@ class ControlFactory with Disposable {
     _initializers[T] = initializer;
   }
 
-  /// Stores [value] with given [key] for later use - [get].
+  /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is [T] or generated from [Type] of given [value].
-  /// returns key of stored object.
+  /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
+  /// Returns [key] of stored [value].
+  ///
+  /// [Control] provides static call for this function via [Control.set].
   dynamic set<T>({dynamic key, @required dynamic value}) {
     key = keyOf<T>(key: key, value: value);
 
@@ -298,8 +326,16 @@ class ControlFactory with Disposable {
     return key;
   }
 
-  /// Returns object of requested type by given [key] or by [Type].
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
+  /// Set [withInjector] to re-inject stored object.
+  ///
+  /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
+  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
+  /// And when initialized object is [LazyControl] then this object is stored into Factory.
+  ///
+  /// [Control] provides static call for this function via [Control.get].
+  ///
   /// nullable
   T get<T>({dynamic key, dynamic args, bool withInjector: false}) {
     final useExactKey = key != null;
@@ -341,8 +377,16 @@ class ControlFactory with Disposable {
     return item;
   }
 
-  /// returns new object of requested type.
-  /// initializer must be specified - [setInitializer]
+  /// Returns new object of requested [Type] via initializer in [ControlFactory].
+  /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
+  ///
+  /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
+  /// In most of cases is preferred to use more powerful [ControlFactory.get].
+  ///
+  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.setInitializer].
+  ///
+  /// [Control] provides static call for this function via [Control.init].
+  ///
   /// nullable
   T init<T>([dynamic args]) {
     final initializer = findInitializer<T>();
@@ -361,8 +405,12 @@ class ControlFactory with Disposable {
   }
 
   /// Injects and initializes given [item] with [args].
-  /// [Injector.inject] is called even if [args] are null.
+  /// Set [withInjector] to inject given object.
+  /// Set [withArgs] to init given object.
+  ///
   /// [Initializable.init] is called only when [args] are not null.
+  ///
+  /// [Control] provides static call for this function via [Control.inject].
   void inject<T>(dynamic item, {dynamic args, bool withInjector: true, bool withArgs: true}) {
     if (withInjector && _injector != null) {
       _injector.inject<T>(item, args);
@@ -373,10 +421,12 @@ class ControlFactory with Disposable {
     }
   }
 
-  /// Executes sequence of functions to retrieve expect object.
-  /// Look up in [source] for item via [Parse.getArg].
-  /// Then [ControlFactory.get] and [ControlFactory.init] is executed.
-  /// Finally [ControlFactory.inject] is called.
+  /// Executes sequence of functions to retrieve expected object.
+  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed with given [key] and [args].
+  /// Returns object from [source] or from factory store/initializers or [defaultValue].
+  ///
+  /// [Control] provides static call for this function via [Control.inject].
+  ///
   /// nullable
   T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
@@ -389,7 +439,11 @@ class ControlFactory with Disposable {
     return get<T>(key: key, args: args) ?? defaultValue;
   }
 
-  /// Finds [Initializer] of given [Type].
+  /// Finds and returns [Initializer] of given [Type].
+  ///
+  /// [ControlFactory.init] uses this method to retrieve [Initializer].
+  ///
+  /// nullable
   Initializer<T> findInitializer<T>() {
     if (_initializers.containsKey(T)) {
       return _initializers[T];
@@ -404,32 +458,50 @@ class ControlFactory with Disposable {
     return null;
   }
 
-  /// Removes item of given [key] or all items of given [Type].
-  /// If [key] isn't provided, then T is used as key.
-  void remove<T>({dynamic key, bool dispose: false}) {
+  /// Removes specific object with given [key] or by [Type] from [ControlFactory].
+  /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
+  /// If object of given [key] is not found, then all instances of [T] are removed.
+  /// Set [dispose] to dispose removed object/s.
+  ///
+  /// [Control] provides static call for this function via [Control.remove].
+  ///
+  /// Returns number of removed items.
+  int remove<T>({dynamic key, bool dispose: false}) {
     key = keyOf<T>(key: key);
 
     assert(key != null);
+
+    int count = 0;
 
     if (_items.containsKey(key)) {
       final item = _items.remove(key);
       if (dispose && item is Disposable) {
         item.dispose();
       }
-    } else {
+      count++;
+    } else if (T != dynamic) {
       _items.removeWhere((key, value) {
         final remove = value is T;
 
-        if (remove && dispose && value is Disposable) {
-          value.dispose();
+        if (remove) {
+          count++;
+          if (dispose && value is Disposable) {
+            value.dispose();
+          }
         }
 
         return remove;
       });
     }
+
+    return count;
   }
 
-  /// Swaps item in Factory.
+  /// Swaps [value] in Factory by given [key] or [Type].
+  /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
+  ///
+  /// Set [dispose] to dispose removed object/s.
+  ///
   /// Basically calls [ControlFactory.remove] and [ControlFactory.set].
   void swap<T>({dynamic key, @required dynamic value, bool dispose: false}) {
     key = keyOf<T>(key: key, value: value);
@@ -438,9 +510,10 @@ class ControlFactory with Disposable {
     set<T>(key: key, value: value);
   }
 
-  /// Removes initializer of given Type.
-  void removeInitializer(Type type) {
-    _initializers.remove(type);
+  /// Removes initializer of given [key].
+  /// Returns true if initializer is removed.
+  bool removeInitializer(Type key) {
+    return _initializers.remove(key) != null;
   }
 
   /// Swaps initializers in Factory.
@@ -450,15 +523,6 @@ class ControlFactory with Disposable {
     setInitializer(initializer);
   }
 
-  /// Removes all items of given type
-  void removeAll(Type type, {bool includeInitializers: false}) {
-    _items.removeWhere((key, item) => item.runtimeType == type);
-
-    if (includeInitializers) {
-      removeInitializer(type);
-    }
-  }
-
   /// Checks if key/type/object is in Factory.
   bool contains(dynamic value) {
     if (containsKey(value)) {
@@ -466,7 +530,7 @@ class ControlFactory with Disposable {
     }
 
     if (value is Type) {
-      if (containsKey(value.runtimeType)) {
+      if (containsKey(value)) {
         return true;
       }
 
@@ -479,10 +543,20 @@ class ControlFactory with Disposable {
     return _items.values.contains(value);
   }
 
-  /// Checks if key is in Factory.
+  /// Checks if given [key] is in Factory.
+  /// Looks to store and initializers.
+  ///
+  /// This function do not check subtypes!
+  ///
+  /// Returns true if [key] is found.
   bool containsKey(dynamic key) => _items.containsKey(key) || key is Type && _initializers.containsKey(key);
 
   /// Checks if Type is in Factory.
+  /// Looks to store and initializers.
+  ///
+  /// This function do not check subtypes!
+  ///
+  /// Returns true if [Type] is found.
   bool containsType<T>() {
     for (final item in _items.values) {
       if (item.runtimeType == T) {
@@ -493,12 +567,30 @@ class ControlFactory with Disposable {
     return _initializers.containsKey(T);
   }
 
-  /// Clears whole Factory.
-  void clear() {
+  /// Clears whole Factory - all stored objects, initializers and injector.
+  /// Also [BaseLocalization], [ControlBroadcast] and [ControlRoute] is removed and cleared/disposed.
+  ///
+  /// Call this function only if Factory re-init is required.
+  /// After clear is possible to call [Control.initControl] again.
+  ///
+  /// Returns [true] if factory is cleared. [false] means, that factory is not initialized yet.
+  bool clear() {
+    if (!_initialized) {
+      return false;
+    }
+
+    _items.forEach((key, value) {
+      if (value is Disposable) {
+        value.dispose();
+      }
+    });
+
     _items.clear();
     _initializers.clear();
     _initialized = false;
     _injector = null;
+
+    return true;
   }
 
   @override
@@ -517,15 +609,24 @@ class ControlFactory with Disposable {
   @override
   void dispose() {
     clear();
-
-    _broadcast.dispose();
   }
 }
 
-/// TODO: doc
+/// Mixin class for every [Disposable] object - mostly used with [ControlModel].
+/// If object is initialized by [ControlFactory.get] then is stored into Factory.
+/// Object is removed from factory on [dispose].
+///
+/// To prevent early remove set [preventDispose] or [preferSoftDispose] and then [dispose] object manually.
+///
+/// [factoryKey] represents [key] under which is object stored in [ControlFactory] - check [ControlFactory.keyOf] for more info about [key].
+///
+/// Use [ReferenceCounter] mixin to automatically count number of references and prevent early [dispose].
 mixin LazyControl on Disposable {
+  /// [key] under which is object stored in [ControlFactory].
   dynamic _factoryKey;
 
+  /// [key] under which is object stored in [ControlFactory].
+  /// Value of key is set by Factory - check [ControlFactory.keyOf] for more info about [key].
   dynamic get factoryKey => _factoryKey;
 
   @override
@@ -534,4 +635,24 @@ mixin LazyControl on Disposable {
 
     Control.remove(key: factoryKey);
   }
+}
+
+/// Mixin class for [DisposeHandler] - mostly used with [ControlModel].
+/// Counts references by [hashCode]. References are added/removed manually.
+/// TODO: doc
+mixin ReferenceCounter on DisposeHandler {
+  final _references = new List<int>();
+
+  @override
+  bool get preferSoftDispose => _references.isNotEmpty;
+
+  void addReference(Object object) {
+    if (_references.contains(object.hashCode)) {
+      return;
+    }
+
+    _references.add(object.hashCode);
+  }
+
+  void removeReference(Object object) => _references.remove(object.hashCode);
 }

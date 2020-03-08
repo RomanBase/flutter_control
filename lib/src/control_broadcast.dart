@@ -131,7 +131,7 @@ class BroadcastSubscription<T> implements Disposable {
   void _notify(dynamic value) => _onData(value as T);
 
   /// Cancels subscription to global stream in [ControlFactory].
-  /// After cancel there is no way ho to resume this sub.
+  /// After cancel there is no way to resume this sub.
   void cancel() {
     _active = false;
     if (_parent != null) {
