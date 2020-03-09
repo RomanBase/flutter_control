@@ -27,6 +27,7 @@ class ControlBroadcast implements Disposable {
   /// Subscribe to global object stream for given [key] and [Type].
   /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
+  ///
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData, {bool current: true}) {
     assert(onData != null);
@@ -46,6 +47,7 @@ class ControlBroadcast implements Disposable {
 
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
+  ///
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) {
     return subscribe(key, (_) => callback(), current: false);
@@ -60,6 +62,7 @@ class ControlBroadcast implements Disposable {
   /// Sends [value] to global object stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
+  ///
   /// Returns number of notified subs.
   int broadcast(dynamic key, dynamic value, {bool store: false}) {
     int count = 0;
@@ -80,6 +83,7 @@ class ControlBroadcast implements Disposable {
 
   /// Sends event to global event stream.
   /// Subs with same [key] will be notified.
+  ///
   /// Returns number of notified subs.
   int broadcastEvent(dynamic key) => broadcast(key, null);
 

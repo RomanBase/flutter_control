@@ -58,7 +58,7 @@ class Control {
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
   /// [locales] - Map of locale assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
-  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones.
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
   /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
@@ -171,39 +171,68 @@ class Control {
   static int remove<T>({dynamic key, bool dispose: false}) => factory().remove<T>(key: key, dispose: dispose);
 }
 
-/// TODO: doc
+/// Provider of [ControlBroadcast].
+///
+/// Global stream to broadcast data and events.
+/// Stream is driven by keys and object types.
+///
+/// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
 class BroadcastProvider {
-  /// Subscription to global stream.
+  /// Subscribe to global object stream for given [key] and [Type].
+  /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
+  /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
 
-  /// Subscription to global stream.
+  /// Subscribe to global event stream for given [key].
+  /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
 
-  /// Sets data to global stream.
+  /// Sends [value] to global object stream.
   /// Subs with same [key] and [value] type will be notified.
-  /// [store] - stores value for future subs and notifies them during [subscribe] phase.
+  /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
+  ///
+  /// Returns number of notified subs.
   static void broadcast(dynamic key, dynamic value, {bool store: false}) => ControlFactory._instance._broadcast.broadcast(key, value, store: store);
 
-  /// Sets data to global stream.
+  /// Sends event to global event stream.
   /// Subs with same [key] will be notified.
+  ///
+  /// Returns number of notified subs.
   static void broadcastEvent(dynamic key) => ControlFactory._instance._broadcast.broadcastEvent(key);
 }
 
-/// TODO: doc
+/// Main singleton class.
+/// Factory is used for dependency injection and to store objects.
+///
+/// [Control] provides most used methods statically.
+/// Only rarely is necessary to use Factory directly.
+/// Use [Control.factory] to get instance of this Factory.
+///
+/// It's preferred to use more powerful [Control.initControl] to initialize and fill this Factory.
 class ControlFactory with Disposable {
-  /// Instance of AppFactory.
+  /// Instance of Factory.
   static final ControlFactory _instance = ControlFactory._();
 
-  /// Default constructor
+  /// Factory is singleton.
+  /// Just hidden constructor.
   ControlFactory._();
 
-  /// Stored objects for global use.
+  /// Stored objects in Factory.
+  /// [key] is dynamic and is determined by [keyOf].
+  /// [value] is actual object.
   final _items = Map();
 
-  /// Stored Getters for object initialization.
+  /// Stored Initializers for object construction.
+  /// [key] is [Type] - typically interface or dynamic models.
+  /// [value] is [Initializer] for concrete object.
   final _initializers = Map<Type, Initializer>();
 
-  /// Global stream of values and events.
+  /// Instance of default [ControlBroadcast].
+  /// [BroadcastProvider] uses this instance.
   final _broadcast = ControlBroadcast();
 
   /// Custom item initialization.
@@ -212,14 +241,27 @@ class ControlFactory with Disposable {
   /// Factory initialize state.
   bool _initialized = false;
 
-  /// Checks if Factory is initialized. [ControlFactory.initialize] can be called only once.
-  bool get isInitialized => _initialized;
+  /// Checks if Factory is initialized.
+  /// Use [onReady] to listen [initialize] completion.
+  ///
+  /// Returns [true] if Factory is initialized including [async] load (localization, prefs, etc.).
+  bool get isInitialized => _initialized && _completer == null;
 
+  /// Runtime debug value. Default value is [false].
   bool debug = false;
 
+  /// Completer for factory initialization.
+  /// Use [onReady] to listen this completer.
   Completer _completer = Completer();
 
-  /// Initializes default items and initializers in factory.
+  /// Initializes Factory and given objects.
+  ///
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
+  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
+  /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
+  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
+  ///
+  /// Factory can be initialized just once - until [ControlFactory.clear] is executed.
   bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector, Future Function() initAsync}) {
     if (_initialized) {
       return false;
@@ -254,14 +296,13 @@ class ControlFactory with Disposable {
       }
     });
 
-    _initializeAsyncs(initAsync);
-
-    _initialized = true;
+    _initializeAsync(initAsync);
 
     return true;
   }
 
-  Future<void> _initializeAsyncs(Future Function() initAsync) async {
+  /// Handle [async] load from [initialize] and then finishes init [Completer].
+  Future<void> _initializeAsync(Future Function() initAsync) async {
     if (initAsync != null) {
       await initAsync();
     }
@@ -270,8 +311,19 @@ class ControlFactory with Disposable {
     _completer = null;
   }
 
+  /// Completes when Factory is initialized including [async] load (localization, prefs, etc.).
+  ///
+  /// Returns [Future] of init [Completer].
   Future<void> onReady() async => _completer?.future;
 
+  /// Resolve [key] for given args.
+  ///
+  /// Priority:
+  /// [key] - actual raw key.
+  /// [T] - generic type (dynamic is ignored).
+  /// [value] - runtime type of given object.
+  ///
+  /// Returns actual factory [key].
   dynamic keyOf<T>({dynamic key, dynamic value}) {
     if (key == null) {
       key = T != dynamic ? T : value?.runtimeType;
@@ -579,6 +631,9 @@ class ControlFactory with Disposable {
       return false;
     }
 
+    _initialized = false;
+    _completer = Completer();
+
     _items.forEach((key, value) {
       if (value is Disposable) {
         value.dispose();
@@ -635,24 +690,4 @@ mixin LazyControl on Disposable {
 
     Control.remove(key: factoryKey);
   }
-}
-
-/// Mixin class for [DisposeHandler] - mostly used with [ControlModel].
-/// Counts references by [hashCode]. References are added/removed manually.
-/// TODO: doc
-mixin ReferenceCounter on DisposeHandler {
-  final _references = new List<int>();
-
-  @override
-  bool get preferSoftDispose => _references.isNotEmpty;
-
-  void addReference(Object object) {
-    if (_references.contains(object.hashCode)) {
-      return;
-    }
-
-    _references.add(object.hashCode);
-  }
-
-  void removeReference(Object object) => _references.remove(object.hashCode);
 }
