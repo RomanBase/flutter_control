@@ -38,7 +38,7 @@ class ControlBroadcast implements Disposable {
 
     _subscriptions.add(sub);
 
-    if (current && _store.containsKey(key) != null && sub.isValidForBroadcast(sub.key, _store[key])) {
+    if (current && _store.containsKey(key) && sub.isValidForBroadcast(sub.key, _store[key])) {
       sub._notify(_store[key]);
     }
 
