@@ -169,7 +169,7 @@ class ControlRoute {
   ControlRoute viaRoute(RouteBuilder route) => _copyWith(routeBuilder: route);
 
   ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
-      routeBuilder: (builder, settings) => ControlTransitionRoute(
+      routeBuilder: (builder, settings) => ControlRouteTransition(
             builder: builder,
             transition: transition,
             duration: duration,
@@ -192,12 +192,12 @@ class ControlRoute {
   void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
 }
 
-class ControlTransitionRoute extends PageRoute {
+class ControlRouteTransition extends PageRoute {
   final WidgetBuilder builder;
   final RouteTransitionsBuilder transition;
   final Duration duration;
 
-  ControlTransitionRoute({
+  ControlRouteTransition({
     @required this.builder,
     @required this.transition,
     this.duration: const Duration(milliseconds: 300),
