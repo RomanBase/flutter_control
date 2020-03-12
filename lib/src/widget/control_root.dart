@@ -30,19 +30,19 @@ class ControlScope {
 
   ActionControlStream get rootContextSub => _context.sub;
 
-  bool notifyControlState([dynamic state]) {
+  bool notifyControlState([ControlArgs args]) {
     if (rootKey.currentState != null && rootKey.currentState.mounted) {
-      rootKey.currentState.notifyState(state);
+      rootKey.currentState.notifyState(args);
 
       return true;
     }
 
-    printDebug('ControlBase is not in Widget Tree! [ControlScope.baseKey]');
+    printDebug('ControlRoot is not in Widget Tree! [ControlScope.baseKey]');
     printDebug('Trying to notify ControlScope.scopeKey ..');
 
     if (appKey.currentState != null && appKey.currentState.mounted) {
       if (appKey.currentState is StateNotifier) {
-        (appKey.currentState as StateNotifier).notifyState(state);
+        (appKey.currentState as StateNotifier).notifyState(args);
       } else {
         printDebug('Found State is not StateNotifier, Trying to call setState directly..');
         // ignore: invalid_use_of_protected_member
