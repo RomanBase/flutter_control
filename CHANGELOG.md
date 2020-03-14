@@ -1,7 +1,5 @@
-## [0.15.3] - Final Vanilla version
-## [0.12.2] - ControlProvider and Initializable reworked
-## [0.9.4] - RouteControl, NavigatorStack
-
+## [0.95.0] - Pre-release.
+## [0.15.3] - Vanilla.
 ---
 
 **Full Structure**

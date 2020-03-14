@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('Control Holder', () {
     test('args', () {
-      final holder = WidgetControlHolder();
+      final holder = ControlArgHolder();
 
       holder.addArg({String: 'arg1', 'key': 'arg2'});
       holder.addArg({String: 'arg3'});
@@ -52,11 +52,20 @@ void main() {
       final stringControl = widget.getControl<String>();
 
       expect(widget.isInitialized, isTrue);
+      expect(widget.isValid, isTrue);
+      // ignore: invalid_use_of_protected_member
+      expect(widget.holder.isCacheActive, isFalse);
+      // ignore: invalid_use_of_protected_member
+      expect(widget.holder.args.length, 2);
+      // ignore: invalid_use_of_protected_member
+      expect(widget.holder.getArg<String>(), 'empty');
       expect(widget.getArg<String>(), 'empty');
       expect(widget.getArg(key: 'init'), isTrue);
 
       expect(controller, isNotNull);
-      expect(widget.controllers.length, 1);
+
+      // ignore: invalid_use_of_protected_member
+      expect(widget.controls.length, 1);
       expect(controller.isInitialized, isTrue);
       expect(controller.value, isTrue);
 
@@ -71,7 +80,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.controller;
+      final controller = widget.control;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
@@ -89,14 +98,11 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.controllers[0] as TestController;
-
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
 
-      expect(controller, isNotNull);
-      expect(controller.isInitialized, isTrue);
-      expect(controller.value, isTrue);
+      // ignore: invalid_use_of_protected_member
+      expect(widget.controls.length, 0);
     });
   });
 
@@ -112,8 +118,10 @@ void main() {
       final widget = initializer.getWidget(null) as TestWidget;
 
       expect(widget, isNotNull);
+      // ignore: invalid_use_of_protected_member
+      expect(widget.holder.args.length, 3);
       expect(widget.getArg<int>(), 10);
-      expect(widget.getArg(key: ControlKey.initData), 'init');
+      expect(widget.getArg(key: String), 'init');
       expect(widget.getArg(key: 'key'), 'args');
     });
   });
@@ -128,7 +136,7 @@ class TestWidget extends ControlWidget {
   }
 
   @override
-  List<BaseControlModel> initControllers() {
+  List<ControlModel> initControls() {
     return [TestController()];
   }
 }
@@ -151,7 +159,7 @@ class TestSingleWidget extends SingleControlWidget<TestController> {
   }
 }
 
-class TestController extends BaseController {
+class TestController extends BaseControl {
   bool value;
 
   @override

@@ -1,0 +1,12 @@
+{
+  "main_title": "Localización",
+  "settings_title": "Configuraciones",
+  "title": "Ola",
+  "index": {
+    "1": "Primero",
+    "2": "Segundo",
+    "3": "Tercero",
+    "4": "{n}. lugar",
+    "other": "---"
+  }
+}

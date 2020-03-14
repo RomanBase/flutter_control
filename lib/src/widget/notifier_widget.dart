@@ -1,12 +1,29 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
+class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
+  T _value;
+
+  @override
+  T get value => _value;
+
+  set value(T newValue) {
+    _value = newValue;
+    notifyListeners();
+  }
+
+  BaseNotifier([T value]) {
+    _value = value;
+  }
+}
+
 class NotifierBuilder<T> extends StatefulWidget {
-  final Listenable model;
+  final Listenable control;
   final ControlWidgetBuilder<T> builder;
 
   const NotifierBuilder({
     Key key,
-    @required this.model,
+    @required this.control,
     @required this.builder,
   }) : super(key: key);
 
@@ -14,11 +31,19 @@ class NotifierBuilder<T> extends StatefulWidget {
   State<StatefulWidget> createState() => _NotifierBuilderState();
 
   Widget build(BuildContext context) {
-    if (model is ValueNotifier) {
-      return builder(context, (model as ValueNotifier).value);
+    if (control is ValueNotifier) {
+      final value = (control as ValueListenable).value;
+
+      if (value is T) {
+        return builder(context, value);
+      }
     }
 
-    return builder(context, model as T);
+    if (control is T) {
+      return builder(context, control as T);
+    } else {
+      return builder(context, null);
+    }
   }
 }
 
@@ -27,11 +52,19 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
   void initState() {
     super.initState();
 
-    widget.model.addListener(_updateState);
+    widget.control.addListener(_updateState);
   }
 
-  void _updateState() {
-    setState(() {});
+  void _updateState() => setState(() {});
+
+  @override
+  void didUpdateWidget(NotifierBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.control != widget.control) {
+      oldWidget.control.removeListener(_updateState);
+      widget.control.addListener(_updateState);
+    }
   }
 
   @override
@@ -41,6 +74,6 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
   void dispose() {
     super.dispose();
 
-    widget.model.removeListener(_updateState);
+    widget.control.removeListener(_updateState);
   }
 }

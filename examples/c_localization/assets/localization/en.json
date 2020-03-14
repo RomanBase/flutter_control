@@ -1,0 +1,14 @@
+{
+  "main_title": "Localization",
+  "settings_title": "Settings",
+  "title": "Hello",
+  "index": {
+    "1": "First",
+    "2": "Second",
+    "3": "Third",
+    "4": "{n}.th",
+    "other": "---"
+  },
+  "button_en": "EN",
+  "button_es": "ES"
+}

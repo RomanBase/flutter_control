@@ -10,27 +10,71 @@ typedef LocalizationParser = dynamic Function(dynamic data, String locale);
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
   /// Locale key.
-  /// Use iso2 (en) or unicode (en_US) standard.
+  /// It's preferred to use iso2 (en) or unicode (en_US) standard.
   final String locale;
 
   /// Asset path to file with localization data (json).
   /// - /assets/localization/en.json or /assets/localization/en_US.json
   final String assetPath;
 
-  String get iso2Locale => locale.substring(0, 2);
+  /// Returns just first 2 signs of [locale] key.
+  String get iso2Locale => locale.length > 2 ? locale.substring(0, 2) : locale;
 
-  /// Default constructor
+  /// Checks validity of [locale] and [assetPath]
+  bool get isValid => locale != null && assetPath != null;
+
+  /// [locale] - It's preferred to use iso2 (en) or unicode (en_US) standard.
+  /// [assetPath] - Asset path to file with localization data (json).
   LocalizationAsset(
     this.locale,
     this.assetPath,
   );
+
+  /// Parses [locale] string to [Locale].
+  /// en - will be parse to [Locale('en')]
+  /// en_US - will be parsed to [Locale('en', 'US')]
+  Locale toLocale() {
+    if (locale.contains("_")) {
+      final parts = locale.split("_");
+
+      if (parts.length == 1) {
+        return Locale(parts[0]);
+      }
+
+      if (parts.length == 2) {
+        return Locale(parts[0], parts[1]);
+      }
+
+      return Locale(parts[0], locale.substring(parts[0].length));
+    }
+
+    return Locale(locale);
+  }
+
+  /// Builds a map of {locale, path} by providing asset [path] and list of [locales].
+  /// Default asset path is ./assets/localization/{locale}.json
+  static Map<String, String> build({AssetPath path: const AssetPath(), List<String> locales}) {
+    final map = Map<String, String>();
+
+    locales.forEach((locale) => map[locale] = path.localization(locale));
+
+    return map;
+  }
 }
 
 /// Defines result of localization change.
 class LocalizationArgs {
+  /// Requested locale.
   final String locale;
+
+  /// Source of locale to load from. Asset path, runtime, network or any other.
   final String source;
+
+  /// True if requested locale is loaded and set.
+  /// Locale can be active even if not [changed].
   final bool isActive;
+
+  /// True if locale [isActive] and is different then previous locale.
   final bool changed;
 
   LocalizationArgs({
@@ -41,23 +85,29 @@ class LocalizationArgs {
   });
 }
 
-/// Simple [Map] based localization.
-/// - /assets/localization/en.json
+/// Json/Map based localization.
 class BaseLocalization with PrefsProvider {
-  /// key to shared preferences where preferred locale is stored.
-  static const String preference_key = 'pref_locale';
+  /// Key of shared preference where preferred locale is stored.
+  static const String preference_key = 'control_locale';
 
-  /// default app locale.
+  /// Default locale.
+  /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   final String defaultLocale;
 
   /// List of available localization assets.
-  /// LocalizationAssets defines language and asset path to file with localization data.
+  /// [LocalizationAsset] defines language and asset path to file with localization data.
   final List<LocalizationAsset> assets;
 
-  /// returns currently loaded locale.
+  /// The system-reported default locale of the device.
+  Locale get deviceLocale => WidgetsBinding.instance.window.locale;
+
+  /// The full system-reported supported locales of the device.
+  List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
+
+  /// Returns currently loaded locale.
   String get locale => _locale;
 
-  /// Current locale.
+  /// Current locale key.
   String _locale;
 
   /// Current localization data.
@@ -67,47 +117,153 @@ class BaseLocalization with PrefsProvider {
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
   bool debug = true;
 
-  /// Checks if any data are stored in localization.
+  /// Loading localization data is async, so check this to prevent concurrent loading.
+  bool loading = false;
+
+  /// Is [true] if any data are stored in localization map.
   bool get isActive => _data.length > 0;
 
+  /// Is [true] if any [LocalizationAsset] is valid.
+  bool get hasValidAsset => assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
+
+  /// Is [true] if localization can load default locale data.
+  bool get isDirty => !loading && !isActive && hasValidAsset;
+
   /// Custom func for [extractLocalization].
+  /// Default extractor is [Map] based: {'locale': 'value'}.
   LocalizationExtractor _mapExtractor;
 
-  /// Default constructor
+  /// Custom param decorator.
+  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
+  ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
+
+  /// Json/Map based localization.
+  ///
+  /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
+  /// [assets] - defines locales and asset path to files with localization data.
   BaseLocalization(this.defaultLocale, this.assets);
 
-  LocalizationArgs asArgs() => LocalizationArgs(
-        locale: locale,
-        isActive: isActive,
-        changed: false,
-        source: 'localization',
-      );
+  /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
+  /// Every localization change is broadcasted with result of data load.
+  ///
+  /// [callback] to listen results of locale changes.
+  static BroadcastSubscription<LocalizationArgs> subscribeChanges(ValueCallback<LocalizationArgs> callback) {
+    return BroadcastProvider.subscribe<LocalizationArgs>(BaseLocalization, callback);
+  }
 
-  /// Returns current Locale of device.
-  Locale deviceLocale(BuildContext context) {
-    return Localizations.localeOf(context, nullOk: true);
+  /// Should be called first.
+  /// Loads initial localization data - [getSystemLocale] is used to get preferred locale.
+  ///
+  /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
+  /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
+  Future<LocalizationArgs> init({bool loadDefaultLocale: true, bool handleSystemLocale: true}) async {
+    loading = true;
+
+    await prefs.mount();
+
+    LocalizationArgs args;
+
+    if (loadDefaultLocale) {
+      args = await loadDefaultLocalization();
+    }
+
+    if (!isSystemLocaleActive()) {
+      args = await changeToSystemLocale();
+    }
+
+    loading = false;
+
+    if (handleSystemLocale) {
+      WidgetsBinding.instance.window.onLocaleChanged = () {
+        if (!isSystemLocaleActive()) {
+          changeToSystemLocale();
+        }
+      };
+    }
+
+    return args;
+  }
+
+  /// Looks for best suited asset locale to device supported locale.
+  ///
+  /// Returns system locale or null if no locale found.
+  String getAvailableAssetLocaleForDevice() {
+    final locales = deviceLocales;
+
+    if (locales != null && locales.isNotEmpty) {
+      for (Locale loc in locales) {
+        if (isLocalizationAvailable(loc.toString())) {
+          return loc.toString();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Either device locale or locale stored in preferences.
+  ///
+  /// Returns preferred locale of this app instance.
+  String getSystemLocale() {
+    return prefs.get(preference_key) ?? getAvailableAssetLocaleForDevice() ?? deviceLocale?.toString();
+  }
+
+  /// Checks if preferred locale is loaded.
+  ///
+  /// [nullOk] Returns [true] if no [locale] is set.
+  bool isSystemLocaleActive({bool nullOk: true}) {
+    if (locale == null && nullOk) {
+      return true;
+    }
+
+    final pref = getSystemLocale();
+
+    return isActive && isLocaleEqual(pref, locale);
+  }
+
+  /// Removes preferred locale stored in shared preferences.
+  ///
+  /// [loadSystemLocale] - to load new system preferred locale.
+  /// Returns result of localization change [LocalizationArgs] or just result of reset prefs [bool].
+  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  Future<dynamic> resetPreferredLocale({bool loadSystemLocale: false}) async {
+    prefs.set(preference_key, null);
+
+    if (loadSystemLocale) {
+      return changeToSystemLocale();
+    }
+
+    return true;
   }
 
   /// Changes localization to [defaultLocale].
-  Future<LocalizationArgs> loadDefaultLocalization() => changeLocale(defaultLocale);
-
-  /// Changes localization to system language
-  /// Set [preferred] - true: changes localization to in app preferred language (if previously set).
-  Future<LocalizationArgs> changeToSystemLocale(BuildContext context, {bool preferred: true}) async {
-    final pref = preferred ? await prefs.get(preference_key) : null;
-
-    String locale;
-
-    if (pref != null && isLocalizationAvailable(pref)) {
-      locale = pref;
-    } else {
-      locale = deviceLocale(context)?.toString();
+  ///
+  /// [resetPreferred] - to reset preferred locale stored in shared preferences.
+  /// Returns result of localization change [LocalizationArgs].
+  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  Future<LocalizationArgs> loadDefaultLocalization({bool resetPreferred: false}) {
+    if (resetPreferred) {
+      resetPreferredLocale();
     }
+
+    return changeLocale(defaultLocale, preferred: false);
+  }
+
+  /// Changes localization to system preferred language.
+  ///
+  /// [getSystemLocale] is used to get preferred locale.
+  /// Returns result of localization change [LocalizationArgs].
+  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  Future<LocalizationArgs> changeToSystemLocale() async {
+    loading = true;
+
+    final locale = getSystemLocale();
 
     if (locale != null) {
-      return await changeLocale(locale);
+      return await changeLocale(locale, preferred: false);
     }
 
+    loading = false;
     return LocalizationArgs(
       locale: locale,
       isActive: false,
@@ -116,56 +272,17 @@ class BaseLocalization with PrefsProvider {
     );
   }
 
-  /// Returns true if localization file is available and is possible to load it.
-  bool isLocalizationAvailable(String locale) {
-    for (final asset in assets) {
-      if (asset.locale == locale || asset.iso2Locale == locale.substring(0, 2)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /// Returns asset path for given locale or null if localization asset is not available.
-  String getAssetPath(String locale) {
-    for (final asset in assets) {
-      if (asset.locale == locale) {
-        return asset.assetPath;
-      }
-    }
-
-    for (final asset in assets) {
-      if (asset.iso2Locale == locale.substring(0, 2)) {
-        return asset.assetPath;
-      }
-    }
-
-    return null;
-  }
-
-  /// Changes manually localization data, but only for current app session.
-  Future<LocalizationArgs> changeRawLocale(Map<String, dynamic> data) async {
-    data.forEach((key, value) => _data[key] = value);
-
-    final args = LocalizationArgs(
-      locale: locale,
-      isActive: true,
-      changed: true,
-      source: 'runtime',
-    );
-
-    BroadcastProvider.broadcast(ControlKey.locale, args);
-
-    return args;
-  }
-
-  /// Changes localization data inside this object.
-  /// If localization isn't available, default localization is then used.
-  /// It can take a while because localization is loaded from json file.
+  /// Changes localization data inside this object for given [locale].
+  /// Set [preferred] to store locale as system preferred into shared preferences.
+  ///
+  /// Returns result of localization change [LocalizationArgs].
+  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
   Future<LocalizationArgs> changeLocale(String locale, {bool preferred: true}) async {
+    loading = true;
+
     if (locale == null || !isLocalizationAvailable(locale)) {
       print('localization not available: $locale');
+      loading = false;
       return LocalizationArgs(
         locale: locale,
         isActive: false,
@@ -174,11 +291,8 @@ class BaseLocalization with PrefsProvider {
       );
     }
 
-    if (preferred) {
-      prefs.set(preference_key, locale);
-    }
-
-    if (_locale == locale) {
+    if (isLocaleEqual(this.locale, locale)) {
+      loading = false;
       return LocalizationArgs(
         locale: locale,
         isActive: true,
@@ -187,12 +301,108 @@ class BaseLocalization with PrefsProvider {
       );
     }
 
-    _locale = locale;
-    return await _initLocalization(locale, getAssetPath(locale));
+    final args = await _loadAssetLocalization(locale, getAssetPath(locale));
+
+    loading = false;
+
+    if (args.isActive) {
+      _locale = locale;
+      if (preferred) {
+        prefs.set(preference_key, locale);
+      }
+
+      BroadcastProvider.broadcast(BaseLocalization, args);
+    }
+
+    return args;
   }
 
-  /// Loads localization from asset file for given locale.
-  Future<LocalizationArgs> _initLocalization(String locale, String path) async {
+  /// Changes manually localization data, but only for current app session.
+  ///
+  /// Returns result of localization change [LocalizationArgs].
+  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data, {String locale}) async {
+    data.forEach((key, value) => _data[key] = value);
+
+    if (locale != null) {
+      _locale = locale;
+    }
+
+    final args = LocalizationArgs(
+      locale: _locale,
+      isActive: true,
+      changed: true,
+      source: 'runtime',
+    );
+
+    BroadcastProvider.broadcast(BaseLocalization, args);
+
+    return args;
+  }
+
+  /// Returns [true] if localization file is available and is possible to load it.
+  /// Do not check physical existence of file !
+  bool isLocalizationAvailable(String locale) => getAssetPath(locale) != null;
+
+  /// Checks if [a] and [b] is same or if this values points to same asset path.
+  /// Comparing 'en' and 'en_US' can be true because they can point to same asset file.
+  bool isLocaleEqual(String a, String b) {
+    if (a == null || b == null) {
+      return false;
+    }
+
+    if (a == b) {
+      return true;
+    }
+
+    return getAssetPath(a) == getAssetPath(b);
+  }
+
+  /// Tries to find asset for given [locale].
+  /// Locale of 'en' and 'en_US' can point to same asset file.
+  ///
+  /// Returns [LocalizationAsset] for given [locale] or null if localization asset is not available.
+  LocalizationAsset getAsset(String locale) {
+    if (locale == null) {
+      return null;
+    }
+
+    for (final asset in assets) {
+      if (asset.locale == locale) {
+        return asset;
+      }
+    }
+
+    if (locale.length < 2) {
+      printDebug('Locale should have minimum of 2 chars - iso2 standard');
+      return null;
+    }
+
+    final iso2Locale = locale.substring(0, 2);
+
+    for (final asset in assets) {
+      if (asset.iso2Locale == iso2Locale) {
+        return asset;
+      }
+    }
+
+    return null;
+  }
+
+  /// Tries to find asset path for given [locale].
+  /// Locale of 'en' and 'en_US' can point to same asset file.
+  ///
+  /// Returns asset path for given [locale] or null if localization asset is not available.
+  String getAssetPath(String locale) => getAsset(locale)?.assetPath;
+
+  /// Tries to find [Locale] is assets for given [locale].
+  /// Locale of 'en' and 'en_US' can point to same asset file, so resulted [Locale] for 'en_US' can be [Locale('en')] if only 'en.json' file exists.
+  ///
+  /// Returns [Locale] for given [locale] or null if localization asset is not available.
+  Locale getLocale(String locale) => getAsset(locale)?.toLocale();
+
+  /// Loads localization from asset file for given [locale] and [path].
+  Future<LocalizationArgs> _loadAssetLocalization(String locale, String path) async {
     if (path == null) {
       return LocalizationArgs(
         locale: locale,
@@ -202,24 +412,26 @@ class BaseLocalization with PrefsProvider {
       );
     }
 
-    final json = await rootBundle.loadString(path, cache: false);
-    final data = jsonDecode(json);
+    try {
+      final json = await rootBundle.loadString(path, cache: false);
+      final data = jsonDecode(json);
 
-    if (data != null) {
-      data.forEach((key, value) => _data[key] = value);
+      if (data != null) {
+        data.forEach((key, value) => _data[key] = value);
 
-      print('localization changed to: $path');
+        print('localization changed to: $path');
 
-      final args = LocalizationArgs(
-        locale: locale,
-        isActive: true,
-        changed: true,
-        source: 'asset',
-      );
+        final args = LocalizationArgs(
+          locale: locale,
+          isActive: true,
+          changed: true,
+          source: 'asset',
+        );
 
-      BroadcastProvider.broadcast(ControlKey.locale, args);
-
-      return args;
+        return args;
+      }
+    } catch (ex) {
+      printDebug(ex.toString());
     }
 
     print('localization failed to change: $path');
@@ -233,10 +445,38 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Tries to localize text by given [key].
+  ///
   /// Enable/Disable debug mode to show/hide missing localizations.
   String localize(String key) {
     if (_data.containsKey(key)) {
       return _data[key];
+    }
+
+    return debug ? '${key}_$_locale' : '';
+  }
+
+  /// Tries to localize text by given [key].
+  /// Then format string with given [params].
+  ///
+  /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
+  /// Set custom [ParamDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
+  ///
+  /// Default decorator is set to [ParamDecorator.curl]
+  ///
+  /// 'Weather in {city} is {temp}°{symbol}'
+  /// Then [params] are:
+  /// {
+  /// {'city': 'California'},
+  /// {'temp': '25.5'},
+  /// {'symbol': 'C'},
+  /// }
+  ///
+  /// Returns formatted string.
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  String localizeFormat(String key, Map<String, String> params) {
+    if (_data.containsKey(key)) {
+      return Parse.format(_data[key], params, _paramDecorator);
     }
 
     return debug ? '${key}_$_locale' : '';
@@ -258,7 +498,7 @@ class BaseLocalization with PrefsProvider {
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizePlural(String key, int plural) {
+  String localizePlural(String key, int plural, [Map<String, String> params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final data = _data[key];
@@ -267,14 +507,25 @@ class BaseLocalization with PrefsProvider {
         data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
         nums.sort();
 
+        String output;
+
         for (final num in nums.reversed) {
           if (plural >= num) {
-            return data[num.toString()];
+            output = data[num.toString()];
+            break;
           }
         }
 
-        if (data.contains['other']) {
-          return data['other'];
+        if (output == null && data.containsKey('other')) {
+          output = data['other'];
+        }
+
+        if (output != null) {
+          if (params != null) {
+            output = Parse.format(output, params, _paramDecorator);
+          }
+
+          return output;
         }
       }
 
@@ -358,10 +609,10 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Tries to localize text by given locale.
-  /// [BaseLocalization.setCustomExtractor] to provide custom parsing.
+  /// Set [setCustomExtractor] to provide custom parsing.
   ///
   /// Default extractor works only with locale map {'locale' : 'value'}
-  /// [iso2Locale] - default is current locale.
+  /// [locale] - default is current locale.
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
@@ -383,29 +634,99 @@ class BaseLocalization with PrefsProvider {
       }
     }
 
-    return debug ? 'empty_{$locale}_$defaultLocale' : '';
+    return debug ? 'empty_{$locale} at ${data?.toString()}' : '';
   }
 
-  ///This extractor will be used in [BaseLocalization.extractLocalization] function.
+  /// Sets custom extractor for [extractLocalization].
+  ///
+  /// Default extractor is [Map] based: {'locale': 'value'}.
   void setCustomExtractor(LocalizationExtractor extractor) => _mapExtractor = extractor;
 
-  /// Updates value in current set.
+  /// Sets custom decorator for string formatting
+  ///
+  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
+  void setCustomParamDecorator(ParamDecoratorFormat decorator) => _paramDecorator = decorator;
+
+  /// Updates value in current localization set.
   /// This update is only runtime and isn't stored to localization file.
   void update(String key, dynamic value) => _data[key] = value;
+
+  /// Delegate of [BaseLocalization] to use this localization as [LocalizationsDelegate].
+  ///
+  /// Use [LocalizationProvider.of(context)] to find delegate in current widget scope.
+  BaseLocalizationDelegate get delegate => BaseLocalizationDelegate(this);
 }
 
-class LocalizationProvider {
-  ///Instance of [BaseLocalization]
+/// Delegate of [BaseLocalization] to use with [LocalizationsDelegate].
+///
+/// Use [LocalizationProvider.of(context)] to find delegate in the widget tree that corresponds to the given [context].
+class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
+  /// Localization to work with.
+  final BaseLocalization localization;
+
+  /// Creates delegate of [BaseLocalization].
+  ///
+  /// Typically this constructor is not called directly, but instance of delegate is created with [BaseLocalization.delegate].
+  BaseLocalizationDelegate(this.localization);
+
+  /// Active locale of [BaseLocalization].
+  ///
+  /// Returns [BaseLocalization.getLocale].
+  Locale get locale => localization.getLocale(localization.locale);
+
+  @override
+  bool isSupported(Locale locale) => localization.isLocalizationAvailable(locale.toString());
+
+  @override
+  Future<BaseLocalization> load(Locale locale) async {
+    await localization.changeLocale(locale.toString());
+
+    return localization;
+  }
+
+  @override
+  bool shouldReload(LocalizationsDelegate old) => false;
+
+  List<Locale> supportedLocales() {
+    final list = List<Locale>();
+
+    localization.assets.forEach((asset) {
+      list.add(asset.toLocale());
+    });
+
+    return list;
+  }
+}
+
+/// Mixin class to provide [BaseLocalization] - localize functions.
+///
+/// Access to [BaseLocalizationDelegate] is handled via static functions.
+mixin LocalizationProvider {
+  /// Shortcut for delegate of default [BaseLocalization].
+  static BaseLocalizationDelegate get delegate => Control.localization().delegate;
+
+  /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
+  ///
+  /// Note: usable only with [LocalizationsDelegate].
+  static BaseLocalization of(BuildContext context) {
+    return Localizations.of<BaseLocalization>(context, BaseLocalization);
+  }
+
+  ///Instance of default [BaseLocalization]
   @protected
-  BaseLocalization get localization => ControlProvider.get<BaseLocalization>();
+  BaseLocalization get localization => Control.localization();
 
   ///[BaseLocalization.localize]
   @protected
   String localize(String key) => localization.localize(key);
 
+  ///[BaseLocalization.localizeFormat]
+  @protected
+  String localizeFormat(String key, Map<String, String> params) => localization.localizeFormat(key, params);
+
   ///[BaseLocalization.localizePlural]
   @protected
-  String localizePlural(String key, int plural) => localization.localizePlural(key, plural);
+  String localizePlural(String key, int plural, [Map<String, String> params]) => localization.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeGender]
   @protected

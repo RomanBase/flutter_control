@@ -6,15 +6,19 @@ abstract class WidgetInitializer {
   /// Current Widget.
   Widget _widget;
 
+  Widget get value => _widget;
+
   /// Init data.
-  /// Send to Widget via [args] with [ControlKey.initData] key.
+  /// Send to Widget via [_args] with [ControlKey.initData] key.
   Object data;
 
   bool get isInitialized => _widget != null;
 
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder) => _WidgetInitBuilder(builder);
+  factory WidgetInitializer.of(WidgetBuilder builder, [Object data]) => _WidgetInitBuilder(builder)..data = data;
+
+  static WidgetInitializer control<T>(ControlWidgetBuilder<T> builder, [Object data]) => _WidgetInitControlBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -23,27 +27,23 @@ abstract class WidgetInitializer {
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) => forceInit ? (_widget = initWidget(context, args: args)) : (_widget ?? (_widget = initWidget(context, args: args)));
+  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) {
+    if (forceInit || _widget == null || !isValid()) {
+      _widget = initWidget(context, args: args);
+    }
 
-  /// Returns context of initialized [ControlWidget]
-  /// nullable
-  BuildContext getContext() {
+    return _widget;
+  }
+
+  bool isValid() {
     if (_widget is ControlWidget) {
-      return (_widget as ControlWidget).context;
+      return (_widget as ControlWidget).isValid;
     }
 
-    return null;
+    return true;
   }
 
-  Map _buildArgs(dynamic args) {
-    if (args != Map) {
-      args = Parse.toMap(args);
-    }
-
-    args[ControlKey.initData] = data;
-
-    return args;
-  }
+  Map _buildArgs(dynamic args) => Parse.toArgs(args, data: data);
 
   /// Wraps initializer into [WidgetBuilder].
   WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
@@ -71,26 +71,21 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 }
 
-class WidgetInit extends StatefulWidget {
-  final Widget child;
-  final Map args;
+class _WidgetInitControlBuilder<T> extends WidgetInitializer {
+  final ControlWidgetBuilder<T> builder;
 
-  const WidgetInit({Key key, this.child, this.args}) : super(key: key);
+  _WidgetInitControlBuilder(this.builder);
 
   @override
-  _WidgetInitState createState() => _WidgetInitState();
-}
+  Widget initWidget(BuildContext context, {args}) {
+    final initArgs = _buildArgs(args);
 
-class _WidgetInitState extends State<WidgetInit> {
-  @override
-  void initState() {
-    super.initState();
+    final widget = builder(context, Parse.getArg<T>(initArgs));
 
-    if (widget.child is Initializable) {
-      (widget.child as Initializable).init(widget.args);
+    if (widget is Initializable) {
+      (widget as Initializable).init(initArgs);
     }
-  }
 
-  @override
-  Widget build(BuildContext context) => widget.child;
+    return widget;
+  }
 }

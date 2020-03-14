@@ -1,6 +1,7 @@
+
 **Release version (1.0) will be available soon, currently in pre-release branche (https://github.com/RomanBase/flutter_control/tree/pre-release)**
 
-Current version (0.15.3) will be moved to Vanilla branche after 1.0 release.
+Current beta version will have one last update (0.17.3).
 
 ---
 
@@ -21,7 +22,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 **Flutter Control Core**
 
 - **[ControlBase]** Wraps App and initializes Control, Factory, Localization, Injector and Broadcaster. It's just shortcut to start with Flutter Control.
-- **[ControlFactory]** Initializes and can store Controllers, Models and other objects. Dependency Injection is provided during object initialization and also on demand.\
+- **[ControlFactory]** Initializes and can store Controls, Models and other objects. Dependency Injection is provided during object initialization and also on demand.\
   Factory has own Storage. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use type as a key..\
   Comes with **[ControlProvider]** a class to easily access core functions from any part of App. Provider has two parts - Static and Widget.
   With static part is possible to 'get', 'set', 'init' and 'inject' objects. Widget part is StatelessWidget that provides object from Factory.\
@@ -56,17 +57,17 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   
 ---  
 
-- **[BaseControlModel]** is base class to maintain Business Logic parts of App.\
-  **[BaseController]** is extended version of [BaseControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
-  **[BaseModel]** is extended but lightweight version of [BaseControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
-  This Controllers comes with few **[mixin]** classes to extend base functionality:
-   - **[RouteController]** to provide navigation outside of Widget.
-   - **[StateController]** to notify state of whole Widget.
+- **[ControlModel]** is base class to maintain Business Logic parts of App.\
+  **[BaseControl]** is extended version of [ControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
+  **[BaseModel]** is extended but lightweight version of [ControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
+  This Controls comes with few **[mixin]** classes to extend base functionality:
+   - **[RouteControl]** to provide navigation outside of Widget.
+   - **[StateControl]** to notify state of whole Widget.
 
-- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controllers. So there is no need to create custom [State].\
-  If used correctly, this Widget will Init all containing Controllers and pass arguments to these Controllers.\
+- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controls. So there is no need to create custom [State].\
+  If used correctly, this Widget will Init all containing Controls and pass arguments to these Controllers.\
   This Widget comes with few **[mixin]** classes:
-   - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.
+   - **[RoutingWidget]** to abstract navigation and easily pass arguments and init other Pages.
    - **[TickerControl]** and **[SingleTickerControl]** to create [State] with [Ticker] and provide access to **[vsync]**.
    
   **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].\

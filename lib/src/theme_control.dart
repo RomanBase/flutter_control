@@ -31,7 +31,7 @@ class AssetPath {
 }
 
 /// Wraps [ThemeData] and [Device] to provide more settings and custom properties that are more app design specific.
-/// [ControlTheme] is build during [ControlBase] initialization.
+/// [ControlTheme] is build during [ControlRoot] initialization.
 ///
 class ControlTheme {
   static const root = 0;
@@ -56,6 +56,8 @@ class ControlTheme {
   final iconSize = 24.0;
 
   final iconSizeLarge = 32.0;
+
+  final iconSizeSmall = 18.0;
 
   final iconBounds = 48.0;
 
@@ -88,18 +90,6 @@ class ControlTheme {
   ////////////////////////////////////////////////////////////////////////////////
 
   final fontName = 'GoogleSans';
-
-  final fontSize = 14.0;
-
-  final fontSizeSmall = 12.0;
-
-  final fontSizeMid = 18.0;
-
-  final fontSizeLarge = 24.0;
-
-  final fontSizeExtra = 28.0;
-
-  final fontSizeSuper = 36.0;
 
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -140,14 +130,14 @@ class ControlTheme {
   ThemeData _data;
   AssetPath _asset;
 
+  @protected
+  BuildContext get context => _context;
+
   Device get device => _device ?? (_device = Device.of(_context));
 
   ThemeData get data => _data ?? (_data = Theme.of(_context));
 
   AssetPath get asset => _asset ?? (_asset = AssetPath());
-
-  @protected
-  BuildContext get context => _context;
 
   @protected
   set asset(value) => _asset = value;
@@ -163,7 +153,9 @@ class ControlTheme {
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
-    _context = context ?? ControlProvider.get<AppControl>().rootContext;
+    _context = context ?? Control.root()?.rootContext;
+
+    assert(_context != null);
   }
 
   @override
@@ -176,18 +168,18 @@ class ControlTheme {
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>([BuildContext context]) => ControlProvider.init<ControlTheme>(context);
+  static T of<T extends ControlTheme>([BuildContext context]) => Control.init<ControlTheme>(context);
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
   ///
-  /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
+  /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
   final T theme = of<T>();
 
   /// Instance of [AssetPath].
   ///
-  /// Custom [AssetPath] can be set to [ControlTheme] - [theme].
+  /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
   AssetPath get asset => theme.asset;
 
@@ -216,12 +208,12 @@ mixin ThemeProvider<T extends ControlTheme> {
   /// [ControlTheme.scope] initializes with nearest [ThemeData].
   /// [ControlTheme.root] initializes with root [ThemeData] - default.
   ///
-  /// Custom [ControlTheme] builder can be set during [ControlBase] initialization.
+  /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   int get themeScope => ControlTheme.scope;
 
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   void invalidateTheme([BuildContext context]) {
-    theme.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
+    theme?.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
   }
 }

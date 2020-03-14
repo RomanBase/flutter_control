@@ -94,10 +94,12 @@ void main() {
       final parse7 = Parse.toMap<String>('value');
       final parse8 = Parse.toMap<String>(0, converter: (value) => value.toString());
 
+      final parse9 = Parse.toMap<String>(list, hardCast: true);
+
       expect(parse1.length, 10);
       expect(parse2.length, 10);
       expect(parse3.length, 10);
-      expect(parse3['0'], '0');
+      expect(parse3[0], '0');
 
       expect(parse4.length, 10);
       expect(parse5.length, 10);
@@ -106,8 +108,10 @@ void main() {
 
       expect(parse7.length, 1);
       expect(parse8.length, 1);
-      expect(parse7['0'], 'value');
-      expect(parse8['0'], '0');
+      expect(parse7[0], 'value');
+      expect(parse8[0], '0');
+
+      expect(parse9.length, 10);
     });
 
     test('map entry', () {
@@ -119,9 +123,9 @@ void main() {
       expect(parse2.length, 10);
       expect(parse3.length, 1);
 
-      expect(parse1['1'], 2);
+      expect(parse1[1], 2);
       expect(parse2['1'], 2);
-      expect(parse3['0'], '0');
+      expect(parse3[0], '0');
     });
   });
 

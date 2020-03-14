@@ -20,7 +20,7 @@ class FocusController extends FocusNode {
 /// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
 //todo: extend TextEditingController ?
-class InputControl extends BaseControlModel with StateController {
+class InputControl extends ControlModel with StateControl {
   @override
   bool get preferSoftDispose => true;
 
@@ -46,6 +46,8 @@ class InputControl extends BaseControlModel with StateController {
   /// Non null
   String get value => _text ?? '';
 
+  set value(String value) => setText(value);
+
   /// Validity of text - regex based.
   bool _isValid = true;
 
@@ -58,6 +60,8 @@ class InputControl extends BaseControlModel with StateController {
 
   /// returns true if Field is focused.
   bool get hasFocus => _focusController?.hasFocus ?? false;
+
+  bool get isObscured => _obscure;
 
   /// Next InputController.
   InputControl _next;
@@ -76,6 +80,7 @@ class InputControl extends BaseControlModel with StateController {
     _text = text;
   }
 
+  //TODO: WTF ?
   /// Initializes [TextEditingController] and [FocusController].
   /// Can be called multiple times to prevent early disposed controllers.
   void _initControllers() {
@@ -240,6 +245,7 @@ class InputControl extends BaseControlModel with StateController {
   /// Clears text and notifies [TextField]
   void clear() => setText(null);
 
+  //TODO: WTF 2 ?
   @override
   void notifyState([state]) {
     if (value != null) {
@@ -272,7 +278,7 @@ class InputControl extends BaseControlModel with StateController {
 class InputField extends ControlWidget with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
-  final InputControl controller;
+  final InputControl control;
 
   /// Text that suggests what sort of input the field accepts.
   ///
@@ -405,7 +411,7 @@ class InputField extends ControlWidget with ThemeProvider {
 
   InputField({
     Key key,
-    @required this.controller,
+    @required this.control,
     this.label,
     this.hint,
     this.decoration,
@@ -443,18 +449,18 @@ class InputField extends ControlWidget with ThemeProvider {
   }) : super(key: key);
 
   @override
-  List<BaseControlModel> initControllers() {
-    controller._obscure = obscureText;
+  List<ControlModel> initControls() {
+    control._obscure = obscureText;
 
-    return [controller];
+    return [control];
   }
 
   @override
   void notifyWidget(ControlState state) {
     super.notifyWidget(state);
 
-    controller._initControllers();
-    controller._focusController.setContext(context);
+    control._initControllers();
+    control._focusController.setContext(context);
   }
 
   @override
@@ -462,10 +468,10 @@ class InputField extends ControlWidget with ThemeProvider {
     final cursor = cursorColor ?? theme.data.cursorColor;
 
     return TextField(
-      onChanged: controller._changeText,
-      onSubmitted: (text) => controller.submit(),
-      controller: controller._editController,
-      focusNode: controller._focusController,
+      onChanged: control._changeText,
+      onSubmitted: (text) => control.submit(),
+      controller: control._editController,
+      focusNode: control._focusController,
       decoration: (decoration ??
               InputDecoration(
                 border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
@@ -478,7 +484,7 @@ class InputField extends ControlWidget with ThemeProvider {
           .copyWith(
         labelText: label,
         hintText: hint,
-        errorText: (!controller.isValid) ? controller._error : null,
+        errorText: (!control.isValid) ? control._error : null,
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,
@@ -490,7 +496,7 @@ class InputField extends ControlWidget with ThemeProvider {
       showCursor: showCursor,
       readOnly: readOnly,
       autofocus: autofocus,
-      obscureText: controller._obscure,
+      obscureText: control._obscure,
       autocorrect: autocorrect,
       maxLines: maxLines,
       minLines: minLines,
