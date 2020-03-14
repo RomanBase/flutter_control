@@ -33,7 +33,7 @@ final _menu = [
   ),
 ];
 
-class TabControl extends ControlModel with RouteControlProvider {
+class TabControl extends ControlModel with RouteControlProvider, TickerComponent {
   TabController tab;
 
   @override
