@@ -13,7 +13,9 @@ Library merges multiple functionality under one hood. This approach helps to tid
 
 ---
 
-Simplified structure of **core** classes in Flutter Control. Full diagram is at bottom of this page..
+Simplified structure of **core** classes in Flutter Control. Full diagram is at bottom of this page.\
+**[Control]** with **[ControlFactory]** is main gate and bounds everything together.\
+**[ControlWidget]** holds UI and **[ControlModel]** solves Business Logic.
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure_simple.png)
 
 ---
@@ -54,10 +56,6 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
    - **[StateControl]** to control state of whole Widget.
    - **[TickerComponent]** passes **[Ticker]** to Model and enables to control animations outside of Widget.
 
-```dart
-  //TODO: sample
-```
-
 ---
 
 - **[ActionControl]** is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
@@ -73,48 +71,16 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   Value is set directly, but property can bu used privately and to public provide just sink - **[FieldSink]** or **[FieldSinkConverter]** and stream - **[FieldControlSub]** interface to provide subscription to public.\
   Upon dismiss every **[FieldSubscription]** is closed.
 
+---
+
 ```dart
     //TODO: sample
 ```
-
----
+  Check [Counter Example](https://github.com/RomanBase/flutter_control/tree/master/examples/a_counter) and [TODO List Example](https://github.com/RomanBase/flutter_control/tree/master/examples/b_todo_list) at Git repository.
 
 Structure below shows how data and events flows between UI and Model. **[ControlWidget]** can use multiple **[ControlModel]s** - for example one for Business Logic and one for UI/animation part.\
 With this approach is really easy to reuse UI/animation logic on multiple widgets and mainly separate Business Logic of Models from UI.
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/architecture_flow.png)
-
----
-
-There is more ways how to pass and init Controllers in **[ControlWidget]** and listen about [State] lifecycle.
-
-1. Constructor: we can pass Controls as arguments with other **[args]**.
-```dart
-  //TODO: sample
-```
-
-2. Lazy load: Construct them manually or from Factory by overriding **[initControllers]**.
-```dart
-  //TODO: sample
-```
-
-3. Pass them via **[Initializable]** interface. This method is same as Constructor **[args]**. Both methods can be combined with different arguments.\
-  **[init]** is also called by **[RouteHandler]**, when passing arguments from one page to another.
-```dart
-  //TODO: sample
-```
-
-4. On demand during build statically or via Provider Widget, and new **[args]** can be pushed to objects:
-```dart
-  //TODO: sample
-```
-
-Arguments are then passed into Controllers as a **[Map]**. So you need to know **'key'** or **'Type'** to retrieve them. Static class **[Parse]** and their extensions can help..
-  
-```dart
-  //TODO: sample
-```
-
-**[BaseControl]** by default prevents **'multi init'**. But this behaviour can be of course overridden.
 
 ---
 
@@ -128,6 +94,7 @@ Arguments are then passed into Controllers as a **[Map]**. So you need to know *
 ```dart
   //TODO: sample
 ```
+  Check [Localization Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization) and [Localization Delegate Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization_delegate) at Git repository.
   
 - **[ControlBroadcast]** Event stream across whole App. Default broadcaster is part of **[ControlFactory]** and is stored there.\
   Every subscription is bound to it's **[key]** and **[Type]** so notification arrives only for expected data.\
@@ -142,11 +109,8 @@ Arguments are then passed into Controllers as a **[Map]**. So you need to know *
   **Theme** is cached on their first use, so **'Theme.of'** is called just once per Widget.\
   Control Theme adds some parameters and getters on top of standard Theme.\
   Easy access via **[ThemeProvider]** a mixin class that initializes **[ControlTheme]**.\
-  Custom **[ControlTheme]** class builder can be used in [ControlBase] constructor to modify default params and provide more of them.
-
-```dart
-  //TODO: sample
-```
+  Custom **[ControlTheme]** class builder can be used in [ControlRoot] constructor to modify default params and provide more of them.\
+  **!!! [ControlTheme]** is not **const** so it can have impact to performance, but no issues has been reported yet.. 
 
 ---
 
@@ -156,10 +120,11 @@ Arguments are then passed into Controllers as a **[Map]**. So you need to know *
 ```dart
   //TODO: sample
 ```
+  Check [Navigation Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation) and [Navigation Stack Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation_stack) at Git repository.
 
 ---
 
-**Other classes**
+**Other util classes**
 
 - **[InputField]** Wrapper of [TextField] to provide more functionality and control via [InputController].
 - **[DisposeHandler]** - mixin for any class, helps with object disposing.
@@ -171,6 +136,10 @@ Arguments are then passed into Controllers as a **[Map]**. So you need to know *
 - **[UnitId]** Unique Id generator based on Time, Index or just Random. 
 
 - and more..
+
+---
+
+Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/examples) at Git repository for more complex solutions and how to use this library.
 
 ---
 
