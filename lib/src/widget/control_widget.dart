@@ -3,54 +3,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-class ControlArgHolder implements Disposable {
-  bool _valid = true;
-  ControlArgs _cache;
-  ControlState _state;
-
-  bool get isCacheActive => _cache != null;
-
-  bool get initialized => _state != null;
-
-  Map get args => argStore?.data;
-
-  ControlArgs get argStore => _state?.args ?? _cache;
-
-  void init(ControlState state) {
-    _state = state;
-    _valid = true;
-
-    if (_cache != null) {
-      _state.addArg(_cache);
-      _cache = null;
-    }
-  }
-
-  void addArg(dynamic args) {
-    if (initialized) {
-      _state.addArg(args);
-      return;
-    }
-
-    if (_cache == null) {
-      _cache = new ControlArgs();
-    }
-
-    _cache.set(args);
-  }
-
-  T getArg<T>({dynamic key, T defaultValue}) => Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
-
-  List<ControlModel> findControls() => argStore?.getAll<ControlModel>() ?? [];
-
-  @override
-  void dispose() {
-    _cache = argStore;
-    _valid = false;
-    _state = null;
-  }
-}
-
 /// [ControlWidget] with just one init Controller.
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
   T get control => controls.length > 0 ? controls[0] : null;
@@ -62,7 +14,7 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
 
   @protected
   T initControl() {
-    T item = holder.getArg<T>();
+    T item = holder.get<T>();
 
     if (item == null) {
       item = Control.get<T>(args: holder.args);
@@ -94,31 +46,23 @@ abstract class BaseControlWidget extends ControlWidget {
 /// [ControlState]
 /// [_ControlTickerState]
 /// [_ControlSingleTickerState]
-abstract class ControlWidget extends StatefulWidget with LocalizationProvider implements Initializable, Disposable {
-  /// Holder for [State] nad Controllers.
-  @protected
-  final holder = ControlArgHolder();
-
+abstract class ControlWidget extends CoreWidget with LocalizationProvider implements Initializable, Disposable {
   /// Returns [true] if [State] is hooked and [WidgetControlHolder] is initialized.
   bool get isInitialized => holder.initialized;
 
   /// Returns [true] if Widget is active and [WidgetControlHolder] is not disposed.
   /// Widget is valid even when is not initialized yet.
-  bool get isValid => holder._valid;
+  bool get isValid => holder.isValid;
 
   /// Widget's [State]
   /// [holder] - [onInitState]
   @protected
-  ControlState get state => holder._state;
+  ControlState get state => holder.state;
 
   /// List of Controllers passed during construction phase.
   /// [holder] - [initControls]
   @protected
-  List<ControlModel> get controls => holder._state?.controls;
-
-  /// Context of Widget's [State]
-  @protected
-  BuildContext get context => state?.context;
+  List<ControlModel> get controls => state?.controls;
 
   /// Instance of [ControlFactory].
   @protected
@@ -155,8 +99,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
     controls?.forEach((control) {
       control.init(holder.args);
 
-      if (state is TickerProvider && control is TickerComponent) {
-        control.provideTicker(state as TickerProvider);
+      if (this is TickerProvider && control is TickerComponent) {
+        control.provideTicker(this as TickerProvider);
       }
 
       if (control is StateControl) {
@@ -167,6 +111,8 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   @protected
   void onStateInitialized() {
+    super.onStateInitialized();
+
     controls?.forEach((control) {
       if (control is StateControl) {
         control.onStateInitialized();
@@ -194,7 +140,7 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
   }
 
   /// Notifies [State] of this [Widget].
-  void notifyState([dynamic state]) => holder._state?.notifyState(state);
+  void notifyState([dynamic state]) => this.state?.notifyState(state);
 
   /// Callback from [State] when state is notified.
   @protected
@@ -202,15 +148,6 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
   BuildContext getContext({bool root: false}) => root ? Control.root()?.rootContext ?? context : context;
-
-  /// Adds [arg] to this widget.
-  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
-  /// [args] are then parsed into [Map].
-  void addArg(dynamic args) => holder.addArg(args);
-
-  /// Returns value by given key or type.
-  /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
-  T getArg<T>({dynamic key, T defaultValue}) => holder.getArg<T>(key: key, defaultValue: defaultValue);
 
   /// Returns value by given key or type.
   /// Look up in [controls] and [factory].
@@ -233,17 +170,14 @@ abstract class ControlWidget extends StatefulWidget with LocalizationProvider im
 
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
-class ControlState<U extends ControlWidget> extends State<U> implements StateNotifier {
+class ControlState<U extends ControlWidget> extends ArgState<U> implements StateNotifier {
   List<ControlModel> controls;
-  ControlArgs args;
 
   @override
   void initState() {
     super.initState();
 
-    if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context);
-    }
+    _invalidateTheme();
 
     initControls();
 
@@ -258,20 +192,6 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       controls = [];
     }
   }
-
-  void addArg(dynamic args) {
-    if (args == null) {
-      return;
-    }
-
-    if (this.args == null) {
-      this.args = ControlArgs();
-    }
-
-    this.args.set(args);
-  }
-
-  T getArg<T>({dynamic key, T defaultValue}) => widget.getArg<T>(key: key, defaultValue: defaultValue);
 
   @override
   void notifyState([dynamic state]) {
@@ -302,6 +222,10 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
 
     widget.onStateInitialized();
 
+    _invalidateTheme();
+  }
+
+  void _invalidateTheme() {
     if (widget is ThemeProvider) {
       (widget as ThemeProvider).invalidateTheme(context);
     }
@@ -335,35 +259,8 @@ class ControlState<U extends ControlWidget> extends State<U> implements StateNot
       controls = null;
     }
 
-    widget.holder.dispose();
     widget.dispose();
   }
-}
-
-/// [ControlState] with [TickerProviderStateMixin]
-class _ControlTickerState<U extends ControlWidget> extends ControlState<U> with TickerProviderStateMixin {}
-
-/// [ControlState] with [SingleTickerProviderStateMixin]
-class _ControlSingleTickerState<U extends ControlWidget> extends ControlState<U> with SingleTickerProviderStateMixin {}
-
-/// Helps [ControlWidget] to create State with [TickerProviderStateMixin]
-/// Use [SingleTickerControl] to create State with [SingleTickerProviderStateMixin].
-mixin TickerControl on ControlWidget {
-  @protected
-  TickerProvider get ticker => holder._state as TickerProvider;
-
-  @override
-  ControlState<ControlWidget> createState() => _ControlTickerState();
-}
-
-/// Helps [ControlWidget] to create State with [SingleTickerProviderStateMixin]
-/// Use [TickerControl] to create State with [TickerProviderStateMixin].
-mixin SingleTickerControl on ControlWidget {
-  @protected
-  TickerProvider get ticker => holder._state as TickerProvider;
-
-  @override
-  ControlState<ControlWidget> createState() => _ControlSingleTickerState();
 }
 
 /// Mixin class to enable navigation for [ControlWidget]

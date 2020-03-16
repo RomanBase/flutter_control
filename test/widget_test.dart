@@ -6,10 +6,10 @@ void main() {
     test('args', () {
       final holder = ControlArgHolder();
 
-      holder.addArg({String: 'arg1', 'key': 'arg2'});
-      holder.addArg({String: 'arg3'});
-      holder.addArg(10);
-      holder.addArg([1.0, true]);
+      holder.set({String: 'arg1', 'key': 'arg2'});
+      holder.set({String: 'arg3'});
+      holder.set(10);
+      holder.set([1.0, true]);
 
       expect(holder.args.length, 5);
       expect(Parse.getArg<String>(holder.args), isNot('arg1'));
@@ -58,7 +58,7 @@ void main() {
       // ignore: invalid_use_of_protected_member
       expect(widget.holder.args.length, 2);
       // ignore: invalid_use_of_protected_member
-      expect(widget.holder.getArg<String>(), 'empty');
+      expect(widget.holder.get<String>(), 'empty');
       expect(widget.getArg<String>(), 'empty');
       expect(widget.getArg(key: 'init'), isTrue);
 

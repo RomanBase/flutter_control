@@ -25,11 +25,13 @@ export './src/util/parser.dart';
 export './src/util/unit_id.dart';
 export './src/widget/control_root.dart';
 export './src/widget/control_widget.dart';
+export './src/widget/core_widget.dart';
 export './src/widget/input_field.dart';
 export './src/widget/loader_widget.dart';
 export './src/widget/navigation_stack.dart';
 export './src/widget/notifier_widget.dart';
 export './src/widget/stable_widget.dart';
+export './src/widget/statebound_widget.dart';
 export './src/widget/widget_provider.dart';
 
 enum LoadingStatus { none, progress, done, error, outdated, unknown }

@@ -203,7 +203,7 @@ class NavigatorStack extends StatefulWidget {
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(menu: key),
-          builder: value,
+          builder: value ?? (_) => Container(),
         )));
 
     return NavigatorStack.group(

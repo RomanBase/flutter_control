@@ -31,6 +31,8 @@ class ControlArgs implements Disposable {
     }
   }
 
+  void add<T>({dynamic key, @required dynamic value}) => _args[Control.factory().keyOf<T>(key: key, value: value)] = value;
+
   void swap(ControlArgs args) {
     assert(args != null);
 
@@ -68,6 +70,8 @@ class ControlArgs implements Disposable {
 
     return list;
   }
+
+  void remove<T>({dynamic key}) => _args.remove(key ?? T);
 
   void clear() => _args.clear();
 
