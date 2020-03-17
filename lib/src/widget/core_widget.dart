@@ -46,6 +46,8 @@ class ControlArgHolder implements Disposable {
 abstract class CoreWidget extends StatefulWidget implements Initializable, Disposable {
   final holder = ControlArgHolder();
 
+  ControlArgs get store => holder.argStore; //TODO
+
   BuildContext get context => holder?.state?.context;
 
   CoreWidget({Key key}) : super(key: key);
@@ -84,15 +86,11 @@ abstract class ArgState<T extends CoreWidget> extends State<T> {
   }
 }
 
-/// Copy of [SingleTickerProviderStateMixin] for [CoreWidget].
-mixin SingleTickerControl on CoreWidget implements TickerProvider {
-  @protected
-  TickerProvider get ticker => this;
-
-  Ticker get _ticker => getArg<Ticker>();
+class _SingleTickerComponent extends ControlModel implements TickerProvider {
+  Ticker _ticker;
 
   @override
-  Ticker createTicker(TickerCallback onTick) {
+  Ticker createTicker(onTick) {
     assert(() {
       if (_ticker == null) return true;
       throw FlutterError.fromParts(<DiagnosticsNode>[
@@ -103,14 +101,15 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
             'mixing in a SingleTickerProviderStateMixin, use a regular TickerProviderStateMixin.')
       ]);
     }());
-
-    addArg(Ticker(onTick, debugLabel: kDebugMode ? 'created by $this' : null));
+    _ticker = Ticker(onTick, debugLabel: kDebugMode ? 'created by $this' : null);
     // We assume that this is called from initState, build, or some sort of
     // event handler, and that thus TickerMode.of(context) would return true. We
     // can't actually check that here because if we're in initState then we're
     // not allowed to do inheritance checks yet.
     return _ticker;
   }
+
+  void _muteTicker(bool muted) => _ticker?.muted = muted;
 
   @override
   void dispose() {
@@ -128,32 +127,42 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
       ]);
     }());
 
-    removeArg<Ticker>();
+    _ticker?.dispose();
+    _ticker = null;
 
     super.dispose();
   }
+}
+
+///Check [SingleTickerProviderStateMixin]
+mixin SingleTickerControl on CoreWidget implements TickerProvider {
+  final _ticker = _SingleTickerComponent();
+
+  TickerProvider get ticker => this;
+
+  @override
+  Ticker createTicker(onTick) => _ticker.createTicker(onTick);
 
   @override
   void onStateInitialized() {
-    if (_ticker != null) _ticker.muted = !TickerMode.of(context);
+    _ticker._muteTicker(!TickerMode.of(context));
 
     super.onStateInitialized();
   }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
 }
 
-/// Copy of [TickerProviderStateMixin] for [CoreWidget].
-mixin TickerControl on CoreWidget implements TickerProvider {
-  @protected
-  TickerProvider get ticker => this;
-
-  Set<Ticker> get _tickers => getArg(key: Ticker);
+class _TickerComponent extends ControlModel implements TickerProvider {
+  Set<Ticker> _tickers;
 
   @override
   Ticker createTicker(TickerCallback onTick) {
-    if (_tickers == null) {
-      holder.argStore.add(key: Ticker, value: Set<_WidgetTicker>());
-    }
-
+    _tickers ??= <_WidgetTicker>{};
     final _WidgetTicker result = _WidgetTicker(onTick, this, debugLabel: 'created by $this');
     _tickers.add(result);
     return result;
@@ -164,6 +173,8 @@ mixin TickerControl on CoreWidget implements TickerProvider {
     assert(_tickers.contains(ticker));
     _tickers.remove(ticker);
   }
+
+  void _muteTicker(bool muted) => _tickers?.forEach((item) => item.muted = muted);
 
   @override
   void dispose() {
@@ -187,28 +198,40 @@ mixin TickerControl on CoreWidget implements TickerProvider {
       return true;
     }());
 
-    removeArg<Set<_WidgetTicker>>();
+    _tickers?.forEach((item) => item.dispose());
+    _tickers = null;
 
     super.dispose();
   }
+}
+
+///Check [TickerProviderStateMixin]
+mixin TickerControl on CoreWidget implements TickerProvider {
+  final _ticker = _TickerComponent();
+
+  TickerProvider get ticker => this;
+
+  @override
+  Ticker createTicker(TickerCallback onTick) => _ticker.createTicker(onTick);
 
   @override
   void onStateInitialized() {
-    final bool muted = !TickerMode.of(context);
-    if (_tickers != null) {
-      for (Ticker ticker in _tickers) {
-        ticker.muted = muted;
-      }
-    }
+    _ticker._muteTicker(!TickerMode.of(context));
 
     super.onStateInitialized();
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
   }
 }
 
 class _WidgetTicker extends Ticker {
   _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel}) : super(onTick, debugLabel: debugLabel);
 
-  final TickerControl _creator;
+  final _TickerComponent _creator;
 
   @override
   void dispose() {

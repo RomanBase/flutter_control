@@ -98,6 +98,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
     controls?.remove(null);
     controls?.forEach((control) {
       control.init(holder.args);
+      control.subscribe(this);
 
       if (this is TickerProvider && control is TickerComponent) {
         control.provideTicker(this as TickerProvider);
@@ -265,7 +266,7 @@ class ControlState<U extends ControlWidget> extends ArgState<U> implements State
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
-  Route get activeRoute => getArg<Route>(); //TODO: ModalRoute.of
+  Route get activeRoute => getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
 
   // TODO: return Navigator.of(context, rootNavigator: true) if ControlScope.rootContext is not available or invalid.
   @protected
