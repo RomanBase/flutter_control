@@ -171,14 +171,12 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
 
 /// Base State for ControlWidget and StateController
 /// State is subscribed to Controller which notifies back about state changes.
-class ControlState<U extends ControlWidget> extends ArgState<U> implements StateNotifier {
+class ControlState<U extends ControlWidget> extends CoreState<U> implements StateNotifier {
   List<ControlModel> controls;
 
   @override
   void initState() {
     super.initState();
-
-    _invalidateTheme();
 
     initControls();
 
@@ -187,11 +185,7 @@ class ControlState<U extends ControlWidget> extends ArgState<U> implements State
   }
 
   void initControls() {
-    controls = widget.initControls();
-
-    if (controls == null) {
-      controls = [];
-    }
+    controls = widget.initControls() ?? [];
   }
 
   @override
@@ -214,21 +208,6 @@ class ControlState<U extends ControlWidget> extends ArgState<U> implements State
 
     if (widget.holder != oldWidget.holder) {
       widget.notifyWidget(this);
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    widget.onStateInitialized();
-
-    _invalidateTheme();
-  }
-
-  void _invalidateTheme() {
-    if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context);
     }
   }
 

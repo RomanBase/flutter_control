@@ -5,9 +5,9 @@ import 'package:flutter_control/core.dart';
 class ControlArgHolder implements Disposable {
   bool _valid = true;
   ControlArgs _cache;
-  ArgState _state;
+  CoreState _state;
 
-  ArgState get state => _state;
+  CoreState get state => _state;
 
   bool get isValid => _valid;
 
@@ -19,7 +19,7 @@ class ControlArgHolder implements Disposable {
 
   ControlArgs get argStore => _state?.args ?? _cache ?? (_cache = ControlArgs());
 
-  void init(ArgState state) {
+  void init(CoreState state) {
     _state = state;
     _valid = true;
 
@@ -73,10 +73,29 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   void dispose() {}
 }
 
-abstract class ArgState<T extends CoreWidget> extends State<T> {
+abstract class CoreState<T extends CoreWidget> extends State<T> {
   ControlArgs _args;
 
   ControlArgs get args => _args ?? (_args = ControlArgs());
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _invalidateTheme();
+    widget.onStateInitialized();
+  }
+
+  void _invalidateTheme() {
+    if (widget is ThemeProvider) {
+      (widget as ThemeProvider).invalidateTheme(context);
+    }
+  }
 
   @override
   void dispose() {

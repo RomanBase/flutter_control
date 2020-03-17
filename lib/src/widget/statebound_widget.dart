@@ -42,14 +42,12 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   void dispose() {}
 }
 
-class _WidgetboundState<T extends StateControl> extends ArgState<StateboundWidget<T>> {
+class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> {
   T control;
 
   @override
   void initState() {
     super.initState();
-
-    _invalidateTheme();
 
     widget.holder.init(this);
 
@@ -75,19 +73,6 @@ class _WidgetboundState<T extends StateControl> extends ArgState<StateboundWidge
     if (oldWidget.control != widget.control) {
       oldWidget.control.removeListener(_updateState);
       widget.control.addListener(_updateState);
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    _invalidateTheme();
-  }
-
-  void _invalidateTheme() {
-    if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context);
     }
   }
 
