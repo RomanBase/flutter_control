@@ -69,9 +69,10 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   ControlFactory get factory => Control.factory();
 
   /// Default constructor
-  ControlWidget({Key key, dynamic args}) : super(key: key) {
-    addArg(args);
-  }
+  ControlWidget({
+    Key key,
+    dynamic args,
+  }) : super(key: key, args: args);
 
   /// Called during construction phase.
   /// Returned controllers will be notified during Widget/State initialization.
@@ -80,13 +81,6 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
-
-  /// When [RouteHandler] is used, then this function is called right after Widget construction. +
-  /// All controllers (from [initControls]) are initialized too.
-  @override
-  @protected
-  @mustCallSuper
-  void init(Map args) => addArg(args);
 
   /// Called during State initialization.
   /// All controllers (from [initControls]) are subscribed to this Widget and given State.

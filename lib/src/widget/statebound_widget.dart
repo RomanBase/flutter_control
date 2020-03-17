@@ -12,14 +12,7 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   StateboundWidget({
     Key key,
     dynamic args,
-  }) : super(key: key) {
-    holder.set(args);
-  }
-
-  @override
-  void init(Map args) {
-    holder.set(args);
-  }
+  }) : super(key: key, args: args);
 
   @protected
   T initControl() {

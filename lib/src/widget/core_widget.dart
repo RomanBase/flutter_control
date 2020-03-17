@@ -50,10 +50,16 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
 
   BuildContext get context => holder?.state?.context;
 
-  CoreWidget({Key key}) : super(key: key);
+  CoreWidget({Key key, dynamic args}) : super(key: key) {
+    holder.set(args);
+  }
 
+  /// When [RouteHandler] is used, then this function is called right after Widget construction. +
+  /// All controllers (from [initControls]) are initialized too.
   @override
-  void init(Map args) {}
+  @protected
+  @mustCallSuper
+  void init(Map args) => addArg(args);
 
   @protected
   void onStateInitialized() {}
@@ -77,11 +83,6 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   ControlArgs _args;
 
   ControlArgs get args => _args ?? (_args = ControlArgs());
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   void didChangeDependencies() {
