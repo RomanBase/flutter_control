@@ -64,6 +64,9 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   @protected
   void onStateInitialized() {}
 
+  @protected
+  void onRequestUpdate(CoreWidget oldWidget) {}
+
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
   /// [args] are then parsed into [Map].
@@ -83,6 +86,13 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   ControlArgs _args;
 
   ControlArgs get args => _args ?? (_args = ControlArgs());
+
+  @override
+  void didUpdateWidget(T oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    widget.onRequestUpdate(oldWidget);
+  }
 
   @override
   void didChangeDependencies() {
