@@ -1,29 +1,17 @@
 import 'package:flutter_control/core.dart';
 
 abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider implements Initializable, Disposable {
-  _WidgetboundState get _state => holder.state;
+  @protected
+  final T control;
 
   @protected
-  T get control => _state?.control;
-
-  @protected
-  dynamic get state => control?.state?.value;
+  dynamic get state => control.state.value;
 
   StateboundWidget({
     Key key,
+    @required this.control,
     dynamic args,
   }) : super(key: key, args: args);
-
-  @protected
-  T initControl() {
-    T item = holder.get<T>();
-
-    if (item == null) {
-      item = Control.get<T>(args: holder.args);
-    }
-
-    return item;
-  }
 
   @override
   State<StatefulWidget> createState() => _WidgetboundState<T>();
@@ -36,18 +24,13 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
 }
 
 class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> {
-  T control;
+  T get control => widget.control;
 
   @override
   void initState() {
     super.initState();
 
     widget.holder.init(this);
-
-    control = widget.initControl();
-
-    assert(control != null);
-
     control.init(widget.holder.args);
 
     if (widget is TickerProvider && control is TickerComponent) {
