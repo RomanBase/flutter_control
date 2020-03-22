@@ -105,33 +105,14 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   }
 
   @protected
-  void onStateInitialized() {
-    super.onStateInitialized();
+  void onInit(Map args) {
+    super.onInit(args);
 
     controls?.forEach((control) {
       if (control is StateControl) {
         control.onStateInitialized();
       }
     });
-  }
-
-  /// Called by State whenever [holder] isn't initialized or when something has dramatically changed in Widget - State relationship.
-  @protected
-  void notifyWidget(ControlState state) {
-    assert(() {
-      if (holder.initialized && this.state != state) {
-        printDebug('state re-init of: ${this.runtimeType.toString()}');
-        printDebug('old state: ${this.state}');
-        printDebug('new state: $state');
-      }
-      return true;
-    }());
-
-    if (this.state == state) {
-      return;
-    }
-
-    holder.init(state);
   }
 
   /// Notifies [State] of this [Widget].
@@ -173,8 +154,6 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
     super.initState();
 
     initControls();
-
-    widget.notifyWidget(this);
     widget.onInitState(this);
   }
 
@@ -187,22 +166,6 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
     setState(() {
       widget.onStateChanged(state);
     });
-  }
-
-  @protected
-  void notifyWidget() {
-    if (!widget.holder.initialized) {
-      widget.notifyWidget(this);
-    }
-  }
-
-  @override
-  void didUpdateWidget(U oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.holder != oldWidget.holder) {
-      widget.notifyWidget(this);
-    }
   }
 
   @override

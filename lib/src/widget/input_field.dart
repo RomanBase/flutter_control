@@ -275,6 +275,7 @@ class InputControl extends ControlModel with StateControl {
 /// [InputControl.next]
 /// [InputControl.done]
 /// [InputControl.changed]
+//TODO: rework to StateboundWidget
 class InputField extends ControlWidget with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
@@ -456,8 +457,16 @@ class InputField extends ControlWidget with ThemeProvider {
   }
 
   @override
-  void notifyWidget(ControlState state) {
-    super.notifyWidget(state);
+  void onInit(Map args) {
+    super.onInit(args);
+
+    control._initControllers();
+    control._focusController.setContext(context);
+  }
+
+  @override
+  void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
+    super.onUpdate(oldWidget, state);
 
     control._initControllers();
     control._focusController.setContext(context);

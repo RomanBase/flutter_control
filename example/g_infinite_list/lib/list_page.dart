@@ -34,8 +34,8 @@ class ListPage extends ControlWidget {
   }
 
   @override
-  void onStateInitialized() {
-    super.onStateInitialized();
+  void onInit(Map args) {
+    super.onInit(args);
 
     ui._offset = Device.of(context).dp(256.0);
   }

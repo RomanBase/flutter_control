@@ -61,11 +61,39 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   @mustCallSuper
   void init(Map args) => addArg(args);
 
+  /// [State.didChangeDependencies]
   @protected
-  void onStateInitialized() {}
+  void onInit(Map args) {
+    if (this is ThemeProvider) {
+      (this as ThemeProvider).invalidateTheme(context);
+    }
+  }
 
   @protected
-  void onRequestUpdate(CoreWidget oldWidget) {}
+  bool notifyUpdate(CoreWidget oldWidget) => holder != oldWidget.holder;
+
+  @protected
+  void onUpdate(CoreWidget oldWidget, CoreState state) {
+    _notifyHolder(state);
+  }
+
+  @protected
+  void _notifyHolder(CoreState state) {
+    assert(() {
+      if (holder.initialized && holder.state != state) {
+        printDebug('state re-init of: ${this.runtimeType.toString()}');
+        printDebug('old state: ${holder.state}');
+        printDebug('new state: $state');
+      }
+      return true;
+    }());
+
+    if (holder.state == state) {
+      return;
+    }
+
+    holder.init(state);
+  }
 
   /// Adds [arg] to this widget.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
@@ -88,23 +116,26 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   ControlArgs get args => _args ?? (_args = ControlArgs());
 
   @override
-  void didUpdateWidget(T oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  @mustCallSuper
+  void initState() {
+    super.initState();
 
-    widget.onRequestUpdate(oldWidget);
+    widget._notifyHolder(this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    _invalidateTheme();
-    widget.onStateInitialized();
+    widget.onInit(_args.data);
   }
 
-  void _invalidateTheme() {
-    if (widget is ThemeProvider) {
-      (widget as ThemeProvider).invalidateTheme(context);
+  @override
+  void didUpdateWidget(T oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.notifyUpdate(oldWidget)) {
+      widget.onUpdate(oldWidget, this);
     }
   }
 
@@ -174,10 +205,10 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
   Ticker createTicker(onTick) => _ticker.createTicker(onTick);
 
   @override
-  void onStateInitialized() {
+  void onInit(Map args) {
     _ticker._muteTicker(!TickerMode.of(context));
 
-    super.onStateInitialized();
+    super.onInit(args);
   }
 
   @override
@@ -245,10 +276,10 @@ mixin TickerControl on CoreWidget implements TickerProvider {
   Ticker createTicker(TickerCallback onTick) => _ticker.createTicker(onTick);
 
   @override
-  void onStateInitialized() {
+  void onInit(Map args) {
     _ticker._muteTicker(!TickerMode.of(context));
 
-    super.onStateInitialized();
+    super.onInit(args);
   }
 
   @override
