@@ -5,7 +5,7 @@ import 'package:flutter_control/core.dart';
 
 /// [ControlWidget] with just one init Controller.
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
-  T get control => controls.length > 0 ? controls[0] : null;
+  T get control => hasControl ? controls[0] : null;
 
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
@@ -67,6 +67,8 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   /// Instance of [ControlFactory].
   @protected
   ControlFactory get factory => Control.factory();
+
+  bool get hasControl => controls != null && controls.length > 0;
 
   /// Default constructor
   ControlWidget({
