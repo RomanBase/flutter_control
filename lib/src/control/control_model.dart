@@ -133,11 +133,14 @@ mixin TickerComponent on ControlModel {
   }
 }
 
-mixin StateControl on ControlModel implements StateNotifier, Listenable {
+mixin StateControl on Disposable implements Initializable, StateNotifier, Listenable {
   /// Notify listeners.
   final _notifier = BaseNotifier();
 
   ValueListenable get state => _notifier;
+
+  @override
+  void init(Map args) {}
 
   /// Called right after [State.initState] and whenever dependency of state changes [State.didChangeDependencies].
   void onStateInitialized() {}

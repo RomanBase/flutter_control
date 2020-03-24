@@ -101,7 +101,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
       }
 
       if (control is StateControl) {
-        state._subscribeStateNotifier(control);
+        state._subscribeStateNotifier(control as StateControl);
       }
     });
   }
@@ -112,7 +112,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
 
     controls?.forEach((control) {
       if (control is StateControl) {
-        control.onStateInitialized();
+        (control as StateControl).onStateInitialized();
       }
     });
   }
@@ -187,12 +187,12 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
     super.dispose();
 
     if (controls != null) {
-      controls.forEach((controller) {
-        if (controller is StateControl) {
-          controller.removeListener(notifyState);
+      controls.forEach((control) {
+        if (control is StateControl) {
+          (control as StateControl).removeListener(notifyState);
         }
 
-        controller.requestDispose();
+        control.requestDispose();
       });
       controls.clear();
       controls = null;
