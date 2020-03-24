@@ -19,7 +19,6 @@ class FocusController extends FocusNode {
 
 /// Controller of [InputField].
 /// Can chain multiple Controllers for submissions.
-//todo: extend TextEditingController ?
 class InputControl extends ControlModel with StateControl {
   @override
   bool get preferSoftDispose => true;
@@ -80,7 +79,6 @@ class InputControl extends ControlModel with StateControl {
     _text = text;
   }
 
-  //TODO: WTF ?
   /// Initializes [TextEditingController] and [FocusController].
   /// Can be called multiple times to prevent early disposed controllers.
   void _initControllers() {
@@ -275,8 +273,7 @@ class InputControl extends ControlModel with StateControl {
 /// [InputControl.next]
 /// [InputControl.done]
 /// [InputControl.changed]
-//TODO: rework to StateboundWidget
-class InputField extends ControlWidget with ThemeProvider {
+class InputField extends StateboundWidget<InputControl> with ThemeProvider {
   /// Controller of the [TextField]
   /// Sets initial text, focus, error etc.
   final InputControl control;
@@ -447,20 +444,13 @@ class InputField extends ControlWidget with ThemeProvider {
     this.buildCounter,
     this.scrollController,
     this.scrollPhysics,
-  }) : super(key: key);
-
-  @override
-  List<ControlModel> initControls() {
-    control._obscure = obscureText;
-
-    return [control];
-  }
+  }) : super(key: key, control: control);
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
-    control._initControllers();
+    control._obscure = obscureText;
     control._focusController.setContext(context);
   }
 
@@ -468,7 +458,7 @@ class InputField extends ControlWidget with ThemeProvider {
   void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
     super.onUpdate(oldWidget, state);
 
-    control._initControllers();
+    control._obscure = obscureText;
     control._focusController.setContext(context);
   }
 
