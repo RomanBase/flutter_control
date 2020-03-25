@@ -39,6 +39,18 @@ class Parse {
     return input;
   }
 
+  static DateTime toDate(dynamic value, {bool inSec: false}) {
+    if (value is int) {
+      return DateTime.fromMillisecondsSinceEpoch(inSec ? value * 1000 : value);
+    }
+
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+
+    return null;
+  }
+
   /// Tries to parse value into [String].
   ///
   /// If none found, then [defaultValue] is returned.
