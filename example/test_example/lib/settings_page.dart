@@ -42,6 +42,10 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
               onPressed: controller.toggleTheme,
               child: ThemeText(),
             ),
+            RaisedButton(
+              onPressed: controller.unloadApp,
+              child: Text('unload'),
+            ),
             StableWidget(
               builder: (context) => Padding(
                 padding: const EdgeInsets.all(32.0),

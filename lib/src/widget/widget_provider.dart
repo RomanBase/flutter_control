@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 /// Abstract implementation of simple widget initializer and holder.
-abstract class WidgetInitializer {
+abstract class WidgetInitializer implements Disposable {
   /// Current Widget.
   Widget _widget;
 
@@ -47,6 +47,16 @@ abstract class WidgetInitializer {
 
   /// Wraps initializer into [WidgetBuilder].
   WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
+
+  void clear(){
+    _widget = null;
+  }
+
+  @override
+  void dispose() {
+    _widget = null;
+    data = null;
+  }
 }
 
 /// Simple [WidgetBuilder] and holder.

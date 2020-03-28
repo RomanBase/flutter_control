@@ -30,4 +30,8 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
 
     BroadcastProvider.broadcast('theme', data, store: true);
   }
+
+  void unloadApp() {
+    Control.root().notifyControlState(ControlArgs(LoadingStatus.progress));
+  }
 }

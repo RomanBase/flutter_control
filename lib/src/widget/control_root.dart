@@ -106,6 +106,8 @@ class ControlRoot extends StatefulWidget {
   /// It's equal to [ControlScope.homeWidget].
   final ControlWidgetBuilder<ControlArgs> root;
 
+  final CrossTransition transition;
+
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
   final AppBuilder app;
@@ -136,6 +138,7 @@ class ControlRoot extends StatefulWidget {
     this.loader,
     this.disableLoader: false,
     this.initAsync,
+    this.transition: const CrossTransition(builder: null),
     @required this.root,
     @required this.app,
   }) : super(key: _rootKey);
@@ -149,13 +152,11 @@ class ControlRoot extends StatefulWidget {
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
+  TransitionControl transition;
+
   final _args = ControlArgs({LoadingStatus: LoadingStatus.progress});
 
-  bool _loadingLocale = true;
-
-  LoadingStatus get _loaderStatus => _args[LoadingStatus];
-
-  bool get loading => _loadingLocale || _loaderStatus != LoadingStatus.done;
+  bool get loading => _args[LoadingStatus] != LoadingStatus.done;
 
   WidgetInitializer _rootBuilder;
   WidgetInitializer _loadingBuilder;
@@ -167,21 +168,24 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   //TODO: set state loading/loader/locale
   @override
   void notifyState([state]) {
-    setState(() {
-      if (state is ControlArgs) {
-        _args.combine(state);
+    if (state is ControlArgs) {
+      _args.combine(state);
+
+      if (!loading) {
+        transition.forward();
+      } else {
+        transition.reverse();
       }
-    });
+    } else {
+      setState(() {});
+    }
   }
 
   @override
   void initState() {
     super.initState();
 
-    if (widget.disableLoader) {
-      _loadingLocale = false;
-      _args[LoadingStatus] = LoadingStatus.done;
-    }
+    transition = TransitionControl(duration: widget.transition.duration);
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of(widget.loader);
@@ -232,12 +236,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       }
     });
 
-    if (initialized) {
-      setState(() {
-        _loadingLocale = false;
-      });
-    } else {
-      _loadingLocale = false;
+    if (widget.disableLoader) {
+      notifyState(ControlArgs(LoadingStatus.done));
     }
   }
 
@@ -269,21 +269,24 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   Widget _buildHome(BuildContext context) {
     _context.value = context;
 
-    return loading
-        ? _loadingBuilder.getWidget(
-            context,
-            args: {
-              ControlRootState: this,
-              ControlArgs: _args,
-            },
-          )
-        : _rootBuilder.getWidget(
-            context,
-            args: {
-              ControlRootState: this,
-              ControlArgs: _args,
-            },
-          );
+    if (widget.disableLoader) {
+      return _rootBuilder.getWidget(context, args: {
+        ControlRootState: this,
+        ControlArgs: _args,
+      });
+    }
+
+    return TransitionInitHolder(
+      control: transition,
+      firstWidget: _loadingBuilder,
+      secondWidget: _rootBuilder,
+      transition: widget.transition.builder,
+      clear: true,
+      args: {
+        ControlRootState: this,
+        ControlArgs: _args,
+      },
+    );
   }
 
   @override
