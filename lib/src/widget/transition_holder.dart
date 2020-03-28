@@ -13,6 +13,9 @@ class CrossTransition {
 }
 
 class TransitionControl extends ControlModel with StateControl, TickerComponent {
+  final outKey = GlobalKey();
+  final inKey = GlobalKey();
+
   final Duration duration;
 
   AnimationController animation;
@@ -42,7 +45,6 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   final bool forceInit;
   final dynamic args;
   final CrossTransitionBuilder transition;
-  final bool clear;
   final VoidCallback onFinished;
 
   Animation get animation => control.animation;
@@ -55,32 +57,31 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     this.forceInit: false,
     this.args,
     this.transition,
-    this.clear: false,
     this.onFinished,
   }) : super(key: key, control: control);
 
   @override
   Widget build(BuildContext context) {
+    final outWidget = KeyedSubtree(
+      key: control.outKey,
+      child: firstWidget.getWidget(context, forceInit: forceInit, args: args),
+    );
+
+    final inWidget = KeyedSubtree(
+      key: control.inKey,
+      child: secondWidget.getWidget(context, forceInit: forceInit, args: args),
+    );
+
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
-        Widget outWidget = firstWidget.getWidget(context, forceInit: forceInit, args: args);
         if (animation.value == 0.0) {
-          if (animation.status == AnimationStatus.reverse && clear) {
-            secondWidget.clear();
-          }
-
           if (onFinished != null) onFinished();
 
           return outWidget;
         }
 
-        Widget inWidget = secondWidget.getWidget(context, forceInit: forceInit, args: args);
         if (animation.value == 1.0) {
-          if (animation.status == AnimationStatus.forward && clear) {
-            firstWidget.clear();
-          }
-
           if (onFinished != null) onFinished();
 
           return inWidget;

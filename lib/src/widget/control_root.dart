@@ -260,7 +260,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         context,
         _appKey,
         Builder(
-          builder: (context) => _buildHome(context),
+          builder: _buildHome,
         ),
       ),
     );
@@ -268,6 +268,14 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   Widget _buildHome(BuildContext context) {
     _context.value = context;
+/*
+    return loading ? _loadingBuilder.getWidget(context, args: {
+      ControlRootState: this,
+      ControlArgs: _args,
+    }) : _rootBuilder.getWidget(context, args: {
+      ControlRootState: this,
+      ControlArgs: _args,
+    });*/
 
     if (widget.disableLoader) {
       return _rootBuilder.getWidget(context, args: {
@@ -281,7 +289,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       firstWidget: _loadingBuilder,
       secondWidget: _rootBuilder,
       transition: widget.transition.builder,
-      clear: true,
       args: {
         ControlRootState: this,
         ControlArgs: _args,
