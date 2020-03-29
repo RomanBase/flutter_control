@@ -101,6 +101,8 @@ class ControlTheme {
 
   final animDurationSecond = const Duration(milliseconds: 1000);
 
+  final animTransition = const Duration(milliseconds: 300);
+
   ////////////////////////////////////////////////////////////////////////////////
 
   TextTheme get font => data.textTheme;

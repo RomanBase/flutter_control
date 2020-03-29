@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-typedef CrossTransitionBuilder = Widget Function(BuildContext context, Animation anim, Widget outWidget, Widget inWidget);
+typedef CrossTransitionBuilder = Widget Function(BuildContext context, Animation anim, Widget firstWidget, Widget secondWidget);
 
 class CrossTransition {
   final Duration duration;
@@ -16,20 +16,34 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   final outKey = GlobalKey();
   final inKey = GlobalKey();
 
-  final Duration duration;
-
   AnimationController animation;
 
-  TransitionControl({this.duration: const Duration(milliseconds: 300)});
+  bool get isInitialized => animation != null;
+
+  TransitionControl();
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    animation = AnimationController(vsync: ticker, duration: duration);
+    animation = AnimationController(vsync: ticker);
+    animation.addListener(() {
+      notifyState();
+    });
   }
 
-  void forward() => animation.forward();
+  void setDurations({Duration forward, Duration reverse}) {
+    assert(animation != null);
 
-  void reverse() => animation.reverse();
+    animation.duration = forward ?? Duration(milliseconds: 300);
+    animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
+  }
+
+  void crossIn() {
+    animation.forward();
+  }
+
+  void crossOut() {
+    animation.reverse();
+  }
 
   @override
   void dispose() {
@@ -39,62 +53,90 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   }
 }
 
-class TransitionInitHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
   final bool forceInit;
   final dynamic args;
-  final CrossTransitionBuilder transition;
+  final CrossTransition transitionIn;
+  final CrossTransition transitionOut;
   final VoidCallback onFinished;
 
   Animation get animation => control.animation;
 
-  TransitionInitHolder({
+  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross;
+
+  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
+
+  TransitionHolder({
     Key key,
     @required TransitionControl control,
     @required this.firstWidget,
     @required this.secondWidget,
     this.forceInit: false,
     this.args,
-    this.transition,
+    this.transitionIn,
+    this.transitionOut,
     this.onFinished,
   }) : super(key: key, control: control);
+
+  @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    control.setDurations(
+      forward: transitionIn?.duration,
+      reverse: transitionOut?.duration,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final outWidget = KeyedSubtree(
       key: control.outKey,
-      child: firstWidget.getWidget(context, forceInit: forceInit, args: args),
+      child: firstWidget.getWidget(
+        context,
+        forceInit: forceInit,
+        args: args,
+      ),
     );
 
     final inWidget = KeyedSubtree(
       key: control.inKey,
-      child: secondWidget.getWidget(context, forceInit: forceInit, args: args),
+      child: secondWidget.getWidget(
+        context,
+        forceInit: forceInit,
+        args: args,
+      ),
     );
 
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        if (animation.value == 0.0) {
-          if (onFinished != null) onFinished();
+    if (animation.value == 0.0) {
+      if (onFinished != null) onFinished();
 
-          return outWidget;
-        }
+      return outWidget;
+    }
 
-        if (animation.value == 1.0) {
-          if (onFinished != null) onFinished();
+    if (animation.value == 1.0) {
+      if (onFinished != null) onFinished();
 
-          return inWidget;
-        }
+      return inWidget;
+    }
 
-        return (transition ?? CrossTransitions.fade)(
-          context,
-          animation,
-          outWidget,
-          inWidget,
-        );
-      },
-    );
+    if (animation.status == AnimationStatus.forward) {
+      return transitionInBuilder(
+        context,
+        animation,
+        outWidget,
+        inWidget,
+      );
+    } else {
+      return transitionOutBuilder(
+        context,
+        animation,
+        outWidget,
+        inWidget,
+      );
+    }
   }
 }
 
@@ -103,7 +145,7 @@ class CrossTransitions {
 
   static get _progressReverse => Tween<double>(begin: 1.0, end: 0.0);
 
-  static CrossTransitionBuilder get fade => (context, anim, outWidget, inWidget) {
+  static CrossTransitionBuilder get fade => (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeOut.to(0.65),
@@ -120,11 +162,67 @@ class CrossTransitions {
             children: <Widget>[
               FadeTransition(
                 opacity: _progressReverse.animate(outAnim),
-                child: outWidget,
+                child: firstWidget,
               ),
               FadeTransition(
                 opacity: _progress.animate(inAnim),
-                child: inWidget,
+                child: secondWidget,
+              )
+            ],
+          ),
+        );
+      };
+
+  static CrossTransitionBuilder get fadeOutFadeIn => (context, anim, firstWidget, secondWidget) {
+        final outAnim = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeIn.to(0.35),
+        );
+
+        final inAnim = CurvedAnimation(
+          parent: anim,
+          curve: Curves.ease.from(0.35),
+        );
+
+        return Container(
+          color: Theme.of(context).backgroundColor,
+          child: Stack(
+            children: <Widget>[
+              FadeTransition(
+                opacity: _progressReverse.animate(outAnim),
+                child: firstWidget,
+              ),
+              FadeTransition(
+                opacity: _progress.animate(inAnim),
+                child: secondWidget,
+              )
+            ],
+          ),
+        );
+      };
+
+  static CrossTransitionBuilder get fadeCross => (context, anim, firstWidget, secondWidget) {
+        final outAnim = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeOut,
+        );
+
+        final inAnim = CurvedAnimation(
+          parent: anim,
+          curve: Curves.easeIn,
+        );
+
+        return Container(
+          color: Theme.of(context).backgroundColor,
+          child: Stack(
+            children: <Widget>[
+              FadeTransition(
+                opacity: _progressReverse.animate(outAnim),
+                child: firstWidget,
+              ),
+              FadeTransition(
+                opacity: _progress.animate(inAnim),
+                child: secondWidget,
               )
             ],
           ),

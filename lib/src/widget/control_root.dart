@@ -106,7 +106,9 @@ class ControlRoot extends StatefulWidget {
   /// It's equal to [ControlScope.homeWidget].
   final ControlWidgetBuilder<ControlArgs> root;
 
-  final CrossTransition transition;
+  final CrossTransition transitionIn;
+
+  final CrossTransition transitionOut;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
@@ -138,7 +140,8 @@ class ControlRoot extends StatefulWidget {
     this.loader,
     this.disableLoader: false,
     this.initAsync,
-    this.transition: const CrossTransition(builder: null),
+    this.transitionIn,
+    this.transitionOut,
     @required this.root,
     @required this.app,
   }) : super(key: _rootKey);
@@ -152,7 +155,7 @@ class ControlRoot extends StatefulWidget {
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
-  TransitionControl transition;
+  final transition = TransitionControl();
 
   final _args = ControlArgs({LoadingStatus: LoadingStatus.progress});
 
@@ -172,9 +175,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       _args.combine(state);
 
       if (!loading) {
-        transition.forward();
+        transition.crossIn();
       } else {
-        transition.reverse();
+        transition.crossOut();
       }
     } else {
       setState(() {});
@@ -184,8 +187,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   @override
   void initState() {
     super.initState();
-
-    transition = TransitionControl(duration: widget.transition.duration);
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of(widget.loader);
@@ -284,11 +285,12 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       });
     }
 
-    return TransitionInitHolder(
+    return TransitionHolder(
       control: transition,
       firstWidget: _loadingBuilder,
       secondWidget: _rootBuilder,
-      transition: widget.transition.builder,
+      transitionIn: widget.transitionIn,
+      transitionOut: widget.transitionOut,
       args: {
         ControlRootState: this,
         ControlArgs: _args,
