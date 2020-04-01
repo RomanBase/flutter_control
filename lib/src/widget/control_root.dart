@@ -285,7 +285,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       });
     }
 
-    return TransitionHolder(
+    return TransitionInitHolder(
       control: transition,
       firstWidget: _loadingBuilder,
       secondWidget: _rootBuilder,

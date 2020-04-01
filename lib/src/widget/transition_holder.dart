@@ -16,9 +16,13 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   final outKey = GlobalKey();
   final inKey = GlobalKey();
 
+  bool autoRun = false;
+
   AnimationController animation;
 
   bool get isInitialized => animation != null;
+
+  double get animTime => animation?.value ?? 0.0;
 
   TransitionControl();
 
@@ -30,6 +34,15 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
     });
   }
 
+  @override
+  void onStateInitialized() {
+    super.onStateInitialized();
+
+    if (autoRun) {
+      crossIn(from: 0.0);
+    }
+  }
+
   void setDurations({Duration forward, Duration reverse}) {
     assert(animation != null);
 
@@ -37,12 +50,12 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
     animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
   }
 
-  void crossIn() {
-    animation.forward();
+  void crossIn({double from}) {
+    animation.forward(from: from);
   }
 
-  void crossOut() {
-    animation.reverse();
+  void crossOut({double from}) {
+    animation.reverse(from: from);
   }
 
   @override
@@ -50,10 +63,11 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
     super.dispose();
 
     animation.dispose();
+    animation = null;
   }
 }
 
-class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+class TransitionInitHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
   final bool forceInit;
@@ -68,7 +82,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
 
-  TransitionHolder({
+  TransitionInitHolder({
     Key key,
     @required TransitionControl control,
     @required this.firstWidget,
@@ -135,6 +149,89 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
         animation,
         outWidget,
         inWidget,
+      );
+    }
+  }
+}
+
+class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+  final Widget firstWidget;
+  final Widget secondWidget;
+  final CrossTransition transitionIn;
+  final CrossTransition transitionOut;
+  final VoidCallback onFinished;
+
+  Animation get animation => control.animation;
+
+  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross;
+
+  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
+
+  TransitionHolder({
+    Key key,
+    @required TransitionControl control,
+    @required this.firstWidget,
+    @required this.secondWidget,
+    this.transitionIn,
+    this.transitionOut,
+    this.onFinished,
+  }) : super(key: key, control: control);
+
+  factory TransitionHolder.forward({
+    Key key,
+    @required Widget firstWidget,
+    @required Widget secondWidget,
+    CrossTransition transitionIn,
+    CrossTransition transitionOut,
+    VoidCallback onFinished,
+  }) =>
+      TransitionHolder(
+        key: key,
+        control: TransitionControl()..autoRun = true,
+        firstWidget: firstWidget,
+        secondWidget: secondWidget,
+        transitionIn: transitionIn,
+        transitionOut: transitionOut,
+        onFinished: onFinished,
+      );
+
+  @override
+  void onInit(Map args) {
+    control.setDurations(
+      forward: transitionIn?.duration,
+      reverse: transitionOut?.duration,
+    );
+
+    super.onInit(args);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (animation.value == 0.0) {
+      if (onFinished != null && animation.status == AnimationStatus.reverse) onFinished();
+
+      return firstWidget;
+    }
+
+    if (animation.value == 1.0) {
+      if (onFinished != null && animation.status == AnimationStatus.forward) onFinished();
+
+      return secondWidget;
+    }
+
+    if (animation.status == AnimationStatus.forward) {
+      return transitionInBuilder(
+        context,
+        animation,
+        firstWidget,
+        secondWidget,
+      );
+    } else {
+      return transitionOutBuilder(
+        context,
+        animation,
+        firstWidget,
+        secondWidget,
       );
     }
   }

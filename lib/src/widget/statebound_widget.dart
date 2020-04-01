@@ -14,6 +14,15 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   }) : super(key: key, args: args);
 
   @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    if (control is StateControl) {
+      control.onStateInitialized();
+    }
+  }
+
+  @override
   State<StatefulWidget> createState() => _WidgetboundState<T>();
 
   @protected
