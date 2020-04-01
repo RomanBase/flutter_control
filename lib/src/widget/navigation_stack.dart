@@ -17,7 +17,7 @@ class MenuItem {
   String get title => titleBuilder != null ? titleBuilder(selected) : null;
 
   const MenuItem({
-    this.key,
+    @required this.key,
     this.iconBuilder,
     this.titleBuilder,
     this.data,
@@ -44,7 +44,7 @@ class MenuItem {
   }
 
   @override
-  int get hashCode => super.hashCode;
+  int get hashCode => key.hashCode;
 }
 
 /// Helper interface to notify [State]
@@ -67,7 +67,9 @@ abstract class _StackNavigator {
 class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
-  MenuItem menu = MenuItem();
+  MenuItem menu = MenuItem(
+    key: UniqueKey(),
+  );
 
   /// Implementation of StackNavigator.
   _StackNavigator _navigator;
@@ -104,6 +106,13 @@ class NavigatorControl extends BaseControl {
       _navigator = object;
     }
   }
+
+  operator ==(other) {
+    return other is NavigatorControl && menu == other.menu;
+  }
+
+  @override
+  int get hashCode => menu.hashCode;
 
   bool navigateBack() => _navigator != null ? _navigator.navigateBack() : false;
 
@@ -152,7 +161,7 @@ class NavigatorStack extends StatefulWidget {
     control ??= NavigatorControl();
 
     return NavigatorStack._(
-      key: ObjectKey(control),
+      key: ObjectKey(control.menu.key),
       control: control,
       initializer: WidgetInitializer.of(builder),
       overrideNavigation: overrideNavigation,
@@ -173,12 +182,14 @@ class NavigatorStack extends StatefulWidget {
     NavigatorStackControl control,
     int initialIndex,
     @required List<NavigatorStack> items,
+    StackGroupBuilder builder,
     bool overrideNavigation: true,
   }) {
     return NavigatorStackGroup(
       control: control ?? NavigatorStackControl(),
       initialIndex: initialIndex,
       items: items,
+      builder: builder,
       overrideNavigation: overrideNavigation,
     );
   }
@@ -197,6 +208,7 @@ class NavigatorStack extends StatefulWidget {
     NavigatorStackControl control,
     int initialIndex,
     @required Map<MenuItem, WidgetBuilder> items,
+    StackGroupBuilder builder,
     bool overrideNavigation: true,
   }) {
     final stack = List<NavigatorStack>();
@@ -210,6 +222,7 @@ class NavigatorStack extends StatefulWidget {
       control: control,
       initialIndex: initialIndex,
       items: stack,
+      builder: builder,
       overrideNavigation: overrideNavigation,
     );
   }
@@ -410,7 +423,18 @@ class NavigatorStackControl extends BaseControl {
   }
 }
 
-//TODO: custom animation in/out
+typedef StackGroupBuilder = Widget Function(BuildContext context, int index, List<NavigatorStack> items);
+
+class StackGroupBuilders {
+  static StackGroupBuilder get stack => (context, index, items) => IndexedStack(
+        key: ObjectKey('page_stack'),
+        index: index,
+        children: items,
+      );
+
+  static StackGroupBuilder get single => (context, index, items) => items[index];
+}
+
 /// [NavigatorStack]
 /// [NavigatorControl]
 /// [NavigatorStackControl]
@@ -418,12 +442,14 @@ class NavigatorStackGroup extends StatefulWidget {
   final NavigatorStackControl control;
   final List<NavigatorStack> items;
   final int initialIndex;
+  final StackGroupBuilder builder;
   final bool overrideNavigation;
 
   NavigatorStackGroup({
     @required this.control,
     @required this.items,
     this.initialIndex,
+    this.builder,
     this.overrideNavigation: true,
   }) : super(key: ObjectKey(control)) {
     assert(items.length > 0);
@@ -433,8 +459,9 @@ class NavigatorStackGroup extends StatefulWidget {
   _NavigatorStackGroupState createState() => _NavigatorStackGroupState();
 }
 
-class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
+class _NavigatorStackGroupState extends State<NavigatorStackGroup> with SingleTickerProviderStateMixin {
   NavigatorStackControl get control => widget.control;
+
   List<NavigatorStack> _items;
 
   @override
@@ -536,10 +563,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     return ActionBuilder(
       control: widget.control.pageIndex,
       builder: (context, index) {
-        final stack = IndexedStack(
-          index: index,
-          children: _items,
-        );
+        final stack = (widget.builder ?? StackGroupBuilders.stack)(context, index, _items);
 
         if (widget.overrideNavigation) {
           return WillPopScope(
