@@ -300,3 +300,14 @@ class _WidgetTicker extends Ticker {
     super.dispose();
   }
 }
+
+mixin OnLayout on CoreWidget {
+  @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+  }
+
+  void onLayout();
+}
