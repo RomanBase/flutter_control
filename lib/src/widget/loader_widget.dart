@@ -4,11 +4,7 @@ abstract class InitLoaderControl extends BaseControl {
   final loading = LoadingControl(LoadingStatus.progress);
   final Duration delay;
 
-  StateNotifier state;
-
   InitLoaderControl({this.delay});
-
-  factory InitLoaderControl.empty() => _InitLoaderControlEmpty();
 
   factory InitLoaderControl.of({
     Future<dynamic> Function(InitLoaderControl) load,
@@ -22,8 +18,6 @@ abstract class InitLoaderControl extends BaseControl {
   @override
   void onInit(Map args) {
     super.onInit(args);
-
-    state = args.getArg<StateNotifier>();
 
     executeLoader();
   }
@@ -58,7 +52,7 @@ abstract class InitLoaderControl extends BaseControl {
     final result = ControlArgs(args);
     result[LoadingStatus] = status;
 
-    state.notifyState(result);
+    Control.root().notifyControlState(result);
   }
 
   @override
@@ -87,11 +81,6 @@ class _InitLoaderControlFunc extends InitLoaderControl {
 
     return result;
   }
-}
-
-class _InitLoaderControlEmpty extends InitLoaderControl {
-  @override
-  Future<void> load() => null;
 }
 
 class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
