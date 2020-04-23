@@ -56,6 +56,10 @@ class ControlScope {
 
     return false;
   }
+
+  bool setLoaderState() => notifyControlState(ControlArgs(LoadingStatus.progress));
+
+  bool setAppState() => notifyControlState(ControlArgs(LoadingStatus.done));
 }
 
 class ControlRoot extends StatefulWidget {
@@ -128,7 +132,7 @@ class ControlRoot extends StatefulWidget {
   /// [root] first Widget after loading finished.
   /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppBuilder.key] and [AppBuilder.home] from builder to App Widget.
   const ControlRoot({
-    this.debug: false,
+    this.debug,
     this.defaultLocale,
     this.locales,
     this.loadLocalization: true,
