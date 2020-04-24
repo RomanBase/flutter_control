@@ -107,6 +107,9 @@ class BaseLocalization with PrefsProvider {
   /// Returns currently loaded locale.
   String get locale => _locale;
 
+  /// Returns currently loaded locale.
+  Locale get currentLocale => getLocale(locale);
+
   /// Current locale key.
   String _locale;
 
