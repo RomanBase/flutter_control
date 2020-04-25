@@ -119,6 +119,8 @@ class ControlTheme {
 
   Color get accentColor => data.accentColor;
 
+  Color get backgroundColor => data.backgroundColor;
+
   ////////////////////////////////////////////////////////////////////////////////
 
   Size get toolbarAreaSize => Size(device.width, device.topBorderSize + barHeight);
