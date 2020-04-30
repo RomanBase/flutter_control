@@ -52,7 +52,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   @override
   Widget build(BuildContext context) {
     if (initializer != null) {
-      initializer.getWidget(context, args: widget.args);
+      return initializer.getWidget(context, args: widget.args);
     }
 
     return widget.placeholder ?? Container();
