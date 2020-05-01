@@ -240,7 +240,17 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
     return _addSub(
       stream.listen(
         (data) {
-          setValue(converter != null ? converter(data) : data);
+          if (converter != null) {
+            final result = converter(data);
+
+            if (result is Future) {
+              result.then((value) => setValue(value));
+            } else {
+              setValue(result);
+            }
+          } else {
+            setValue(data);
+          }
         },
       ),
       onError: onError,
