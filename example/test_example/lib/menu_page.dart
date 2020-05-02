@@ -1,4 +1,5 @@
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control_example/cross_page.dart';
 
 import 'cards_page.dart';
 import 'settings_page.dart';
@@ -23,6 +24,11 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
             iconBuilder: (selected) => Icons.settings_applications,
             titleBuilder: (selected) => localize('settings'),
           ): (context) => SettingsPage(),
+          MenuItem(
+            key: 'cross',
+            iconBuilder: (selected) => Icons.crop,
+            titleBuilder: (selected) => localize('cross'),
+          ): (context) => CrossPage(),
           MenuItem(
             key: 'about',
             iconBuilder: (selected) => Icons.file_upload,

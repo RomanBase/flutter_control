@@ -273,20 +273,18 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   Widget _buildHome(BuildContext context) {
     _context.value = context;
-/*
-    return loading ? _loadingBuilder.getWidget(context, args: {
-      ControlRootState: this,
-      ControlArgs: _args,
-    }) : _rootBuilder.getWidget(context, args: {
-      ControlRootState: this,
-      ControlArgs: _args,
-    });*/
+
+    _loadingBuilder.key ??= GlobalKey();
+    _rootBuilder.key ??= GlobalKey();
 
     if (widget.disableLoader) {
-      return _rootBuilder.getWidget(context, args: {
-        ControlRootState: this,
-        ControlArgs: _args,
-      });
+      return KeyedSubtree(
+        key: _rootBuilder.key,
+        child: _rootBuilder.getWidget(context, args: {
+          ControlRootState: this,
+          ControlArgs: _args,
+        }),
+      );
     }
 
     return TransitionInitHolder(

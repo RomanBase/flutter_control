@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control_example/cross_page.dart';
 
 import 'cards_controller.dart';
 import 'cards_page.dart';
@@ -21,6 +22,7 @@ class MyApp extends StatelessWidget {
       },
       entries: {
         'cards': CardsController(),
+        CrossControl: CrossControl(),
       },
       initializers: {
         DetailController: (args) => DetailController(),

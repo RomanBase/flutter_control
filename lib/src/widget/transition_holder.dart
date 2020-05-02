@@ -27,7 +27,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    animation = AnimationController(vsync: ticker);
+    animation = AnimationController(vsync: ticker, duration: Duration(milliseconds: 300));
     animation.addListener(() {
       notifyState();
     });
@@ -94,11 +94,12 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   }
 }
 
+//TODO: as StatelessWidget with static constructor in TransitionHolder ????? !!!!!
 class TransitionInitHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
-  final WidgetInitializer firstWidget;
-  final WidgetInitializer secondWidget;
   final bool forceInit;
   final dynamic args;
+  final WidgetInitializer firstWidget;
+  final WidgetInitializer secondWidget;
   final CrossTransition transitionIn;
   final CrossTransition transitionOut;
   final VoidCallback onFinished;
@@ -130,11 +131,7 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     super.onInit(args);
 
     _updateKeys();
-
-    control.setDurations(
-      forward: transitionIn?.duration,
-      reverse: transitionOut?.duration,
-    );
+    _updateDuration();
   }
 
   @override
@@ -143,20 +140,33 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
       _updateKeys();
-
-      if (control.autoRun) {
-        control._autoCrossRun();
-      }
-
       return true;
     }
 
     return super.notifyUpdate(oldWidget);
   }
 
+  @override
+  void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
+    super.onUpdate(oldWidget, state);
+
+    _updateDuration();
+
+    if (control.autoRun) {
+      control._autoCrossRun();
+    }
+  }
+
   void _updateKeys() {
     setArg(key: 'in_key', value: firstWidget.key ?? GlobalKey());
     setArg(key: 'out_key', value: secondWidget.key ?? GlobalKey());
+  }
+
+  void _updateDuration() {
+    control.setDurations(
+      forward: transitionIn?.duration,
+      reverse: transitionOut?.duration,
+    );
   }
 
   @override
@@ -232,32 +242,40 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
     this.onFinished,
   }) : super(key: key, control: control);
 
-  factory TransitionHolder.forward({
-    Key key,
-    @required Widget firstWidget,
-    @required Widget secondWidget,
-    CrossTransition transitionIn,
-    CrossTransition transitionOut,
-    VoidCallback onFinished,
-  }) =>
-      TransitionHolder(
-        key: key,
-        control: TransitionControl()..autoRun = true,
-        firstWidget: firstWidget,
-        secondWidget: secondWidget,
-        transitionIn: transitionIn,
-        transitionOut: transitionOut,
-        onFinished: onFinished,
-      );
-
   @override
   void onInit(Map args) {
+    super.onInit(args);
+
+    _updateDuration();
+  }
+
+  @override
+  bool notifyUpdate(CoreWidget oldWidget) {
+    final old = oldWidget as TransitionHolder;
+
+    if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
+      return true;
+    }
+
+    return super.notifyUpdate(oldWidget);
+  }
+
+  @override
+  void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
+    super.onUpdate(oldWidget, state);
+
+    _updateDuration();
+
+    if (control.autoRun) {
+      control._autoCrossRun();
+    }
+  }
+
+  void _updateDuration() {
     control.setDurations(
       forward: transitionIn?.duration,
       reverse: transitionOut?.duration,
     );
-
-    super.onInit(args);
   }
 
   @override
