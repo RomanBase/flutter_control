@@ -35,6 +35,14 @@ class ControlArgHolder implements Disposable {
 
   List<ControlModel> findControls() => argStore.getAll<ControlModel>() ?? [];
 
+  void copy(ControlArgHolder oldHolder) {
+    if (oldHolder.initialized) {
+      init(oldHolder.state);
+    }
+
+    argStore.set(oldHolder.argStore);
+  }
+
   @override
   void dispose() {
     _cache = argStore;
@@ -70,7 +78,11 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   }
 
   @protected
-  bool notifyUpdate(CoreWidget oldWidget) => holder != oldWidget.holder;
+  bool notifyUpdate(CoreWidget oldWidget) {
+    holder.copy(oldWidget.holder);
+
+    return !holder.initialized;
+  }
 
   @protected
   void onUpdate(CoreWidget oldWidget, CoreState state) {

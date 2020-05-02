@@ -7,51 +7,61 @@ class CrossControl extends ControlModel {
 class CrossPage extends SingleControlWidget<CrossControl> {
   @override
   Widget build(BuildContext context) {
-    return ActionBuilder<String>(
-      control: control.cross,
-      builder: (context, value) {
-        return CaseWidget(
-          activeCase: value,
-          builders: {
-            'blue': (_) => Container(
-                  color: Colors.blue,
+    return Column(
+      children: <Widget>[
+        Expanded(
+          child: ActionBuilder<String>(
+            control: control.cross,
+            builder: (context, value) {
+              return CaseWidget(
+                activeCase: value,
+                builders: {
+                  'blue': (_) => Container(
+                        color: Colors.blue,
+                        child: Center(
+                          child: RaisedButton(
+                            onPressed: () => control.cross.value = 'red',
+                            child: Text('cross to red'),
+                          ),
+                        ),
+                      ),
+                  'red': (_) => Container(
+                        color: Colors.red,
+                        child: Center(
+                          child: RaisedButton(
+                            onPressed: () => control.cross.value = 'orange',
+                            child: Text('cross to orange'),
+                          ),
+                        ),
+                      ),
+                  'orange': (_) => Container(
+                        color: Colors.orange,
+                        child: Center(
+                          child: RaisedButton(
+                            onPressed: () => control.cross.value = 'none',
+                            child: Text('cross to placeholder'),
+                          ),
+                        ),
+                      ),
+                },
+                placeholder: Container(
+                  color: Colors.grey,
                   child: Center(
                     child: RaisedButton(
-                      onPressed: () => control.cross.value = 'red',
-                      child: Text('cross to red'),
+                      onPressed: () => control.cross.value = 'blue',
+                      child: Text('cross to blue'),
                     ),
                   ),
                 ),
-            'red': (_) => Container(
-                  color: Colors.red,
-                  child: Center(
-                    child: RaisedButton(
-                      onPressed: () => control.cross.value = 'orange',
-                      child: Text('cross to orange'),
-                    ),
-                  ),
-                ),
-            'orange': (_) => Container(
-                  color: Colors.orange,
-                  child: Center(
-                    child: RaisedButton(
-                      onPressed: () => control.cross.value = 'none',
-                      child: Text('cross to placeholder'),
-                    ),
-                  ),
-                ),
-          },
-          placeholder: Container(
-            color: Colors.grey,
-            child: Center(
-              child: RaisedButton(
-                onPressed: () => control.cross.value = 'blue',
-                child: Text('cross to blue'),
-              ),
-            ),
+              );
+            },
           ),
-        );
-      },
+        ),
+        RaisedButton(
+          onPressed: notifyState,
+          child: Text('notify state'),
+        ),
+      ],
     );
   }
 }
