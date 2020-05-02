@@ -47,7 +47,7 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
     control.addListener(_updateState);
 
     if (control is ReferenceCounter) {
-      (control as ReferenceCounter).addReference(hashCode);
+      (control as ReferenceCounter).addReference(this);
     }
   }
 
@@ -70,14 +70,14 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
   void dispose() {
     super.dispose();
 
+    widget.dispose();
+
     control.removeListener(_updateState);
 
     if (control is DisposeHandler) {
-      (control as DisposeHandler).requestDispose(hashCode);
+      (control as DisposeHandler).requestDispose(this);
     } else {
       control.dispose();
     }
-
-    widget.dispose();
   }
 }

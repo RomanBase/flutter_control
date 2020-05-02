@@ -116,6 +116,8 @@ mixin ReferenceCounter on DisposeHandler {
   /// List of references.
   final _references = new List<int>();
 
+  int get referenceCount => _references.length;
+
   @override
   bool get preferSoftDispose => _references.isNotEmpty;
 

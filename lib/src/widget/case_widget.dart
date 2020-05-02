@@ -66,10 +66,10 @@ class _CaseWidgetState extends State<CaseWidget> {
     if (oldInitializer != null && currentInitializer != null) {
       return TransitionInitHolder(
         control: control,
+        args: widget.args,
         firstWidget: oldInitializer,
         secondWidget: currentInitializer,
         transitionIn: widget.transition,
-        args: widget.args,
       );
     }
 

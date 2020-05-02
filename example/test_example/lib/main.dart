@@ -22,10 +22,10 @@ class MyApp extends StatelessWidget {
       },
       entries: {
         'cards': CardsController(),
-        CrossControl: CrossControl(),
       },
       initializers: {
         DetailController: (args) => DetailController(),
+        CrossControl: (args) => CrossControl(),
       },
       injector: Injector.of({
         ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),

@@ -1,7 +1,15 @@
 import 'package:flutter_control/core.dart';
 
-class CrossControl extends ControlModel {
+class CrossControl extends ControlModel with ReferenceCounter {
   final cross = ActionControl.single<String>('red');
+
+  @override
+  void dispose() {
+    super.dispose();
+    cross.dispose();
+
+    printDebug('DISPOSE CROSS - no reference');
+  }
 }
 
 class CrossPage extends SingleControlWidget<CrossControl> {
@@ -15,44 +23,13 @@ class CrossPage extends SingleControlWidget<CrossControl> {
             builder: (context, value) {
               return CaseWidget(
                 activeCase: value,
+                args: control,
                 builders: {
-                  'blue': (_) => Container(
-                        color: Colors.blue,
-                        child: Center(
-                          child: RaisedButton(
-                            onPressed: () => control.cross.value = 'red',
-                            child: Text('cross to red'),
-                          ),
-                        ),
-                      ),
-                  'red': (_) => Container(
-                        color: Colors.red,
-                        child: Center(
-                          child: RaisedButton(
-                            onPressed: () => control.cross.value = 'orange',
-                            child: Text('cross to orange'),
-                          ),
-                        ),
-                      ),
-                  'orange': (_) => Container(
-                        color: Colors.orange,
-                        child: Center(
-                          child: RaisedButton(
-                            onPressed: () => control.cross.value = 'none',
-                            child: Text('cross to placeholder'),
-                          ),
-                        ),
-                      ),
+                  'blue': (_) => CrossControlPage('red', Colors.blue),
+                  'red': (_) => CrossControlPage('orange', Colors.red),
+                  'orange': (_) => CrossControlPage('placeholder', Colors.orange),
                 },
-                placeholder: Container(
-                  color: Colors.grey,
-                  child: Center(
-                    child: RaisedButton(
-                      onPressed: () => control.cross.value = 'blue',
-                      child: Text('cross to blue'),
-                    ),
-                  ),
-                ),
+                placeholder: CrossControlPage('blue', Colors.grey),
               );
             },
           ),
@@ -62,6 +39,26 @@ class CrossPage extends SingleControlWidget<CrossControl> {
           child: Text('notify state'),
         ),
       ],
+    );
+  }
+}
+
+class CrossControlPage extends SingleControlWidget<CrossControl> {
+  final String next;
+  final Color color;
+
+  CrossControlPage(this.next, this.color) : super(key: ObjectKey(next));
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+      child: Center(
+        child: RaisedButton(
+          onPressed: () => control.cross.value = next,
+          child: Text('cross to $next'),
+        ),
+      ),
     );
   }
 }
