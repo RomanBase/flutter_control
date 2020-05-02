@@ -26,11 +26,14 @@ class _CaseWidgetState extends State<CaseWidget> {
   WidgetInitializer oldInitializer;
   WidgetInitializer currentInitializer;
 
+  Map builders;
+
   @override
   void initState() {
     super.initState();
 
     _updateInitializer();
+    builders = widget.builders;
   }
 
   @override
@@ -47,8 +50,8 @@ class _CaseWidgetState extends State<CaseWidget> {
   void _updateInitializer() {
     oldInitializer = currentInitializer;
 
-    if (widget.activeCase != null && widget.builders.containsKey(widget.activeCase)) {
-      final builder = widget.builders[widget.activeCase];
+    if (widget.activeCase != null && builders.containsKey(widget.activeCase)) {
+      final builder = builders[widget.activeCase];
 
       currentInitializer = WidgetInitializer.of(builder);
     } else {
@@ -66,6 +69,7 @@ class _CaseWidgetState extends State<CaseWidget> {
         firstWidget: oldInitializer,
         secondWidget: currentInitializer,
         transitionIn: widget.transition,
+        args: widget.args,
       );
     }
 

@@ -96,7 +96,6 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
 //TODO: as StatelessWidget with static constructor in TransitionHolder ????? !!!!!
 class TransitionInitHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
-  final bool forceInit;
   final dynamic args;
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
@@ -119,7 +118,6 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     @required TransitionControl control,
     @required this.firstWidget,
     @required this.secondWidget,
-    this.forceInit: false,
     this.args,
     this.transitionIn,
     this.transitionOut,
@@ -173,20 +171,12 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   Widget build(BuildContext context) {
     final outWidget = KeyedSubtree(
       key: _outKey,
-      child: firstWidget.getWidget(
-        context,
-        forceInit: forceInit,
-        args: args,
-      ),
+      child: firstWidget.getWidget(context, args: args),
     );
 
     final inWidget = KeyedSubtree(
       key: _inKey,
-      child: secondWidget.getWidget(
-        context,
-        forceInit: forceInit,
-        args: args,
-      ),
+      child: secondWidget.getWidget(context, args: args),
     );
 
     if (animation.value == 0.0) {
