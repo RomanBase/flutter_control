@@ -12,6 +12,8 @@ abstract class WidgetInitializer implements Disposable {
   /// Send to Widget via [_args] with [ControlKey.initData] key.
   Object data;
 
+  Key key;
+
   bool get isInitialized => _widget != null;
 
   WidgetInitializer();
@@ -48,7 +50,7 @@ abstract class WidgetInitializer implements Disposable {
   /// Wraps initializer into [WidgetBuilder].
   WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
 
-  void clear(){
+  void clear() {
     _widget = null;
   }
 

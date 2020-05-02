@@ -100,6 +100,8 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   /// [args] are then parsed into [Map].
   void addArg(dynamic args) => holder.set(args);
 
+  void setArg({dynamic key, @required dynamic value}) => holder.argStore.add(key: key, value: value);
+
   /// Returns value by given key or type.
   /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
   T getArg<T>({dynamic key, T defaultValue}) => holder.get<T>(key: key, defaultValue: defaultValue);

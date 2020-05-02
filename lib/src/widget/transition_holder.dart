@@ -13,9 +13,6 @@ class CrossTransition {
 }
 
 class TransitionControl extends ControlModel with StateControl, TickerComponent {
-  final outKey = GlobalKey();
-  final inKey = GlobalKey();
-
   bool autoRun = false;
 
   AnimationController animation;
@@ -82,6 +79,10 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
 
+  Key get _inKey => getArg(key: 'in_key');
+
+  Key get _outKey => getArg(key: 'out_key');
+
   TransitionInitHolder({
     Key key,
     @required TransitionControl control,
@@ -98,6 +99,8 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   void onInit(Map args) {
     super.onInit(args);
 
+    _updateKeys();
+
     control.setDurations(
       forward: transitionIn?.duration,
       reverse: transitionOut?.duration,
@@ -105,9 +108,26 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   }
 
   @override
+  bool notifyUpdate(CoreWidget oldWidget) {
+    final old = oldWidget as TransitionInitHolder;
+
+    if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
+      _updateKeys();
+      return true;
+    }
+
+    return super.notifyUpdate(oldWidget);
+  }
+
+  void _updateKeys() {
+    setArg(key: 'in_key', value: firstWidget.key ?? GlobalKey());
+    setArg(key: 'out_key', value: secondWidget.key ?? GlobalKey());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final outWidget = KeyedSubtree(
-      key: control.outKey,
+      key: _outKey,
       child: firstWidget.getWidget(
         context,
         forceInit: forceInit,
@@ -116,7 +136,7 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     );
 
     final inWidget = KeyedSubtree(
-      key: control.inKey,
+      key: _inKey,
       child: secondWidget.getWidget(
         context,
         forceInit: forceInit,

@@ -1,10 +1,11 @@
 import 'package:flutter_control/core.dart';
 
-class CaseWidget extends StatefulWidget {
+class CaseWidget<T> extends StatefulWidget {
   final dynamic activeCase;
-  final Map<dynamic, WidgetBuilder> builders;
+  final Map<T, WidgetBuilder> builders;
   final dynamic args;
   final Widget placeholder;
+  final CrossTransition transition;
 
   const CaseWidget({
     Key key,
@@ -12,6 +13,7 @@ class CaseWidget extends StatefulWidget {
     @required this.builders,
     this.args,
     this.placeholder,
+    this.transition,
   }) : super(key: key);
 
   @override
@@ -19,7 +21,10 @@ class CaseWidget extends StatefulWidget {
 }
 
 class _CaseWidgetState extends State<CaseWidget> {
-  WidgetInitializer initializer;
+  final control = TransitionControl();
+
+  WidgetInitializer oldInitializer;
+  WidgetInitializer currentInitializer;
 
   @override
   void initState() {
@@ -40,21 +45,52 @@ class _CaseWidgetState extends State<CaseWidget> {
   }
 
   void _updateInitializer() {
+    oldInitializer = currentInitializer;
+
     if (widget.activeCase != null && widget.builders.containsKey(widget.activeCase)) {
       final builder = widget.builders[widget.activeCase];
 
-      initializer = WidgetInitializer.of(builder);
+      currentInitializer = WidgetInitializer.of(builder);
     } else {
-      initializer = null;
+      currentInitializer = WidgetInitializer.of((_) => _placeholder());
     }
+
+    currentInitializer.key = GlobalKey();
+
+    control.crossIn(from: 0.0);
   }
 
   @override
   Widget build(BuildContext context) {
-    if (initializer != null) {
-      return initializer.getWidget(context, args: widget.args);
+    if (oldInitializer != null && currentInitializer != null) {
+      return TransitionInitHolder(
+        control: control,
+        firstWidget: oldInitializer,
+        secondWidget: currentInitializer,
+        transitionIn: widget.transition,
+      );
     }
 
-    return widget.placeholder ?? Container();
+    return KeyedSubtree(
+      key: currentInitializer.key,
+      child: currentInitializer.getWidget(context, args: widget.args),
+    );
+  }
+
+  Widget _placeholder() {
+    if (widget.placeholder != null) {
+      return widget.placeholder;
+    }
+
+    if (widget.activeCase == null) {
+      return Container();
+    }
+
+    return Container(
+      color: Colors.red,
+      child: Center(
+        child: Text(widget.activeCase.toString()),
+      ),
+    );
   }
 }
