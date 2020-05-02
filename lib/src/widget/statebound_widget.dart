@@ -17,9 +17,7 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   void onInit(Map args) {
     super.onInit(args);
 
-    if (control is StateControl) {
-      control.onStateInitialized();
-    }
+    control.onStateInitialized();
   }
 
   @override
@@ -47,6 +45,10 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
     }
 
     control.addListener(_updateState);
+
+    if (control is ReferenceCounter) {
+      (control as ReferenceCounter).addReference(hashCode);
+    }
   }
 
   void _updateState() => setState(() {});
@@ -69,6 +71,13 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
     super.dispose();
 
     control.removeListener(_updateState);
+
+    if (control is DisposeHandler) {
+      (control as DisposeHandler).requestDispose(hashCode);
+    } else {
+      control.dispose();
+    }
+
     widget.dispose();
   }
 }

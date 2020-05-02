@@ -27,7 +27,7 @@ abstract class StateNotifier {
 /// Extend this class to create custom controllers and models.
 ///
 /// Mixin your model with [LocalizationProvider] to enable localization.
-class ControlModel with DisposeHandler, Disposer implements Initializable {
+class ControlModel with DisposeHandler /*, Disposer*/ implements Initializable {
   /// returns instance of [ControlFactory] if available.
   /// nullable
   ControlFactory get factory => Control.factory();

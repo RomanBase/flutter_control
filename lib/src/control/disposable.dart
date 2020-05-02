@@ -16,14 +16,13 @@ abstract class Disposable {
 ///
 /// [dispose] can be still called directly.
 mixin DisposeHandler implements Disposable {
-
   /// [requestDispose] do nothing if set. Final [dispose] must be handled manually.
   bool preventDispose = false;
 
   /// [requestDispose] will execute [softDispose]. Useful for items in list and objects store in [ControlFactory]. Final [dispose] must be handled manually.
   bool preferSoftDispose = false;
 
-  void requestDispose() {
+  void requestDispose([dynamic parent]) {
     if (preventDispose) {
       return;
     }
@@ -39,12 +38,12 @@ mixin DisposeHandler implements Disposable {
 
   @override
   void dispose() {
-    if (this is Disposer) {
+    /*if (this is Disposer) {
       (this as Disposer).executeDispose();
-    }
+    }*/
   }
 }
-
+/*
 ///TODO: revalidate purpose
 class DisposableItem implements Disposable {
   final Disposable disposable;
@@ -107,7 +106,7 @@ extension DisposableExt on Disposable {
 
     return this;
   }
-}
+}*/
 
 /// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and [ControlModel].
 /// Counts references by [hashCode]. References must be added/removed manually.
@@ -133,6 +132,15 @@ mixin ReferenceCounter on DisposeHandler {
   /// Removes reference of given [object].
   /// When there is 1 or more reference then [preferSoftDispose] is set.
   void removeReference(Object object) => _references.remove(object.hashCode);
+
+  @override
+  void requestDispose([parent]) {
+    if (parent != null) {
+      removeReference(parent);
+    }
+
+    super.requestDispose(parent);
+  }
 
   /// Clears all references.
   /// So [preferSoftDispose] is not set.

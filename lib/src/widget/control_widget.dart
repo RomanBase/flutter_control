@@ -161,6 +161,12 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
 
   void initControls() {
     controls = widget.initControls() ?? [];
+
+    controls.forEach((control) {
+      if (control is ReferenceCounter) {
+        (control as ReferenceCounter).addReference(hashCode);
+      }
+    });
   }
 
   @override
@@ -192,7 +198,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
           (control as StateControl).removeListener(notifyState);
         }
 
-        control.requestDispose();
+        control.requestDispose(hashCode);
       });
       controls.clear();
       controls = null;

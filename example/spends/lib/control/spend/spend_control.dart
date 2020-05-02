@@ -17,16 +17,6 @@ class SpendControl extends BaseControl with RepoProvider {
   //TODO: group in group - func
   List<SpendItem> get groups => list.where((model) => model.item.isGroup).map((model) => model.item).toList(growable: false);
 
-  SpendControl() {
-    autoDispose([
-      loading,
-      list,
-      yearSpend,
-      monthAvgSpend,
-      monthSubSpend,
-    ]);
-  }
-
   @override
   void onInit(Map args) {
     super.onInit(args);
@@ -145,5 +135,16 @@ class SpendControl extends BaseControl with RepoProvider {
     yearSpend.value = null;
     monthAvgSpend.value = null;
     monthSubSpend.value = null;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    loading.dispose();
+    list.dispose();
+    yearSpend.dispose();
+    monthAvgSpend.dispose();
+    monthSubSpend.dispose();
   }
 }
