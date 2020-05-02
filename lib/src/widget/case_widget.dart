@@ -21,7 +21,7 @@ class CaseWidget<T> extends StatefulWidget {
 }
 
 class _CaseWidgetState extends State<CaseWidget> {
-  final control = TransitionControl();
+  final control = TransitionControl()..autoCrossIn(from: 0.0);
 
   WidgetInitializer oldInitializer;
   WidgetInitializer currentInitializer;
@@ -56,8 +56,6 @@ class _CaseWidgetState extends State<CaseWidget> {
     }
 
     currentInitializer.key = GlobalKey();
-
-    control.crossIn(from: 0.0);
   }
 
   @override

@@ -13,7 +13,7 @@ class CrossTransition {
 }
 
 class TransitionControl extends ControlModel with StateControl, TickerComponent {
-  bool autoRun = false;
+  bool autoRun;
 
   AnimationController animation;
 
@@ -21,7 +21,9 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
   double get animTime => animation?.value ?? 0.0;
 
-  TransitionControl();
+  VoidCallback _autoCross;
+
+  TransitionControl({this.autoRun: false});
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
@@ -36,30 +38,58 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
     super.onStateInitialized();
 
     if (autoRun) {
-      crossIn(from: 0.0);
+      _autoCrossRun();
     }
   }
 
   void setDurations({Duration forward, Duration reverse}) {
-    assert(animation != null);
+    assert(isInitialized);
 
     animation.duration = forward ?? Duration(milliseconds: 300);
     animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
   }
 
   void crossIn({double from}) {
-    animation.forward(from: from);
+    assert(isInitialized);
+
+    animation?.forward(from: from);
   }
 
   void crossOut({double from}) {
-    animation.reverse(from: from);
+    assert(isInitialized);
+
+    animation?.reverse(from: from);
+  }
+
+  void _autoCrossRun() {
+    assert(isInitialized);
+
+    if (_autoCross != null) {
+      _autoCross();
+    }
+
+    if (animation.value < 1.0) {
+      crossIn();
+    } else {
+      crossOut();
+    }
+  }
+
+  void autoCrossIn({double from}) {
+    autoRun = true;
+    _autoCross = () => crossIn(from: from);
+  }
+
+  void autoCrossOut({double from}) {
+    autoRun = true;
+    _autoCross = () => crossOut(from: from);
   }
 
   @override
   void dispose() {
     super.dispose();
 
-    animation.dispose();
+    animation?.dispose();
     animation = null;
   }
 }
@@ -113,6 +143,11 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
       _updateKeys();
+
+      if (control.autoRun) {
+        control._autoCrossRun();
+      }
+
       return true;
     }
 
