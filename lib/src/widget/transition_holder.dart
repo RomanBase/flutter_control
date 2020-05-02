@@ -109,10 +109,6 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
 
-  Key get _inKey => getArg(key: 'in_key');
-
-  Key get _outKey => getArg(key: 'out_key');
-
   TransitionInitHolder({
     Key key,
     @required TransitionControl control,
@@ -137,7 +133,6 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     final old = oldWidget as TransitionInitHolder;
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
-      _updateKeys();
       return true;
     }
 
@@ -148,6 +143,7 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
     super.onUpdate(oldWidget, state);
 
+    _updateKeys();
     _updateDuration();
 
     if (control.autoRun) {
@@ -156,8 +152,8 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   }
 
   void _updateKeys() {
-    setArg(key: 'in_key', value: firstWidget.key ?? GlobalKey());
-    setArg(key: 'out_key', value: secondWidget.key ?? GlobalKey());
+    setArg(key: firstWidget.hashCode, value: firstWidget.key ?? GlobalKey());
+    setArg(key: secondWidget.hashCode, value: secondWidget.key ?? GlobalKey());
   }
 
   void _updateDuration() {
@@ -170,12 +166,12 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
   @override
   Widget build(BuildContext context) {
     final outWidget = KeyedSubtree(
-      key: _outKey,
+      key: getArg(key: firstWidget.hashCode),
       child: firstWidget.getWidget(context, args: args),
     );
 
     final inWidget = KeyedSubtree(
-      key: _inKey,
+      key: getArg(key: secondWidget.hashCode),
       child: secondWidget.getWidget(context, args: args),
     );
 
