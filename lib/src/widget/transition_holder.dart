@@ -105,9 +105,9 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
   Animation get animation => control.animation;
 
-  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross;
+  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross();
 
-  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
+  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
   TransitionInitHolder({
     Key key,
@@ -214,9 +214,9 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
 
   Animation get animation => control.animation;
 
-  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross;
+  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross();
 
-  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross;
+  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
   TransitionHolder({
     Key key,
@@ -301,7 +301,7 @@ class CrossTransitions {
 
   static get _progressReverse => Tween<double>(begin: 1.0, end: 0.0);
 
-  static CrossTransitionBuilder get fade => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fade({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeOut.to(0.65),
@@ -313,7 +313,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: Theme.of(context).backgroundColor,
+          color: backgroundColor ?? Theme.of(context).backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(
@@ -329,7 +329,7 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder get fadeOutFadeIn => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fadeOutFadeIn({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeIn.to(0.35),
@@ -341,7 +341,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: Theme.of(context).backgroundColor,
+          color: backgroundColor ?? Theme.of(context).backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(
@@ -357,7 +357,7 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder get fadeCross => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fadeCross({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeOut,
@@ -369,7 +369,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: Theme.of(context).backgroundColor,
+          color: backgroundColor ?? Theme.of(context).backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(

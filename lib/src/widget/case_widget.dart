@@ -6,6 +6,7 @@ class CaseWidget<T> extends StatefulWidget {
   final dynamic args;
   final Widget placeholder;
   final CrossTransition transition;
+  final Map<T, CrossTransition> caseTransition;
 
   const CaseWidget({
     Key key,
@@ -14,10 +15,19 @@ class CaseWidget<T> extends StatefulWidget {
     this.args,
     this.placeholder,
     this.transition,
+    this.caseTransition,
   }) : super(key: key);
 
   @override
   _CaseWidgetState createState() => _CaseWidgetState();
+
+  CrossTransition get activeTransition {
+    if (caseTransition != null && caseTransition.containsKey(activeCase)) {
+      return caseTransition[activeCase];
+    }
+
+    return transition;
+  }
 }
 
 class _CaseWidgetState extends State<CaseWidget> {
@@ -69,7 +79,7 @@ class _CaseWidgetState extends State<CaseWidget> {
         args: widget.args,
         firstWidget: oldInitializer,
         secondWidget: currentInitializer,
-        transitionIn: widget.transition,
+        transitionIn: widget.activeTransition,
       );
     }
 
