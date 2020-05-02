@@ -32,8 +32,8 @@ class _CaseWidgetState extends State<CaseWidget> {
   void initState() {
     super.initState();
 
-    _updateInitializer();
     builders = widget.builders;
+    _updateInitializer();
   }
 
   @override
