@@ -151,6 +151,26 @@ class Parse {
     return defaultValue;
   }
 
+  static T toEnum<T>(dynamic value, List<T> enums, {T defaultValue}) {
+    assert(enums != null);
+
+    if (value == null) {
+      return defaultValue ?? enums[0];
+    }
+
+    final name = string(value).toLowerCase();
+
+    return enums.firstWhere((item) => fromEnum(item).toLowerCase() == name, orElse: () => defaultValue ?? enums[0]);
+  }
+
+  static String fromEnum(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+
+    return value.toString().split('.')[1];
+  }
+
   /// Safety converts value to give [Type]
   /// If conversion fails, then is [defaultValue] returned.
   static T convert<T>(dynamic value, {@required ValueConverter<T> converter, T defaultValue}) {
