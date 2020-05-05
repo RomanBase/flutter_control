@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
       initializers: {
         WeatherRepo: (_) => WeatherRepo(),
       },
+      disableLoader: true,
       root: (context, args) => DashboardPage(),
       app: (context, key, home) => MaterialApp(
         key: key,

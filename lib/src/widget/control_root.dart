@@ -178,10 +178,14 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     if (state is ControlArgs) {
       _args.combine(state);
 
-      if (!loading) {
-        transition.crossIn();
+      if (transition.isInitialized) {
+        if (!loading) {
+          transition.crossIn();
+        } else {
+          transition.crossOut();
+        }
       } else {
-        transition.crossOut();
+        setState(() {});
       }
     } else {
       setState(() {});
@@ -199,11 +203,13 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       _loadingBuilder = WidgetInitializer.of((context) {
         printDebug('build default loader');
 
-        return Container(
-          color: Theme.of(context).canvasColor,
-          child: Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+        return InitLoader.of(
+          builder: (context) => Container(
+            color: Theme.of(context).canvasColor,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              ),
             ),
           ),
         );

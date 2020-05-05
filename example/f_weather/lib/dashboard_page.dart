@@ -68,7 +68,7 @@ class DashboardPage extends ControlWidget with TickerControl {
           children: <Widget>[
             SingleChildScrollView(
               child: NotifierBuilder<TemperatureModel>(
-                control: control.temperature.state,
+                control: control.temperature,
                 builder: (context, temperature) {
                   return TweenAnimationBuilder(
                     duration: Duration(milliseconds: 500),
@@ -208,7 +208,7 @@ class WeatherInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotifierBuilder<TemperatureModel>(
-      control: model.state,
+      control: model,
       builder: (context, model) {
         if (model.isAvailable) {
           return Column(
@@ -271,7 +271,7 @@ class LocationInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotifierBuilder<LocationModel>(
-      control: model.state,
+      control: model,
       builder: (context, model) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
