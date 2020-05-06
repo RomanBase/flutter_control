@@ -37,7 +37,7 @@ export './src/widget/statebound_widget.dart';
 export './src/widget/transition_holder.dart';
 export './src/widget/widget_provider.dart';
 
-enum LoadingStatus { none, progress, done, error, outdated, unknown }
+enum LoadingStatus { initial, progress, done, error, outdated, unknown }
 
 typedef Initializer<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);

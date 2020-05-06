@@ -53,7 +53,7 @@ class _UIControl extends ControlModel with FireProvider, TickerComponent {
           //TODO: show error message.
           loadingAnim.reverse();
           break;
-        case LoadingStatus.none:
+        case LoadingStatus.initial:
         case LoadingStatus.outdated:
         case LoadingStatus.unknown:
           loadingAnim.reverse();

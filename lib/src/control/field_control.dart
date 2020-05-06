@@ -853,41 +853,6 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   void status(bool loading, {dynamic msg}) => loading ? progress(msg: msg) : done(msg: msg);
 }
 
-//TODO: refactor
-/// Builder for [LoadingControl].
-/// [LoadingStatus]
-/// [FieldStreamBuilder]
-class LoadingStackBuilder extends FieldStreamBuilder<LoadingStatus> {
-  final Map<LoadingStatus, Widget> children;
-
-  LoadingStackBuilder({
-    Key key,
-    @required LoadingControl control,
-    @required this.children,
-  }) : super(
-            key: key,
-            control: control,
-            builder: (context, snapshot) {
-              if (children == null || children.length == 0) {
-                return null;
-              }
-
-              final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
-
-              int index = 0;
-
-              if (children.containsKey(state)) {
-                index = children.keys.toList(growable: false).indexOf(state);
-              }
-
-              return IndexedStack(
-                index: index,
-                children: children.values.toList(growable: false),
-              );
-            });
-}
-
-//TODO: refactor
 /// Builder for [LoadingControl].
 /// [LoadingStatus]
 /// [FieldStreamBuilder]
@@ -897,6 +862,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
   final WidgetBuilder error;
   final WidgetBuilder outdated;
   final WidgetBuilder unknown;
+  final CrossTransition transition;
 
   LoadingBuilder({
     Key key,
@@ -906,34 +872,26 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
     this.error,
     this.outdated,
     this.unknown,
+    this.transition,
   }) : super(
           key: key,
           control: control,
           builder: (context, snapshot) {
-            final state = snapshot.hasData ? snapshot.data : LoadingStatus.none;
+            final state = snapshot.hasData ? snapshot.data : LoadingStatus.initial;
 
-            switch (state) {
-              case LoadingStatus.progress:
-                return progress != null
-                    ? progress(context)
-                    : Center(
-                        child: CircularProgressIndicator(),
-                      );
-              case LoadingStatus.done:
-                return done != null ? done(context) : null;
-              case LoadingStatus.error:
-                return error != null
-                    ? error(context)
-                    : control.hasMessage
-                        ? Center(
-                            child: Text(control.message),
-                          )
-                        : null;
-              case LoadingStatus.outdated:
-                return outdated != null ? outdated(context) : null;
-              default:
-                return unknown != null ? unknown(context) : null;
-            }
+            return CaseWidget(
+              activeCase: state,
+              builders: {
+                LoadingStatus.progress: progress ?? (context) => Center(child: CircularProgressIndicator()),
+                LoadingStatus.done: done,
+                LoadingStatus.error: error,
+                LoadingStatus.outdated: outdated,
+                LoadingStatus.unknown: unknown,
+              },
+              transition: CrossTransition(
+                builder: CrossTransitions.fadeOutFadeIn(backgroundColor: Colors.transparent),
+              ),
+            );
           },
         );
 }
