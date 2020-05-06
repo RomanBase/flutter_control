@@ -125,7 +125,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   void onStateChanged(dynamic state) {}
 
   /// Returns context of this widget or [root] context that is stored in [AppControl]
-  BuildContext getContext({bool root: false}) => root ? Control.root()?.rootContext ?? context : context;
+  BuildContext getContext({bool root: false}) => root ? Control.root()?.context ?? context : context;
 
   /// Returns value by given key or type.
   /// Look up in [controls] and [factory].
@@ -210,17 +210,22 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
-  Route get activeRoute => getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
+  Route getActiveRoute() => getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
 
-  // TODO: return Navigator.of(context, rootNavigator: true) if ControlScope.rootContext is not available or invalid.
   @protected
-  NavigatorState getNavigator({bool root: false}) => Navigator.of(getContext(root: root));
+  NavigatorState getNavigator({bool root: false}) {
+    if (root && !Control.root().isInitialized) {
+      return Navigator.of(context, rootNavigator: true);
+    }
+
+    return Navigator.of(getContext(root: root));
+  }
 
   @override
   void init(Map args) {
     super.init(args);
 
-    final route = activeRoute;
+    final route = getActiveRoute();
     if (route != null) {
       printDebug('${this.toString()} at route: ${route.settings.name}');
     }
@@ -270,7 +275,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
 
   @override
   bool close([dynamic result]) {
-    final route = activeRoute;
+    final route = getActiveRoute();
 
     if (route != null) {
       return closeRoute(route, result);

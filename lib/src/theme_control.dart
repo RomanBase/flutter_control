@@ -157,7 +157,7 @@ class ControlTheme {
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
-    _context = context ?? Control.root()?.rootContext;
+    _context = context ?? Control.root()?.context;
 
     assert(_context != null);
   }

@@ -47,10 +47,12 @@ class ControlScope {
   Widget get homeWidget => rootState?._currentWidget;
 
   /// Returns current context from [contextHolder]
-  BuildContext get rootContext => _context.value;
+  BuildContext get context => _context.value;
+
+  bool get isInitialized => rootKey.currentState != null && context != null;
 
   /// Sets new root context to [contextHolder]
-  set rootContext(BuildContext context) => _context.value = context;
+  set context(BuildContext context) => _context.value = context;
 
   ActionControlStream get rootContextSub => _context.sub;
 

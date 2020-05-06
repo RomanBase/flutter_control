@@ -444,7 +444,7 @@ class ControlFactory with Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= Control.root()?.rootContext;
+      args ??= Control.root()?.context;
 
       final item = initializer(args);
 
