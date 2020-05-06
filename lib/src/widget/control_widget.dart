@@ -275,14 +275,28 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
     if (route != null) {
       return closeRoute(route, result);
     } else {
-      return getNavigator().pop(result);
+      final navigator = getNavigator();
+
+      if (navigator.canPop()) {
+        getNavigator().pop(result);
+        return true;
+      }
+
+      return false;
     }
   }
 
   @override
   bool closeRoute(Route route, [dynamic result]) {
     if (route.isCurrent) {
-      return getNavigator().pop(result);
+      final navigator = getNavigator();
+
+      if (navigator.canPop()) {
+        getNavigator().pop(result);
+        return true;
+      }
+
+      return false;
     } else {
       // ignore: invalid_use_of_protected_member
       route.didComplete(result);

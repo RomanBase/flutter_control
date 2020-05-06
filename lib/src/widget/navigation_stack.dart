@@ -287,7 +287,8 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
   @override
   bool navigateBack() {
     if (navigator != null && navigator.canPop()) {
-      return navigator.pop();
+      navigator.pop();
+      return true;
     }
 
     return false;

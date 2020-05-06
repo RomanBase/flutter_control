@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteBuilder = PageRoute Function(WidgetBuilder builder, RouteSettings settings);
+typedef RouteWidgetBuilder = Route Function(WidgetBuilder builder, RouteSettings settings);
 
 /// Abstract class for basic type of navigation.
 abstract class RouteNavigator {
@@ -56,7 +56,7 @@ class RouteHandler {
     assert(provider != null);
   }
 
-  RouteHandler viaRoute(RouteBuilder route) => RouteHandler(navigator, provider.viaRoute(route));
+  RouteHandler viaRoute(RouteWidgetBuilder route) => RouteHandler(navigator, provider.viaRoute(route));
 
   RouteHandler viaTransition(RouteTransitionsBuilder transition) => RouteHandler(navigator, provider.viaTransition(transition));
 
@@ -131,7 +131,7 @@ class ControlRoute {
   WidgetBuilder builder;
 
   /// Route builder.
-  RouteBuilder routeBuilder;
+  RouteWidgetBuilder routeBuilder;
 
   /// Default constructor.
   ControlRoute();
@@ -166,7 +166,7 @@ class ControlRoute {
     return route;
   }
 
-  ControlRoute viaRoute(RouteBuilder route) => _copyWith(routeBuilder: route);
+  ControlRoute viaRoute(RouteWidgetBuilder route) => _copyWith(routeBuilder: route);
 
   ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
       routeBuilder: (builder, settings) => ControlRouteTransition(
@@ -180,7 +180,7 @@ class ControlRoute {
 
   ControlRoute named(String identifier) => _copyWith(identifier: identifier);
 
-  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteBuilder routeBuilder}) => ControlRoute()
+  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteWidgetBuilder routeBuilder}) => ControlRoute()
     ..identifier = identifier ?? this.identifier
     ..settings = settings ?? this.settings
     ..builder = builder

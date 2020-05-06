@@ -19,7 +19,7 @@ class NavTransitions {
         );
       };
 
-  static RouteBuilder get slideRoute => (builder, settings) => _SlideRoute(
+  static RouteWidgetBuilder get slideRoute => (builder, settings) => _SlideRoute(
         builder: builder,
         settings: settings,
       );
