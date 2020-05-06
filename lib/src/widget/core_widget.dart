@@ -273,7 +273,7 @@ class _TickerComponent extends ControlModel implements TickerProvider {
       return true;
     }());
 
-    _tickers?.forEach((item) => item.dispose());
+    _tickers?.clear();
     _tickers = null;
 
     super.dispose();
