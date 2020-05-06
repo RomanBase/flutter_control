@@ -137,7 +137,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
   }
 
   @override
-  bool notifyUpdate(CoreWidget oldWidget) {
+  bool shouldUpdate(CoreWidget oldWidget) {
     final old = oldWidget as TransitionHolder;
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
@@ -149,7 +149,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
       }
     }
 
-    return super.notifyUpdate(oldWidget);
+    return super.shouldUpdate(oldWidget);
   }
 
   void _updateKeys() {
