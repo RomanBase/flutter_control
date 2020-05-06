@@ -108,4 +108,11 @@ class _CaseWidgetState extends State<CaseWidget> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    //control.dispose();
+  }
 }

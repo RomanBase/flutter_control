@@ -250,6 +250,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _rootBuilder = WidgetInitializer.control(widget.root);
 
+    _loadingBuilder.key = GlobalObjectKey(AppState.onboarding);
+    _rootBuilder.key = GlobalObjectKey(AppState.active);
+
     _initControl();
   }
 
@@ -308,9 +311,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   Widget _buildHome(BuildContext context) {
     _context.value = context;
 
-    _loadingBuilder.key ??= GlobalKey();
-    _rootBuilder.key ??= GlobalKey();
-
     if (widget.disableLoader) {
       return KeyedSubtree(
         key: _rootBuilder.key,
@@ -322,7 +322,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     }
 
     return TransitionHolder(
-      key: ObjectKey('init_holder'),
       control: transition,
       firstWidget: _loadingBuilder,
       secondWidget: _rootBuilder,

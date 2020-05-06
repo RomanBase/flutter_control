@@ -100,7 +100,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   }
 }
 
-class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+class TransitionHolder extends SingleControlWidget<TransitionControl> with SingleTickerControl {
   final dynamic args;
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
@@ -114,6 +114,16 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
+  Widget get _outWidget => KeyedSubtree(
+        key: getArg(key: 'first_key'),
+        child: firstWidget.getWidget(context, args: args),
+      );
+
+  Widget get _inWidget => KeyedSubtree(
+        key: getArg(key: 'second_key'),
+        child: secondWidget.getWidget(context, args: args),
+      );
+
   TransitionHolder({
     Key key,
     @required TransitionControl control,
@@ -123,7 +133,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
     this.transitionIn,
     this.transitionOut,
     this.onFinished,
-  }) : super(key: key, control: control);
+  }) : super(key: key, args: control);
 
   @override
   void onInit(Map args) {
@@ -138,6 +148,8 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
 
   @override
   bool shouldUpdate(CoreWidget oldWidget) {
+    final update = super.shouldUpdate(oldWidget);
+
     final old = oldWidget as TransitionHolder;
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
@@ -149,12 +161,12 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
       }
     }
 
-    return super.shouldUpdate(oldWidget);
+    return update;
   }
 
   void _updateKeys() {
-    setArg(key: firstWidget.hashCode, value: firstWidget.key ?? GlobalKey());
-    setArg(key: secondWidget.hashCode, value: secondWidget.key ?? GlobalKey());
+    setArg(key: 'first_key', value: firstWidget.key ?? GlobalKey());
+    setArg(key: 'second_key', value: secondWidget.key ?? GlobalKey());
   }
 
   void _updateDuration() {
@@ -166,41 +178,31 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final outWidget = KeyedSubtree(
-      key: getArg(key: firstWidget.hashCode),
-      child: firstWidget.getWidget(context, args: args),
-    );
-
-    final inWidget = KeyedSubtree(
-      key: getArg(key: secondWidget.hashCode),
-      child: secondWidget.getWidget(context, args: args),
-    );
-
-    if (animation.value == 0.0) {
+    if (animation.status == AnimationStatus.dismissed) {
       if (onFinished != null) onFinished();
 
-      return outWidget;
+      return _outWidget;
     }
 
-    if (animation.value == 1.0) {
+    if (animation.status == AnimationStatus.completed) {
       if (onFinished != null) onFinished();
 
-      return inWidget;
+      return _inWidget;
     }
 
     if (animation.status == AnimationStatus.forward) {
       return transitionInBuilder(
         context,
         animation,
-        outWidget,
-        inWidget,
+        _outWidget,
+        _inWidget,
       );
     } else {
       return transitionOutBuilder(
         context,
         animation,
-        outWidget,
-        inWidget,
+        _outWidget,
+        _inWidget,
       );
     }
   }

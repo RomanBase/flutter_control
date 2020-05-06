@@ -58,6 +58,7 @@ abstract class WidgetInitializer implements Disposable {
   void dispose() {
     _widget = null;
     data = null;
+    key = null;
   }
 }
 
