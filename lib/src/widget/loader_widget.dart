@@ -43,16 +43,14 @@ abstract class InitLoaderControl extends BaseControl {
       await block.finish();
     }
 
-    notifyControl(LoadingStatus.done, result);
+    final state = Parse.getArg<AppState>(result, defaultValue: AppState.active);
+    notifyControl(state, result);
   }
 
   Future<dynamic> load();
 
-  void notifyControl(LoadingStatus status, [dynamic args]) {
-    final result = ControlArgs(args);
-    result[LoadingStatus] = status;
-
-    Control.root().notifyControlState(result);
+  void notifyControl(AppState state, [dynamic args]) {
+    Control.root().setAppState(state, args);
   }
 
   @override

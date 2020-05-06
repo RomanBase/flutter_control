@@ -32,6 +32,6 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
   }
 
   void unloadApp() {
-    Control.root().notifyControlState(ControlArgs(LoadingStatus.progress));
+    Control.root().setOnboardingState();
   }
 }

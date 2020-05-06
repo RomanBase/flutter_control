@@ -52,13 +52,13 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   void crossIn({double from}) {
     assert(isInitialized);
 
-    animation?.forward(from: from);
+    animation.forward(from: from);
   }
 
   void crossOut({double from}) {
     assert(isInitialized);
 
-    animation?.reverse(from: from);
+    animation.reverse(from: from);
   }
 
   void _autoCrossRun() {

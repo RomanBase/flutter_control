@@ -9,6 +9,30 @@ const _appKey = GlobalObjectKey(AppBuilder);
 
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
 
+class AppState {
+  static const none = const AppState();
+
+  static const onboarding = const AppStateOnboarding();
+
+  static const active = const AppStateActive();
+
+  static const background = const AppStateBackground();
+
+  const AppState();
+}
+
+class AppStateOnboarding extends AppState {
+  const AppStateOnboarding();
+}
+
+class AppStateBackground extends AppState {
+  const AppStateBackground();
+}
+
+class AppStateActive extends AppState {
+  const AppStateActive();
+}
+
 class ControlScope {
   const ControlScope();
 
@@ -57,9 +81,13 @@ class ControlScope {
     return false;
   }
 
-  bool setLoaderState() => notifyControlState(ControlArgs(LoadingStatus.progress));
+  bool setAppState(AppState state, [dynamic args]) => notifyControlState(ControlArgs({AppState: state})..set(args));
 
-  bool setAppState() => notifyControlState(ControlArgs(LoadingStatus.done));
+  bool setOnboardingState([dynamic args]) => setAppState(AppState.onboarding, args);
+
+  bool setActiveState([dynamic args]) => setAppState(AppState.active, args);
+
+  bool setBackgroundState([dynamic args]) => setAppState(AppState.background, args);
 }
 
 class ControlRoot extends StatefulWidget {
@@ -161,45 +189,47 @@ class ControlRoot extends StatefulWidget {
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
   final transition = TransitionControl();
 
-  final _args = ControlArgs({LoadingStatus: LoadingStatus.progress});
+  final _args = ControlArgs();
 
-  bool get loading => _args[LoadingStatus] != LoadingStatus.done;
+  AppState get appState => _args.get<AppState>();
 
   WidgetInitializer _rootBuilder;
   WidgetInitializer _loadingBuilder;
 
   BroadcastSubscription _localeSub;
 
-  Widget get _currentWidget => loading ? _loadingBuilder?.value : _rootBuilder?.value;
+  Widget get _currentWidget {
+    bool loader = appState is AppStateOnboarding;
 
-  //TODO: set state loading/loader/locale
+    return loader ? _loadingBuilder?.value : _rootBuilder?.value;
+  }
+
   @override
   void notifyState([state]) {
     if (state is ControlArgs) {
       _args.combine(state);
-
-      if (transition.isInitialized) {
-        if (!loading) {
-          transition.crossIn();
-        } else {
-          transition.crossOut();
-        }
-      } else {
-        setState(() {});
-      }
-    } else {
-      setState(() {});
     }
+
+    if (transition.isInitialized) {
+      if (appState is AppStateActive) {
+        transition.crossIn();
+      } else {
+        transition.crossOut();
+      }
+    }
+
+    setState(() {});
   }
 
   @override
   void initState() {
     super.initState();
 
+    _args[AppState] = widget.disableLoader ? AppState.active : AppState.onboarding;
+
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of(widget.loader);
     } else {
-      _args[LoadingStatus] = LoadingStatus.done;
       _loadingBuilder = WidgetInitializer.of((context) {
         printDebug('build default loader');
 
@@ -225,9 +255,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     final initialized = Control.initControl(
       debug: widget.debug,
       defaultLocale: widget.defaultLocale,
-      locales: widget.locales ?? {'en': null},
-      entries: widget.entries ?? {},
-      initializers: widget.initializers ?? {},
+      locales: widget.locales,
+      entries: widget.entries,
+      initializers: widget.initializers,
       injector: widget.injector,
       routes: widget.routes,
       theme: widget.theme,
@@ -246,10 +276,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         setState(() {});
       }
     });
-
-    if (widget.disableLoader) {
-      notifyState(ControlArgs(LoadingStatus.done));
-    }
   }
 
   Future<void> _loadLocalization() async {
@@ -294,6 +320,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     }
 
     return TransitionInitHolder(
+      key: ObjectKey('init_holder'),
       control: transition,
       firstWidget: _loadingBuilder,
       secondWidget: _rootBuilder,
