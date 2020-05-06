@@ -23,9 +23,8 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BroadcastBuilder<Locale>(
-      key: Locale,
-      defaultValue: Locale('en'),
+    return ActionBuilder<Locale>(
+      control: ActionControl.provider(key: Locale, defaultValue: Locale('en')),
       builder: (context, value) {
         return MaterialApp(
           title: "Localization - Flutter Control",

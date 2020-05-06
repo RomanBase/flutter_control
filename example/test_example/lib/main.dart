@@ -42,10 +42,12 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
       root: (context, args) => MenuPage(),
-      app: (context, key, home) => BroadcastBuilder<ThemeData>(
-        key: 'theme',
-        defaultValue: ThemeData(
-          primaryColor: Colors.orange,
+      app: (context, key, home) => ActionBuilder<ThemeData>(
+        control: ActionControl.provider(
+          key: 'theme',
+          defaultValue: ThemeData(
+            primaryColor: Colors.orange,
+          ),
         ),
         builder: (context, theme) {
           return MaterialApp(

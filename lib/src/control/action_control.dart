@@ -104,7 +104,7 @@ class ActionControlSub<T> implements ActionControlStream<T> {
 /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
-/// [ActionControl.asBroadcastProvider] - Subscription to [BroadcastProvider].
+/// [ActionControl.provider] - Subscription to [BroadcastProvider].
 class ActionControl<T> implements ActionControlStream<T>, Disposable {
   /// Current value.
   T _value;
@@ -151,8 +151,7 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  //TODO: Do we need this ??!!
-  static ActionControl<T> asBroadcastProvider<T>({@required dynamic key, bool single: true, T defaultValue}) {
+  static ActionControl<T> provider<T>({@required dynamic key, bool single: true, T defaultValue}) {
     ActionControl control = single ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
@@ -460,54 +459,5 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
 
     _subs.forEach((item) => item.dispose());
     _subs.clear();
-  }
-}
-
-//TODO: Do we need this ??!! Will be removed or refactored..
-class BroadcastBuilder<T> extends StatefulWidget {
-  final ControlWidgetBuilder<T> builder;
-  final T defaultValue;
-
-  dynamic get broadcastKey => (key as ValueKey).value;
-
-  BroadcastBuilder({
-    @required dynamic key,
-    @required this.builder,
-    this.defaultValue,
-  }) : super(key: ValueKey(key));
-
-  @override
-  State<StatefulWidget> createState() => _BroadcastBuilderState<T>();
-
-  Widget build(BuildContext context, T value) => builder(context, value);
-}
-
-class _BroadcastBuilderState<T> extends State<BroadcastBuilder<T>> {
-  T _value;
-
-  ActionControl _control;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _control = ActionControl.asBroadcastProvider<T>(key: widget.broadcastKey, defaultValue: widget.defaultValue);
-    _value = _control.value;
-
-    _control.subscribe((value) {
-      setState(() {
-        _value = value;
-      });
-    }, current: false);
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.build(context, _value);
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _control.dispose();
   }
 }
