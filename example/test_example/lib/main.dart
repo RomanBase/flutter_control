@@ -41,6 +41,10 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
+      transitionOut: CrossTransition(
+        duration: Duration(seconds: 1),
+        builder: CrossTransitions.fadeCross(),
+      ),
       root: (context, args) => MenuPage(),
       app: (context, key, home) => ActionBuilder<ThemeData>(
         control: ActionControl.provider(

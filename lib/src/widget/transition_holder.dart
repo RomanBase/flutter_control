@@ -23,6 +23,10 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
   VoidCallback _autoCross;
 
+  double progress;
+
+  double get transitionProgress => animation?.value ?? 0.0;
+
   TransitionControl({this.autoRun: false});
 
   @override
@@ -47,6 +51,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
     animation.duration = forward ?? Duration(milliseconds: 300);
     animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
+    animation.value = progress ?? 0.0;
   }
 
   void crossIn({double from}) {
@@ -66,6 +71,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 
     if (_autoCross != null) {
       _autoCross();
+      return;
     }
 
     if (animation.value < 1.0) {
@@ -94,8 +100,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   }
 }
 
-//TODO: as StatelessWidget with static constructor in TransitionHolder ????? !!!!!
-class TransitionInitHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
   final dynamic args;
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
@@ -109,7 +114,7 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
-  TransitionInitHolder({
+  TransitionHolder({
     Key key,
     @required TransitionControl control,
     @required this.firstWidget,
@@ -125,30 +130,26 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
     super.onInit(args);
 
     _updateKeys();
-    _updateDuration();
+
+    if (!control.isInitialized) {
+      _updateDuration();
+    }
   }
 
   @override
   bool notifyUpdate(CoreWidget oldWidget) {
-    final old = oldWidget as TransitionInitHolder;
+    final old = oldWidget as TransitionHolder;
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
-      return true;
+      _updateKeys();
+      _updateDuration();
+
+      if (control.autoRun) {
+        control._autoCrossRun();
+      }
     }
 
     return super.notifyUpdate(oldWidget);
-  }
-
-  @override
-  void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
-    super.onUpdate(oldWidget, state);
-
-    _updateKeys();
-    _updateDuration();
-
-    if (control.autoRun) {
-      control._autoCrossRun();
-    }
   }
 
   void _updateKeys() {
@@ -200,97 +201,6 @@ class TransitionInitHolder extends StateboundWidget<TransitionControl> with Sing
         animation,
         outWidget,
         inWidget,
-      );
-    }
-  }
-}
-
-class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
-  final Widget firstWidget;
-  final Widget secondWidget;
-  final CrossTransition transitionIn;
-  final CrossTransition transitionOut;
-  final VoidCallback onFinished;
-
-  Animation get animation => control.animation;
-
-  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross();
-
-  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
-
-  TransitionHolder({
-    Key key,
-    @required TransitionControl control,
-    @required this.firstWidget,
-    @required this.secondWidget,
-    this.transitionIn,
-    this.transitionOut,
-    this.onFinished,
-  }) : super(key: key, control: control);
-
-  @override
-  void onInit(Map args) {
-    super.onInit(args);
-
-    _updateDuration();
-  }
-
-  @override
-  bool notifyUpdate(CoreWidget oldWidget) {
-    final old = oldWidget as TransitionHolder;
-
-    if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
-      return true;
-    }
-
-    return super.notifyUpdate(oldWidget);
-  }
-
-  @override
-  void onUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
-    super.onUpdate(oldWidget, state);
-
-    _updateDuration();
-
-    if (control.autoRun) {
-      control._autoCrossRun();
-    }
-  }
-
-  void _updateDuration() {
-    control.setDurations(
-      forward: transitionIn?.duration,
-      reverse: transitionOut?.duration,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (animation.value == 0.0) {
-      if (onFinished != null && animation.status == AnimationStatus.reverse) onFinished();
-
-      return firstWidget;
-    }
-
-    if (animation.value == 1.0) {
-      if (onFinished != null && animation.status == AnimationStatus.forward) onFinished();
-
-      return secondWidget;
-    }
-
-    if (animation.status == AnimationStatus.forward) {
-      return transitionInBuilder(
-        context,
-        animation,
-        firstWidget,
-        secondWidget,
-      );
-    } else {
-      return transitionOutBuilder(
-        context,
-        animation,
-        firstWidget,
-        secondWidget,
       );
     }
   }

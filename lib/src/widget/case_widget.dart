@@ -31,7 +31,9 @@ class CaseWidget<T> extends StatefulWidget {
 }
 
 class _CaseWidgetState extends State<CaseWidget> {
-  final control = TransitionControl()..autoCrossIn(from: 0.0);
+  final control = TransitionControl()
+    ..autoCrossIn() // cross automatically
+    ..progress = 1.0; // start at first case
 
   WidgetInitializer oldInitializer;
   WidgetInitializer currentInitializer;
@@ -52,8 +54,11 @@ class _CaseWidgetState extends State<CaseWidget> {
 
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
+        control.progress = 0.0;
         _updateInitializer();
       });
+    } else {
+      control.progress = 1.0; //ensure to stay on current case
     }
   }
 
@@ -69,23 +74,21 @@ class _CaseWidgetState extends State<CaseWidget> {
     }
 
     currentInitializer.key = GlobalKey();
+
+    if (oldInitializer == null) {
+      oldInitializer = WidgetInitializer.of((_) => _placeholder());
+      oldInitializer.key = GlobalKey();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (oldInitializer != null && currentInitializer != null) {
-      return TransitionInitHolder(
-        control: control,
-        args: widget.args,
-        firstWidget: oldInitializer,
-        secondWidget: currentInitializer,
-        transitionIn: widget.activeTransition,
-      );
-    }
-
-    return KeyedSubtree(
-      key: currentInitializer.key,
-      child: currentInitializer.getWidget(context, args: widget.args),
+    return TransitionHolder(
+      control: control,
+      args: widget.args,
+      firstWidget: oldInitializer,
+      secondWidget: currentInitializer,
+      transitionIn: widget.activeTransition,
     );
   }
 

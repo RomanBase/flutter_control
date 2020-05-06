@@ -29,7 +29,11 @@ class CrossPage extends SingleControlWidget<CrossControl> {
                   'red': (_) => CrossControlPage('orange', Colors.red),
                   'orange': (_) => CrossControlPage('placeholder', Colors.orange),
                 },
-                placeholder: CrossControlPage('blue', Colors.grey),
+                placeholder: CrossControlPage('blue', Colors.black),
+                transition: CrossTransition(
+                  duration: Duration(seconds: 3),
+                  builder: CrossTransitions.fadeCross(),
+                ),
               );
             },
           ),
@@ -37,6 +41,10 @@ class CrossPage extends SingleControlWidget<CrossControl> {
         RaisedButton(
           onPressed: notifyState,
           child: Text('notify state'),
+        ),
+        RaisedButton(
+          onPressed: () => Control.root().setOnboardingState(),
+          child: Text('reload app'),
         ),
       ],
     );
