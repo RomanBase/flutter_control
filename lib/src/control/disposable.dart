@@ -37,76 +37,8 @@ mixin DisposeHandler implements Disposable {
   void softDispose() {}
 
   @override
-  void dispose() {
-    /*if (this is Disposer) {
-      (this as Disposer).executeDispose();
-    }*/
-  }
+  void dispose() {}
 }
-/*
-///TODO: revalidate purpose
-class DisposableItem implements Disposable {
-  final Disposable disposable;
-  final VoidCallback onDispose;
-  final forceDispose;
-
-  DisposableItem(this.disposable, this.onDispose, this.forceDispose);
-
-  @override
-  void dispose() {
-    if (onDispose != null) {
-      onDispose();
-    }
-
-    if (!forceDispose && disposable is DisposeHandler) {
-      (disposable as DisposeHandler).requestDispose();
-    } else {
-      disposable.dispose();
-    }
-  }
-}
-
-///TODO: revalidate purpose
-mixin Disposer {
-  List<DisposableItem> _disposables;
-
-  void autoDispose(List<Disposable> disposables) {
-    if (_disposables == null) {
-      _disposables = List<DisposableItem>();
-    }
-
-    disposables.forEach((item) => _disposables.add(DisposableItem(item, null, false)));
-  }
-
-  void addToDispose(Disposable disposable, {VoidCallback onDispose, bool forceDispose: false}) {
-    if (_disposables == null) {
-      _disposables = List<DisposableItem>();
-    }
-
-    _disposables.add(DisposableItem(disposable, onDispose, forceDispose));
-  }
-
-  void removeFromDispose(Disposable disposable) {
-    _disposables?.remove(disposable);
-  }
-
-  void executeDispose() {
-    if (_disposables != null) {
-      _disposables.forEach((item) {});
-      _disposables.clear();
-      _disposables = null;
-    }
-  }
-}
-
-///TODO: revalidate purpose
-extension DisposableExt on Disposable {
-  dynamic disposeWith(Disposer disposer, {VoidCallback onDispose, bool forceDispose: false}) {
-    disposer.addToDispose(this, onDispose: onDispose, forceDispose: forceDispose);
-
-    return this;
-  }
-}*/
 
 /// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and [ControlModel].
 /// Counts references by [hashCode]. References must be added/removed manually.
