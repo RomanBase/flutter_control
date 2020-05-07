@@ -255,7 +255,7 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 
   void _removeTicker(_WidgetTicker ticker) {
-    assert(ticker.isActive);
+    assert(ticker.isMounted);
     assert(_tickers != null);
     assert(_tickers.contains(ticker));
 
@@ -318,7 +318,7 @@ mixin TickerControl on CoreWidget implements TickerProvider {
 class _WidgetTicker extends Ticker {
   _TickerProvider _creator;
 
-  bool get isActive => _creator != null;
+  bool get isMounted => _creator != null;
 
   _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel}) : super(onTick, debugLabel: debugLabel);
 
