@@ -192,8 +192,6 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
   void dispose() {
     super.dispose();
 
-    widget.dispose();
-
     if (controls != null) {
       controls.forEach((control) {
         if (control is StateControl) {
@@ -205,6 +203,8 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
       controls.clear();
       controls = null;
     }
+
+    widget.dispose();
   }
 }
 

@@ -85,20 +85,18 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
   void dispose() {
     super.dispose();
 
+    if (control != null) {
+      control.removeListener(notifyState);
+
+      if (control is DisposeHandler) {
+        (control as DisposeHandler).requestDispose(this);
+      } else {
+        control.dispose();
+      }
+
+      control = null;
+    }
+
     widget.dispose();
-
-    if (control == null) {
-      return;
-    }
-
-    control.removeListener(notifyState);
-
-    if (control is DisposeHandler) {
-      (control as DisposeHandler).requestDispose(this);
-    } else {
-      control.dispose();
-    }
-
-    control = null;
   }
 }
