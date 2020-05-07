@@ -34,14 +34,38 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
 }
 
 class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> implements StateNotifier {
-  T get control => widget.control;
+  T control;
 
   @override
   void initState() {
     super.initState();
 
+    _setControl(widget.control);
+
     widget.holder.init(this);
     control.init(widget.holder.args);
+  }
+
+  @override
+  void notifyState([state]) {
+    setState(() {});
+  }
+
+  @override
+  void didUpdateWidget(StateboundWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.control != control) {
+      control?.removeListener(notifyState);
+      _setControl(widget.control);
+    }
+  }
+
+  void _setControl(T value) {
+    assert(value != null);
+
+    control = value;
+    control.addListener(notifyState);
 
     if (widget is TickerProvider && control is TickerComponent) {
       (control as TickerComponent).provideTicker(widget as TickerProvider);
@@ -55,21 +79,6 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
   }
 
   @override
-  void notifyState([state]) {
-    setState(() {});
-  }
-
-  @override
-  void didUpdateWidget(StateboundWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.control != widget.control) {
-      oldWidget.control.removeListener(notifyState);
-      widget.control.addListener(notifyState);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) => widget.build(context);
 
   @override
@@ -78,6 +87,10 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
 
     widget.dispose();
 
+    if (control == null) {
+      return;
+    }
+
     control.removeListener(notifyState);
 
     if (control is DisposeHandler) {
@@ -85,5 +98,7 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
     } else {
       control.dispose();
     }
+
+    control = null;
   }
 }
