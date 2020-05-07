@@ -113,6 +113,9 @@ class _CaseWidgetState extends State<CaseWidget> {
   void dispose() {
     super.dispose();
 
-    //control.dispose();
+    // control should be disposed by TransitionHolder
+    if (control.isInitialized) {
+      control.dispose();
+    }
   }
 }

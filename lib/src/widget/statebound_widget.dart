@@ -1,11 +1,11 @@
 import 'package:flutter_control/core.dart';
 
-abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider implements Initializable, Disposable {
+abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider implements Initializable, Disposable, StateNotifier {
   @protected
   final T control;
 
   @protected
-  dynamic get state => control.state.value;
+  _WidgetboundState<T> get state => control.state.value;
 
   StateboundWidget({
     Key key,
@@ -21,7 +21,10 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   }
 
   @override
-  State<StatefulWidget> createState() => _WidgetboundState<T>();
+  void notifyState([state]) => this.state.notifyState(state);
+
+  @override
+  _WidgetboundState<T> createState() => _WidgetboundState<T>();
 
   @protected
   Widget build(BuildContext context);
@@ -30,7 +33,7 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   void dispose() {}
 }
 
-class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> {
+class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> implements StateNotifier {
   T get control => widget.control;
 
   @override
@@ -44,22 +47,25 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
       (control as TickerComponent).provideTicker(widget as TickerProvider);
     }
 
-    control.addListener(_updateState);
+    control.addListener(notifyState);
 
     if (control is ReferenceCounter) {
       (control as ReferenceCounter).addReference(this);
     }
   }
 
-  void _updateState() => setState(() {});
+  @override
+  void notifyState([state]) {
+    setState(() {});
+  }
 
   @override
   void didUpdateWidget(StateboundWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.control != widget.control) {
-      oldWidget.control.removeListener(_updateState);
-      widget.control.addListener(_updateState);
+      oldWidget.control.removeListener(notifyState);
+      widget.control.addListener(notifyState);
     }
   }
 
@@ -72,7 +78,7 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
 
     widget.dispose();
 
-    control.removeListener(_updateState);
+    control.removeListener(notifyState);
 
     if (control is DisposeHandler) {
       (control as DisposeHandler).requestDispose(this);

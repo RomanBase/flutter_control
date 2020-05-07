@@ -100,7 +100,7 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
   }
 }
 
-class TransitionHolder extends SingleControlWidget<TransitionControl> with SingleTickerControl {
+class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
   final dynamic args;
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
@@ -114,12 +114,12 @@ class TransitionHolder extends SingleControlWidget<TransitionControl> with Singl
 
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
-  Widget get _outWidget => KeyedSubtree(
+  Widget get _firstWidget => KeyedSubtree(
         key: getArg(key: 'first_key'),
         child: firstWidget.getWidget(context, args: args),
       );
 
-  Widget get _inWidget => KeyedSubtree(
+  Widget get _secondWidget => KeyedSubtree(
         key: getArg(key: 'second_key'),
         child: secondWidget.getWidget(context, args: args),
       );
@@ -133,7 +133,7 @@ class TransitionHolder extends SingleControlWidget<TransitionControl> with Singl
     this.transitionIn,
     this.transitionOut,
     this.onFinished,
-  }) : super(key: key, args: control);
+  }) : super(key: key, control: control);
 
   @override
   void onInit(Map args) {
@@ -181,28 +181,30 @@ class TransitionHolder extends SingleControlWidget<TransitionControl> with Singl
     if (animation.status == AnimationStatus.dismissed) {
       if (onFinished != null) onFinished();
 
-      return _outWidget;
+      secondWidget.clear();
+      return _firstWidget;
     }
 
     if (animation.status == AnimationStatus.completed) {
       if (onFinished != null) onFinished();
 
-      return _inWidget;
+      firstWidget.clear();
+      return _secondWidget;
     }
 
     if (animation.status == AnimationStatus.forward) {
       return transitionInBuilder(
         context,
         animation,
-        _outWidget,
-        _inWidget,
+        _firstWidget,
+        _secondWidget,
       );
     } else {
       return transitionOutBuilder(
         context,
         animation,
-        _outWidget,
-        _inWidget,
+        _firstWidget,
+        _secondWidget,
       );
     }
   }
