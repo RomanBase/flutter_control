@@ -1,8 +1,9 @@
-## [0.97.0] - Pre-release v2.
-Most of bugs fixed, added few Widgets and logical concepts.
+## [0.97.1] - Pre-release v2.
+Most of bugs fixed, added some new Widgets and logical concepts.
 ## [0.95.1] - Pre-release v1.
 Update architecture and concept.
 ## [0.15.3] - Vanilla.
+Core architecture, Control Factory, Model, Widget and components.
 
 ---
 

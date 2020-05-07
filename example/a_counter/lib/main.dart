@@ -7,23 +7,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ControlRoot(
-      disableLoader: true,
-      entries: {
-        CounterControl: CounterControl(),
+    Control.initControl(
+      initializers: {
+        CounterControl: (_) => CounterControl(),
       },
-      root: (_, __) => CounterPage(),
-      app: (context, key, home) => MaterialApp(
-        key: key,
-        home: home,
-        title: 'Counter - Flutter Control',
-      ),
+    );
+
+    return MaterialApp(
+      home: CounterPage(),
+      title: 'Counter - Flutter Control',
     );
   }
 }
 
 class CounterControl extends BaseControl {
-  final counter = IntegerControl.inRange(value: 5, max: 10);
+  final number = IntegerControl.inRange(value: 5, max: 10);
   final progress = DoubleControl();
   final message = StringControl("Press button to increase or decrese counter");
 
@@ -31,24 +29,24 @@ class CounterControl extends BaseControl {
   void onInit(Map args) {
     super.onInit(args);
 
-    counter.streamTo(progress, converter: (value) => value / counter.max);
+    number.streamTo(progress, converter: (value) => value / number.max);
   }
 
   void incrementCounter() {
-    counter.value++;
-    message.value = counter.atMax ? "Counter value at Maximum !" : "Counter value Increasing...";
+    number.value++;
+    message.value = number.atMax ? "Counter value at Maximum !" : "Counter value Increasing...";
   }
 
   void decrementCounter() {
-    counter.value--;
-    message.value = counter.atMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
+    number.value--;
+    message.value = number.atMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
   }
 
   @override
   void dispose() {
     super.dispose();
 
-    counter.dispose();
+    number.dispose();
     progress.dispose();
   }
 }
@@ -74,7 +72,7 @@ class CounterPage extends SingleControlWidget<CounterControl> {
               height: 16.0,
             ),
             FieldBuilder<int>(
-              control: control.counter,
+              control: control.number,
               builder: (context, value) {
                 return Text(
                   '$value',
