@@ -172,7 +172,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   }
 }
 
-class _SingleTickerComponent extends ControlModel implements TickerProvider {
+class _SingleTickerProvider implements Disposable, TickerProvider {
   Ticker _ticker;
 
   @override
@@ -215,14 +215,12 @@ class _SingleTickerComponent extends ControlModel implements TickerProvider {
 
     _ticker?.dispose();
     _ticker = null;
-
-    super.dispose();
   }
 }
 
 ///Check [SingleTickerProviderStateMixin]
 mixin SingleTickerControl on CoreWidget implements TickerProvider {
-  final _ticker = _SingleTickerComponent();
+  final _ticker = _SingleTickerProvider();
 
   TickerProvider get ticker => this;
 
@@ -243,20 +241,24 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
   }
 }
 
-class _TickerComponent extends ControlModel implements TickerProvider {
+class _TickerProvider implements Disposable, TickerProvider {
   Set<Ticker> _tickers;
 
   @override
   Ticker createTicker(TickerCallback onTick) {
     _tickers ??= <_WidgetTicker>{};
-    final _WidgetTicker result = _WidgetTicker(onTick, this, debugLabel: 'created by $this');
-    _tickers.add(result);
-    return result;
+
+    final ticker = _WidgetTicker(onTick, this, debugLabel: 'created by $this');
+    _tickers.add(ticker);
+
+    return ticker;
   }
 
   void _removeTicker(_WidgetTicker ticker) {
+    assert(ticker.isActive);
     assert(_tickers != null);
     assert(_tickers.contains(ticker));
+
     _tickers.remove(ticker);
   }
 
@@ -286,14 +288,12 @@ class _TickerComponent extends ControlModel implements TickerProvider {
 
     _tickers?.clear();
     _tickers = null;
-
-    super.dispose();
   }
 }
 
 ///Check [TickerProviderStateMixin]
 mixin TickerControl on CoreWidget implements TickerProvider {
-  final _ticker = _TickerComponent();
+  final _ticker = _TickerProvider();
 
   TickerProvider get ticker => this;
 
@@ -309,19 +309,24 @@ mixin TickerControl on CoreWidget implements TickerProvider {
 
   @override
   void dispose() {
-    _ticker.dispose();
     super.dispose();
+
+    _ticker.dispose();
   }
 }
 
 class _WidgetTicker extends Ticker {
-  _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel}) : super(onTick, debugLabel: debugLabel);
+  _TickerProvider _creator;
 
-  final _TickerComponent _creator;
+  bool get isActive => _creator != null;
+
+  _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel}) : super(onTick, debugLabel: debugLabel);
 
   @override
   void dispose() {
-    _creator._removeTicker(this);
+    _creator?._removeTicker(this);
+    _creator = null;
+
     super.dispose();
   }
 }
