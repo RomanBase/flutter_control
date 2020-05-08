@@ -1,11 +1,12 @@
 import 'package:flutter_control/core.dart';
 
-abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider implements Initializable, Disposable, StateNotifier {
+abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider {
   @protected
   final T control;
 
+  /// Current State value of Control
   @protected
-  _WidgetboundState<T> get state => control.state.value;
+  dynamic get state => control.state.value;
 
   StateboundWidget({
     Key key,
@@ -21,16 +22,15 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   }
 
   @override
-  void notifyState([state]) => this.state.notifyState(state);
-
-  @override
   _WidgetboundState<T> createState() => _WidgetboundState<T>();
 
   @protected
   Widget build(BuildContext context);
 
   @override
-  void dispose() {}
+  void dispose() {
+    super.dispose();
+  }
 }
 
 class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> implements StateNotifier {
@@ -48,7 +48,9 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
 
   @override
   void notifyState([state]) {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override

@@ -171,9 +171,11 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
 
   @override
   void notifyState([dynamic state]) {
-    setState(() {
-      widget.onStateChanged(state);
-    });
+    if (mounted) {
+      setState(() {
+        widget.onStateChanged(state);
+      });
+    }
   }
 
   @override

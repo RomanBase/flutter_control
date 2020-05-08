@@ -55,7 +55,11 @@ class _NotifierBuilderState extends State<NotifierBuilder> {
     widget.control.addListener(_updateState);
   }
 
-  void _updateState() => setState(() {});
+  void _updateState() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
 
   @override
   void didUpdateWidget(NotifierBuilder oldWidget) {

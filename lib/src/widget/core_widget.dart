@@ -69,7 +69,6 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   @mustCallSuper
   void init(Map args) => addArg(args);
 
-  /// [State.didChangeDependencies]
   @protected
   void onInit(Map args) {}
 
