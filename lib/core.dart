@@ -14,6 +14,7 @@ export './src/control/control_model.dart';
 export './src/control/disposable.dart';
 export './src/control/field_control.dart';
 export './src/control/route_control.dart';
+export './src/control/stack_control.dart';
 export './src/control_broadcast.dart';
 export './src/theme_control.dart';
 export './src/util/args.dart';
