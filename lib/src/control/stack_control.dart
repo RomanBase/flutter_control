@@ -7,12 +7,16 @@ class StackControl<T> implements ActionControlStream, Disposable {
 
   T get _last => _stack.isEmpty ? null : _stack.last;
 
-  List<T> get stack => List<T>.of(_stack);
-
   @override
   T get value => _control.value;
 
+  set value(T value) => push(value);
+
   bool get canPop => _stack.isNotEmpty;
+
+  int get length => _stack.length;
+
+  operator [](int index) => _stack[index];
 
   StackControl([T value]) {
     if (value != null) {
@@ -29,37 +33,74 @@ class StackControl<T> implements ActionControlStream, Disposable {
     _notifyControl();
   }
 
-  T pop() {
-    if (!canPop) {
-      return null;
+  void pushStack(Iterable<T> stack, {bool clearOrigin: false}) {
+    if (clearOrigin) {
+      _stack.clear();
     }
 
-    final item = _stack.removeLast();
-
-    _notifyControl();
-
-    return item;
-  }
-
-  void setStack(Iterable<T> stack) {
-    _stack.clear();
     _stack.addAll(stack);
 
     _notifyControl();
   }
 
-  void clear({bool keepLast: false}) {
+  void pop() {
     if (!canPop) {
       return;
     }
 
-    if (keepLast) {
-      final last = _last;
-      _stack.clear();
-      _stack.add(last);
-    } else {
-      _stack.clear();
+    _stack.removeLast();
+
+    _notifyControl();
+  }
+
+  void popTo(T value) {
+    int index = _stack.indexOf(value);
+
+    if (index > -1) {
+      _stack.removeRange(index, _stack.length);
     }
+
+    _notifyControl();
+  }
+
+  void popUntil(Predicate<T> test) {
+    int index = _stack.indexWhere(test);
+
+    if (index > -1) {
+      _stack.removeRange(index, _stack.length);
+    }
+
+    _notifyControl();
+  }
+
+  void popToFirst() {
+    if (!canPop) {
+      return;
+    }
+
+    final item = _stack[0];
+
+    _stack.clear();
+    _stack.add(item);
+
+    _notifyControl();
+  }
+
+  void popToLast() {
+    if (!canPop) {
+      return;
+    }
+
+    final item = _last;
+
+    _stack.clear();
+    _stack.add(item);
+
+    _notifyControl();
+  }
+
+  void clear() {
+    _stack.clear();
 
     _notifyControl();
   }
