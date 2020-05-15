@@ -33,6 +33,13 @@ class StackControl<T> implements ActionControlStream, Disposable {
     _notifyControl();
   }
 
+  void pushUnique(T value) {
+    _stack.remove(value);
+    _stack.add(value);
+
+    _notifyControl();
+  }
+
   void pushStack(Iterable<T> stack, {bool clearOrigin: false}) {
     if (clearOrigin) {
       _stack.clear();
@@ -104,6 +111,8 @@ class StackControl<T> implements ActionControlStream, Disposable {
 
     _notifyControl();
   }
+
+  bool contains(T item) => _stack.contains(item);
 
   void _notifyControl() => _control.value = _last;
 
