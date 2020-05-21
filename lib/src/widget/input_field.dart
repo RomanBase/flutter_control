@@ -479,8 +479,8 @@ class InputField extends StateboundWidget<InputControl> with ThemeProvider {
                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
                 focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
                 disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-                labelStyle: font.body1.copyWith(color: cursor.withOpacity(0.5)),
-                hintStyle: font.body1.copyWith(color: cursor.withOpacity(0.5)),
+                labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
               ))
           .copyWith(
         labelText: label,
@@ -489,7 +489,7 @@ class InputField extends StateboundWidget<InputControl> with ThemeProvider {
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      style: style ?? font.body1.copyWith(color: cursor),
+      style: style ?? font.bodyText1.copyWith(color: cursor),
       strutStyle: strutStyle,
       textAlign: textAlign,
       textDirection: textDirection,
