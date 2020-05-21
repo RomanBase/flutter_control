@@ -460,10 +460,14 @@ class Parse {
 
     return defaultValue;
   }
+
+  static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)..removeWhere((key, value) => key == null || value == null);
 }
 
 extension MapExtension on Map {
   T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromMap<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
+
+  Map<K, V> fill<K, V>() => Parse.fill(this);
 }
 
 extension IterableExtension on Iterable {
