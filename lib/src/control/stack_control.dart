@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-class StackControl<T> implements ActionControlStream, Disposable {
+class StackControl<T> implements ActionControlStream<T>, Disposable {
   /// Current stack of values.
   final _stack = List<T>();
 
