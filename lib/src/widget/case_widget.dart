@@ -52,6 +52,8 @@ class _CaseWidgetState extends State<CaseWidget> {
   void didUpdateWidget(CaseWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    builders = widget.builders;
+
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
         control.progress = 0.0;
@@ -60,6 +62,7 @@ class _CaseWidgetState extends State<CaseWidget> {
     } else {
       setState(() {
         control.progress = 1.0; //ensure to stay on current case
+        _updateCurrentInitializer();
       });
     }
   }
@@ -80,6 +83,16 @@ class _CaseWidgetState extends State<CaseWidget> {
     if (oldInitializer == null) {
       oldInitializer = WidgetInitializer.of((_) => _placeholder());
       oldInitializer.key = GlobalKey();
+    }
+  }
+
+  void _updateCurrentInitializer() {
+    if (currentInitializer != null && widget.activeCase != null && builders.containsKey(widget.activeCase)) {
+      final builder = builders[widget.activeCase];
+      final origin = currentInitializer;
+
+      currentInitializer = WidgetInitializer.of(builder);
+      currentInitializer.key = origin.key;
     }
   }
 
