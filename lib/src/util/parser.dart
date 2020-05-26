@@ -345,6 +345,64 @@ class Parse {
     return items;
   }
 
+  static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter, {ValueConverter<T> converter, EntryConverter<T> entryConverter}) {
+    final items = Map<K, T>();
+
+    if (value == null) {
+      return items;
+    }
+
+    if (value is Iterable) {
+      value = value.toList().asMap();
+    }
+
+    if (value is Map) {
+      if (converter != null) {
+        value.forEach((key, item) {
+          final mapItem = convert(item, converter: converter);
+
+          if (mapItem != null && mapItem is T) {
+            items[keyConverter(key, item)] = mapItem;
+          }
+        });
+      } else if (entryConverter != null) {
+        value.forEach((key, item) {
+          final mapItem = convertEntry(key, item, converter: entryConverter);
+
+          if (mapItem != null && mapItem is T) {
+            items[keyConverter(key, item)] = mapItem;
+          }
+        });
+      } else {
+        value.forEach((key, item) {
+          if (item is T) {
+            items[keyConverter(key, item)] = item;
+          }
+        });
+      }
+    } else {
+      if (converter != null) {
+        final listItem = convert(value, converter: converter);
+
+        if (listItem != null && listItem is T) {
+          items[keyConverter(0, listItem)] = listItem;
+        }
+      } else if (entryConverter != null) {
+        final listItem = convertEntry(0, value, converter: entryConverter);
+
+        if (listItem != null && listItem is T) {
+          items[keyConverter(0, listItem)] = listItem;
+        }
+      } else {
+        if (value is T) {
+          items[keyConverter(0, value)] = value;
+        }
+      }
+    }
+
+    return items;
+  }
+
   /// Converts [value] and additional [data] into Map of arguments.
   /// Check [ControlArgs] for more info.
   static Map toArgs(dynamic value, {dynamic data}) {
