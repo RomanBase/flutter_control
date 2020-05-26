@@ -43,7 +43,10 @@ class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidg
     _setControl(widget.control);
 
     widget.holder.init(this);
-    control.init(widget.holder.args);
+
+    if (control is Initializable) {
+      (control as Initializable).init(widget.holder.args);
+    }
   }
 
   @override
