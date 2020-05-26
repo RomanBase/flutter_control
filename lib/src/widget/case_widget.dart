@@ -58,7 +58,9 @@ class _CaseWidgetState extends State<CaseWidget> {
         _updateInitializer();
       });
     } else {
-      control.progress = 1.0; //ensure to stay on current case
+      setState(() {
+        control.progress = 1.0; //ensure to stay on current case
+      });
     }
   }
 
