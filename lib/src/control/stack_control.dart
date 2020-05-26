@@ -7,21 +7,36 @@ class StackControl<T> implements ActionControlStream<T>, Disposable {
   /// Holds current value and [ActionControlStream] interface just wraps this control.
   final _control = ActionControl.broadcast<T>();
 
+  /// Stack with root value.
+  bool _root = false;
+
   /// First value is root. [pop] until first value.
-  final bool root;
+  bool get isRooted => _root;
 
   /// Last value in stack.
   T get _last => _stack.isEmpty ? null : _stack.last;
+
+  /// First value in stack.
+  T get _first => _stack.isEmpty ? null : _stack.first;
 
   /// Current/Last value of stack.
   @override
   T get value => _control.value;
 
-  /// Push this value to stack.
+  /// Pushes this value to stack.
   set value(T value) => push(value);
 
+  /// Root/First value of stack.
+  T get root => isRooted ? _first : null;
+
+  /// Pushes this value to stack and set it as root value.
+  set root(T value) {
+    _root = true;
+    pushStack([value], clearOrigin: true);
+  }
+
   /// Checks if stack contains enough items to pop last one.
-  bool get canPop => root ? _stack.length > 1 : _stack.isNotEmpty;
+  bool get canPop => isRooted ? _stack.length > 1 : _stack.isNotEmpty;
 
   /// Number of items in stack.
   int get length => _stack.length;
@@ -29,7 +44,8 @@ class StackControl<T> implements ActionControlStream<T>, Disposable {
   /// Returns value in stack by index.
   operator [](int index) => _stack[index];
 
-  StackControl({T value, this.root = false}) {
+  StackControl({T value, bool root = false}) {
+    _root = root;
     if (value != null) {
       push(value);
     }
@@ -139,7 +155,10 @@ class StackControl<T> implements ActionControlStream<T>, Disposable {
     return true;
   }
 
-  /// Clears all values in stack. Even if [root] is set to true.
+  /// Disables root value. So stack can pop all values.
+  void disableRoot() => _root = false;
+
+  /// Clears all values in stack. Even if [isRooted] is set to true.
   void clear() {
     _stack.clear();
 
