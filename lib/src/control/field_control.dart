@@ -884,10 +884,11 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
               builders: {
                 LoadingStatus.progress: progress ?? (context) => Center(child: CircularProgressIndicator()),
                 LoadingStatus.done: done,
-                LoadingStatus.error: error,
+                LoadingStatus.error: error ?? (context) => Center(child: Text(control.message ?? 'error')),
                 LoadingStatus.outdated: outdated,
                 LoadingStatus.unknown: unknown,
               },
+              placeholder: Container(),
               transition: CrossTransition(
                 builder: CrossTransitions.fadeOutFadeIn(backgroundColor: Colors.transparent),
               ),
