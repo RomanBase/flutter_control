@@ -63,7 +63,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteCont
                         icon: Icon(
                           item.icon,
                         ),
-                        onPressed: () => control.setMenuItem(item),
+                        onPressed: () => control.setPageByItem(item),
                       ),
                     ),
                 ],

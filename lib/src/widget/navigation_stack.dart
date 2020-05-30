@@ -356,6 +356,10 @@ class NavigatorStackControl extends BaseControl {
   /// Given index is clamped between valid indexes [items.length]
   /// Notifies [State] to switch Pages.
   void setPageIndex(int index) {
+    if (index < 0) {
+      return;
+    }
+
     if (currentPageIndex == index) {
       if (items[index].menu?.onSelected != null) {
         if (items[index].menu.onSelected()) {
@@ -384,7 +388,9 @@ class NavigatorStackControl extends BaseControl {
     _pageIndex.setValue(index);
   }
 
-  void setMenuItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
+  void setPageByItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
+
+  void setPageByKey(dynamic key) => setPageByItem(menuItems.firstWhere((item) => item.key == key, orElse: () => MenuItem(key: null)));
 
   void setInitialPage() => setPageIndex(_initialIndex ?? 0);
 
