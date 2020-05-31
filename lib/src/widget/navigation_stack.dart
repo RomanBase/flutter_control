@@ -67,9 +67,7 @@ abstract class _StackNavigator {
 class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
-  MenuItem menu = MenuItem(
-    key: UniqueKey(),
-  );
+  MenuItem menu;
 
   /// Implementation of StackNavigator.
   _StackNavigator _navigator;
@@ -96,7 +94,11 @@ class NavigatorControl extends BaseControl {
   ValueCallback<bool> onSelectionChanged;
 
   /// Default constructor
-  NavigatorControl({this.menu});
+  NavigatorControl({this.menu}) {
+    menu ??= MenuItem(
+      key: UniqueKey(),
+    );
+  }
 
   @override
   void subscribe(object) {
