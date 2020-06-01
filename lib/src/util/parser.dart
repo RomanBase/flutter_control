@@ -519,7 +519,7 @@ class Parse {
     return defaultValue;
   }
 
-  static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)..removeWhere((key, value) => key == null || value == null || (value is Iterable && value.isEmpty) || (value is String && value.isNotEmpty));
+  static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)..removeWhere((key, value) => key == null || value == null || (value is Iterable && value.isEmpty) || (value is String && value.isEmpty));
 }
 
 extension MapExtension on Map {
