@@ -547,6 +547,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// Returns the object at given index.
   T operator [](int index) => value[index];
 
+  T get last => value.last;
+
+  T get first => value.first;
+
+  dynamic data;
+
   /// Filters data into given [controller].
   StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter, Predicate<T> filter}) {
     return subscribe(
