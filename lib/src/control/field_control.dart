@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter_control/core.dart';
 
-class FieldSubscription<T> implements StreamSubscription<T> {
+class FieldSubscription<T> implements StreamSubscription<T>, Disposable {
   StreamSubscription<T> _sub;
   FieldControl<T> _control;
   bool cancelOnError = false;
@@ -19,14 +19,20 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   Function _wrapOnDone(Function handleDone) {
     return () {
-      handleDone();
+      if (handleDone != null) {
+        handleDone();
+      }
+
       _cancelSub();
     };
   }
 
   Function _wrapOnError(Function handleError) {
     return (err) {
-      handleError(err);
+      if (handleError != null) {
+        handleError(err);
+      }
+
       if (cancelOnError) {
         cancel();
       }
@@ -72,6 +78,11 @@ class FieldSubscription<T> implements StreamSubscription<T> {
 
   void _cancelStreamSub() {
     _sub.cancel();
+  }
+
+  @override
+  void dispose() {
+    cancel();
   }
 }
 
