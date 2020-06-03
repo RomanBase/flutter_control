@@ -742,6 +742,10 @@ mixin LocalizationProvider {
   @protected
   String localize(String key) => localization.localize(key);
 
+  ///[BaseLocalization.localizeOr]
+  @protected
+  String localizeOr(String key, List<String> alterKeys) => localization.localizeOr(key, alterKeys);
+
   ///[BaseLocalization.localizeFormat]
   @protected
   String localizeFormat(String key, Map<String, String> params) => localization.localizeFormat(key, params);
