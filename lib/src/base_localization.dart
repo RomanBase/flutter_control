@@ -459,6 +459,25 @@ class BaseLocalization with PrefsProvider {
   }
 
   /// Tries to localize text by given [key].
+  ///
+  /// If given [key] is not found, then tries to localize one of [alterKeys].
+  ///
+  /// Enable/Disable debug mode to show/hide missing localizations.
+  String localizeOr(String key, List<String> alterKeys) {
+    if (_data.containsKey(key)) {
+      return _data[key];
+    }
+
+    for (final alterKey in alterKeys) {
+      if (_data.containsKey(alterKey)) {
+        return _data[alterKey];
+      }
+    }
+
+    return debug ? '${key}_$_locale' : '';
+  }
+
+  /// Tries to localize text by given [key].
   /// Then format string with given [params].
   ///
   /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
