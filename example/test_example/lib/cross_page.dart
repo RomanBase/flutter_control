@@ -12,7 +12,28 @@ class CrossControl extends ControlModel with ReferenceCounter {
   }
 }
 
+class _UIControl extends ControlModel {
+  CrossControl _cross;
+
+  @override
+  void init(Map args) {
+    super.init(args);
+
+    _cross = args.getArg<CrossControl>();
+
+    printDebug('INIT UI -------------------------------- UI');
+    printDebug(args);
+    printDebug('-------------------------------------------');
+  }
+}
+
 class CrossPage extends SingleControlWidget<CrossControl> {
+  @override
+  List<ControlModel> initControls() => [
+        initControl(),
+        _UIControl(),
+      ];
+
   @override
   Widget build(BuildContext context) {
     return Column(
