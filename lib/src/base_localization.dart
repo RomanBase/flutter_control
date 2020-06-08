@@ -673,6 +673,20 @@ class BaseLocalization with PrefsProvider {
   /// This update is only runtime and isn't stored to localization file.
   void update(String key, dynamic value) => _data[key] = value;
 
+  /// Checks if given [key] can be localized.
+  bool contains(String key) => _data.containsKey(key);
+
+  /// Checks if one of given [keys] can be localized.
+  bool containsOneOf(List<String> keys) {
+    for (var key in keys) {
+      if (_data.containsKey(key)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /// Delegate of [BaseLocalization] to use this localization as [LocalizationsDelegate].
   ///
   /// Use [LocalizationProvider.of(context)] to find delegate in current widget scope.
