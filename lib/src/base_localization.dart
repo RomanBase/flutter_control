@@ -594,8 +594,14 @@ class BaseLocalization with PrefsProvider {
   /// Enable/Disable debug mode to show/hide missing localizations.
   List<String> localizeList(String key) {
     if (_data.containsKey(key)) {
-      if (_data[key] is List) {
-        return _data[key].cast<String>();
+      final data = _data[key];
+
+      if (data is List) {
+        return data.cast<String>();
+      }
+
+      if (data is Map) {
+        return data.values.cast<String>();
       }
 
       return [_data[key]];
