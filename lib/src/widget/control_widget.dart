@@ -91,8 +91,13 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   void onInitState(ControlState state) {
     assert(isInitialized);
 
-    controls?.remove(null);
-    controls?.forEach((control) {
+    if (controls == null) {
+      printDebug('no controls found - onInitState');
+      return;
+    }
+
+    controls.remove(null);
+    controls.forEach((control) {
       control.init(holder.args);
       control.subscribe(this);
 
@@ -110,7 +115,12 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   void onInit(Map args) {
     super.onInit(args);
 
-    controls?.forEach((control) {
+    if (controls == null) {
+      printDebug('no controls found - onInit');
+      return;
+    }
+
+    controls.forEach((control) {
       if (control is StateControl) {
         (control as StateControl).onStateInitialized();
       }
@@ -161,6 +171,8 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
 
   void initControls() {
     controls = widget.initControls() ?? [];
+
+    widget.holder.set(controls);
 
     controls.forEach((control) {
       if (control is ReferenceCounter) {

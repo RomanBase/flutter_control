@@ -648,15 +648,25 @@ class ControlFactory with Disposable {
     return true;
   }
 
+  void printDebugStore({bool items: true, bool initializers: true}) {
+    if (items) {
+      printDebug('--- Items ---');
+      _items..forEach((key, value) => printDebug('$key - $value'));
+    }
+
+    if (initializers) {
+      printDebug('--- Initializers ---');
+      _initializers.forEach((key, value) => printDebug('$key - $value'));
+    }
+  }
+
   @override
   String toString() {
     final buffer = StringBuffer();
 
-    buffer.writeln('--- Items ---');
-    _items.forEach((key, value) => buffer.writeln('$key - $value'));
-
-    buffer.writeln('--- Initializers ---');
-    _initializers.forEach((key, value) => buffer.writeln('$key - $value'));
+    buffer.writeln('--- $runtimeType --- $isInitialized --- $hashCode');
+    buffer.writeln('--- Items --- ${_items.length}');
+    buffer.writeln('--- Initializers --- ${_initializers.length}');
 
     return buffer.toString();
   }
