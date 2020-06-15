@@ -43,7 +43,7 @@ abstract class InitLoaderControl extends BaseControl {
       await block.finish();
     }
 
-    final state = Parse.getArg<AppState>(result, defaultValue: AppState.active);
+    final state = Parse.getArg<AppState>(result, defaultValue: AppState.main);
     notifyControl(state, result);
   }
 

@@ -16,7 +16,7 @@ class AppState {
 
   static const onboarding = const AppStateOnboarding();
 
-  static const active = const AppStateActive();
+  static const main = const AppStateMain();
 
   static const background = const AppStateBackground();
 
@@ -35,8 +35,8 @@ class AppStateBackground extends AppState {
   const AppStateBackground();
 }
 
-class AppStateActive extends AppState {
-  const AppStateActive();
+class AppStateMain extends AppState {
+  const AppStateMain();
 }
 
 class ControlScope {
@@ -113,8 +113,8 @@ class ControlScope {
         clearNavigator: clearNavigator,
       );
 
-  bool setActiveState({dynamic args, bool clearNavigator: true}) => setAppState(
-        AppState.active,
+  bool setMainState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.main,
         args: args,
         clearNavigator: clearNavigator,
       );
@@ -247,7 +247,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     }
 
     if (transition.isInitialized) {
-      if (appState is AppStateActive) {
+      if (appState is AppStateMain) {
         transition.crossIn();
       } else {
         transition.crossOut();
@@ -261,7 +261,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   void initState() {
     super.initState();
 
-    _args[AppState] = widget.disableLoader ? AppState.active : AppState.onboarding;
+    _args[AppState] = widget.disableLoader ? AppState.main : AppState.onboarding;
 
     if (widget.loader != null) {
       _loadingBuilder = WidgetInitializer.of(widget.loader);
@@ -285,7 +285,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _rootBuilder = WidgetInitializer.control(widget.root);
 
     _loadingBuilder.key = GlobalObjectKey(AppState.onboarding);
-    _rootBuilder.key = GlobalObjectKey(AppState.active);
+    _rootBuilder.key = GlobalObjectKey(AppState.main);
 
     _initControl();
   }
