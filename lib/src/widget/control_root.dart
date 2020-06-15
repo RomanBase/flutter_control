@@ -12,6 +12,8 @@ typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home)
 class AppState {
   static const none = const AppState();
 
+  static const auth = const AppStateAuth();
+
   static const onboarding = const AppStateOnboarding();
 
   static const active = const AppStateActive();
@@ -19,6 +21,10 @@ class AppState {
   static const background = const AppStateBackground();
 
   const AppState();
+}
+
+class AppStateAuth extends AppState {
+  const AppStateAuth();
 }
 
 class AppStateOnboarding extends AppState {
@@ -83,13 +89,41 @@ class ControlScope {
     return false;
   }
 
-  bool setAppState(AppState state, [dynamic args]) => notifyControlState(ControlArgs({AppState: state})..set(args));
+  bool setAppState(AppState state, {dynamic args, bool clearNavigator: true}) {
+    if (clearNavigator) {
+      try {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } catch (err) {
+        printDebug(err.toString());
+      }
+    }
 
-  bool setOnboardingState([dynamic args]) => setAppState(AppState.onboarding, args);
+    return notifyControlState(ControlArgs({AppState: state})..set(args));
+  }
 
-  bool setActiveState([dynamic args]) => setAppState(AppState.active, args);
+  bool setAuthState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.auth,
+        args: args,
+        clearNavigator: clearNavigator,
+      );
 
-  bool setBackgroundState([dynamic args]) => setAppState(AppState.background, args);
+  bool setOnboardingState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.onboarding,
+        args: args,
+        clearNavigator: clearNavigator,
+      );
+
+  bool setActiveState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.active,
+        args: args,
+        clearNavigator: clearNavigator,
+      );
+
+  bool setBackgroundState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.background,
+        args: args,
+        clearNavigator: clearNavigator,
+      );
 }
 
 class ControlRoot extends StatefulWidget {
