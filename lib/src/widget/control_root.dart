@@ -10,7 +10,7 @@ const _appKey = GlobalObjectKey(AppBuilder);
 typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
 
 class AppState {
-  static const none = const AppState();
+  static const init = const AppState();
 
   static const auth = const AppStateAuth();
 
@@ -21,6 +21,13 @@ class AppState {
   static const background = const AppStateBackground();
 
   const AppState();
+
+  dynamic get key => this.runtimeType;
+
+  operator ==(dynamic other) => other is AppState && other.key == key;
+
+  @override
+  int get hashCode => key.hashCode;
 }
 
 class AppStateAuth extends AppState {
