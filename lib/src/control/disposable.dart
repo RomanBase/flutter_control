@@ -37,7 +37,9 @@ mixin DisposeHandler implements Disposable {
   void softDispose() {}
 
   @override
-  void dispose() {}
+  void dispose() {
+    softDispose();
+  }
 }
 
 /// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and [ControlModel].
