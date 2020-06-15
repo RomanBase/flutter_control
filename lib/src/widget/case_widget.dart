@@ -5,7 +5,8 @@ class CaseWidget<T> extends StatefulWidget {
   final Map<T, WidgetBuilder> builders;
   final dynamic args;
   final Widget placeholder;
-  final CrossTransition transition;
+  final CrossTransition transitionIn;
+  final CrossTransition transitionOut;
   final Map<T, CrossTransition> caseTransition;
 
   const CaseWidget({
@@ -14,19 +15,20 @@ class CaseWidget<T> extends StatefulWidget {
     @required this.builders,
     this.args,
     this.placeholder,
-    this.transition,
+    this.transitionIn,
+    this.transitionOut,
     this.caseTransition,
   }) : super(key: key);
 
   @override
   _CaseWidgetState createState() => _CaseWidgetState();
 
-  CrossTransition get activeTransition {
+  CrossTransition get activeTransitionIn {
     if (caseTransition != null && caseTransition.containsKey(activeCase)) {
       return caseTransition[activeCase];
     }
 
-    return transition;
+    return transitionIn;
   }
 }
 
@@ -103,7 +105,8 @@ class _CaseWidgetState extends State<CaseWidget> {
       args: widget.args,
       firstWidget: oldInitializer,
       secondWidget: currentInitializer,
-      transitionIn: widget.activeTransition,
+      transitionIn: widget.activeTransitionIn,
+      transitionOut: widget.transitionOut,
     );
   }
 
@@ -128,7 +131,6 @@ class _CaseWidgetState extends State<CaseWidget> {
   void dispose() {
     super.dispose();
 
-    // control should be disposed by TransitionHolder
     if (control.isInitialized) {
       control.dispose();
     }

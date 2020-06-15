@@ -12,7 +12,7 @@ class CrossTransition {
   });
 }
 
-class TransitionControl extends ControlModel with StateControl, TickerComponent {
+class TransitionControl extends BaseModel with StateControl, TickerComponent {
   bool autoRun;
 
   AnimationController animation;
@@ -101,6 +101,9 @@ class TransitionControl extends ControlModel with StateControl, TickerComponent 
 }
 
 class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+  static const _firstKey = 'first_key';
+  static const _secondKey = 'second_key';
+
   final dynamic args;
   final WidgetInitializer firstWidget;
   final WidgetInitializer secondWidget;
@@ -115,12 +118,12 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
   Widget get _firstWidget => KeyedSubtree(
-        key: getArg(key: 'first_key'),
+        key: getArg(key: _firstKey),
         child: firstWidget.getWidget(context, args: args),
       );
 
   Widget get _secondWidget => KeyedSubtree(
-        key: getArg(key: 'second_key'),
+        key: getArg(key: _secondKey),
         child: secondWidget.getWidget(context, args: args),
       );
 
@@ -165,8 +168,8 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
   }
 
   void _updateKeys() {
-    setArg(key: 'first_key', value: firstWidget.key ?? GlobalKey());
-    setArg(key: 'second_key', value: secondWidget.key ?? GlobalKey());
+    setArg(key: _firstKey, value: firstWidget.key ?? GlobalKey());
+    setArg(key: _secondKey, value: secondWidget.key ?? GlobalKey());
   }
 
   void _updateDuration() {
