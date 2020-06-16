@@ -168,7 +168,13 @@ class Parse {
       return null;
     }
 
-    return value.toString().split('.')[1];
+    final data = value.toString().split('.');
+
+    if (data.length == 2) {
+      return data[1];
+    }
+
+    return null;
   }
 
   /// Safety converts value to give [Type]
@@ -193,6 +199,32 @@ class Parse {
     }
 
     return defaultValue;
+  }
+
+  static String name(dynamic value) {
+    if (value == null) {
+      return 'none';
+    }
+
+    if (value is num) {
+      return value.toString();
+    }
+
+    if (value is bool) {
+      return value.toString();
+    }
+
+    final enumValue = fromEnum(value);
+
+    if (enumValue != null) {
+      return enumValue;
+    }
+
+    if (value is String) {
+      return value;
+    }
+
+    return value.runtimeType.toString();
   }
 
   /// Tries to parse value into List.

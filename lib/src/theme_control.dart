@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/core.dart';
 
 class AssetPath {
@@ -34,6 +35,8 @@ class AssetPath {
 /// [ControlTheme] is build during [ControlRoot] initialization.
 ///
 class ControlTheme {
+  static const preference_key = 'control_theme';
+
   static const root = 0;
   static const scope = 1;
 
@@ -129,6 +132,22 @@ class ControlTheme {
 
   ////////////////////////////////////////////////////////////////////////////////
 
+  final dynamic defaultThemeKey = ThemeData;
+
+  final bool dynamicTheme = true;
+
+  Brightness get systemBrightness => SchedulerBinding.instance.window.platformBrightness;
+
+  String get currentThemeName => Control.get<BasePrefs>().get(preference_key, defaultValue: Parse.name(defaultThemeKey));
+
+  Map<dynamic, Initializer<ThemeData>> get themes => {
+        ThemeData: (_) => ThemeData.fallback(),
+        Brightness.light: (_) => ThemeData.light(),
+        Brightness.dark: (_) => ThemeData.dark(),
+      };
+
+  ////////////////////////////////////////////////////////////////////////////////
+
   BuildContext _context;
   Device _device;
   ThemeData _data;
@@ -152,7 +171,9 @@ class ControlTheme {
   @protected
   set device(value) => _device = value;
 
-  ControlTheme([this._context]);
+  ControlTheme(this._context);
+
+  static ControlTheme defaultTheme([BuildContext context]) => ThemeProvider.of(context).._default();
 
   void invalidate([BuildContext context]) {
     _data = null;
@@ -160,6 +181,58 @@ class ControlTheme {
     _context = context ?? Control.root()?.context;
 
     assert(_context != null);
+  }
+
+  static BroadcastSubscription<ControlTheme> subscribeChanges(ValueCallback<ControlTheme> callback) {
+    return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
+  }
+
+  void _default() => data = _findTheme(defaultThemeKey);
+
+  ThemeData _findTheme(dynamic key) {
+    key = Parse.name(key);
+
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null);
+
+    if (themes.containsKey(key)) {
+      return themes[key](context);
+    }
+
+    return data;
+  }
+
+  Future<void> resetPreferredLocale({bool loadSystemTheme: false}) async {
+    Control.get<BasePrefs>().set(preference_key, null);
+
+    if (loadSystemTheme) {
+      return setSystemTheme();
+    }
+  }
+
+  Future<ControlTheme> setSystemTheme() async {
+    final key = (await PrefsProvider.init()).get(preference_key, defaultValue: Parse.name(defaultThemeKey));
+    final theme = _findTheme(key);
+
+    return pushTheme(theme);
+  }
+
+  ControlTheme changeTheme(dynamic key, {bool preferred: true}) {
+    final theme = _findTheme(key);
+
+    if (preferred) {
+      Control.get<BasePrefs>().set(preference_key, Parse.name(key));
+    }
+
+    return pushTheme(theme);
+  }
+
+  ControlTheme pushTheme(ThemeData theme) {
+    if (theme != data) {
+      data = theme;
+      BroadcastProvider.broadcast(ControlTheme, this);
+    }
+
+    return this;
   }
 
   @override

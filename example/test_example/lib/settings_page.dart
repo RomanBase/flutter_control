@@ -63,14 +63,14 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
   }
 }
 
-class ThemeText extends StatelessWidget with ThemeProvider {
+class ThemeText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    invalidateTheme(context);
+    final theme = ThemeProvider.of(context);
 
     return Text(
       'toggle Theme',
-      style: font.button.copyWith(color: theme.primaryColor),
+      style: theme.font.button.copyWith(color: theme.primaryColor),
     );
   }
 }

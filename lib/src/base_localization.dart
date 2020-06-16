@@ -749,7 +749,7 @@ mixin LocalizationProvider {
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
-  /// Note: usable only with [LocalizationsDelegate].
+  /// Note: usable only with [LocalizationsDelegate]. If delegate is not specified use [Control.localization] instead.
   static BaseLocalization of(BuildContext context) {
     return Localizations.of<BaseLocalization>(context, BaseLocalization);
   }

@@ -53,4 +53,6 @@ mixin PrefsProvider {
   BasePrefs _prefs;
 
   BasePrefs get prefs => _prefs ?? (_prefs = Control.get<BasePrefs>() ?? BasePrefs());
+
+  static Future<BasePrefs> init() => (Control.get<BasePrefs>() ?? BasePrefs()).init();
 }

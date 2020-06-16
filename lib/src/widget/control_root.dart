@@ -1,24 +1,23 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 /// Holder of current root context.
 final _context = ActionControl.broadcast<BuildContext>();
 
 const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
-const _appKey = GlobalObjectKey(AppBuilder);
+const _appKey = GlobalObjectKey(AppWidgetBuilder);
 
-typedef AppBuilder = Widget Function(BuildContext context, Key key, Widget home);
+typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup);
 
 class AppState {
   static const init = const AppState();
 
-  static const auth = const AppStateAuth();
+  static const auth = const _AppStateAuth();
 
-  static const onboarding = const AppStateOnboarding();
+  static const onboarding = const _AppStateOnboarding();
 
-  static const main = const AppStateMain();
+  static const main = const _AppStateMain();
 
-  static const background = const AppStateBackground();
+  static const background = const _AppStateBackground();
 
   const AppState();
 
@@ -30,20 +29,20 @@ class AppState {
   int get hashCode => key.hashCode;
 }
 
-class AppStateAuth extends AppState {
-  const AppStateAuth();
+class _AppStateAuth extends AppState {
+  const _AppStateAuth();
 }
 
-class AppStateOnboarding extends AppState {
-  const AppStateOnboarding();
+class _AppStateOnboarding extends AppState {
+  const _AppStateOnboarding();
 }
 
-class AppStateBackground extends AppState {
-  const AppStateBackground();
+class _AppStateBackground extends AppState {
+  const _AppStateBackground();
 }
 
-class AppStateMain extends AppState {
-  const AppStateMain();
+class _AppStateMain extends AppState {
+  const _AppStateMain();
 }
 
 class ControlScope {
@@ -57,7 +56,7 @@ class ControlScope {
 
   ControlRootState get rootState => _rootKey.currentState;
 
-  Widget get homeWidget => rootState?._currentWidget;
+  //Widget get homeWidget => rootState?._currentWidget;
 
   /// Returns current context from [contextHolder]
   BuildContext get context => _context.value;
@@ -133,6 +132,52 @@ class ControlScope {
       );
 }
 
+class ControlRootSetup {
+  Key key;
+  AppState state;
+  ControlArgs args;
+  Widget home;
+  ControlTheme style;
+  BuildContext context;
+
+  ControlRootSetup({
+    this.key,
+    this.state,
+    this.args,
+    this.home,
+    this.style,
+    this.context,
+  });
+
+  ThemeData get theme => style.data;
+
+  BaseLocalization get localization => Control.localization();
+
+  Locale get locale => localization.currentLocale;
+
+  BaseLocalizationDelegate get localizationDelegate => localization.delegate;
+
+  List<Locale> get supportedLocales => localizationDelegate.supportedLocales();
+
+  ControlRootSetup copyWith({
+    Key key,
+    AppState state,
+    ControlArgs args,
+    Widget home,
+    ControlTheme style,
+    BuildContext context,
+  }) {
+    return new ControlRootSetup(
+      key: key ?? this.key,
+      state: state ?? this.state,
+      args: args ?? this.args,
+      home: home ?? this.home,
+      style: style ?? this.style,
+      context: context ?? this.context,
+    );
+  }
+}
+
 class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final bool debug;
@@ -164,22 +209,9 @@ class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final Future Function() initAsync;
 
-  /// Custom loader. Check [InitLoader] to provide more robust loader.
-  ///
-  /// [ControlRootState] is passed as [arg] during Loader initialization..
-  /// If custom Loader is used. It's mandatory to notify [ControlRootState] to finish loading - setState with [ControlArgs] and [LoadingStatus].
-  /// Easies way is to use [InitLoader.of] or extend [InitLoaderControl].
-  ///
-  /// Widget will be passed into [AppBuilder] as [home].
-  final WidgetBuilder loader;
+  final AppState initScreen;
 
-  /// Entirely disables loader. [root] widget will be initialized on first build pass.
-  final bool disableLoader;
-
-  /// Root widget after loader. Widget will be passed into [AppBuilder] as [home].
-  /// [ControlArgs] are passed from loader.
-  /// It's equal to [ControlScope.homeWidget].
-  final ControlWidgetBuilder<ControlArgs> root;
+  final Map<AppState, AppWidgetBuilder> screens;
 
   final CrossTransition transitionIn;
 
@@ -187,7 +219,7 @@ class ControlRoot extends StatefulWidget {
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
-  final AppBuilder app;
+  final AppWidgetBuilder app;
 
   /// Root [Widget] for whole app.
   ///
@@ -201,7 +233,7 @@ class ControlRoot extends StatefulWidget {
   /// [loader] widget to show during loading and initializing control, localization.
   /// [initAsync] extra async function - this function is executed during [ControlFactory.initialize].
   /// [root] first Widget after loading finished.
-  /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppBuilder.key] and [AppBuilder.home] from builder to App Widget.
+  /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppWidgetBuilder.key] and [AppWidgetBuilder.home] from builder to App Widget.
   const ControlRoot({
     this.debug,
     this.defaultLocale,
@@ -212,12 +244,11 @@ class ControlRoot extends StatefulWidget {
     this.injector,
     this.routes,
     this.theme,
-    this.loader,
-    this.disableLoader: false,
     this.initAsync,
     this.transitionIn,
     this.transitionOut,
-    @required this.root,
+    this.initScreen: AppState.init,
+    this.screens: const {},
     @required this.app,
   }) : super(key: _rootKey);
 
@@ -230,21 +261,51 @@ class ControlRoot extends StatefulWidget {
 /// This State is meant to be used as root.
 /// BuildContext from local Builder is used as root context.
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
-  final transition = TransitionControl();
-
   final _args = ControlArgs();
+
+  final _setup = ControlRootSetup();
 
   AppState get appState => _args.get<AppState>();
 
-  WidgetInitializer _rootBuilder;
-  WidgetInitializer _loadingBuilder;
+  Map<Type, WidgetBuilder> states;
 
   BroadcastSubscription _localeSub;
 
-  Widget get _currentWidget {
-    bool loader = appState is AppStateOnboarding;
+  BroadcastSubscription _themeSub;
 
-    return loader ? _loadingBuilder?.value : _rootBuilder?.value;
+  @override
+  void initState() {
+    super.initState();
+
+    _context.value = context;
+    _args[AppState] = widget.initScreen;
+
+    states = widget.screens.map((key, value) => MapEntry(
+        key.key,
+        (context) => value(_setup.copyWith(
+              key: ObjectKey(key),
+              context: context,
+              home: null,
+            ))));
+
+    _setup.key = _appKey;
+    _setup.state = appState;
+    _setup.args = _args;
+
+    if (widget.initScreen == AppState.init && !states.containsKey(AppState.init.key)) {
+      states[AppState.init.key] = (context) => InitLoader.of(
+            builder: (context) => Container(
+              color: Theme.of(context).canvasColor,
+              child: Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                ),
+              ),
+            ),
+          );
+    }
+
+    _initControl();
   }
 
   @override
@@ -253,48 +314,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       _args.combine(state);
     }
 
-    if (transition.isInitialized) {
-      if (appState is AppStateMain) {
-        transition.crossIn();
-      } else {
-        transition.crossOut();
-      }
-    }
-
-    setState(() {});
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _args[AppState] = widget.disableLoader ? AppState.main : AppState.onboarding;
-
-    if (widget.loader != null) {
-      _loadingBuilder = WidgetInitializer.of(widget.loader);
-    } else {
-      _loadingBuilder = WidgetInitializer.of((context) {
-        printDebug('build default loader');
-
-        return InitLoader.of(
-          builder: (context) => Container(
-            color: Theme.of(context).canvasColor,
-            child: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-              ),
-            ),
-          ),
-        );
-      });
-    }
-
-    _rootBuilder = WidgetInitializer.control(widget.root);
-
-    _loadingBuilder.key = GlobalObjectKey(AppState.onboarding);
-    _rootBuilder.key = GlobalObjectKey(AppState.main);
-
-    _initControl();
+    setState(() {
+      _setup.state = appState;
+    });
   }
 
   void _initControl() async {
@@ -313,9 +335,22 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       ]),
     );
 
+    _setup.style = ControlTheme.defaultTheme(context);
+    _setup.style.setSystemTheme().then((value) {
+      setState(() {
+        _setup.style = value;
+      });
+    });
+
     if (initialized) {
       await Control.factory().onReady();
     }
+
+    _themeSub = ControlTheme.subscribeChanges((value) {
+      setState(() {
+        _setup.style = value;
+      });
+    });
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
       if (args.changed) {
@@ -331,54 +366,35 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   }
 
   @override
-  void didUpdateWidget(ControlRoot oldWidget) {
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Container(
-      key: ObjectKey(Control.localization()?.locale ?? '-'),
-      child: widget.app(
-        context,
-        _appKey,
-        Builder(
-          builder: _buildHome,
-        ),
-      ),
-    );
-  }
+    _setup.context = _context.value;
+    _setup.home = Builder(
+      builder: (BuildContext context) {
+        _context.value = context;
 
-  Widget _buildHome(BuildContext context) {
-    _context.value = context;
-
-    if (widget.disableLoader) {
-      return KeyedSubtree(
-        key: _rootBuilder.key,
-        child: _rootBuilder.getWidget(context, args: {
-          ControlRootState: this,
-          ControlArgs: _args,
-        }),
-      );
-    }
-
-    return TransitionHolder(
-      control: transition,
-      firstWidget: _loadingBuilder,
-      secondWidget: _rootBuilder,
-      transitionIn: widget.transitionIn,
-      transitionOut: widget.transitionOut,
-      args: {
-        ControlRootState: this,
-        ControlArgs: _args,
+        return CaseWidget(
+          activeCase: appState.key,
+          builders: states,
+          transitionIn: widget.transitionIn,
+          transitionOut: widget.transitionOut,
+          args: _args,
+        );
       },
+    );
+
+    return widget.app(
+      _setup.copyWith(context: context),
     );
   }
 
   @override
   void dispose() {
     super.dispose();
+
     _localeSub?.dispose();
     _localeSub = null;
+
+    _themeSub?.dispose();
+    _themeSub = null;
   }
 }

@@ -16,19 +16,17 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
   }
 
   void toggleTheme() async {
-    //final theme = ThemeProvider.of();
-
     invalidateTheme();
 
-    ThemeData data = theme.primaryColor != Colors.orange
-        ? ThemeData(
-            primaryColor: Colors.orange,
-          )
-        : ThemeData(
-            primaryColor: Colors.green,
-          );
+    final currentTheme = theme.currentThemeName;
 
-    BroadcastProvider.broadcast('theme', data, store: true);
+    if (currentTheme == Parse.name(ThemeData)) {
+      theme.changeTheme(Brightness.light);
+    } else if (currentTheme == Parse.name(Brightness.light)) {
+      theme.changeTheme(Brightness.dark);
+    } else if (currentTheme == Parse.name(Brightness.dark)) {
+      theme.changeTheme(Brightness.light);
+    }
   }
 
   void unloadApp() {
