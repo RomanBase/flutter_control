@@ -7,6 +7,30 @@ import 'package:flutter_control/core.dart';
 typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String locale);
 
+class LocalizationConfig {
+  final String defaultLocale;
+  final Map<String, String> locales;
+  final bool loadDefaultLocale;
+  final bool loadPreferredLocale;
+
+  String get fallbackLocale => defaultLocale ?? locales.keys.first;
+
+  const LocalizationConfig({
+    this.defaultLocale,
+    @required this.locales,
+    this.loadDefaultLocale: true,
+    this.loadPreferredLocale: true,
+  }) : assert(locales != null);
+
+  List<LocalizationAsset> toAssets() {
+    final localizationAssets = List<LocalizationAsset>();
+
+    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key.replaceAll('-', '_'), value)));
+
+    return localizationAssets;
+  }
+}
+
 /// Defines language and asset path to file with localization data.
 class LocalizationAsset {
   /// Locale key.

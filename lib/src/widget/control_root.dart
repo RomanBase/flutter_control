@@ -183,13 +183,7 @@ class ControlRoot extends StatefulWidget {
   final bool debug;
 
   /// [Control.initControl]
-  final String defaultLocale;
-
-  /// [Control.initControl]
-  final Map<String, String> locales;
-
-  /// extends loader to load default and preferred localization assets.
-  final bool loadLocalization;
+  final LocalizationConfig localization;
 
   /// [Control.initControl]
   final Map entries;
@@ -204,7 +198,7 @@ class ControlRoot extends StatefulWidget {
   final List<ControlRoute> routes;
 
   /// [Control.initControl]
-  final Initializer<ControlTheme> theme;
+  final ThemeConfig theme;
 
   /// [Control.initControl]
   final Future Function() initAsync;
@@ -224,21 +218,17 @@ class ControlRoot extends StatefulWidget {
   /// Root [Widget] for whole app.
   ///
   /// [debug] extra debug console prints.
-  /// [defaultLocale] key of default locale. First localization will be used if this value is not set.
+  /// [initLocale] key of default locale. First localization will be used if this value is not set.
   /// [locales] map of supported localizations. Key - locale (en, en_US). Value - asset path.
   /// [loadLocalization] loads localization during [ControlRoot] initialization.
   /// [entries] map of Controllers/Models to init and fill into [ControlFactory].
   /// [initializers] map of dynamic initializers to store in [ControlFactory].
-  /// [theme] custom [ControlTheme] builder.
-  /// [loader] widget to show during loading and initializing control, localization.
+  /// [theme] custom [ControlTheme] config.
   /// [initAsync] extra async function - this function is executed during [ControlFactory.initialize].
-  /// [root] first Widget after loading finished.
   /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppWidgetBuilder.key] and [AppWidgetBuilder.home] from builder to App Widget.
   const ControlRoot({
     this.debug,
-    this.defaultLocale,
-    this.locales,
-    this.loadLocalization: true,
+    this.localization,
     this.entries,
     this.initializers,
     this.injector,
@@ -265,6 +255,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   final _setup = ControlRootSetup();
 
+  ThemeConfig _theme;
+
   AppState get appState => _args.get<AppState>();
 
   Map<Type, WidgetBuilder> states;
@@ -279,6 +271,15 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _context.value = context;
     _args[AppState] = widget.initScreen;
+    _theme = widget.theme ??
+        ThemeConfig(
+          builder: (context) => ControlTheme(context),
+          initTheme: ThemeConfig.platformBrightness,
+          themes: {
+            Brightness.light: (_) => ThemeData.light(),
+            Brightness.dark: (_) => ThemeData.dark(),
+          },
+        );
 
     states = widget.screens.map((key, value) => MapEntry(
         key.key,
@@ -291,6 +292,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _setup.key = _appKey;
     _setup.state = appState;
     _setup.args = _args;
+    _setup.style = ControlTheme.defaultTheme(context, _theme);
 
     if (widget.initScreen == AppState.init && !states.containsKey(AppState.init.key)) {
       states[AppState.init.key] = (context) => InitLoader.of(
@@ -322,25 +324,17 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   void _initControl() async {
     final initialized = Control.initControl(
       debug: widget.debug,
-      defaultLocale: widget.defaultLocale,
-      locales: widget.locales,
+      localization: widget.localization,
       entries: widget.entries,
       initializers: widget.initializers,
       injector: widget.injector,
       routes: widget.routes,
-      theme: widget.theme,
+      theme: _theme.initializer,
       initAsync: () => FutureBlock.wait([
-        widget.initAsync != null ? widget.initAsync() : null,
-        (widget.loadLocalization && widget.locales != null) ? _loadLocalization() : null,
+        _loadTheme(),
+        widget.initAsync?.call(),
       ]),
     );
-
-    _setup.style = ControlTheme.defaultTheme(context);
-    _setup.style.setSystemTheme().then((value) {
-      setState(() {
-        _setup.style = value;
-      });
-    });
 
     if (initialized) {
       await Control.factory().onReady();
@@ -359,11 +353,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     });
   }
 
-  Future<void> _loadLocalization() async {
-    if (widget.loadLocalization && Control.localization().isDirty) {
-      await Control.localization().init();
-    }
-  }
+  Future<void> _loadTheme() async => _setup.style.setSystemTheme();
 
   @override
   Widget build(BuildContext context) {

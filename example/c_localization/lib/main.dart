@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      defaultLocale: 'en',
+      initLocale: 'en',
       locales: LocalizationAsset.build(
         locales: [
           'en',

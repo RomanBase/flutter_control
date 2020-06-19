@@ -35,8 +35,6 @@ class AssetPath {
 /// [ControlTheme] is build during [ControlRoot] initialization.
 ///
 class ControlTheme {
-  static const preference_key = 'control_theme';
-
   static const root = 0;
   static const scope = 1;
 
@@ -132,22 +130,6 @@ class ControlTheme {
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  final dynamic defaultThemeKey = ThemeData;
-
-  final bool dynamicTheme = true;
-
-  Brightness get systemBrightness => SchedulerBinding.instance.window.platformBrightness;
-
-  String get currentThemeName => Control.get<BasePrefs>().get(preference_key, defaultValue: Parse.name(defaultThemeKey));
-
-  Map<dynamic, Initializer<ThemeData>> get themes => {
-        ThemeData: (_) => ThemeData.fallback(),
-        Brightness.light: (_) => ThemeData.light(),
-        Brightness.dark: (_) => ThemeData.dark(),
-      };
-
-  ////////////////////////////////////////////////////////////////////////////////
-
   BuildContext _context;
   Device _device;
   ThemeData _data;
@@ -171,9 +153,13 @@ class ControlTheme {
   @protected
   set device(value) => _device = value;
 
+  ThemeConfig config;
+
   ControlTheme(this._context);
 
-  static ControlTheme defaultTheme([BuildContext context]) => ThemeProvider.of(context).._default();
+  factory ControlTheme.defaultTheme(BuildContext context, ThemeConfig config) => ControlTheme(context)
+    ..config = config
+    ..data = config.getCurrentTheme(context);
 
   void invalidate([BuildContext context]) {
     _data = null;
@@ -187,40 +173,21 @@ class ControlTheme {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }
 
-  void _default() => data = _findTheme(defaultThemeKey);
-
-  ThemeData _findTheme(dynamic key) {
-    key = Parse.name(key);
-
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null);
-
-    if (themes.containsKey(key)) {
-      return themes[key](context);
-    }
-
-    return data;
-  }
-
-  Future<void> resetPreferredLocale({bool loadSystemTheme: false}) async {
-    Control.get<BasePrefs>().set(preference_key, null);
+  Future<void> resetPreferredTheme({bool loadSystemTheme: false}) async {
+    config.resetPreferred();
 
     if (loadSystemTheme) {
       return setSystemTheme();
     }
   }
 
-  Future<ControlTheme> setSystemTheme() async {
-    final key = (await PrefsProvider.init()).get(preference_key, defaultValue: Parse.name(defaultThemeKey));
-    final theme = _findTheme(key);
-
-    return pushTheme(theme);
-  }
+  ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(context));
 
   ControlTheme changeTheme(dynamic key, {bool preferred: true}) {
-    final theme = _findTheme(key);
+    final theme = config.getTheme(key, context);
 
     if (preferred) {
-      Control.get<BasePrefs>().set(preference_key, Parse.name(key));
+      config.setAsPreferred();
     }
 
     return pushTheme(theme);
@@ -242,6 +209,56 @@ class ControlTheme {
 
   @override
   int get hashCode => data.hashCode;
+}
+
+class ThemeConfig {
+  static const preference_key = 'control_theme';
+
+  final Initializer<ControlTheme> builder;
+  final dynamic initTheme;
+  final Map<dynamic, Initializer<ThemeData>> themes;
+
+  Initializer<ControlTheme> get initializer => (context) => builder(context)..config = this;
+
+  String get preferredThemeName => Control.get<BasePrefs>().get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
+
+  static Brightness get platformBrightness => SchedulerBinding.instance.window.platformBrightness;
+
+  const ThemeConfig({
+    this.builder,
+    this.initTheme,
+    @required this.themes,
+  }) : assert(themes != null);
+
+  ThemeData getTheme(dynamic key, BuildContext context) {
+    key = Parse.name(key);
+
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
+
+    if (themes.containsKey(key)) {
+      return themes[key](context);
+    }
+
+    return themes.values.first(context);
+  }
+
+  ThemeData getCurrentTheme(BuildContext context) => getTheme(initTheme, context);
+
+  ThemeData getSystemTheme(BuildContext context) => getTheme(preferredThemeName, context);
+
+  void setAsPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, Parse.name(initTheme));
+
+  void resetPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
+
+  ThemeConfig copyWith({
+    Initializer<ControlTheme> builder,
+    dynamic theme,
+  }) =>
+      ThemeConfig(
+        builder: builder ?? this.builder,
+        initTheme: theme ?? this.initTheme,
+        themes: this.themes,
+      );
 }
 
 mixin ThemeProvider<T extends ControlTheme> {

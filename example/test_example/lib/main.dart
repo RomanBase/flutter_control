@@ -15,11 +15,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      defaultLocale: 'en',
-      locales: {
-        'en': AssetPath().localization('en'),
-        'cs': 'assets/localization/cs.json',
-      },
+      localization: LocalizationConfig(
+        defaultLocale: 'en',
+        locales: {
+          'en': AssetPath().localization('en'),
+          'cs': 'assets/localization/cs.json',
+        },
+      ),
       entries: {
         'cards': CardsController(),
       },
@@ -30,7 +32,6 @@ class MyApp extends StatelessWidget {
       injector: Injector.of({
         ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),
       }),
-      theme: (context) => MyTheme(context),
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
@@ -49,6 +50,11 @@ class MyApp extends StatelessWidget {
             ),
         AppState.main: (_) => MenuPage(),
       },
+      theme: ThemeConfig(
+        builder: (context) => MyTheme(context),
+        initTheme: ThemeData,
+        themes: MyTheme.themes,
+      ),
       app: (setup) => MaterialApp(
         key: setup.key,
         title: 'Flutter Example',
@@ -68,17 +74,13 @@ class MyTheme extends ControlTheme {
 
   final superColor = Colors.red;
 
-  @override
-  bool get dynamicTheme => false;
+  MyTheme(BuildContext context) : super(context);
 
-  @override
-  Map<dynamic, Initializer<ThemeData>> get themes => {
+  static Map<dynamic, Initializer<ThemeData>> get themes => {
         ThemeData: (_) => ThemeData(
               primaryColor: Colors.deepOrange,
             ),
         Brightness.light: (_) => ThemeData.light().copyWith(primaryColor: Colors.green),
         Brightness.dark: (_) => ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
       };
-
-  MyTheme(BuildContext context) : super(context);
 }

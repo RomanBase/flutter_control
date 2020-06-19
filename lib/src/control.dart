@@ -66,8 +66,7 @@ class Control {
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
     bool debug,
-    String defaultLocale,
-    Map<String, String> locales,
+    LocalizationConfig localization,
     Map entries,
     Map<Type, Initializer> initializers,
     Injector injector,
@@ -82,21 +81,23 @@ class Control {
     debug ??= kDebugMode;
     ControlFactory._instance.debug = debug;
 
-    locales ??= {'en': null};
     entries ??= {};
     initializers ??= {};
-
-    final localizationAssets = List<LocalizationAsset>();
-    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key.replaceAll('-', '_'), value)));
+    localization ??= LocalizationConfig(
+      locales: {
+        'en': null,
+      },
+    );
 
     final prefs = BasePrefs();
+    final loc = BaseLocalization(
+      localization.fallbackLocale,
+      localization.toAssets(),
+    )..debug = debug;
 
     entries[BasePrefs] = prefs;
     entries[RouteStore] = RouteStore(routes);
-    entries[BaseLocalization] = BaseLocalization(
-      defaultLocale ?? localizationAssets[0].locale,
-      localizationAssets,
-    )..debug = debug;
+    entries[BaseLocalization] = loc;
 
     initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
 
@@ -104,10 +105,13 @@ class Control {
       entries: entries,
       initializers: initializers,
       injector: injector,
-      initAsync: () => FutureBlock.wait([
-        prefs.init(),
-        initAsync != null ? initAsync() : null,
-      ]),
+      initAsync: () async {
+        await prefs.init();
+        await FutureBlock.wait([
+          loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.loadPreferredLocale),
+          initAsync?.call(),
+        ]);
+      },
     );
 
     return true;
