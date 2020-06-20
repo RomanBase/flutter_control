@@ -346,20 +346,16 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         Builder(builder: (context) {
           _context.value = context;
 
-          return _buildHome();
+          return CaseWidget(
+            activeCase: _setup.state,
+            builders: widget.screens,
+            transitionIn: widget.transitionIn,
+            transitionOut: widget.transitionOut,
+            args: _args,
+            soft: false,
+          );
         }),
       ),
-    );
-  }
-
-  Widget _buildHome() {
-    return CaseWidget(
-      key: ObjectKey('core_case_widget'),
-      activeCase: _setup.state,
-      builders: widget.screens,
-      transitionIn: widget.transitionIn,
-      transitionOut: widget.transitionOut,
-      args: _args,
     );
   }
 

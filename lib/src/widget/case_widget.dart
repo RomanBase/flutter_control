@@ -8,6 +8,7 @@ class CaseWidget<T> extends StatefulWidget {
   final CrossTransition transitionIn;
   final CrossTransition transitionOut;
   final Map<T, CrossTransition> caseTransition;
+  final bool soft;
 
   const CaseWidget({
     Key key,
@@ -18,6 +19,7 @@ class CaseWidget<T> extends StatefulWidget {
     this.transitionIn,
     this.transitionOut,
     this.caseTransition,
+    this.soft: true,
   }) : super(key: key);
 
   @override
@@ -64,8 +66,10 @@ class _CaseWidgetState extends State<CaseWidget> {
     } else {
       setState(() {
         control.progress = 1.0; //ensure to stay on current case
-        //TODO: solve this
-        //_updateCurrentInitializer();
+
+        if (widget.soft) {
+          _updateCurrentInitializer();
+        }
       });
     }
   }
