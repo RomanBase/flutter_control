@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         initTheme: ThemeData,
         themes: MyTheme.themes,
       ),
-      initScreen: AppState.onboarding,
+      //initScreen: AppState.onboarding,
       screens: {
         AppState.onboarding: (_) => InitLoader.of(
               delay: Duration(seconds: 1),

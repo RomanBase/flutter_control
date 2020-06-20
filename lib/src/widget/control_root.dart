@@ -332,8 +332,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   @override
   Widget build(BuildContext context) {
-    printDebug('CORE KEY -------- ${_setup._localKey.value.toString()}');
-
     _setup.context = context;
     _setup.state = _args.get<AppState>();
     _setup.args = _args;
@@ -341,7 +339,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     return Container(
       key: _setup._localKey,
       child: widget.app(
-        _appKey,
+        _setup.key,
         _setup,
         Builder(builder: (context) {
           _context.value = context;
@@ -353,6 +351,16 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
             transitionOut: widget.transitionOut,
             args: _args,
             soft: false,
+            placeholder: (_) => InitLoader.of(
+              builder: (context) => Container(
+                color: Theme.of(context).canvasColor,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                  ),
+                ),
+              ),
+            ),
           );
         }),
       ),

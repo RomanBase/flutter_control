@@ -4,7 +4,7 @@ class CaseWidget<T> extends StatefulWidget {
   final dynamic activeCase;
   final Map<T, WidgetBuilder> builders;
   final dynamic args;
-  final Widget placeholder;
+  final WidgetBuilder placeholder;
   final CrossTransition transitionIn;
   final CrossTransition transitionOut;
   final Map<T, CrossTransition> caseTransition;
@@ -82,13 +82,14 @@ class _CaseWidgetState extends State<CaseWidget> {
 
       currentInitializer = WidgetInitializer.of(builder);
     } else {
-      currentInitializer = WidgetInitializer.of((_) => _placeholder());
+      printDebug('case not found - ${widget.activeCase}');
+      currentInitializer = WidgetInitializer.of(_placeholder());
     }
 
     currentInitializer.key = GlobalKey();
 
     if (oldInitializer == null) {
-      oldInitializer = WidgetInitializer.of((_) => _placeholder());
+      oldInitializer = WidgetInitializer.of(_placeholder());
       oldInitializer.key = GlobalKey();
     }
   }
@@ -115,21 +116,21 @@ class _CaseWidgetState extends State<CaseWidget> {
     );
   }
 
-  Widget _placeholder() {
+  WidgetBuilder _placeholder() {
     if (widget.placeholder != null) {
       return widget.placeholder;
     }
 
     if (widget.activeCase == null) {
-      return Container();
+      return (_) => Container();
     }
 
-    return Container(
-      color: Colors.red,
-      child: Center(
-        child: Text(widget.activeCase.toString()),
-      ),
-    );
+    return (_) => Container(
+          color: Colors.red,
+          child: Center(
+            child: Text(widget.activeCase.toString()),
+          ),
+        );
   }
 
   @override
