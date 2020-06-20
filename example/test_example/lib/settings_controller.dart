@@ -20,6 +20,8 @@ class SettingsController extends BaseControl with LocalizationProvider, PrefsPro
 
     final currentTheme = theme.config.preferredThemeName;
 
+    printDebug(currentTheme);
+
     if (currentTheme == Parse.name(ThemeData)) {
       theme.changeTheme(Brightness.light);
     } else if (currentTheme == Parse.name(Brightness.light)) {

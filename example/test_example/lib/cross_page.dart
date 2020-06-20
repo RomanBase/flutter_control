@@ -42,7 +42,12 @@ class CrossPage extends SingleControlWidget<CrossControl> {
           child: ActionBuilder<String>(
             control: control.cross,
             builder: (context, value) {
-              return CaseWidget(
+              return Container(
+                child: Center(
+                  child: Text('debug'),
+                ),
+              );
+              /*return CaseWidget(
                 activeCase: value,
                 args: control,
                 builders: {
@@ -55,7 +60,7 @@ class CrossPage extends SingleControlWidget<CrossControl> {
                   duration: Duration(seconds: 3),
                   builder: CrossTransitions.fadeOutFadeIn(),
                 ),
-              );
+              );*/
             },
           ),
         ),

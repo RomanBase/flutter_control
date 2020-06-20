@@ -214,6 +214,10 @@ class Parse {
       return value.toString();
     }
 
+    if (value is Type) {
+      return value.toString();
+    }
+
     final enumValue = fromEnum(value);
 
     if (enumValue != null) {

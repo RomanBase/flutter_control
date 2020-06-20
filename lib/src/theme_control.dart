@@ -145,13 +145,13 @@ class ControlTheme {
   AssetPath get asset => _asset ?? (_asset = AssetPath());
 
   @protected
-  set asset(value) => _asset = value;
+  set asset(AssetPath value) => _asset = value;
 
   @protected
-  set data(value) => _data = value;
+  set data(ThemeData value) => _data = value;
 
   @protected
-  set device(value) => _device = value;
+  set device(Device value) => _device = value;
 
   ThemeConfig config;
 
@@ -184,13 +184,18 @@ class ControlTheme {
   ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(context));
 
   ControlTheme changeTheme(dynamic key, {bool preferred: true}) {
-    final theme = config.getTheme(key, context);
+    if (config.contains(key)) {
+      config = config.copyWith(theme: key);
+      final theme = config.getCurrentTheme(context);
 
-    if (preferred) {
-      config.setAsPreferred();
+      if (preferred) {
+        config.setAsPreferred();
+      }
+
+      return pushTheme(theme);
     }
 
-    return pushTheme(theme);
+    return this;
   }
 
   ControlTheme pushTheme(ThemeData theme) {
@@ -229,6 +234,12 @@ class ThemeConfig {
     this.initTheme,
     @required this.themes,
   }) : assert(themes != null);
+
+  bool contains(dynamic key) {
+    key = Parse.name(key);
+
+    return themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null) != null;
+  }
 
   ThemeData getTheme(dynamic key, BuildContext context) {
     key = Parse.name(key);

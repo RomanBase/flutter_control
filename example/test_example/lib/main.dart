@@ -40,6 +40,11 @@ class MyApp extends StatelessWidget {
         duration: Duration(seconds: 1),
         builder: CrossTransitions.fadeCross(),
       ),
+      theme: ThemeConfig(
+        builder: (context) => MyTheme(context),
+        initTheme: ThemeData,
+        themes: MyTheme.themes,
+      ),
       initScreen: AppState.onboarding,
       screens: {
         AppState.onboarding: (_) => InitLoader.of(
@@ -50,16 +55,11 @@ class MyApp extends StatelessWidget {
             ),
         AppState.main: (_) => MenuPage(),
       },
-      theme: ThemeConfig(
-        builder: (context) => MyTheme(context),
-        initTheme: ThemeData,
-        themes: MyTheme.themes,
-      ),
-      app: (setup) => MaterialApp(
-        key: setup.key,
-        title: 'Flutter Example',
+      app: (key, setup, home) => MaterialApp(
+        key: key,
+        home: home,
         theme: setup.theme,
-        home: setup.home,
+        title: 'Flutter Example',
       ),
     );
   }

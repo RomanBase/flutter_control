@@ -7,6 +7,7 @@ const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
 const _appKey = GlobalObjectKey(AppWidgetBuilder);
 
 typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup);
+typedef AppBuilder = Widget Function(Key key, ControlRootSetup setup, Widget child);
 
 class AppState {
   static const init = const AppState();
@@ -136,15 +137,15 @@ class ControlRootSetup {
   Key key;
   AppState state;
   ControlArgs args;
-  Widget home;
   ControlTheme style;
   BuildContext context;
+
+  ObjectKey get _localKey => ObjectKey(localization.locale.hashCode ^ state.hashCode ^ style.data.hashCode);
 
   ControlRootSetup({
     this.key,
     this.state,
     this.args,
-    this.home,
     this.style,
     this.context,
   });
@@ -163,7 +164,6 @@ class ControlRootSetup {
     Key key,
     AppState state,
     ControlArgs args,
-    Widget home,
     ControlTheme style,
     BuildContext context,
   }) {
@@ -171,7 +171,6 @@ class ControlRootSetup {
       key: key ?? this.key,
       state: state ?? this.state,
       args: args ?? this.args,
-      home: home ?? this.home,
       style: style ?? this.style,
       context: context ?? this.context,
     );
@@ -205,7 +204,7 @@ class ControlRoot extends StatefulWidget {
 
   final AppState initScreen;
 
-  final Map<AppState, AppWidgetBuilder> screens;
+  final Map<AppState, WidgetBuilder> screens;
 
   final CrossTransition transitionIn;
 
@@ -213,7 +212,7 @@ class ControlRoot extends StatefulWidget {
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
-  final AppWidgetBuilder app;
+  final AppBuilder app;
 
   /// Root [Widget] for whole app.
   ///
@@ -257,9 +256,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   ThemeConfig _theme;
 
-  AppState get appState => _args.get<AppState>();
-
-  Map<Type, WidgetBuilder> states;
+  get appStateKey => _args.get<AppState>()?.key;
 
   BroadcastSubscription _localeSub;
 
@@ -271,6 +268,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _context.value = context;
     _args[AppState] = widget.initScreen;
+
     _theme = widget.theme ??
         ThemeConfig(
           builder: (context) => ControlTheme(context),
@@ -281,31 +279,21 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
           },
         );
 
-    states = widget.screens.map((key, value) => MapEntry(
-        key.key,
-        (context) => value(_setup.copyWith(
-              key: ObjectKey(key),
-              context: context,
-              home: null,
-            ))));
-
     _setup.key = _appKey;
-    _setup.state = appState;
-    _setup.args = _args;
     _setup.style = ControlTheme.defaultTheme(context, _theme);
 
-    if (widget.initScreen == AppState.init && !states.containsKey(AppState.init.key)) {
-      states[AppState.init.key] = (context) => InitLoader.of(
-            builder: (context) => Container(
-              color: Theme.of(context).canvasColor,
-              child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                ),
-              ),
-            ),
-          );
-    }
+    _themeSub = ControlTheme.subscribeChanges((value) {
+      setState(() {
+        printDebug('theme changed');
+        _setup.style = value;
+      });
+    });
+
+    _localeSub = BaseLocalization.subscribeChanges((args) {
+      if (args.changed) {
+        setState(() {});
+      }
+    });
 
     _initControl();
   }
@@ -316,9 +304,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       _args.combine(state);
     }
 
-    setState(() {
-      _setup.state = appState;
-    });
+    setState(() {});
   }
 
   void _initControl() async {
@@ -338,42 +324,42 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     if (initialized) {
       await Control.factory().onReady();
+      setState(() {});
     }
-
-    _themeSub = ControlTheme.subscribeChanges((value) {
-      setState(() {
-        _setup.style = value;
-      });
-    });
-
-    _localeSub = BaseLocalization.subscribeChanges((args) {
-      if (args.changed) {
-        setState(() {});
-      }
-    });
   }
 
   Future<void> _loadTheme() async => _setup.style.setSystemTheme();
 
   @override
   Widget build(BuildContext context) {
-    _setup.context = _context.value;
-    _setup.home = Builder(
-      builder: (BuildContext context) {
-        _context.value = context;
+    printDebug('CORE KEY -------- ${_setup._localKey.value.toString()}');
 
-        return CaseWidget(
-          activeCase: appState.key,
-          builders: states,
-          transitionIn: widget.transitionIn,
-          transitionOut: widget.transitionOut,
-          args: _args,
-        );
-      },
+    _setup.context = context;
+    _setup.state = _args.get<AppState>();
+    _setup.args = _args;
+
+    return Container(
+      key: _setup._localKey,
+      child: widget.app(
+        _appKey,
+        _setup,
+        Builder(builder: (context) {
+          _context.value = context;
+
+          return _buildHome();
+        }),
+      ),
     );
+  }
 
-    return widget.app(
-      _setup.copyWith(context: context),
+  Widget _buildHome() {
+    return CaseWidget(
+      key: ObjectKey('core_case_widget'),
+      activeCase: _setup.state,
+      builders: widget.screens,
+      transitionIn: widget.transitionIn,
+      transitionOut: widget.transitionOut,
+      args: _args,
     );
   }
 
