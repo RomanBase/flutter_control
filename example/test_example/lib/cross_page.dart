@@ -42,12 +42,7 @@ class CrossPage extends SingleControlWidget<CrossControl> {
           child: ActionBuilder<String>(
             control: control.cross,
             builder: (context, value) {
-              return Container(
-                child: Center(
-                  child: Text('debug'),
-                ),
-              );
-              /*return CaseWidget(
+              return CaseWidget(
                 activeCase: value,
                 args: control,
                 builders: {
@@ -55,12 +50,12 @@ class CrossPage extends SingleControlWidget<CrossControl> {
                   'red': (_) => CrossControlPage('orange', Colors.red),
                   'orange': (_) => CrossControlPage('placeholder', Colors.orange),
                 },
-                placeholder: CrossControlPage('blue', Colors.black),
+                placeholder: (_) => CrossControlPage('blue', Colors.black),
                 transitionIn: CrossTransition(
                   duration: Duration(seconds: 3),
                   builder: CrossTransitions.fadeOutFadeIn(),
                 ),
-              );*/
+              );
             },
           ),
         ),

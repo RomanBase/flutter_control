@@ -6,8 +6,23 @@ final _context = ActionControl.broadcast<BuildContext>();
 const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
 const _appKey = GlobalObjectKey(AppWidgetBuilder);
 
-typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup);
-typedef AppBuilder = Widget Function(Key key, ControlRootSetup setup, Widget child);
+typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup, Widget home);
+
+class AppStateSetup {
+  final dynamic key;
+  final WidgetBuilder builder;
+  final CrossTransition transition;
+
+  const AppStateSetup(this.key, this.builder, this.transition);
+
+  MapEntry<dynamic, WidgetBuilder> get builderEntry => MapEntry(key, builder);
+
+  MapEntry<dynamic, CrossTransition> get transitionEntry => MapEntry(key, transition);
+
+  static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) => items.asMap().map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
+
+  static Map<dynamic, CrossTransition> fillTransitions(List<AppStateSetup> items) => items.where((item) => item.transition != null).toList().asMap().map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
+}
 
 class AppState {
   static const init = const AppState();
@@ -21,6 +36,12 @@ class AppState {
   static const background = const _AppStateBackground();
 
   const AppState();
+
+  AppStateSetup build(WidgetBuilder builder, {CrossTransition transition}) => AppStateSetup(
+        this, //TODO: this or key ???
+        builder,
+        transition,
+      );
 
   dynamic get key => this.runtimeType;
 
@@ -56,8 +77,6 @@ class ControlScope {
   ControlRoot get rootWidget => _rootKey.currentWidget;
 
   ControlRootState get rootState => _rootKey.currentState;
-
-  //Widget get homeWidget => rootState?._currentWidget;
 
   /// Returns current context from [contextHolder]
   BuildContext get context => _context.value;
@@ -160,6 +179,14 @@ class ControlRootSetup {
 
   List<Locale> get supportedLocales => localizationDelegate.supportedLocales();
 
+  String title(String localizationKey, String defaultValue) {
+    if (localization.isActive && localization.contains(localizationKey)) {
+      return localization.localize(localizationKey);
+    }
+
+    return defaultValue;
+  }
+
   ControlRootSetup copyWith({
     Key key,
     AppState state,
@@ -202,29 +229,32 @@ class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final Future Function() initAsync;
 
-  final AppState initScreen;
+  final CrossTransition transition;
 
-  final Map<AppState, WidgetBuilder> screens;
+  /// Initial app screen, default value
+  final AppState initState;
 
-  final CrossTransition transitionIn;
-
-  final CrossTransition transitionOut;
+  final List<AppStateSetup> states;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
-  final AppBuilder app;
+  final AppWidgetBuilder app;
 
   /// Root [Widget] for whole app.
   ///
-  /// [debug] extra debug console prints.
-  /// [initLocale] key of default locale. First localization will be used if this value is not set.
-  /// [locales] map of supported localizations. Key - locale (en, en_US). Value - asset path.
-  /// [loadLocalization] loads localization during [ControlRoot] initialization.
-  /// [entries] map of Controllers/Models to init and fill into [ControlFactory].
-  /// [initializers] map of dynamic initializers to store in [ControlFactory].
-  /// [theme] custom [ControlTheme] config.
-  /// [initAsync] extra async function - this function is executed during [ControlFactory.initialize].
-  /// [app] builder of App - [WidgetsApp] is expected - [MaterialApp], [CupertinoApp]. Set [AppWidgetBuilder.key] and [AppWidgetBuilder.home] from builder to App Widget.
+  /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
+  /// [localization] - Custom config for [BaseLocalization] . Map of supported locales, default locale and loading rules.
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
+  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
+  /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection. Currently not used a lot...
+  /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition.
+  /// [theme] - Custom config for [ControlTheme]. Map of supported themes, default theme and custom [ControlTheme] builder.
+  /// [initState] - Initial app state. Default value is [AppState.init].
+  /// [states] - List of app states. [AppState.main] is by default considered as main home [Widget]. Use [AppState.main.build] to create app state.
+  /// [transition] - Custom transition between app states. Default transition is set to [CrossTransitions.fade].
+  /// [transitions] - Custom transitions for each app state.
+  /// [app] - Builder of App - return [WidgetsApp] is expected ([MaterialApp], [CupertinoApp]). Provides [ControlRootSetup] and home [Widget]. Use [setup.key] as App key to prevent unnecessary rebuilds and disposes !
+  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   const ControlRoot({
     this.debug,
     this.localization,
@@ -233,12 +263,11 @@ class ControlRoot extends StatefulWidget {
     this.injector,
     this.routes,
     this.theme,
-    this.initAsync,
-    this.transitionIn,
-    this.transitionOut,
-    this.initScreen: AppState.init,
-    this.screens: const {},
+    this.transition,
+    this.initState: AppState.init,
+    @required this.states,
     @required this.app,
+    this.initAsync,
   }) : super(key: _rootKey);
 
   @override
@@ -255,6 +284,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   final _setup = ControlRootSetup();
 
   ThemeConfig _theme;
+  Map _states;
+  Map _transitions;
 
   get appStateKey => _args.get<AppState>()?.key;
 
@@ -267,7 +298,10 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     super.initState();
 
     _context.value = context;
-    _args[AppState] = widget.initScreen;
+    _args[AppState] = widget.initState;
+
+    _states = AppStateSetup.fillBuilders(widget.states);
+    _transitions = AppStateSetup.fillTransitions(widget.states);
 
     _theme = widget.theme ??
         ThemeConfig(
@@ -339,16 +373,15 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     return Container(
       key: _setup._localKey,
       child: widget.app(
-        _setup.key,
         _setup,
         Builder(builder: (context) {
           _context.value = context;
 
           return CaseWidget(
             activeCase: _setup.state,
-            builders: widget.screens,
-            transitionIn: widget.transitionIn,
-            transitionOut: widget.transitionOut,
+            builders: _states,
+            transitionIn: widget.transition,
+            transitions: _transitions,
             args: _args,
             soft: false,
             placeholder: (_) => InitLoader.of(

@@ -56,11 +56,10 @@ class Control {
   /// Loads [BasePrefs] and [BaseLocalization], also builds [RouteStore].
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
-  /// [locales] - Map of locale assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
+  /// [localization] - Custom config for [BaseLocalization]. Map of supported locales, default locale and loading rules.
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
-  /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
+  /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection.
   /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
   /// [theme] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
@@ -108,7 +107,7 @@ class Control {
       initAsync: () async {
         await prefs.init();
         await FutureBlock.wait([
-          loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.loadPreferredLocale),
+          loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.handleSystemLocale),
           initAsync?.call(),
         ]);
       },

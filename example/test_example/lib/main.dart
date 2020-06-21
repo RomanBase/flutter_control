@@ -17,10 +17,13 @@ class MyApp extends StatelessWidget {
       debug: true,
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: {
-          'en': AssetPath().localization('en'),
-          'cs': 'assets/localization/cs.json',
-        },
+        locales: LocalizationAsset.build(
+          // reference to assets/localization/{file_name}.json
+          locales: [
+            'en',
+            'cs',
+          ],
+        ),
       ),
       entries: {
         'cards': CardsController(),
@@ -36,27 +39,28 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
-      transitionOut: CrossTransition(
-        duration: Duration(seconds: 1),
-        builder: CrossTransitions.fadeCross(),
-      ),
       theme: ThemeConfig(
         builder: (context) => MyTheme(context),
         initTheme: ThemeData,
         themes: MyTheme.themes,
       ),
-      //initScreen: AppState.onboarding,
-      screens: {
-        AppState.onboarding: (_) => InitLoader.of(
-              delay: Duration(seconds: 1),
-              builder: (context) => Container(
-                color: Colors.orange,
-              ),
+      states: [
+        AppState.onboarding.build(
+          (context) => InitLoader.of(
+            delay: Duration(seconds: 1),
+            builder: (context) => Container(
+              color: Colors.orange,
             ),
-        AppState.main: (_) => MenuPage(),
-      },
-      app: (key, setup, home) => MaterialApp(
-        key: key,
+          ),
+          transition: CrossTransition(
+            duration: Duration(seconds: 1),
+            builder: CrossTransitions.fadeCross(),
+          ),
+        ),
+        AppState.main.build((context) => MenuPage()),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
         home: home,
         theme: setup.theme,
         title: 'Flutter Example',

@@ -11,17 +11,22 @@ class LocalizationConfig {
   final String defaultLocale;
   final Map<String, String> locales;
   final bool loadDefaultLocale;
-  final bool loadPreferredLocale;
+  final bool handleSystemLocale;
 
   String get fallbackLocale => defaultLocale ?? locales.keys.first;
 
+  /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
+  /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
+  /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
+  /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
   const LocalizationConfig({
     this.defaultLocale,
     @required this.locales,
     this.loadDefaultLocale: true,
-    this.loadPreferredLocale: true,
+    this.handleSystemLocale: true,
   }) : assert(locales != null);
 
+  /// Converts Map of [locales] to List of [LocalizationAsset]s.
   List<LocalizationAsset> toAssets() {
     final localizationAssets = List<LocalizationAsset>();
 
