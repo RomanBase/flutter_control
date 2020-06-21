@@ -28,10 +28,7 @@ class InitControl extends InitLoaderControl with FireProvider {
 
   @override
   Future<dynamic> load() async {
-    await Future.wait([
-      Control.factory().onReady(),
-      fire.restore(),
-    ]);
+    await fire.restore();
 
     // fire.isUserSignedIn is handled in _UIControl.
     loading.done();

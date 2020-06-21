@@ -127,6 +127,12 @@ class ControlScope {
     return notifyControlState(ControlArgs({AppState: state})..set(args));
   }
 
+  bool setInitState({dynamic args, bool clearNavigator: true}) => setAppState(
+        AppState.init,
+        args: args,
+        clearNavigator: clearNavigator,
+      );
+
   bool setAuthState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.auth,
         args: args,
@@ -314,7 +320,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         );
 
     _setup.key = _appKey;
-    _setup.style = ControlTheme.defaultTheme(context, _theme);
+    _setup.style = widget.theme.initializer(context)..setDefaultTheme();
 
     _themeSub = ControlTheme.subscribeChanges((value) {
       setState(() {

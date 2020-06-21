@@ -48,7 +48,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   void initState() {
     super.initState();
 
-    builders = widget.builders;
+    builders = widget.builders.fill();
     _updateInitializer();
   }
 
@@ -56,7 +56,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   void didUpdateWidget(CaseWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    builders = widget.builders;
+    builders = widget.builders.fill();
 
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {

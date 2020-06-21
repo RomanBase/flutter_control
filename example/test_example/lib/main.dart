@@ -33,7 +33,10 @@ class MyApp extends StatelessWidget {
         CrossControl: (args) => CrossControl(),
       },
       injector: Injector.of({
-        ControlTheme: (item, args) => item.asset = AssetPath(rootDir: 'assets'),
+        ControlTheme: (item, args) {
+          printDebug('inject theme');
+          item.asset = AssetPath(rootDir: 'assets');
+        },
       }),
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),

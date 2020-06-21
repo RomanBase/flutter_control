@@ -157,10 +157,6 @@ class ControlTheme {
 
   ControlTheme(this._context);
 
-  factory ControlTheme.defaultTheme(BuildContext context, ThemeConfig config) => ControlTheme(context)
-    ..config = config
-    ..data = config.getCurrentTheme(context);
-
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
@@ -181,12 +177,14 @@ class ControlTheme {
     }
   }
 
-  ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(context));
+  void setDefaultTheme() => data = config.getCurrentTheme(this);
+
+  ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(this));
 
   ControlTheme changeTheme(dynamic key, {bool preferred: true}) {
     if (config.contains(key)) {
       config = config.copyWith(theme: key);
-      final theme = config.getCurrentTheme(context);
+      final theme = config.getCurrentTheme(this);
 
       if (preferred) {
         config.setAsPreferred();
@@ -216,14 +214,16 @@ class ControlTheme {
   int get hashCode => data.hashCode;
 }
 
-class ThemeConfig {
+typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(T control);
+
+class ThemeConfig<T extends ControlTheme> {
   static const preference_key = 'control_theme';
 
-  final Initializer<ControlTheme> builder;
+  final Initializer<T> builder;
   final dynamic initTheme;
-  final Map<dynamic, Initializer<ThemeData>> themes;
+  final Map<dynamic, ThemeInitializer<T>> themes;
 
-  Initializer<ControlTheme> get initializer => (context) => builder(context)..config = this;
+  Initializer<T> get initializer => (context) => builder(context)..config = this;
 
   String get preferredThemeName => Control.get<BasePrefs>().get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
 
@@ -242,32 +242,31 @@ class ThemeConfig {
     return themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null) != null;
   }
 
-  ThemeData getTheme(dynamic key, BuildContext context) {
+  ThemeData getTheme(dynamic key, T control) {
     key = Parse.name(key);
 
     key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
 
     if (themes.containsKey(key)) {
-      return themes[key](context);
+      return themes[key](control);
     }
 
-    return themes.values.first(context);
+    return themes.values.first(control);
   }
 
-  ThemeData getCurrentTheme(BuildContext context) => getTheme(initTheme, context);
+  ThemeData getCurrentTheme(T control) => getTheme(initTheme, control);
 
-  ThemeData getSystemTheme(BuildContext context) => getTheme(preferredThemeName, context);
+  ThemeData getSystemTheme(T control) => getTheme(preferredThemeName, control);
 
   void setAsPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, Parse.name(initTheme));
 
   void resetPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
 
   ThemeConfig copyWith({
-    Initializer<ControlTheme> builder,
     dynamic theme,
   }) =>
       ThemeConfig(
-        builder: builder ?? this.builder,
+        builder: this.builder,
         initTheme: theme ?? this.initTheme,
         themes: this.themes,
       );

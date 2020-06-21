@@ -8,7 +8,7 @@ class AccountControl extends BaseControl with RouteControlProvider, FireProvider
     loading.progress();
     await fire.signOut();
 
-    Control.root().notifyControlState(ControlArgs(LoadingStatus.progress));
+    Control.root().setInitState();
 
     backToRoot();
   }

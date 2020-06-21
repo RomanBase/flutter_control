@@ -30,9 +30,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      locales: {
+      localization: LocalizationConfig(locales: {
         'en': 'assets/localization/en.json',
-      },
+      }),
       entries: {
         NavigatorStackControl: NavigatorStackControl(),
         FireControl: FireControl(),
@@ -44,14 +44,10 @@ class MyApp extends StatelessWidget {
           spendRepo: (_) => FireSpendRepo(),
           earningsRepo: (_) => FireEarningsRepo(),
         ),
-        // ---
         InitLoaderControl: (_) => InitControl(),
-        // ---
         SpendItemControl: (_) => SpendItemControl(),
         SpendGroupControl: (_) => SpendGroupControl(),
-        // ---
         EarningsItemControl: (_) => EarningsItemControl(),
-        // ---
         AccountControl: (_) => AccountControl(),
       },
       routes: [
@@ -62,17 +58,24 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<AccountPage>(builder: (_) => AccountPage()),
         ControlRoute.build<EarningsPage>(builder: (_) => EarningsPage()),
       ],
-      theme: (context) => SpendTheme(context),
-      loader: (_) => InitLoader(
-        builder: (_) => InitPage(),
+      theme: ThemeConfig<SpendTheme>(
+        builder: (context) => SpendTheme(context),
+        themes: {
+          Brightness.light: (control) => control.lightTheme,
+          Brightness.dark: (control) => control.darkTheme,
+        },
+        initTheme: Brightness.dark,
       ),
-      root: (_, args) => MenuPage(),
-      app: (context, key, home) => MaterialApp(
+      states: [
+        AppState.init.build((context) => InitLoader(builder: (_) => InitPage())),
+        AppState.main.build((context) => MenuPage()),
+      ],
+      app: (setup, home) => MaterialApp(
         debugShowCheckedModeBanner: false,
-        key: key,
+        key: setup.key,
         home: home,
         title: 'Spend List',
-        theme: ThemeProvider.of<SpendTheme>(context).darkTheme,
+        theme: setup.theme,
       ),
     );
   }
