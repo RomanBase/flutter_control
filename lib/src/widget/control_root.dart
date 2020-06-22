@@ -95,12 +95,14 @@ class ControlScope {
       return true;
     }
 
-    printDebug('ControlRoot is not in Widget Tree! [ControlScope.baseKey]');
+    printDebug('ControlRoot is not in Widget Tree! [ControlScope.rootKey]');
     printDebug('Trying to notify ControlScope.scopeKey ..');
 
-    if (appKey.currentState != null && appKey.currentState.mounted) {
-      if (appKey.currentState is StateNotifier) {
-        (appKey.currentState as StateNotifier).notifyState(args);
+    final currentState = appKey.currentState;
+
+    if (currentState != null && currentState.mounted) {
+      if (currentState is StateNotifier) {
+        (currentState as StateNotifier).notifyState(args);
       } else {
         printDebug('Found State is not StateNotifier, Trying to call setState directly..');
         // ignore: invalid_use_of_protected_member
@@ -110,7 +112,7 @@ class ControlScope {
       return true;
     }
 
-    printDebug('No State to notify found.');
+    printDebug('No State found to notify.');
 
     return false;
   }
@@ -210,6 +212,10 @@ class ControlRootSetup {
   }
 }
 
+/// Root [Widget] of whole app.
+/// Initializes [Control] - [Control.initControl]: localization, entries, initializers, routes and more..
+///
+/// Also handles localization, theme changes and App states.
 class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final bool debug;
@@ -235,30 +241,32 @@ class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final Future Function() initAsync;
 
+  /// Default transition
   final CrossTransition transition;
 
   /// Initial app screen, default value
   final AppState initState;
 
+  /// List of app states. Widget builders and transitions.
   final List<AppStateSetup> states;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
   final AppWidgetBuilder app;
 
-  /// Root [Widget] for whole app.
+  /// Root [Widget] of whole app.
+  /// Initializes [Control] and handles localization and theme changes.
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [localization] - Custom config for [BaseLocalization] . Map of supported locales, default locale and loading rules.
+  /// [localization] - Custom config for [BaseLocalization]. Map of supported locales, default locale and loading rules.
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection. Currently not used a lot...
   /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition.
   /// [theme] - Custom config for [ControlTheme]. Map of supported themes, default theme and custom [ControlTheme] builder.
   /// [initState] - Initial app state. Default value is [AppState.init].
-  /// [states] - List of app states. [AppState.main] is by default considered as main home [Widget]. Use [AppState.main.build] to create app state.
+  /// [states] - List of app states. [AppState.main] is by default considered as main home [Widget]. Use [AppState.main.build] to create app state. Change state by calling [Control.root().setAppState].
   /// [transition] - Custom transition between app states. Default transition is set to [CrossTransitions.fade].
-  /// [transitions] - Custom transitions for each app state.
   /// [app] - Builder of App - return [WidgetsApp] is expected ([MaterialApp], [CupertinoApp]). Provides [ControlRootSetup] and home [Widget]. Use [setup.key] as App key to prevent unnecessary rebuilds and disposes !
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   const ControlRoot({
@@ -324,7 +332,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _themeSub = ControlTheme.subscribeChanges((value) {
       setState(() {
-        printDebug('theme changed');
         _setup.style = value;
       });
     });

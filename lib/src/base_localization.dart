@@ -7,21 +7,37 @@ import 'package:flutter_control/core.dart';
 typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String locale);
 
+/// Map of supported locales, default locale and loading rules.
+///
+/// Config is passed to [Control.initControl] to init [BaseLocalization].
 class LocalizationConfig {
+  /// Default locale key. If not provided, first locale from [locales] is used.
   final String defaultLocale;
+
+  /// Map of locales - key: path.
   final Map<String, String> locales;
+
+  /// Check to init locale - [BaseLocalization.init].
+  final bool initLocale;
+
+  /// Check to load default locale.
   final bool loadDefaultLocale;
+
+  /// Check to handle system locale.
   final bool handleSystemLocale;
 
+  /// Returns default of first locale key.
   String get fallbackLocale => defaultLocale ?? locales.keys.first;
 
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
   /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
-  /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
-  /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
+  /// [initLocale] - Automatically loads system or preferred locale.
+  /// [loadDefaultLocale] - Loads [defaultLocale] before preferred locale.
+  /// [handleSystemLocale] - Listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
   const LocalizationConfig({
     this.defaultLocale,
     @required this.locales,
+    this.initLocale: true,
     this.loadDefaultLocale: true,
     this.handleSystemLocale: true,
   }) : assert(locales != null);

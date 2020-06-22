@@ -107,7 +107,7 @@ class Control {
       initAsync: () async {
         await prefs.init();
         await FutureBlock.wait([
-          loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.handleSystemLocale),
+          localization.initLocale ? loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.handleSystemLocale) : null,
           initAsync?.call(),
         ]);
       },
