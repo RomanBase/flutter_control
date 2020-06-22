@@ -1,18 +1,33 @@
 import 'package:flutter_control/core.dart';
 
 class ControlArgs implements Disposable {
+  /// Map of stored data.
   final _args = Map();
 
+  /// Returns currently stored data.
+  /// Mostly used by framework. Do not modify this data directly !
+  /// Consider using [ControlArgs.set], [ControlArgs.get], [ControlArgs.add] functions or [] operators.
   Map get data => _args;
 
+  /// Stores data as arguments.
+  /// Can store any type of data - Map, Set, Iterable, Objects and more..
+  /// [ControlArgs.set] parses input data and stores them as key: value pair.
   ControlArgs([dynamic args]) {
     set(args);
   }
 
+  /// Returns object of given [key] or null.
   dynamic operator [](dynamic key) => _args.getArg(key: key);
 
+  /// Sets [value] directly to store with given [key].
+  /// Consider using [ControlArgs.set] or [ControlArgs.add] to prevent use of misleading [key].
   void operator []=(dynamic key, dynamic value) => _args[key] = value;
 
+  /// Parses input data and stores them as key: value pair.
+  /// Can store any type of data - Map, Iterable, Objects and more..
+  /// Map - is directly added to data store.
+  /// Iterable - is parsed and data are stored under their [Type].
+  /// Object - is stored under his [Type].
   void set(dynamic args) {
     if (args == null) {
       return;
@@ -31,8 +46,11 @@ class ControlArgs implements Disposable {
     }
   }
 
+  /// Adds [value] to data store under given [key].
+  /// [ControlFactory.keyOf] is used to determine store key.
   void add<T>({dynamic key, @required dynamic value}) => _args[Control.factory().keyOf<T>(key: key, value: value)] = value;
 
+  /// Clears original data and stores items from [args].
   void swap(ControlArgs args) {
     assert(args != null);
 
@@ -40,19 +58,23 @@ class ControlArgs implements Disposable {
     _args.addAll(args._args);
   }
 
+  /// Combines this store with given [args].
   void combine(ControlArgs args) {
     assert(args != null);
 
     _args.addAll(args._args);
   }
 
-  void ensureArg(dynamic key, dynamic value) {
-    assert(key != null);
-    assert(value != null);
+  bool ensureArg(dynamic key, dynamic value) {
+    if(key == null || value == null){
+      return false;
+    }
 
     if (this[key] == null) {
       this[key] = value;
     }
+
+    return true;
   }
 
   T get<T>({dynamic key, T defaultValue}) => Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
@@ -80,14 +102,16 @@ class ControlArgs implements Disposable {
     _args.clear();
   }
 
+  void printDebugStore() {
+    printDebug('--- Args ---');
+    _args.forEach((key, value) {
+      printDebug('$key: $value');
+    });
+    printDebug('------------');
+  }
+
   @override
   String toString() {
-    final buffer = StringBuffer();
-
-    buffer.writeln('--- args ---');
-    _args.forEach((key, value) => buffer.writeln('$key: $value'));
-    buffer.writeln('-----------');
-
-    return buffer.toString();
+    return 'ControlArgs.$hashCode - [${_args.length}]';
   }
 }
