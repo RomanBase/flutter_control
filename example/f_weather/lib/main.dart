@@ -10,17 +10,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ControlRoot(
-      debug: true,
       entries: {
         DashboardControl: DashboardControl(),
       },
       initializers: {
         WeatherRepo: (_) => WeatherRepo(),
       },
-      disableLoader: true,
-      root: (context, args) => DashboardPage(),
-      app: (context, key, home) => MaterialApp(
-        key: key,
+      states: [
+        AppState.main.build((context) => DashboardPage()),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
         home: home,
         title: 'Weather - Flutter Control',
       ),

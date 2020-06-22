@@ -11,20 +11,24 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      initLocale: 'en',
-      locales: LocalizationAsset.build(
-        locales: [
-          'en',
-          'es',
-        ],
+      localization: LocalizationConfig(
+        defaultLocale: 'en',
+        locales: LocalizationAsset.build(
+          locales: [
+            'en',
+            'es',
+          ],
+        ),
       ),
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
       ],
-      root: (context, value) => MainPage(),
-      app: (context, key, home) {
+      states: [
+        AppState.main.build((context) => MainPage()),
+      ],
+      app: (setup, home) {
         return MaterialApp(
-          key: key,
+          key: setup.key,
           home: home,
           title: "Localization - Flutter Control",
         );

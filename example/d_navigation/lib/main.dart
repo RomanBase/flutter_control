@@ -21,9 +21,11 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<NumberPage>(builder: (_) => NumberPage()).path('/scale').viaTransition(NavTransitions.scaleTransition, Duration(milliseconds: 750)),
         ControlRoute.build<CustomDialog>(builder: (_) => CustomDialog()),
       ],
-      root: (_, __) => MenuPage(),
-      app: (context, key, home) => MaterialApp(
-        key: key,
+      states: [
+        AppState.main.build((context) => MenuPage()),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
         home: home,
         title: 'Navigation - Flutter Control',
       ),

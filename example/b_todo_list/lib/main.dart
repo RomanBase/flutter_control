@@ -10,17 +10,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ControlRoot(
-      disableLoader: true,
       entries: {
         TodoListControl: TodoListControl(),
       },
       initializers: {
         ItemDialogControl: (_) => ItemDialogControl(),
       },
-      root: (context, args) => TodoListPage(),
-      app: (context, key, home) {
+      states: <AppStateSetup>[
+        AppState.main.build((context) => TodoListPage()),
+      ],
+      app: (setup, home) {
         return MaterialApp(
-          key: key,
+          key: setup.key,
           home: home,
           title: 'Todo List - Flutter Control',
         );

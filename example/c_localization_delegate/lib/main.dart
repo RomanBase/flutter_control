@@ -6,11 +6,12 @@ import 'settings_page.dart';
 
 void main() {
   Control.initControl(
-    debug: true,
-    locales: {
-      'en': 'assets/localization/en.json',
-      'es': 'assets/localization/es.json',
-    },
+    localization: LocalizationConfig(
+      locales: {
+        'en': 'assets/localization/en.json',
+        'es': 'assets/localization/es.json',
+      },
+    ),
     routes: [
       ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
     ],

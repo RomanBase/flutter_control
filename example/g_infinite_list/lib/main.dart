@@ -9,14 +9,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ControlRoot(
-      root: (context, args) => ListPage(),
-      app: (context, key, home) => MaterialApp(
-        key: key,
+      states: [
+        AppState.main.build((context) => ListPage()),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
         home: home,
         title: 'Infinite List - Flutter Control',
       ),
     );
   }
 }
-
-

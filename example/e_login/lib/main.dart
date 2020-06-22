@@ -1,7 +1,9 @@
 import 'package:flutter_control/core.dart';
 
 import 'dashboard_page.dart';
+import 'dashboard_page.dart';
 import 'firebase_control.dart';
+import 'login_page.dart';
 import 'login_page.dart';
 
 enum UserStatus {
@@ -25,24 +27,41 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<DashboardPage>(builder: (_) => DashboardPage()),
         ControlRoute.build<LoginPage>(builder: (_) => LoginPage()),
       ],
-      loader: (context) => InitLoader.of(
-        delay: const Duration(seconds: 1), //minimal duration of loading page
-        builder: (context) => LoadingPage(),
-        load: (_) async {
-          if (await Control.get<FirebaseControl>().restoreUser() != null) {
-            return UserStatus.authorized;
-          }
+      states: [
+        AppState.init.build(
+          (context) => InitLoader.of(
+            delay: const Duration(seconds: 1), //minimal duration of loading page
+            builder: (context) => LoadingPage(),
+            load: (_) async {
+              if (await Control.get<FirebaseControl>().restoreUser() != null) {
+                return UserStatus.authorized;
+              }
 
-          return UserStatus.none;
-        },
-      ),
-      root: (context, args) => args.get<UserStatus>() == UserStatus.none ? LoginPage() : DashboardPage(),
-      app: (context, key, home) => MaterialApp(
-        key: key,
+              return UserStatus.none;
+            },
+          ),
+        ),
+        AppState.main.build((context) => MainPage()),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
         home: home,
         title: 'Login - Flutter Control',
       ),
     );
+  }
+}
+
+class MainPage extends BaseControlWidget {
+  UserStatus get status => getArg<UserStatus>();
+
+  @override
+  Widget build(BuildContext context) {
+    if (status == UserStatus.none) {
+      return LoginPage();
+    }
+
+    return DashboardPage();
   }
 }
 
