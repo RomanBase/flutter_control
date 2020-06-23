@@ -56,9 +56,7 @@ void main() {
       // ignore: invalid_use_of_protected_member
       expect(widget.holder.isCacheActive, isFalse);
       // ignore: invalid_use_of_protected_member
-      expect(widget.holder.args.length, 2);
-      // ignore: invalid_use_of_protected_member
-      expect(widget.holder.get<String>(), 'empty');
+      expect(widget.holder.args.length, 3); // 'empty', 'init', control
       expect(widget.getArg<String>(), 'empty');
       expect(widget.getArg(key: 'init'), isTrue);
 
