@@ -4,13 +4,18 @@ import 'package:flutter_control/core.dart';
 
 typedef ParamDecoratorFormat = String Function(String input);
 
+/// Base param decorators for [Parse.format].
 class ParamDecorator {
+  /// Empty decorator. 'input' => 'input'
   static ParamDecoratorFormat get none => (input) => input;
 
+  /// Curl braces decorator. 'input' => '{input}'
   static ParamDecoratorFormat get curl => (input) => '\{$input\}';
 
+  /// Dollar sign decorator. 'input' => '$input'
   static ParamDecoratorFormat get dollar => (input) => '\$$input';
 
+  /// Percent sign decorator. 'input' => '%input'
   static ParamDecoratorFormat get percent => (input) => '\%$input';
 }
 
@@ -151,6 +156,8 @@ class Parse {
     return defaultValue;
   }
 
+  /// Parse input [value] to String and then to enum. Parsing is case insensitive.
+  /// If enum of given name is not found, [defaultValue] or first value from [enums] is returned.
   static T toEnum<T>(dynamic value, List<T> enums, {T defaultValue}) {
     assert(enums != null);
 
@@ -163,6 +170,8 @@ class Parse {
     return enums.firstWhere((item) => fromEnum(item).toLowerCase() == name, orElse: () => defaultValue ?? enums[0]);
   }
 
+  /// Returns name of given enum [value].
+  /// If given [value] is empty or not enum, null is returned.
   static String fromEnum(dynamic value) {
     if (value == null) {
       return null;
@@ -201,6 +210,10 @@ class Parse {
     return defaultValue;
   }
 
+  /// Converts given [value] to String - input [value] name is parsed based on [Type].
+  /// Primitives are just converted to [String].
+  /// For [Enum] value name is parsed.
+  /// Otherwise [Type] name is returned.
   static String name(dynamic value) {
     if (value == null) {
       return 'none';
@@ -235,7 +248,7 @@ class Parse {
   ///
   /// List, Map, Iterable.
   ///
-  /// Use [ValueConverter] to convert values into new List.
+  /// Use [converter] or [entryConverter] to convert values into new List.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static List<T> toList<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
     final items = List<T>();
@@ -313,7 +326,7 @@ class Parse {
   ///
   /// List, Map, Iterable.
   ///
-  /// Use [ValueConverter] to convert values into new List.
+  /// Use [converter] or [entryConverter] to convert values.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static Map<dynamic, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) {
     final items = Map<dynamic, T>();
@@ -381,6 +394,12 @@ class Parse {
     return items;
   }
 
+  /// Tries to parse value into Map.
+  ///
+  /// List, Map, Iterable.
+  ///
+  /// Use [converter] or [entryConverter] to convert value to [T]. [keyConverter] converts key to [K].
+  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter, {ValueConverter<T> converter, EntryConverter<T> entryConverter}) {
     final items = Map<K, T>();
 
@@ -555,29 +574,19 @@ class Parse {
     return defaultValue;
   }
 
+  /// Creates copy of given [map] and filters out [null] values. Also empty [Iterable] or [String] is not included in returned [Map].
   static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)..removeWhere((key, value) => key == null || value == null || (value is Iterable && value.isEmpty) || (value is String && value.isEmpty));
 }
 
 extension MapExtension on Map {
+  /// [Parse.getArgFromMap].
   T getArg<T>({dynamic key, bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromMap<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
 
+  /// [Parse.fill].
   Map<K, V> fill<K, V>() => Parse.fill(this);
 }
 
 extension IterableExtension on Iterable {
+  /// [Parse.getArgFromList].
   T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
-}
-
-mixin ParseHandler {
-  String string(dynamic value, {String defaultValue: ''}) => Parse.string(value, defaultValue: defaultValue);
-
-  int toInteger(dynamic value, {int defaultValue: 0}) => Parse.toInteger(value, defaultValue: defaultValue);
-
-  double toDouble(dynamic value, {double defaultValue: 0.0}) => Parse.toDouble(value, defaultValue: defaultValue);
-
-  bool toBool(dynamic value, {bool defaultValue: false}) => Parse.toBool(value, defaultValue: defaultValue);
-
-  List<T> toList<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) => Parse.toList<T>(value, converter: converter, entryConverter: entryConverter, hardCast: hardCast);
-
-  Map<String, T> toMap<T>(dynamic value, {ValueConverter<T> converter, EntryConverter<T> entryConverter, bool hardCast: false}) => Parse.toMap<T>(value, converter: converter, entryConverter: entryConverter, hardCast: hardCast);
 }
