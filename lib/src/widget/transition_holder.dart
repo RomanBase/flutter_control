@@ -2,29 +2,43 @@ import 'package:flutter_control/core.dart';
 
 typedef CrossTransitionBuilder = Widget Function(BuildContext context, Animation anim, Widget firstWidget, Widget secondWidget);
 
+/// Holds anim duration and transition builder.
 class CrossTransition {
+  /// Duration/length of animated transition.
   final Duration duration;
+
+  /// Builds Transition Widget based on input [Animation] and in/out Widgets.
+  /// Check [CrossTransitions] for default builders.
   final CrossTransitionBuilder builder;
 
+  /// [duration] - [Animation] length.
+  /// [builder] - Builds Transition Widget based on input [Animation] and in/out Widgets.
   const CrossTransition({
     this.duration: const Duration(milliseconds: 300),
     @required this.builder,
   });
 }
 
+/// Handles transition progress and animation.
 class TransitionControl extends BaseModel with StateControl, TickerComponent {
+  /// Enables auto run - animation is played automatically when Widget is build.
+  /// Can't be null.
   bool autoRun;
 
+  //TODO: make it private ? Prevent using this controller outside of class.
+  /// Animation Controller created when [TickerComponent] provides [vsync].
   AnimationController animation;
 
+  /// Checks if [animation] is ready.
   bool get isInitialized => animation != null;
 
-  double get animTime => animation?.value ?? 0.0;
-
+  /// Callback of [autoRun] action.
   VoidCallback _autoCross;
 
+  /// Sets next animation value.
   double progress;
 
+  /// Returns current [animation] progress.
   double get transitionProgress => animation?.value ?? 0.0;
 
   TransitionControl({this.autoRun: false});
@@ -46,6 +60,9 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
     }
   }
 
+  /// Changes duration of [forward] and [reverse] animation.
+  /// 300ms is used if duration is not set.
+  /// Animation value is set to current [progress].
   void setDurations({Duration forward, Duration reverse}) {
     assert(isInitialized);
 
@@ -54,18 +71,23 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
     animation.value = progress ?? 0.0;
   }
 
-  void crossIn({double from}) {
+  /// Plays cross in transition: 0.0 -> 1.0. From first widget to second.
+  /// [AnimationController.forward].
+  TickerFuture crossIn({double from}) {
     assert(isInitialized);
 
-    animation.forward(from: from);
+    return animation.forward(from: from);
   }
 
-  void crossOut({double from}) {
+  /// Plays cross out transition: 1.0 -> 0.0. From second widget to first.
+  /// [AnimationController.forward].
+  TickerFuture crossOut({double from}) {
     assert(isInitialized);
 
-    animation.reverse(from: from);
+    return animation.reverse(from: from);
   }
 
+  /// Plays [autoRun] cross animation.
   void _autoCrossRun() {
     assert(isInitialized);
 
@@ -81,11 +103,13 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
     }
   }
 
+  /// Prepares control to play [crossIn] after [State] initialization.
   void autoCrossIn({double from}) {
     autoRun = true;
     _autoCross = () => crossIn(from: from);
   }
 
+  /// Prepares control to play [crossOut] after [State] initialization.
   void autoCrossOut({double from}) {
     autoRun = true;
     _autoCross = () => crossOut(from: from);
@@ -100,28 +124,54 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   }
 }
 
+/// Handles transition between two Widgets.
+/// This transition is controlled by [TransitionControl] and can be played both ways.
+/// Only one [Widget] is used at given time, second [Widget] is disposed when animation ends.
 class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+  /// Arg key for first widget. Actual [Key] is stored in [ControlArgHolder].
   static const _firstKey = 'first_key';
+
+  /// Arg key for second widget. Actual [Key] is stored in [ControlArgHolder].
   static const _secondKey = 'second_key';
 
+  /// Arguments to pass to [Widget] during initialization.
   final dynamic args;
+
+  /// Builder of first Widget. By default this Widget is visible initially.
+  /// Custom [WidgetInitializer.key] can help to prevent unnecessary rebuilds, when swapping initializers or moving in [WidgetTree]. Otherwise [UniqueKey] is generated.
   final WidgetInitializer firstWidget;
+
+  /// Builder of second Widget. By default this Widget is hidden initially.
+  /// Custom [WidgetInitializer.key] can help to prevent unnecessary rebuilds, when swapping initializers or moving in [WidgetTree]. Otherwise [UniqueKey] is generated.
   final WidgetInitializer secondWidget;
+
+  /// Transition from [firstWidget] to [secondWidget].
+  /// [CrossTransitions.fadeCross] is used by default.
   final CrossTransition transitionIn;
+
+  /// Transition from [secondWidget] to [firstWidget].
+  /// [CrossTransitions.fadeCross] is used by default.
   final CrossTransition transitionOut;
+
+  /// Callback when transition is finished.
   final VoidCallback onFinished;
 
+  /// Returns current animation controller.
   Animation get animation => control.animation;
 
+  /// Returns transition for [TransitionControl.crossIn].
   CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross();
 
+  /// Returns transition for [TransitionControl.crossOut].
   CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
 
+  /// Keyed first Widget.
   Widget get _firstWidget => KeyedSubtree(
         key: getArg(key: _firstKey),
         child: firstWidget.getWidget(context, args: args),
       );
 
+  /// Keyed second Widget.
   Widget get _secondWidget => KeyedSubtree(
         key: getArg(key: _secondKey),
         child: secondWidget.getWidget(context, args: args),
@@ -167,11 +217,13 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
     return update;
   }
 
+  /// Resets keys.
   void _updateKeys() {
     setArg(key: _firstKey, value: firstWidget.key ?? GlobalKey());
     setArg(key: _secondKey, value: secondWidget.key ?? GlobalKey());
   }
 
+  /// Updates duration of transitions.
   void _updateDuration() {
     control.setDurations(
       forward: transitionIn?.duration,
