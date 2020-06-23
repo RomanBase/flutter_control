@@ -1,5 +1,6 @@
 import 'package:flutter_control/core.dart';
 
+/// Stores data as arguments based on [key] - [value] pairs.
 class ControlArgs implements Disposable {
   /// Map of stored data.
   final _args = Map();
@@ -10,7 +11,7 @@ class ControlArgs implements Disposable {
   Map get data => _args;
 
   /// Stores data as arguments.
-  /// Can store any type of data - Map, Set, Iterable, Objects and more..
+  /// Can store any type of data - [Map], [Iterable], [Object]..
   /// [ControlArgs.set] parses input data and stores them as key: value pair.
   ControlArgs([dynamic args]) {
     set(args);
@@ -25,9 +26,10 @@ class ControlArgs implements Disposable {
 
   /// Parses input data and stores them as key: value pair.
   /// Can store any type of data - Map, Iterable, Objects and more..
-  /// Map - is directly added to data store.
-  /// Iterable - is parsed and data are stored under their [Type].
-  /// Object - is stored under his [Type].
+  /// [Map] - is directly added to data store.
+  /// [Iterable] - is parsed and data are stored under their [Type].
+  /// [Object] - is stored under his [Type].
+  /// Other [ControlArgs] is combined.
   void set(dynamic args) {
     if (args == null) {
       return;
@@ -65,8 +67,10 @@ class ControlArgs implements Disposable {
     _args.addAll(args._args);
   }
 
+  //TODO: purpose ?
+  /// Ensures that data store contains given [key]. Otherwise [value] is stored under given [key].
   bool ensureArg(dynamic key, dynamic value) {
-    if(key == null || value == null){
+    if (key == null || value == null) {
       return false;
     }
 
@@ -77,8 +81,10 @@ class ControlArgs implements Disposable {
     return true;
   }
 
+  /// Returns object of given [key] or [defaultValue].
   T get<T>({dynamic key, T defaultValue}) => Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
+  /// Returns all items for given [test].
   List<T> getAll<T>({Predicate test}) {
     if (test == null && T != dynamic) {
       test = (item) => item is T;
@@ -93,8 +99,10 @@ class ControlArgs implements Disposable {
     return list;
   }
 
+  /// Removes item by [Type] or [key].
   void remove<T>({dynamic key}) => _args.remove(key ?? T);
 
+  /// Clears whole data store.
   void clear() => _args.clear();
 
   @override
