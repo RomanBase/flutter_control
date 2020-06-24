@@ -120,6 +120,9 @@ class ControlRoute {
         ..identifier = RouteStore.routeIdentifier(identifier)
         ..routeBuilder = (_, __) => route;
 
+  /// @{template route-store-get}
+  ///
+  /// @{endtemplate}
   static ControlRoute of<T>([dynamic identifier]) => Control.get<RouteStore>()?.getRoute<T>(identifier);
 
   String identifier;

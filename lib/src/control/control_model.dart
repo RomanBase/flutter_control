@@ -5,36 +5,36 @@ import 'package:flutter_control/core.dart';
 
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
-  /// Is typically called right after constructor.
+  /// {@template init-object}
+  /// Init is typically called right after constructor by framework.
+  /// [args] - Arguments passed from parent or through Factory.
+  /// {@endtemplate}
   void init(Map args) {}
 }
 
-/// Base abstract class for communication between Controller - [StateControl] and [State].
-/// Controller can notify State about changes.
-/// This class needs to be implemented in State.
+/// Basic interface for communication between Control (eg. [StateControl]) and [State].
 abstract class StateNotifier {
   /// Notifies about state changes and requests State to rebuild UI.
   void notifyState([dynamic state]);
 }
 
-/// Super base model to use with [ControlWidget]
-/// [init] -> [onInit] is called during Widget's construction phase.
-/// [subscribe] is called during State's init phase.
+/// {@template control-model}
+/// Base class to use with [CoreWidget] - specifically [ControlWidget] and [StateboundWidget].
+/// Logic part that handles Streams, loading, data, etc.
+/// Init [args] helps to pass reference of other used Controls and objects.
 ///
-/// [BaseControl]
-/// [BaseModel]
-///
-/// Extend this class to create custom controllers and models.
-///
-/// Mixin your model with [LocalizationProvider] to enable localization.
+/// Extend this class to create custom controls and models.
+/// {@endtemplate}
 class ControlModel with DisposeHandler /*, Disposer*/ implements Initializable {
+  //TODO: revisit - currently totally unused..
   /// returns instance of [ControlFactory] if available.
-  /// nullable
+  /// Will be revisited - maybe unused from v1.0.
   ControlFactory get factory => Control.factory();
 
   @override
   void init(Map args) {}
 
+  //TODO: revisit
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
   /// Will be revisited - unused from v1.0.
@@ -48,25 +48,21 @@ class ControlModel with DisposeHandler /*, Disposer*/ implements Initializable {
   }
 }
 
-/// Base controller to use with [ControlWidget]
-/// [init] -> [onInit] is called during Widget's construction phase.
-/// [subscribe] is called during State's init phase.
+/// Extended version of [ControlModel]. Mainly used for complex Widgets as Pages or to separate/reuse logic.
 ///
-/// [AppControl]
-/// [ControlFactory]
-///
-/// Mixin your model with [LocalizationProvider] to enable localization.
+/// @{macro control-model}
 class BaseControl extends ControlModel {
-  /// init check.
+  /// Init check.
   bool _isInitialized = false;
 
-  /// return true if init function was called before.
+  /// Return true if init function was called before.
   bool get isInitialized => _isInitialized;
 
-  /// prevent multiple times init and [onInit] will be called just once
+  /// Prevent multiple times init and [onInit] will be called just once.
   bool preventMultiInit = true;
 
-  /// Set [preventMultiInit] enable multi init / re-init
+  /// {@macro init-object}
+  /// Set [preventMultiInit] to enable multi init / re-init
   @override
   @mustCallSuper
   void init(Map args) {
@@ -79,16 +75,15 @@ class BaseControl extends ControlModel {
     onInit(args);
   }
 
-  /// Is typically called right after constructor or when init is available.
+  /// Is typically called once and shortly after constructor.
   /// In most of times [Widget] or [State] isn't ready yet.
-  /// check [init] and [preventMultiInit]
+  /// [preventMultiInit] is enabled by default and prevents multiple calls of this function.
+  /// [args] input arguments passed from parent or Factory.
   void onInit(Map args) {}
 
-  /// Used to reload Controller.
-  /// Called by [NavigatorStack] when page is reselected.
+  /// Reload model and data.
   Future<void> reload() async {}
 
-  /// Typically is this method called during State disable phase.
   @override
   @mustCallSuper
   void dispose() {
@@ -97,8 +92,10 @@ class BaseControl extends ControlModel {
   }
 }
 
-/// Lightweight version of Controller. Mainly used for Items in dynamic List or to separate/reuse Logic.
-/// Mixin your model with [LocalizationProvider] to enable localization.
+/// Lightweight version of [ControlModel]. Mainly used for simple Widgets as Items in dynamic List or to separate/reuse Logic, also to prevent dispose, because [BaseModel] overrides [preferSoftDispose].
+/// [dispose] must be called manually !
+///
+/// @{macro control-model}
 class BaseModel extends ControlModel {
   @override
   bool preferSoftDispose = true;
@@ -107,22 +104,32 @@ class BaseModel extends ControlModel {
   BaseModel();
 }
 
+/// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [StateboundWidget].
+/// Enables to construct [AnimationController] and control animations.
+///
+/// Typically used as private [ControlModel] next to Widget class. This solution helps to separate animation/UI logic, actual business logic and pure UI.
+///
+/// Also Widget must use [TickerControl] or [SingleTickerControl] to enable vsync provider or pass [TickerProvider] from other place by calling [provideTicker].
 mixin TickerComponent on ControlModel {
+  /// Active provider. In fact provider can be used from different [ControlModel].
   TickerProvider _ticker;
 
+  /// Returns active [TickerProvider] provided by Widget or passed by other Control.
   @protected
   TickerProvider get ticker => _ticker;
 
+  /// Checks if [TickerProvider] is set.
   bool get isTickerAvailable => _ticker != null;
 
+  /// Sets vsync. Called by framework during [State] initialization when used with [CoreWidget] and [TickerControl].
   void provideTicker(TickerProvider ticker) {
     _ticker = ticker;
 
     onTickerInitialized(ticker);
   }
 
-  /// Called during State initialization.
-  /// Check [TickerControl] mixin.
+  /// Callback after [provideTicker] is executed.
+  /// Serves to created [AnimationController] and to set initial animation state.
   void onTickerInitialized(TickerProvider ticker);
 
   @override
@@ -133,10 +140,14 @@ mixin TickerComponent on ControlModel {
   }
 }
 
+/// Mixin to control [State] of [StateboundWidget] or [ControlWidget].
+/// Also usable with [NotifierBuilder].
 mixin StateControl on Disposable implements StateNotifier, Listenable {
-  /// Notify listeners.
+  /// Notifier and state holder.
   final _notifier = BaseNotifier();
 
+  /// Returns state as [Listenable].
+  /// Prevent to use directly, check [addListener], [removeListener] and [notifyState].
   ValueListenable get state => _notifier;
 
   /// Called right after [State.initState] and whenever dependency of state changes [State.didChangeDependencies].
@@ -159,19 +170,20 @@ mixin StateControl on Disposable implements StateNotifier, Listenable {
   }
 }
 
-/// Mixin for [ControlModel]
-/// Enables navigation from Controller.
+/// Mixin for [ControlModel] to pass [RouteNavigator] from [CoreWidget] - [ControlWidget] or [StateboundWidget].
+/// Creates bridge to UI where [Navigator] is implemented and enables navigation from Logic class.
 ///
-/// [ControlWidget] with [RouteControl]
-/// [RouteNavigator]
-/// [RouteHandler] & [PageRouteProvider]
+/// Check [ControlRoute] and [RouteStore] to work with routes.
+///
+/// Also Widget must use [RouteControl] to enable navigator and [RouteHandler].
 mixin RouteControlProvider on ControlModel {
   /// Implementation of [RouteNavigator] where [Navigator] is used.
   RouteNavigator _navigator;
 
-  /// Check if is [RouteNavigator] valid.
+  /// Checks if [RouteNavigator] is valid.
   bool get isNavigatorAvailable => _navigator != null;
 
+  //TODO: rework
   /// Subscribes [RouteNavigator] for later user.
   @override
   @mustCallSuper
@@ -183,10 +195,10 @@ mixin RouteControlProvider on ControlModel {
     }
   }
 
+  /// {@macro route-store-get}
   RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(_navigator);
 
-  /// [RouteNavigator.openRoute].
-  /// [RouteHandler] -> [PageRouteProvider]
+  /// {@macro route-open}
   RouteHandler openRoute(
     ControlRoute route, {
     bool root: false,
@@ -205,8 +217,7 @@ mixin RouteControlProvider on ControlModel {
     return handler;
   }
 
-  /// [RouteNavigator.openRoot].
-  /// [RouteHandler] -> [PageRouteProvider]
+  /// {@macro route-root}
   RouteHandler openRoot(
     ControlRoute route, {
     dynamic args,
@@ -223,8 +234,7 @@ mixin RouteControlProvider on ControlModel {
     return handler;
   }
 
-  /// [RouteNavigator.openDialog].
-  /// [RouteHandler] -> [PageRouteProvider]
+  /// {@macro route-dialog}
   Future<dynamic> openDialog(
     ControlRoute route, {
     bool root: false,
@@ -234,10 +244,10 @@ mixin RouteControlProvider on ControlModel {
     return RouteHandler(_navigator, route).openDialog(root: root, type: type, args: args);
   }
 
-  /// [RouteNavigator.close].
+  /// {@macro route-close}
   bool close([dynamic result]) => _navigator?.close(result);
 
-  /// [RouteNavigator.backTo].
+  /// {@macro route-back-to}
   void backTo({
     Route route,
     String identifier,
@@ -249,10 +259,9 @@ mixin RouteControlProvider on ControlModel {
         predicate: predicate,
       );
 
-  /// [RouteNavigator.openRoot].
+  /// {@macro route-back-root}
   void backToRoot() => _navigator?.backToRoot();
 
-  /// Disables [RouteNavigator].
   @override
   void dispose() {
     super.dispose();

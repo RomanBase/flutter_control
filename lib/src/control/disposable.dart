@@ -10,9 +10,9 @@ abstract class Disposable {
 
 /// Handles dispose in multiple ways.
 ///
-/// Use [DisposeHandler.requestDispose] to handle dispose way:
-/// [preventDispose] - do nothing. Final [dispose] must be handled manually.
-/// [preferSoftDispose] - executes [softDispose]. Useful for items in list and objects store in [ControlFactory]. Final [dispose] must be handled manually.
+/// Use [requestDispose] to handle dispose execution.
+/// [preventDispose] - do nothing. Final [dispose] must be called manually.
+/// [preferSoftDispose] - executes [softDispose]. Useful for items in list and objects stored in [ControlFactory]. Final [dispose] must be handled manually.
 ///
 /// [dispose] can be still called directly.
 mixin DisposeHandler implements Disposable {
@@ -22,6 +22,8 @@ mixin DisposeHandler implements Disposable {
   /// [requestDispose] will execute [softDispose]. Useful for items in list and objects store in [ControlFactory]. Final [dispose] must be handled manually.
   bool preferSoftDispose = false;
 
+  /// Executes dispose based on [preventDispose] and [preferSoftDispose] settings.
+  /// [parent] - actual object that requesting dispose.
   void requestDispose([dynamic parent]) {
     if (preventDispose) {
       return;
@@ -34,6 +36,9 @@ mixin DisposeHandler implements Disposable {
     }
   }
 
+  /// Just soft dispose - stop loading / subscriptions etc.
+  /// For example called when List item hides and is recycled.
+  /// Also useful when Control is used with multiple Widgets to prevent final [dispose].
   void softDispose() {}
 
   @override

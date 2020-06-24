@@ -177,6 +177,13 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
         child: secondWidget.getWidget(context, args: args),
       );
 
+  /// Handles transition between two Widgets and holds active [Widget], other Widget is disposed.
+  /// [control] - Handles animation controller and Widget crossing. Dispose this [control] a
+  /// [firstWidget] - Initial Widget. By default this Widget is visible initially.
+  /// [secondWidget] - By default this Widget is hidden initially.
+  /// [args] - Arguments passed to Widgets.
+  /// [transitionIn] - Transition from first to second.
+  /// [transitionOut] - Transition from second to first.
   TransitionHolder({
     Key key,
     @required TransitionControl control,
