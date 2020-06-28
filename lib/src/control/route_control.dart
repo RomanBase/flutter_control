@@ -5,27 +5,41 @@ import 'package:flutter_control/core.dart';
 
 typedef RouteWidgetBuilder = Route Function(WidgetBuilder builder, RouteSettings settings);
 
-/// Abstract class for basic type of navigation.
+/// Providing basic type of navigation.
 abstract class RouteNavigator {
+  /// {@template route-open}
   /// Pushes route into current Navigator.
   /// [route] - specific route: type, settings, transition etc.
   /// [root] - pushes route into root Navigator - onto top of everything.
   /// [replacement] - pushes route as replacement of current route.
+  /// {@endtemplate}
   Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
 
+  /// {@template route-root}
   /// Clears current [Navigator] and opens new [Route].
+  /// {@endtemplate}
   Future<dynamic> openRoot(Route route);
 
+  /// {@template route-dialog}
+  /// Opens specific dialog based on given [type]
+  /// Be default opens simple pop-up dialog.
+  /// {@endtemplate}
   Future<dynamic> openDialog(WidgetBuilder builder, {bool root: true, dynamic type});
 
+  /// {@template route-back-root}
   /// Goes back in navigation stack until first [Route].
+  /// {@endtemplate}
   void backToRoot();
 
+  /// {@template route-back-to}
   /// Goes back in navigation stack until [Route] found.
+  /// {@endtemplate}
   void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate});
 
+  /// {@template route-close}
   /// Pops [Route] from navigation stack.
   /// result is send back to parent.
+  /// {@endtemplate}
   bool close([dynamic result]);
 
   /// Removes given [route] from navigator.
@@ -33,43 +47,70 @@ abstract class RouteNavigator {
 }
 
 /// Ties up [RouteNavigator] and [ControlRoute].
-/// [ControlRoute.builder] is wrapped and Widget is initialized during build phase.
+///
+/// Initializes [Widget], builds [Route] with given properties and pushes this route to [Navigator].
+/// Do not open multiple routes from one handler !
 class RouteHandler {
   /// Implementation of navigator.
   final RouteNavigator navigator;
 
   /// Implementation of provider.
-  final ControlRoute provider;
+  final ControlRoute routeProvider;
 
+  /// Future of navigation result.
   Future<dynamic> _result;
 
+  /// Future of navigation result.
+  /// This future is finished when Route is closed.
   Future<dynamic> get result => _result;
 
+  /// Current route.
   Route _route;
 
+  /// Actual [Route] build.
   Route get route => _route;
 
-  /// Default constructor.
-  /// [navigator] and [provider] must be specified.
-  RouteHandler(this.navigator, this.provider) {
-    assert(navigator != null, 'Ensure that your widget implements [ControlNavigator] or is with [RouteNavigator] mixin.');
-    assert(provider != null);
+  /// Checks if this handler did his job.
+  /// Do not open multiple routes from one handler !
+  bool get isHandled => _result != null;
+
+  /// Builds [Widget] and pushes [Route] to [Navigator].
+  ///
+  /// [navigator] - Implementation of [RouteNavigator] - typically [ControlWidget] with [RouteControl] mixin.
+  /// [routeProvider] - Route settings and builder.
+  ///
+  /// Do not open multiple routes from one handler !
+  RouteHandler(this.navigator, this.routeProvider) {
+    assert(navigator != null, 'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
+    assert(routeProvider != null);
   }
 
-  RouteHandler viaRoute(RouteWidgetBuilder route) => RouteHandler(navigator, provider.viaRoute(route));
+  /// Creates copy of [RouteHandler] with given builder.
+  ///
+  /// @{macro route-route}
+  RouteHandler viaRoute(RouteWidgetBuilder builder) => RouteHandler(navigator, routeProvider.viaRoute(builder));
 
-  RouteHandler viaTransition(RouteTransitionsBuilder transition) => RouteHandler(navigator, provider.viaTransition(transition));
+  /// Creates copy of [RouteHandler] with given transition.
+  ///
+  /// @{macro route-transition}
+  RouteHandler viaTransition(RouteTransitionsBuilder transition) => RouteHandler(navigator, routeProvider.viaTransition(transition));
 
-  RouteHandler path(String path) => RouteHandler(navigator, provider.path(path));
+  /// Creates copy of [RouteHandler] with given path name.
+  ///
+  /// @{macro route-path}
+  RouteHandler path(String path) => RouteHandler(navigator, routeProvider.path(path));
 
-  RouteHandler named(String identifier) => RouteHandler(navigator, provider.named(identifier));
+  /// Creates copy of [RouteHandler] with given identifier.
+  ///
+  /// @{macro route-named}
+  RouteHandler named(String identifier) => RouteHandler(navigator, routeProvider.named(identifier));
 
-  /// [RouteNavigator.openRoute]
+  /// @{macro route-open}
   Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
-    printDebug("open route: ${provider.identifier} from $navigator");
+    printDebug("open route: ${routeProvider.identifier} from $navigator");
 
     _result = navigator.openRoute(
-      _route = provider.init(args: args),
+      _route = routeProvider.init(args: args),
       root: root,
       replacement: replacement,
     );
@@ -77,77 +118,111 @@ class RouteHandler {
     return _result;
   }
 
-  /// [RouteNavigator.openRoot]
+  /// {@macro route-root}
   Future<dynamic> openRoot({dynamic args}) {
-    printDebug("open root: ${provider.identifier} from $navigator");
+    printDebug("open root: ${routeProvider.identifier} from $navigator");
 
-    _result = navigator.openRoot(provider.init(args: args));
+    _result = navigator.openRoot(_route = routeProvider.init(args: args));
 
     return _result;
   }
 
-  /// [RouteNavigator.openDialog]
+  /// @{macro route-dialog}
   Future<dynamic> openDialog({bool root: true, dynamic type, dynamic args}) {
-    printDebug("open dialog: ${provider.identifier} from $navigator");
+    printDebug("open dialog: ${routeProvider.identifier} from $navigator");
 
     _route = null;
     return _result = navigator.openDialog(
-      WidgetInitializer.of(provider.builder).wrap(args: args),
+      WidgetInitializer.of(routeProvider._builder).wrap(args: args),
       root: root,
       type: type,
     );
   }
 }
 
-/// Abstract class for [PageRoute] construction with given settings.
+/// [Route] builder with given settings.
+/// Using [Type] as route identifier is recommended.
 class ControlRoute {
-  /// Default [Route] generator.
+  /// Builds [Route] via [builder] with given [identifier] and [settings].
+  /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// [settings] - Additional [Route] settings.
+  ///
+  /// Typically used with [Control.initControl] or [ControlRoot].
+  /// ```
+  ///   routes: [
+  ///     ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
+  ///     ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+  ///   ]
+  /// ```
+  /// Using [Type] as route identifier is recommended.
   static ControlRoute build<T>({
     dynamic identifier,
     dynamic settings,
     @required WidgetBuilder builder,
-  }) =>
-      ControlRoute()
-        ..identifier = RouteStore.routeIdentifier<T>(identifier)
-        ..settings = settings
-        ..builder = builder;
+  }) {
+    assert(T != dynamic || identifier != null);
 
+    return ControlRoute._()
+      ..identifier = RouteStore.routeIdentifier<T>(identifier)
+      ..settings = settings
+      .._builder = builder;
+  }
+
+  /// Holds [Route] with given [identifier].
+  /// Useful for specific or generated Routes.
+  ///
+  /// Check [RouteControl.build] for classic [WidgetBuilder] version.
   static ControlRoute route<T>({
     dynamic identifier,
     @required Route route,
   }) =>
-      ControlRoute()
+      ControlRoute._()
         ..identifier = RouteStore.routeIdentifier(identifier)
-        ..routeBuilder = (_, __) => route;
+        .._routeBuilder = (_, __) => route;
 
   /// @{template route-store-get}
+  /// Returns [ControlRoute] from [RouteStore] by given [Type] or [identifier].
+  /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
   ///
+  /// [RouteStore] is typically filled during [Control.initControl] or via [ControlRoot].
+  /// [RouteStore] is also stored in [Control] -> [Control.get<RouteStore>()] and can be filled / updated anytime,
+  ///
+  /// Using [Type] as route identifier is recommended.
   /// @{endtemplate}
-  static ControlRoute of<T>([dynamic identifier]) => Control.get<RouteStore>()?.getRoute<T>(identifier);
+  static ControlRoute of<T>([dynamic identifier]) {
+    assert(T != dynamic || identifier != null);
 
+    return Control.get<RouteStore>()?.getRoute<T>(identifier);
+  }
+
+  /// Route name. This identifier is typically stored in [RouteStore].
+  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
   String identifier;
 
-  /// Route transition type.
-  dynamic settings = 'platform';
+  /// Additional route settings.
+  /// By default is set to [Platform] - currently switching between [MaterialPageRoute] and [CupertinoPageRoute].
+  dynamic settings = Platform;
 
-  /// Widget builder.
-  WidgetBuilder builder;
+  /// Required Widget builder.
+  WidgetBuilder _builder;
 
-  /// Route builder.
-  RouteWidgetBuilder routeBuilder;
+  /// Custom Route builder.
+  RouteWidgetBuilder _routeBuilder;
 
-  /// Default constructor.
-  ControlRoute();
+  /// Default private constructor.
+  /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
+  ControlRoute._();
 
-  /// Returns [Route] of given type and with given settings.
-  Route buildRoute(WidgetBuilder builder) {
+  /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
+  /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
+  Route _buildRoute(WidgetBuilder builder) {
     final routeSettings = RouteSettings(name: identifier, arguments: settings);
 
-    if (routeBuilder != null) {
-      return routeBuilder(builder, routeSettings);
+    if (_routeBuilder != null) {
+      return _routeBuilder(builder, routeSettings);
     }
 
-    if (settings == 'platform') {
+    if (settings == Platform) {
       switch (Platform.operatingSystem) {
         case 'android':
           return MaterialPageRoute(builder: builder, settings: routeSettings);
@@ -159,18 +234,28 @@ class ControlRoute {
     return MaterialPageRoute(builder: builder, settings: routeSettings);
   }
 
+  /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
+  /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
+  /// Given [args] are passed to Widget.
   Route init({dynamic args}) {
-    final initializer = WidgetInitializer.of(builder);
+    final initializer = WidgetInitializer.of(_builder);
 
-    final route = buildRoute(initializer.wrap(args: args));
+    final route = _buildRoute(initializer.wrap(args: args));
 
     initializer.data = route;
 
     return route;
   }
 
-  ControlRoute viaRoute(RouteWidgetBuilder route) => _copyWith(routeBuilder: route);
+  /// {@template route-route}
+  /// Setups new [routeBuilder] and returns copy of [ControlRoute] with new settings..
+  /// {@endtemplate}
+  ControlRoute viaRoute(RouteWidgetBuilder routeBuilder) => _copyWith(routeBuilder: routeBuilder);
 
+  /// {@template route-transition}
+  /// Setups new [transition] with given [duration] and returns copy of [ControlRoute] with new settings..
+  /// [ControlRouteTransition] is used as [PageRoute].
+  /// {@endtemplate}
   ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
       routeBuilder: (builder, settings) => ControlRouteTransition(
             builder: builder,
@@ -179,27 +264,45 @@ class ControlRoute {
             settings: settings,
           ));
 
-  ControlRoute path(String path) => _copyWith(identifier: '$identifier$path');
+  /// {@template route-path}
+  /// Alters current [identifier] with given [path] and returns copy of [ControlRoute] with new settings.
+  /// ```
+  /// ControlRoute.of<DetailPage>().path('/detail/123');
+  /// ```
+  /// {@endtemplate}
+  ControlRoute path(String path) => _copyWith(identifier: RouteStore.routePathIdentifier(identifier: identifier, path: path));
 
+  /// {@template route-name}
+  /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
+  /// {@endtemplate}
   ControlRoute named(String identifier) => _copyWith(identifier: identifier);
 
-  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteWidgetBuilder routeBuilder}) => ControlRoute()
+  /// Creates copy of [RouteControl] with given settings.
+  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteWidgetBuilder routeBuilder}) => ControlRoute._()
     ..identifier = identifier ?? this.identifier
     ..settings = settings ?? this.settings
-    ..builder = builder
-    ..routeBuilder = routeBuilder ?? this.routeBuilder;
+    .._builder = _builder
+    .._routeBuilder = routeBuilder ?? this._routeBuilder;
 
-  /// Initializes [RouteHandler] with given [navigator] and this route provider.
+  /// Initializes [RouteHandler] with given [navigator] and this Route provider.
   RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
 
-  void register<T>() => Control.get<RouteStore>()?.addProvider<T>(this);
+  /// Registers this Route to [RouteStore].
+  void register<T>() => Control.get<RouteStore>()?.addRoute<T>(this);
 }
 
+/// Custom [PageRoute] building Widget via given [RouteTransitionsBuilder].
 class ControlRouteTransition extends PageRoute {
+  /// Builder of Widget.
   final WidgetBuilder builder;
+
+  /// Builder of Transition.
   final RouteTransitionsBuilder transition;
+
+  /// Duration of transition Animation.
   final Duration duration;
 
+  /// Simple [PageRoute] with custom [transition].
   ControlRouteTransition({
     @required this.builder,
     @required this.transition,
@@ -226,35 +329,56 @@ class ControlRouteTransition extends PageRoute {
   Duration get transitionDuration => duration;
 }
 
+/// Stores [ControlRoute] by identifier key - [RouteStore.routeIdentifier].
+/// Instance of [RouteStore] is stored in [ControlFactory] -> 'Control.get<RouteStore>()'.
+///
+/// Typically not used directly, but via framework:
+///   - fill: [Control.initControl] or [ControlRoute] routes property.
+///   - retrieve route: [ControlRoute.of].
 class RouteStore {
+  /// Map based Route Store.
+  /// Key: [RouteStore.routeIdentifier].
+  /// Value: [RouteControl].
   final _routes = Map<String, ControlRoute>();
 
-  RouteStore([List<ControlRoute> providers]) {
-    if (providers != null) {
-      addProviders(providers);
+  /// Stores Routes with their Identifiers.
+  ///
+  /// Typically not used directly, but via framework:
+  ///   - fill: [Control.initControl] or [ControlRoute] routes property.
+  ///   - retrieve route: [ControlRoute.of].
+  RouteStore([List<ControlRoute> routes]) {
+    if (routes != null) {
+      addRoutes(routes);
     }
   }
 
-  void addProviders(List<ControlRoute> providers) {
-    providers.forEach((item) => addProvider(item));
+  /// Adds [ControlRoute] one by one to [RouteStore].
+  void addRoutes(List<ControlRoute> routes) {
+    routes.forEach((item) => addRoute(item));
   }
 
-  String addRoute<T>({dynamic identifier, @required Route route}) {
-    return addProvider<T>(ControlRoute.route<T>(
+  /// Creates [ControlRoute] from given [builder] and adds it to [RouteStore].
+  /// Returns store key.
+  String addRawRoute<T>({dynamic identifier, @required Route route}) {
+    return addRoute<T>(ControlRoute.route<T>(
       identifier: identifier,
       route: route,
     ));
   }
 
+  /// Creates [ControlRoute] from given [builder] and adds it to [RouteStore].
+  /// Returns store key.
   String addBuilder<T>({dynamic identifier, @required WidgetBuilder builder}) {
-    return addProvider<T>(ControlRoute.build<T>(
+    return addRoute<T>(ControlRoute.build<T>(
       identifier: identifier,
       builder: builder,
     ));
   }
 
-  String addProvider<T>(ControlRoute provider) {
-    final identifier = provider.identifier ?? routeIdentifier<T>();
+  /// Adds given [route] to [RouteStore].
+  /// Returns store key.
+  String addRoute<T>(ControlRoute route) {
+    final identifier = route.identifier ?? routeIdentifier<T>();
 
     assert(() {
       if (_routes.containsKey(identifier)) {
@@ -263,12 +387,14 @@ class RouteStore {
       return true;
     }());
 
-    _routes[identifier] = provider;
+    _routes[identifier] = route;
 
     return identifier;
   }
 
-  /// Returns [ControlRoute] of given [identifier].
+  /// Returns [ControlRoute] of given [Type] or [identifier] - check [RouteStore.routeIdentifier] for more info about Store keys.
+  ///
+  /// Using [Type] as route key is recommended.
   ControlRoute getRoute<T>([dynamic identifier]) {
     identifier = routeIdentifier<T>(identifier);
 
@@ -279,6 +405,9 @@ class RouteStore {
     return null;
   }
 
+  /// Decompose given [identifier] and splits path to separated parts.
+  /// Currently usable just for debug purposes.
+  /// Returns parts of path in [List].
   List<String> decompose(String identifier) {
     final list = List<String>();
 
@@ -299,6 +428,11 @@ class RouteStore {
     return list;
   }
 
+  /// Resolves identifier for given route [Type] and [name].
+  /// Similar to [ControlFactory.keyOf], but also accepts [String] as valid [value] key.
+  /// This method is mainly used by framework to determine identifier of [ControlRoute] stored in [RouteStore].
+  ///
+  /// Returned identifier is formatted as path -> '/name'.
   static String routeIdentifier<T>([dynamic value]) {
     if (value == null && T != dynamic) {
       value = T;
@@ -319,5 +453,14 @@ class RouteStore {
     }
 
     return id;
+  }
+
+  /// Alters given [identifier] with [path].
+  static String routePathIdentifier<T>({dynamic identifier, String path}) {
+    if (!path.startsWith('/')) {
+      path = '/$path';
+    }
+
+    return routeIdentifier(identifier) + path;
   }
 }

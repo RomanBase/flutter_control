@@ -177,7 +177,7 @@ mixin StateControl on Disposable implements StateNotifier, Listenable {
 ///
 /// Also Widget must use [RouteControl] to enable navigator and [RouteHandler].
 mixin RouteControlProvider on ControlModel {
-  /// Implementation of [RouteNavigator] where [Navigator] is used.
+  /// Implementation of [RouteNavigator].
   RouteNavigator _navigator;
 
   /// Checks if [RouteNavigator] is valid.

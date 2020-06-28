@@ -224,8 +224,13 @@ class ControlState<U extends ControlWidget> extends CoreState<U> implements Stat
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
+  /// Returns currently active [Route].
+  /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
+  /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.
   Route getActiveRoute() => getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
 
+  /// Returns requested [Navigator].
+  /// [root] - closest or first.
   @protected
   NavigatorState getNavigator({bool root: false}) {
     if (root && !Control.root().isInitialized) {
@@ -245,8 +250,12 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
     }
   }
 
+  /// {@macro route-store-get}
   RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(this);
 
+  /// Initializes and returns [Route] via [RouteStore] and [RouteControl].
+  ///
+  /// {@macro route-store-get}
   Route initRouteOf<T>({dynamic identifier, dynamic args}) => ControlRoute.of<T>(identifier)?.init(args: args);
 
   @override
