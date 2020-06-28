@@ -121,10 +121,7 @@ class FieldControlSub<T> implements FieldControlStream<T> {
   bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
 }
 
-/// Enclosure and adds functionality to standard [Stream] and [StreamBuilder] flow.
-/// Use [FieldBuilder] or basic variants ([StringBuilder], [BoolBuilder], etc.) for easier integration into Widget.
-///
-/// There is few basic controllers to work with [BoolControl], [StringControl]. etc.
+/// Wraps and adds functionality to standard broadcast [Stream].
 class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Current broadcast [StreamController].
   final _stream = StreamController<T>.broadcast();
@@ -139,27 +136,31 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Default stream of this control.
   Stream<T> get stream => _stream.stream;
 
+  /// Checks if [Stream] is not closed.
+  bool get isActive => !_stream.isClosed;
+
   /// Returns true if current stream is closed.
   bool get isClosed => _stream.isClosed;
 
   /// Current value.
   T _value;
 
-  /// Returns current value - last in stream.
+  /// Returns current value - last passed to Stream.
   T get value => _value;
 
+  /// Sets value to [Stream] and notifies listeners.
   set value(value) => setValue(value);
 
-  /// Checks if any value is available.
-  bool get hasData => _value != null;
+  /// Checks if [value] is not 'null'.
+  bool get isNotEmpty => _value != null;
 
+  /// Checks if [value] is 'null'.
   bool get isEmpty => _value == null;
 
-  bool get isActive => !_stream.isClosed;
-
+  /// Returns [FieldControlSub] to provide read only version of [FieldControl].
   FieldControlSub<T> get sub => FieldControlSub<T>._(this);
 
-  /// Initializes controller and [Stream] with default value.
+  /// Initializes control and [Stream] with default [value].
   FieldControl([T value]) {
     if (value != null) {
       setValue(value);
@@ -216,6 +217,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
     }
   }
 
+  /// Creates sub and stores reference for later dispose..
   FieldSubscription _addSub(StreamSubscription subscription, {Function onError, void onDone(), bool cancelOnError: false}) {
     if (_subscriptions == null) {
       _subscriptions = List();
@@ -402,6 +404,9 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 /// Extends [StreamBuilder] and adds some functionality to be used easily with [FieldControl].
 /// If no [Widget] is [build] then empty [Container] is returned.
 class FieldStreamBuilder<T> extends StreamBuilder<T> {
+  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
+  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
+  /// [builder] - required Widget builder. [AsyncSnapshot] is passing data to handle.
   FieldStreamBuilder({
     Key key,
     @required FieldControlStream<T> control,
@@ -419,18 +424,19 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
   }
 }
 
-/// Object builder - checks if [AsyncSnapshot] has data and builds Widget from [builder] or [noData] otherwise.
-/// [FieldControl]
-/// [FieldStreamBuilder]
+/// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
 class FieldBuilder<T> extends FieldStreamBuilder<T> {
-  final bool nullOk;
-
+  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
+  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
+  /// [builder] - required Widget builder. Non 'null' [T] value is passed directly.
+  /// [noData] - Widget to show, when value is 'null'.
+  /// [nullOk] - Determine where to handle 'null' values. 'true' - 'null' will be passed to [builder].
   FieldBuilder({
     Key key,
     @required FieldControlStream<T> control,
     @required ControlWidgetBuilder<T> builder,
     WidgetBuilder noData,
-    this.nullOk: false,
+    bool nullOk: false,
   }) : super(
             key: key,
             control: control,
@@ -450,8 +456,11 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
   final List<FieldControlStream> controls;
-  final ControlWidgetBuilder builder;
+  final ControlWidgetBuilder<List> builder;
 
+  /// Multiple Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
+  /// [controls] - List of controls to subscribe about value changes. [FieldControl] and [FieldControlSub].
+  /// [builder] - Values to builder are passed in same order as [controls] are. Also 'null' values are passed in.
   const FieldBuilderGroup({
     Key key,
     @required this.controls,
@@ -462,10 +471,16 @@ class FieldBuilderGroup extends StatefulWidget {
   _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
 }
 
+/// State of [FieldBuilderGroup].
+/// Subscribes to all provided Streams.
 class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
+  /// Current values.
   List _values;
+
+  /// All active subs.
   final _subs = List<FieldSubscription>();
 
+  /// Maps values from controls to List.
   List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
@@ -533,19 +548,18 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
 //########################################################################################
 //########################################################################################
 
-/// Controller for [List].
-/// Expose functionality of standard [List] and notifies [FieldStreamBuilder] about changes.
+/// Extended version of [FieldControl] specified to [List].
 class ListControl<T> extends FieldControl<List<T>> {
-  /// returns number of items in list.
+  /// Returns number of items in list.
   int get length => value.length;
 
-  /// return true if there is no item.
+  /// Return true if there is no item.
   @override
   bool get isEmpty => value != null && value.isEmpty;
 
   bool nullable = false;
 
-  /// Default constructor.
+  /// [FieldControl] of [List].
   ListControl([Iterable<T> items]) {
     final list = List<T>();
     if (items != null) {
@@ -558,8 +572,10 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// Returns the object at given index.
   T operator [](int index) => value[index];
 
+  /// [List.last]
   T get last => value.last;
 
+  /// [List.first]
   T get first => value.first;
 
   dynamic data;
@@ -797,21 +813,25 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 }
 
-/// Builder for [ListControl]
-/// [FieldControl]
-/// [FieldStreamBuilder]
+/// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
 class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
+  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
+  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
+  /// [builder] - required Widget builder. Only non empty [List] is passed directly to handle.
+  /// [noData] - Widget to show, when List is empty.
+  /// [nullOk] - Determine where to handle empty List. 'true' - empty List will be passed to [builder].
   ListBuilder({
     Key key,
     @required FieldControl<List<T>> control,
     @required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder noData,
+    bool nullOk: false,
   }) : super(
             key: key,
             control: control,
             builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data.length > 0) {
-                return builder(context, snapshot.data);
+              if ((snapshot.hasData && snapshot.data.length > 0) || nullOk) {
+                return builder(context, snapshot.data ?? const []);
               }
 
               if (noData != null) {
@@ -826,7 +846,7 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
 //########################################################################################
 //########################################################################################
 
-/// Shortcut for LoadingStatus Controller.
+/// Extended [FieldControl] specified to control [LoadingStatus].
 class LoadingControl extends FieldControl<LoadingStatus> {
   /// Returns true if [value] is [LoadingStatus.done].
   bool get isDone => value == LoadingStatus.done;
@@ -841,55 +861,67 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   bool get hasMessage => message != null;
 
   /// Inner message of LoadingStatus.
+  /// Can be used to hold error or any other loading message.
   dynamic message;
 
-  LoadingControl([LoadingStatus status = LoadingStatus.done]) : super(status);
+  /// [FieldControl] of [LoadingStatus].
+  LoadingControl([LoadingStatus status = LoadingStatus.initial]) : super(status);
 
-  /// Change status of FieldController and sets inner message.
+  /// Changes status and sets inner message.
   void setStatus(LoadingStatus status, {dynamic msg}) {
     message = msg;
 
     setValue(status);
   }
 
-  /// Change status of FieldController to progress and sets inner message.
+  /// Changes status to [LoadingStatus.progress] and sets inner message.
   void progress({dynamic msg}) => setStatus(LoadingStatus.progress, msg: msg);
 
-  /// Change status of FieldController to done and sets inner message.
+  /// Changes status to [LoadingStatus.done] and sets inner message.
   void done({dynamic msg}) => setStatus(LoadingStatus.done, msg: msg);
 
-  /// Change status of FieldController to error and sets inner message.
+  /// Changes status to [LoadingStatus.error] and sets inner message.
   void error({dynamic msg}) => setStatus(LoadingStatus.error, msg: msg);
 
-  /// Change status of FieldController to outdated and sets inner message.
+  /// Changes status to [LoadingStatus.outdated] and sets inner message.
   void outdated({dynamic msg}) => setStatus(LoadingStatus.outdated, msg: msg);
 
-  /// Change status of FieldController to unknown and sets inner message.
+  /// Changes status to [LoadingStatus.unknown] and sets inner message.
   void unknown({dynamic msg}) => setStatus(LoadingStatus.unknown, msg: msg);
 
+  /// Changes status based on given [loading] value and sets inner message.
+  /// 'true' - [LoadingStatus.progress].
+  /// 'false' - [LoadingStatus.done].
   void status(bool loading, {dynamic msg}) => loading ? progress(msg: msg) : done(msg: msg);
 }
 
-/// Builder for [LoadingControl].
-/// [LoadingStatus]
-/// [FieldStreamBuilder]
+/// Extended [FieldStreamBuilder] version specified to build [LoadingStatus] states.
+/// Internally uses [CaseWidget] to animate Widget crossing.
 class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
-  final WidgetBuilder progress;
-  final WidgetBuilder done;
-  final WidgetBuilder error;
-  final WidgetBuilder outdated;
-  final WidgetBuilder unknown;
-  final CrossTransition transition;
-
+  /// Builds Widget based on current [LoadingStatus].
+  /// Uses [CaseWidget] to handle current state and Widget animation.
+  ///
+  /// [initial] - Initial Widget before loading starts (barely used).
+  /// [progress] - Loading Widget, by default [CircularProgressIndicator] is build.
+  /// [done] - Widget when loading is completed.
+  /// [error] - Error Widget, by default [Text] with [LoadingControl.message] is build.
+  /// [outdated], [unknown] - Mostly same as [done] with some badge.
+  /// [transition] - Transition between Widgets. By default [CrossTransitions.fadeOutFadeIn] is used.
+  /// [transitions] - Case specific transitions.
+  ///
+  ///  If status don't have default builder, empty [Container] is build.
+  ///  'null' is considered as [LoadingStatus.initial].
   LoadingBuilder({
     Key key,
     @required LoadingControl control,
-    this.progress,
-    this.done,
-    this.error,
-    this.outdated,
-    this.unknown,
-    this.transition,
+    WidgetBuilder initial,
+    WidgetBuilder progress,
+    WidgetBuilder done,
+    WidgetBuilder error,
+    WidgetBuilder outdated,
+    WidgetBuilder unknown,
+    CrossTransition transition,
+    Map<LoadingStatus, CrossTransition> transitions,
   }) : super(
           key: key,
           control: control,
@@ -899,6 +931,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
             return CaseWidget(
               activeCase: state,
               builders: {
+                LoadingStatus.initial: initial,
                 LoadingStatus.progress: progress ?? (context) => Center(child: CircularProgressIndicator()),
                 LoadingStatus.done: done,
                 LoadingStatus.error: error ?? (context) => Center(child: Text(control.message ?? 'error')),
@@ -909,6 +942,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
               transitionIn: CrossTransition(
                 builder: CrossTransitions.fadeOutFadeIn(backgroundColor: Colors.transparent),
               ),
+              transitions: transitions,
             );
           },
         );
@@ -918,39 +952,55 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
 //########################################################################################
 //########################################################################################
 
-/// Boolean controller
-/// [FieldControl]
-/// [FieldBuilder]
+/// Extended version of [FieldControl] specified to [bool].
 class BoolControl extends FieldControl<bool> {
-  bool get isTrue => value;
+  /// Checks if [value] is 'true'.
+  bool get isTrue => value == true;
 
-  bool get isFalse => !value;
+  /// Checks if [value] is 'false' or 'null'.
+  bool get isFalse => value == false || value == null;
 
+  /// [FieldControl] of [bool].
+  /// Default [value] is 'false'.
   BoolControl([bool value = false]) : super(value);
 
+  /// Toggles current value and notifies listeners.
+  /// 'true' -> 'false'
+  /// 'false' -> 'true'
   void toggle() {
     setValue(!value);
   }
 
+  /// Sets value to 'true'.
+  /// Listeners are notified if [value] is changed.
   void setTrue() => setValue(true);
 
+  /// Sets value to 'false'.
+  /// Listeners are notified if [value] is changed.
   void setFalse() => setValue(false);
 }
 
-/// String controller
-/// [FieldControl]
-/// [FieldBuilder]
+/// Extended version of [FieldControl] specified to [String].
 class StringControl extends FieldControl<String> {
-  /// [String.isEmpty]
+  /// Returns 'true' if value is 'null' or empty String.
   @override
   bool get isEmpty => value?.isEmpty ?? true;
 
+  /// Returns 'true' if value is not 'null' and not empty.
+  @override
+  bool get isNotEmpty => value?.isNotEmpty ?? false;
+
+  /// Current regex for validation.
+  /// [setWithRegex] will be called if regex is not null.
   String regex;
 
+  /// Checks if [regex] is filled and validation is required.
   bool get requestValidation => regex != null;
 
+  /// [FieldControl] of [String].
   StringControl([String value]) : super(value);
 
+  /// [FieldControl] of [String] with [regex] validation.
   StringControl.withRegex({String value, this.regex}) {
     setWithRegex(value);
   }
@@ -964,7 +1014,14 @@ class StringControl extends FieldControl<String> {
     }
   }
 
+  /// Sets given [value] only if [regex] matches.
+  ///
+  /// [regex] - override of [StringControl.regex] -> one of them can't be 'null'.
+  ///
+  /// Regex is typically used with [StringControl.withRegex] constructor and then setting value via [setValue] or [value] setter.
   void setWithRegex(String value, {String regex, bool notifyListeners: true}) {
+    assert(regex != null || this.regex != null);
+
     regex ??= this.regex;
 
     if (RegExp(regex).hasMatch(value ?? '')) {
@@ -975,33 +1032,49 @@ class StringControl extends FieldControl<String> {
   }
 }
 
-/// Double controller
-/// [FieldControl]
-/// [FieldBuilder]
+/// Extended version of [FieldControl] specified to [double].
 class DoubleControl extends FieldControl<double> {
+  /// Inclusive lower bound value;
   double min = 0.0;
+
+  /// Inclusive upper bound value;
   double max = 0.0;
-  bool clamp = true;
 
-  bool get requestRange => min + max != 0.0;
+  /// Checks if clamping is required
+  bool get clamp => min != 0.0 || max != 0.0;
 
+  /// Checks if clamping is required and [value] is equal to [min].
+  bool get atMin => clamp && value == min;
+
+  /// Checks if clamping is required and [value] is equal to [max].
+  bool get atMax => clamp && value == max;
+
+  /// [FieldControl] of [double].
   DoubleControl([double value = 0.0]) : super(value);
 
-  DoubleControl.inRange({double value: 0.0, this.min: 0.0, this.max: 1.0, this.clamp: true}) {
+  /// [FieldControl] of [double] with [min] - [max] clamping.
+  DoubleControl.inRange({double value: 0.0, this.min: 0.0, this.max: 1.0}) {
     setInRange(value);
   }
 
   void setValue(double value, {bool notifyListeners: true}) {
-    if (requestRange) {
+    if (clamp) {
       setInRange(value, notifyListeners: notifyListeners);
     } else {
       super.setValue(value, notifyListeners: notifyListeners);
     }
   }
 
+  //TODO: currently have two purposes -> clamping and setting in range.
+  /// Sets given [value] clamped to [min] - [max] range.
+  ///
+  /// [min] - Override of [DoubleControl.min].
+  /// [max] - Override of [DoubleControl.max].
+  ///
+  /// Range is typically used with [DoubleControl.inRange] constructor and then setting value via [setValue] or [value] setter.
   void setInRange(double value, {double min, double max, bool notifyListeners: true}) {
     if (clamp) {
-      super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+      super.setValue((value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
         super.setValue(value, notifyListeners: notifyListeners);
@@ -1012,37 +1085,49 @@ class DoubleControl extends FieldControl<double> {
   }
 }
 
-/// Integer controller
-/// [FieldControl]
-/// [FieldBuilder]
+/// Extended version of [FieldControl] specified to [int].
 class IntegerControl extends FieldControl<int> {
+  /// Inclusive lower bound value;
   int min = 0;
+
+  /// Inclusive upper bound value;
   int max = 0;
-  bool clamp = true;
 
-  bool get requestRange => min + max != 0;
+  /// Checks if clamping is required
+  bool get clamp => min != 0 || max != null;
 
-  bool get atMin => requestRange && value == min;
+  /// Checks if clamping is required and [value] is equal to [min].
+  bool get atMin => clamp && value == min;
 
-  bool get atMax => requestRange && value == max;
+  /// Checks if clamping is required and [value] is equal to [max].
+  bool get atMax => clamp && value == max;
 
+  /// [FieldControl] of [double].
   IntegerControl([int value = 0]) : super(value);
 
-  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100, this.clamp: true}) {
+  /// [FieldControl] of [double] with [min] - [max] clamping.
+  IntegerControl.inRange({int value: 0, this.min: 0, this.max: 100}) {
     setInRange(value);
   }
 
   void setValue(int value, {bool notifyListeners: true}) {
-    if (requestRange) {
+    if (clamp) {
       setInRange(value, notifyListeners: notifyListeners);
     } else {
       super.setValue(value, notifyListeners: notifyListeners);
     }
   }
 
+  //TODO: currently have two purposes -> clamping and setting in range.
+  /// Sets given [value] clamped to [min] - [max] range.
+  ///
+  /// [min] - Override of [DoubleControl.min].
+  /// [max] - Override of [DoubleControl.max].
+  ///
+  /// Range is typically used with [DoubleControl.inRange] constructor and then setting value via [setValue] or [value] setter.
   void setInRange(int value, {int min, int max, bool notifyListeners: true}) {
     if (clamp) {
-      super.setValue((value ?? 0).clamp(min ?? this.min, max ?? this.max));
+      super.setValue((value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
         super.setValue(value, notifyListeners: notifyListeners);

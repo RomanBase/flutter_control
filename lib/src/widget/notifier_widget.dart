@@ -17,10 +17,17 @@ class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
   }
 }
 
+/// Builds Widget whenever value in [Listenable] notifies data changes.
 class NotifierBuilder<T> extends StatefulWidget {
+  /// Control to subscribe.
   final Listenable control;
+
+  /// Widget builder.
   final ControlWidgetBuilder<T> builder;
 
+  /// Builds Widget every time when [Listenable] notifies data changes.
+  /// [control] - required Listenable controller. [ChangeNotifier], [ValueNotifier], [BaseNotifier].
+  /// [builder] - required Widget builder. Value is determined based on [control] type.
   const NotifierBuilder({
     Key key,
     @required this.control,
@@ -47,6 +54,7 @@ class NotifierBuilder<T> extends StatefulWidget {
   }
 }
 
+/// State of [NotifierBuilder].
 class _NotifierBuilderState extends State<NotifierBuilder> {
   @override
   void initState() {

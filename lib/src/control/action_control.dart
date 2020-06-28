@@ -307,15 +307,17 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 }
 
-/// Listen for changes and updates Widget every time when value is changed.
-///
-/// [ActionControl.single] - single sub.
-/// [ActionControl.broadcast] - multiple subs.
-/// [ControlWidgetBuilder] - returns Widget based on given value.
+/// Builds Widget whenever value in [ActionControl] is changed.
 class ActionBuilder<T> extends StatefulWidget {
+  /// Control to subscribe.
   final ActionControlStream<T> control;
+
+  /// Widget builder.
   final ControlWidgetBuilder<T> builder;
 
+  /// Builds Widget every time when data in control are changed.
+  /// [control] - required Action controller. [ActionControl] or [ActionControlSub].
+  /// [builder] - required Widget builder. Value is passed directly (including 'null' values).
   const ActionBuilder({
     Key key,
     @required this.control,
@@ -328,9 +330,13 @@ class ActionBuilder<T> extends StatefulWidget {
   Widget build(BuildContext context, T value) => builder(context, value);
 }
 
+/// State of [ActionBuilder].
+/// Subscribes to provided Action.
 class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
+  /// Current value.
   T _value;
 
+  /// Active sub to [ActionControl].
   ActionSubscription _sub;
 
   @override
@@ -385,6 +391,9 @@ class ActionBuilderGroup extends StatefulWidget {
   final List<ActionControlStream> controls;
   final ControlWidgetBuilder<List> builder;
 
+  /// Multiple action based Widget builder. Listening every [ActionControlStream] about changes.
+  /// [controls] - List of controls to subscribe about value changes. [ActionControl] and [ActionControlSub].
+  /// [builder] - Values to builder are passed in same order as [controls] are. Also 'null' values are passed in.
   const ActionBuilderGroup({
     Key key,
     @required this.controls,
@@ -397,10 +406,16 @@ class ActionBuilderGroup extends StatefulWidget {
   Widget build(BuildContext context, List values) => builder(context, values);
 }
 
+/// State of [ActionBuilderGroup].
+/// Subscribes to all provided Actions.
 class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
+  /// Current values.
   List _values;
+
+  /// All active subs.
   final _subs = List<ActionSubscription>();
 
+  /// Maps values from controls to List.
   List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
