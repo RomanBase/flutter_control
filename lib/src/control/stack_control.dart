@@ -1,10 +1,10 @@
 import 'package:flutter_control/core.dart';
 
-class StackControl<T> implements ActionControlStream<T>, Disposable {
+class StackControl<T> implements ActionControlObservable<T>, Disposable {
   /// Current stack of values.
   final _stack = List<T>();
 
-  /// Holds current value and [ActionControlStream] interface just wraps this control.
+  /// Holds current value and [ActionControlObservable] interface just wraps this control.
   final _control = ActionControl.broadcast<T>();
 
   /// Stack with root value.
@@ -174,21 +174,21 @@ class StackControl<T> implements ActionControlStream<T>, Disposable {
   /// Notifies all listeners with current [value].
   void notify() => _control.notify();
 
-  /// [ActionControlStream.cancel]
+  /// [ActionControlObservable.cancel]
   void cancel([ActionSubscription sub]) => _control.cancel(sub);
 
-  /// [ActionControlStream.subscribe]
+  /// [ActionControlObservable.subscribe]
   ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) => _control.subscribe(action, current: current);
 
-  /// [ActionControlStream.once]
+  /// [ActionControlObservable.once]
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _control.once(action, until: until, current: current);
 
   @override
   bool operator ==(other) {
-    return other is ActionControlStream && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value || other == value;
   }
 
-  /// [ActionControlStream.equal]
+  /// [ActionControlObservable.equal]
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
 
   @override

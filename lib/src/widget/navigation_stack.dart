@@ -341,7 +341,7 @@ class NavigatorStackControl extends BaseControl {
   int get currentPageIndex => _pageIndex.value;
 
   /// Subscription to listen about page index changes.
-  ActionControlStream<int> get pageIndex => _pageIndex.sub;
+  ActionControlObservable<int> get pageIndex => _pageIndex.sub;
 
   bool reloadOnReselect;
 

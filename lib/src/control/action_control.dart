@@ -4,17 +4,43 @@ import 'package:flutter_control/core.dart';
 
 /// Subscription to [ActionControl]
 class ActionSubscription<T> implements Disposable {
+  /// Creator of this sub.
   ActionControl<T> _parent;
+
+  /// Listeners callback.
   ValueCallback<T> _action;
+
+  /// Test when this subscription is ready to close.
   Predicate<T> _until;
 
+  /// Checks if subscription can be used next time.
   bool _keep = true;
+
+  /// Checks if subscription is not paused.
   bool _active = true;
 
+  /// Checks if parent and callback is set.
   bool get isValid => _parent != null && _action != null;
 
   /// Checks if parent and action is valid and sub is active.
   bool get isActive => _active && isValid;
+
+  /// Sets test [predicate] to check.
+  /// This test is executed after each callback.
+  /// Returning 'true' will close this subscription.
+  void until(Predicate<T> predicate) => _until = predicate;
+
+  /// Sets subscription to listen just for one more time, then will be canceled by [ActionControl].
+  void onceMore() => _keep = false;
+
+  /// Pauses this subscription and [ActionControl] will skip this sub.
+  void pause() => _active = false;
+
+  /// Resumes this subscription and [ActionControl] will again starts notifying this sub.
+  void resume() => _active = true;
+
+  /// Checks if this subscription is ready to be closed.
+  bool _readyToClose(T value) => !_keep || (_until?.call(value) ?? false);
 
   /// Removes parent and action reference.
   /// Can be called multiple times.
@@ -22,19 +48,6 @@ class ActionSubscription<T> implements Disposable {
     _parent = null;
     _action = null;
   }
-
-  void until(Predicate<T> predicate) => _until = predicate;
-
-  /// Sets subscription to listen just for one more time, then will be canceled by [ActionControl].
-  void onceMore() => _keep = false;
-
-  /// Pauses this subscription and [ActionControl] broadcast will skip this sub.
-  void pause() => _active = false;
-
-  /// Resumes this subscription and [ActionControl] broadcast will again starts notifying this sub.
-  void resume() => _active = true;
-
-  bool _readyToClose(T value) => _until == null ? !_keep : _until(value);
 
   /// Cancels subscription to [ActionControl]
   /// Can be called multiple times
@@ -44,29 +57,29 @@ class ActionSubscription<T> implements Disposable {
     _clear();
   }
 
-  void softDispose() {
-    _parent?.cancel(this);
-    _action = null;
-  }
-
   @override
   void dispose() {
     cancel();
   }
 }
 
-abstract class ActionControlStream<T> {
-  /// Last value passed to subs.
+/// {@template action-control}
+/// Simple Observable/Listenable solution based on subscription and listening about [value] changes.
+/// Last [value] is always stored.
+/// @{endtemplate}
+abstract class ActionControlObservable<T> {
+  /// Returns current value - last passed action.
   T get value;
 
   /// Subscribes event for changes.
   /// Returns [ActionSubscription] for later cancellation.
-  /// When current value isn't null, then given listener is notified immediately.
+  /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true});
 
   /// Subscribes event for just one next change.
   /// Returns [ActionSubscription] for later cancellation.
-  /// If [current] is true and [value] isn't null, then given listener is notified immediately.
+  /// If [until] is 'null' [action] will be called just one time, otherwise until test predicate is hit.
+  /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true});
 
   /// Checks if given object is same as this one.
@@ -74,9 +87,14 @@ abstract class ActionControlStream<T> {
   bool equal(other);
 }
 
-class ActionControlSub<T> implements ActionControlStream<T> {
+/// @{macro action-control}
+///
+/// [ActionControl.sub]
+class ActionControlSub<T> implements ActionControlObservable<T> {
+  /// Actual control to subscribe.
   final ActionControl<T> _control;
 
+  /// Private constructor used by [ActionControl].
   ActionControlSub._(this._control);
 
   @override
@@ -93,7 +111,7 @@ class ActionControlSub<T> implements ActionControlStream<T> {
 
   @override
   bool operator ==(other) {
-    return other is ActionControlStream && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -101,19 +119,25 @@ class ActionControlSub<T> implements ActionControlStream<T> {
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
 }
 
-/// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
+/// @{macro action-control}
+///
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
 /// [ActionControl.provider] - Subscription to [BroadcastProvider].
-class ActionControl<T> implements ActionControlStream<T>, Disposable {
+class ActionControl<T> implements ActionControlObservable<T>, Disposable {
   /// Current value.
   T _value;
 
   @override
   T get value => _value;
 
+  /// Sets [value] and notifies listeners.
   set value(value) => setValue(value);
 
+  /// Checks if [value] is not 'null'.
+  bool get isNotEmpty => _value != null;
+
+  /// Checks if [value] is 'null'.
   bool get isEmpty => _value == null;
 
   /// Current subscription.
@@ -122,7 +146,8 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
   /// Global subscription.
   BroadcastSubscription<T> _globalSub;
 
-  ActionControlStream<T> get sub => ActionControlSub<T>._(this);
+  /// Returns [ActionControlSub] to provide read only version of [ActionControl].
+  ActionControlObservable<T> get sub => ActionControlSub<T>._(this);
 
   ///Default constructor.
   ActionControl._([T value]) {
@@ -134,7 +159,7 @@ class ActionControl<T> implements ActionControlStream<T>, Disposable {
 
   @override
   bool operator ==(other) {
-    return other is ActionControlStream && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value || other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -310,7 +335,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
 /// Builds Widget whenever value in [ActionControl] is changed.
 class ActionBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
-  final ActionControlStream<T> control;
+  final ActionControlObservable<T> control;
 
   /// Widget builder.
   final ControlWidgetBuilder<T> builder;
@@ -388,10 +413,10 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
 
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ActionBuilderGroup extends StatefulWidget {
-  final List<ActionControlStream> controls;
+  final List<ActionControlObservable> controls;
   final ControlWidgetBuilder<List> builder;
 
-  /// Multiple action based Widget builder. Listening every [ActionControlStream] about changes.
+  /// Multiple action based Widget builder. Listening every [ActionControlObservable] about changes.
   /// [controls] - List of controls to subscribe about value changes. [ActionControl] and [ActionControlSub].
   /// [builder] - Values to builder are passed in same order as [controls] are. Also 'null' values are passed in.
   const ActionBuilderGroup({

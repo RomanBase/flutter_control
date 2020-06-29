@@ -86,7 +86,7 @@ class ControlScope {
   /// Sets new root context to [contextHolder]
   set context(BuildContext context) => _context.value = context;
 
-  ActionControlStream get rootContextSub => _context.sub;
+  ActionControlObservable get rootContextSub => _context.sub;
 
   bool notifyControlState([ControlArgs args]) {
     if (rootKey.currentState != null && rootKey.currentState.mounted) {

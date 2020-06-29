@@ -15,7 +15,7 @@ class FireControl {
 
   String get uid => _user.value?.uid;
 
-  ActionControlStream<FirebaseUser> get userSub => _user.sub;
+  ActionControlObservable<FirebaseUser> get userSub => _user.sub;
 
   Future<FirebaseUser> signUp(String email, String password, String nickname) async {
     final user = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
