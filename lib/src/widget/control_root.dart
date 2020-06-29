@@ -317,21 +317,21 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _states = AppStateSetup.fillBuilders(widget.states);
     _transitions = AppStateSetup.fillTransitions(widget.states);
 
-    if (!_states.containsKey(widget.initState.key)) {
-      final state = widget.initState.build(
-        (context) => InitLoader.of(
-          builder: (context) => Container(
-            color: Theme.of(context).canvasColor,
-            child: Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-              ),
+    final initState = widget.initState.build(
+      (context) => InitLoader.of(
+        builder: (context) => Container(
+          color: Theme.of(context).canvasColor,
+          child: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      _states[state.key] = state.builder;
+    if (!_states.containsKey(initState.key)) {
+      _states[initState.key] = initState.builder;
     }
 
     _theme = widget.theme ??
