@@ -279,7 +279,7 @@ class ControlRoot extends StatefulWidget {
     this.theme,
     this.transition,
     this.initState: AppState.init,
-    @required this.states,
+    this.states,
     @required this.app,
     this.initAsync,
   }) : super(key: _rootKey);

@@ -68,11 +68,15 @@ class DetailController extends BaseControl with RouteControlProvider, Localizati
 
   final title = StringControl();
 
+  DetailController([CardModel model]) {
+    _model = model;
+  }
+
   @override
   void onInit(Map args) {
     super.onInit(args);
 
-    _model = args.getArg<CardModel>();
+    _model ??= args.getArg<CardModel>();
 
     _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }

@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       localization: LocalizationConfig(
         defaultLocale: 'en',
         locales: LocalizationAsset.build(
-          // reference to assets/localization/{file_name}.json
+          // References to assets/localization/en.json
           locales: [
             'en',
             'cs',
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         'cards': CardsController(),
       },
       initializers: {
-        DetailController: (args) => DetailController(),
+        DetailController: (args) => DetailController(Parse.getArg<CardModel>(args)),
         CrossControl: (args) => CrossControl(),
       },
       injector: Injector.of({
