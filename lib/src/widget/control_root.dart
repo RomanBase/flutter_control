@@ -298,8 +298,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   final _setup = ControlRootSetup();
 
   ThemeConfig _theme;
-  Map _states;
-  Map _transitions;
+  Map<dynamic, WidgetBuilder> _states;
+  Map<dynamic, CrossTransition> _transitions;
 
   get appStateKey => _args.get<AppState>()?.key;
 
@@ -316,6 +316,23 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _states = AppStateSetup.fillBuilders(widget.states);
     _transitions = AppStateSetup.fillTransitions(widget.states);
+
+    if (!_states.containsKey(widget.initState.key)) {
+      final state = widget.initState.build(
+        (context) => InitLoader.of(
+          builder: (context) => Container(
+            color: Theme.of(context).canvasColor,
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      _states[state.key] = state.builder;
+    }
 
     _theme = widget.theme ??
         ThemeConfig(
@@ -397,15 +414,8 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
             transitions: _transitions,
             args: _args,
             soft: false,
-            placeholder: (_) => InitLoader.of(
-              builder: (context) => Container(
-                color: Theme.of(context).canvasColor,
-                child: Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                  ),
-                ),
-              ),
+            placeholder: (_) => Container(
+              color: Theme.of(context).canvasColor,
             ),
           );
         }),
