@@ -71,15 +71,17 @@ abstract class ActionControlObservable<T> {
   /// Returns current value - last passed action.
   T get value;
 
-  /// Subscribes event for changes.
-  /// Returns [ActionSubscription] for later cancellation.
+  /// Subscribes callback to action changes.
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
+  /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
+  /// Returns [ActionSubscription] for manual cancellation.
   ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true});
 
-  /// Subscribes event for just one next change.
-  /// Returns [ActionSubscription] for later cancellation.
+  /// Subscribes callback to next action change.
   /// If [until] is 'null' [action] will be called just one time, otherwise until test predicate is hit.
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
+  /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
+  /// Returns [ActionSubscription] for manual cancellation.
   ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true});
 
   /// Checks if given object is same as this one.
