@@ -10,7 +10,7 @@ class FieldSubscription<T> implements StreamSubscription<T>, Disposable {
 
   FieldSubscription(this._control, this._sub);
 
-  bool get isActive => !isPaused && _control.isSubscriptionActive(this);
+  bool get isActive => !isPaused && _control.isSubscriptionValid(this);
 
   @override
   bool get isPaused => _sub.isPaused;
@@ -117,7 +117,6 @@ abstract class FieldControlStream<T> {
 ///
 /// [FieldControl.sub]
 class FieldControlSub<T> implements FieldControlStream<T> {
-
   /// Actual control to subscribe.
   final FieldControl<T> _parent;
 
@@ -374,7 +373,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   }
 
   /// Checks if given [subscription] is subscribed to [Stream] and is active.
-  bool isSubscriptionActive(FieldSubscription subscription) => isActive && subscription.isActive && _subscriptions.contains(subscription);
+  bool isSubscriptionValid(FieldSubscription subscription) => isActive && _subscriptions.contains(subscription);
 
   @override
   String toString() {
