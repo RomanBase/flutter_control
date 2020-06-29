@@ -235,7 +235,7 @@ class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final List<ControlRoute> routes;
 
-  /// [Control.initControl]
+  /// Config of [ControlTheme] and list of available [ThemeData].
   final ThemeConfig theme;
 
   /// [Control.initControl]
@@ -345,7 +345,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
         );
 
     _setup.key = _appKey;
-    _setup.style = widget.theme.initializer(context)..setDefaultTheme();
+    _setup.style = _theme.initializer(context)..setDefaultTheme();
 
     _themeSub = ControlTheme.subscribeChanges((value) {
       setState(() {
@@ -376,10 +376,12 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       debug: widget.debug,
       localization: widget.localization,
       entries: widget.entries,
-      initializers: widget.initializers,
+      initializers: {
+        if (widget.initializers != null) ...widget.initializers,
+        ...{ControlTheme: _theme.initializer},
+      },
       injector: widget.injector,
       routes: widget.routes,
-      theme: _theme.initializer,
       initAsync: () => FutureBlock.wait([
         _loadTheme(),
         widget.initAsync?.call(),

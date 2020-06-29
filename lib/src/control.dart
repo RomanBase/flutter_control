@@ -61,7 +61,6 @@ class Control {
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection.
   /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
-  /// [theme] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
     bool debug,
@@ -70,7 +69,6 @@ class Control {
     Map<Type, Initializer> initializers,
     Injector injector,
     List<ControlRoute> routes,
-    Initializer theme,
     Future Function() initAsync,
   }) {
     if (isInitialized) {
@@ -97,8 +95,6 @@ class Control {
     entries[BasePrefs] = prefs;
     entries[RouteStore] = RouteStore(routes);
     entries[BaseLocalization] = loc;
-
-    initializers[ControlTheme] = theme ?? (context) => ControlTheme(context);
 
     ControlFactory._instance.initialize(
       entries: entries,

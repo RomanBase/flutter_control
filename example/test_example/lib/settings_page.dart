@@ -40,7 +40,9 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
             ),
             RaisedButton(
               onPressed: controller.toggleTheme,
-              child: ThemeText(),
+              child: Text(
+                'toggle Theme',
+              ),
             ),
             RaisedButton(
               onPressed: controller.unloadApp,
@@ -52,22 +54,13 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
                 child: Text(
                   localize('localization_info'),
                   textAlign: TextAlign.center,
-                  style: font.body1.copyWith(color: theme.primaryColor),
+                  style: font.bodyText1.copyWith(color: theme.primaryColor),
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class ThemeText extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'toggle Theme',
     );
   }
 }

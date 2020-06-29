@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
-      theme: ThemeConfig(
+      theme: ThemeConfig<MyTheme>(
         builder: (context) => MyTheme(context),
         initTheme: ThemeData,
         themes: MyTheme.themes,
