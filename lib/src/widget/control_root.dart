@@ -1,29 +1,60 @@
 import 'package:flutter_control/core.dart';
 
 /// Holder of current root context.
+/// Accessed via [ControlScope].
 final _context = ActionControl.broadcast<BuildContext>();
 
+/// Key of [ControlRoot] Widget. Set by framework.
+/// Accessed via [ControlScope].
 const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
+
+/// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
+/// Accessed via [ControlScope].
 const _appKey = GlobalObjectKey(AppWidgetBuilder);
 
+/// Main Widget builder.
+/// [setup] - Active App settings - theme, localization, and mainly [setup.key].
+/// It's expected, that [WidgetsApp] Widget will be returned.
 typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup, Widget home);
 
+/// Setup of [AppState].
+/// Holds case [key], [builder] and [transition]
 class AppStateSetup {
+  /// Case key of [AppState].
   final dynamic key;
+
+  /// Case builder for this state.
   final WidgetBuilder builder;
+
+  /// Case transaction to this state.
   final CrossTransition transition;
 
+  /// Setup of [AppState].
+  /// [key] - Case representing [AppState].
+  /// [builder] - Builder for given case.
+  /// [transition] - Animation from previous Widget to given case.
   const AppStateSetup(this.key, this.builder, this.transition);
 
+  /// Returns case:builder entry.
   MapEntry<dynamic, WidgetBuilder> get builderEntry => MapEntry(key, builder);
 
+  /// Returns case:transition entry.
   MapEntry<dynamic, CrossTransition> get transitionEntry => MapEntry(key, transition);
 
+  /// Builds case:builder map for given states.
   static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) => items.asMap().map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
 
+  /// Builds case:transition map for given states.
   static Map<dynamic, CrossTransition> fillTransitions(List<AppStateSetup> items) => items.where((item) => item.transition != null).toList().asMap().map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
 }
 
+/// Representation of App State handled by [ControlRoot].
+/// [AppState.init] is considered as initial State - used during App loading.
+/// [AppState.main] is considered as default App State.
+/// Other predefined States (as [AppState.onboarding]) can be used to separate main App States and their flow.
+/// It's possible to create custom States by extending [AppState].
+///
+/// Change State via [ControlScope] -> [Control.root].
 class AppState {
   static const init = const AppState();
 
@@ -67,27 +98,43 @@ class _AppStateMain extends AppState {
   const _AppStateMain();
 }
 
+/// Holds [appKey] and [rootKey], this keys are pointing to [WidgetsApp] and [ControlRoot] Widgets.
+/// Also holds current root [context]. This context can be changed within Widget Tree, but it's highly recommended to point this context to any top level Widget.
 class ControlScope {
+  /// Gives access to global variables like [appKey] and [rootKey].
+  /// Also global root [context] is accessible via this object.
   const ControlScope();
 
+  /// Key of [ControlRoot] Widget. Set by framework.
   GlobalKey<ControlRootState> get rootKey => _rootKey;
 
+  /// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
   GlobalKey get appKey => _appKey;
 
+  /// Returns [ControlRoot] Widget if is initialized.
   ControlRoot get rootWidget => _rootKey.currentWidget;
 
+  /// Returns [ControlRootState] of [ControlRoot] Widget if is initialized.
   ControlRootState get rootState => _rootKey.currentState;
 
-  /// Returns current context from [contextHolder]
+  /// Returns current root context.
+  /// Default context set by framework don't have access to [Scaffold].
+  /// This context is also changed when [AppState] is changed.
   BuildContext get context => _context.value;
 
-  bool get isInitialized => rootKey.currentState != null && context != null;
-
-  /// Sets new root context to [contextHolder]
+  /// Sets new root context.
+  /// Typically set [BuildContext] with access to root [Scaffold].
+  /// This context is also changed when [AppState] is changed.
   set context(BuildContext context) => _context.value = context;
 
+  /// Checks if [ControlRoot] is initialized and root [BuildContext] is available.
+  bool get isInitialized => rootKey.currentState != null && context != null;
+
+  /// Subscribe to listen about [BuildContext] changes.
   ActionControlObservable get rootContextSub => _context.sub;
 
+  /// Notifies state of [ControlRoot].
+  /// To change [AppState] use [setAppState].
   bool notifyControlState([ControlArgs args]) {
     if (rootKey.currentState != null && rootKey.currentState.mounted) {
       rootKey.currentState.notifyState(args);
@@ -117,6 +164,10 @@ class ControlScope {
     return false;
   }
 
+  /// Notifies state of [ControlRoot] and sets new [AppState].
+  ///
+  /// [args] - Arguments to child Builders and Widgets.
+  /// [clearNavigator] - Clears root [Navigator].
   bool setAppState(AppState state, {dynamic args, bool clearNavigator: true}) {
     if (clearNavigator) {
       try {
@@ -129,30 +180,45 @@ class ControlScope {
     return notifyControlState(ControlArgs({AppState: state})..set(args));
   }
 
+  /// Changes [AppState] to [AppState.init]
+  ///
+  /// Checks [setAppState] for more info.
   bool setInitState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.init,
         args: args,
         clearNavigator: clearNavigator,
       );
 
+  /// Changes [AppState] to [AppState.auth]
+  ///
+  /// Checks [setAppState] for more info.
   bool setAuthState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.auth,
         args: args,
         clearNavigator: clearNavigator,
       );
 
+  /// Changes [AppState] to [AppState.onboarding]
+  ///
+  /// Checks [setAppState] for more info.
   bool setOnboardingState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.onboarding,
         args: args,
         clearNavigator: clearNavigator,
       );
 
+  /// Changes [AppState] to [AppState.main]
+  ///
+  /// Checks [setAppState] for more info.
   bool setMainState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.main,
         args: args,
         clearNavigator: clearNavigator,
       );
 
+  /// Changes [AppState] to [AppState.background]
+  ///
+  /// Checks [setAppState] for more info.
   bool setBackgroundState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.background,
         args: args,
@@ -160,15 +226,33 @@ class ControlScope {
       );
 }
 
+/// Setup for actual [ControlRoot] and [ControlScope].
+/// Passed to [AppWidgetBuilder].
 class ControlRootSetup {
+  /// App key for [WidgetsApp] Widget. This key is same as [ControlScope.appKey].
   Key key;
+
+  /// Current [AppState].
   AppState state;
+
+  /// Arguments passed to [ControlRootState]. Typically passed when changing state.
   ControlArgs args;
+
+  /// Current [ControlTheme].
   ControlTheme style;
+
+  /// Parent context.
   BuildContext context;
 
+  /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
   ObjectKey get _localKey => ObjectKey(localization.locale.hashCode ^ state.hashCode ^ style.data.hashCode);
 
+  /// Setup for actual [ControlRoot] and [ControlScope].
+  /// [key] - [_appKey] - [ControlScope.appKey].
+  /// [state] - Active app state.
+  /// [args] - Arguments passed with state change.
+  /// [style] - Active theme.
+  /// [context] - Parent context.
   ControlRootSetup({
     this.key,
     this.state,
@@ -177,16 +261,26 @@ class ControlRootSetup {
     this.context,
   });
 
+  /// Returns active [ThemeData] of [ControlTheme].
   ThemeData get theme => style.data;
 
+  /// Reference to [BaseLocalization] to provide actual localization settings.
   BaseLocalization get localization => Control.localization();
 
+  /// Current app locale that can be passed to [WidgetsApp.locale].
   Locale get locale => localization.currentLocale;
 
+  /// Localization delegate for [WidgetsApp.localizationsDelegates].
+  /// Pass this delegate only if using [LocalizationsDelegate] type of localization.
+  /// Also use [GlobalMaterialLocalizations.delegate] and others 'Global' Flutter delegates when setting this delegate.
   BaseLocalizationDelegate get localizationDelegate => localization.delegate;
 
+  /// List of supported locales for [WidgetsApp.supportedLocales].
+  /// Also use [GlobalMaterialLocalizations.delegate] and others 'Global' Flutter delegates when setting supported locales.
   List<Locale> get supportedLocales => localizationDelegate.supportedLocales();
 
+  /// Checks if [BaseLocalization] is ready and tries to localize given [localizationKey].
+  /// [defaultValue] - Fallback if localization isn't ready or [localizationKey] is not found.
   String title(String localizationKey, String defaultValue) {
     if (localization.isActive && localization.contains(localizationKey)) {
       return localization.localize(localizationKey);
@@ -195,6 +289,7 @@ class ControlRootSetup {
     return defaultValue;
   }
 
+  /// Creates copy of current setup.
   ControlRootSetup copyWith({
     Key key,
     AppState state,
@@ -212,10 +307,11 @@ class ControlRootSetup {
   }
 }
 
-/// Root [Widget] of whole app.
-/// Initializes [Control] - [Control.initControl]: localization, entries, initializers, routes and more..
+/// Typically root Widget of whole Application.
+/// Controls current localization, theme and App state.
+/// Can initialize [Control] and pass arguments to [Control.initControl].
 ///
-/// Also handles localization, theme changes and App states.
+/// Only one [ControlRoot] is allowed in Widget Tree !
 class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final bool debug;
@@ -256,6 +352,7 @@ class ControlRoot extends StatefulWidget {
 
   /// Root [Widget] of whole app.
   /// Initializes [Control] and handles localization and theme changes.
+  /// Notifies about [AppState] changes and animates Widget swapping.
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
   /// [localization] - Custom config for [BaseLocalization]. Map of supported locales, default locale and loading rules.
@@ -288,23 +385,28 @@ class ControlRoot extends StatefulWidget {
   State<StatefulWidget> createState() => ControlRootState();
 }
 
-/// Creates State for BaseApp.
-/// AppControl and MaterialApp is build here.
-/// This State is meant to be used as root.
-/// BuildContext from local Builder is used as root context.
+/// [State] of [ControlRoot].
+/// Handles localization, theme and App state changes.
 class ControlRootState extends State<ControlRoot> implements StateNotifier {
+  /// Combination of current State and args passed during State change.
   final _args = ControlArgs();
 
+  /// Active setup, theme, localization and state.
   final _setup = ControlRootSetup();
 
+  /// Default theme config. Used to build [ControlTheme].
   ThemeConfig _theme;
+
+  /// [AppState] - case:builder Map of [ControlRoot.states].
   Map<dynamic, WidgetBuilder> _states;
+
+  /// [AppState] - case:transition Map of [ControlRoot.states].
   Map<dynamic, CrossTransition> _transitions;
 
-  get appStateKey => _args.get<AppState>()?.key;
-
+  /// Subscription to global broadcast of [BaseLocalization] events.
   BroadcastSubscription _localeSub;
 
+  /// Subscription to global broadcast of [ThemeControl] events.
   BroadcastSubscription _themeSub;
 
   @override
