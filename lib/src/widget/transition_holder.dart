@@ -207,9 +207,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
   }
 
   @override
-  bool shouldUpdate(CoreWidget oldWidget) {
-    final update = super.shouldUpdate(oldWidget);
-
+  void onUpdate(CoreWidget oldWidget) {
     final old = oldWidget as TransitionHolder;
 
     if (old.firstWidget != firstWidget || old.secondWidget != secondWidget) {
@@ -220,8 +218,6 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
         control._autoCrossRun();
       }
     }
-
-    return update;
   }
 
   /// Resets keys.

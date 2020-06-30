@@ -73,23 +73,25 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   void onInit(Map args) {}
 
   @protected
+  @mustCallSuper
   bool shouldUpdate(CoreWidget oldWidget) {
     holder.copy(oldWidget.holder);
 
     return !holder.initialized;
   }
 
-  @protected
-  @mustCallSuper
-  void onUpdate(CoreWidget oldWidget, CoreState state) {
-    _notifyHolder(state);
+  bool _updateHolder(CoreWidget oldWidget) {
+    holder.copy(oldWidget.holder);
+
+    return !holder.initialized;
   }
 
+  void onUpdate(CoreWidget oldWidget) {}
+
   @protected
-  void onDependencyChanged() {
-    if (this is ThemeProvider) {
-      (this as ThemeProvider).invalidateTheme(context);
-    }
+  @mustCallSuper
+  void onStateUpdate(CoreWidget oldWidget, CoreState state) {
+    _notifyHolder(state);
   }
 
   @protected
@@ -108,6 +110,13 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
     }
 
     holder.init(state);
+  }
+
+  @protected
+  void onDependencyChanged() {
+    if (this is ThemeProvider) {
+      (this as ThemeProvider).invalidateTheme(context);
+    }
   }
 
   /// Adds [arg] to this widget.
@@ -158,8 +167,12 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   void didUpdateWidget(T oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.shouldUpdate(oldWidget)) {
-      widget.onUpdate(oldWidget, this);
+    final updateState = widget._updateHolder(oldWidget);
+
+    widget.onUpdate(oldWidget);
+
+    if (updateState) {
+      widget.onStateUpdate(oldWidget, this);
     }
   }
 
