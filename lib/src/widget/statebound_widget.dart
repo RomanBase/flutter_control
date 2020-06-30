@@ -1,13 +1,20 @@
 import 'package:flutter_control/core.dart';
 
+/// Extended [CoreWidget] what subscribes to just one [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].
+/// And state of this Widget is controlled from outside by [StateControl.notifyState].
+/// Whenever state of [ControlState] is changed, this Widget is rebuild.
 abstract class StateboundWidget<T extends StateControl> extends CoreWidget with LocalizationProvider {
+  /// Current [StateControl] that notifies Widget about changes.
   @protected
   final T control;
 
-  /// Current State value of Control
+  /// Current state [value] of [StateControl]
   @protected
   dynamic get state => control.state.value;
 
+  /// Widget that is controlled by [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]..
+  /// [control] - State to subscribe. Whenever state is changed, this Widget is rebuild.
+  /// [args] - Initial arguments to store. Can be whatever - [Object], [Iterable], [Map] and also [ControlArgs]. This arguments will be passed to [control] if implements [Initializable].
   StateboundWidget({
     Key key,
     @required this.control,
@@ -33,7 +40,10 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget with 
   }
 }
 
+/// [State] of [StateboundWidget].
+/// Handles [StateControl] and rebuilds Widget whenever state is notified.
 class _WidgetboundState<T extends StateControl> extends CoreState<StateboundWidget<T>> implements StateNotifier {
+  /// Current [ControlState].
   T control;
 
   @override
