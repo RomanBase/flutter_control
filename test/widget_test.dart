@@ -49,7 +49,6 @@ void main() {
       await tester.pumpWidget(widget);
 
       final controller = widget.getControl<TestController>();
-      final stringControl = widget.getControl<String>();
 
       expect(widget.isInitialized, isTrue);
       expect(widget.isValid, isTrue);
@@ -66,8 +65,6 @@ void main() {
       expect(widget.controls.length, 1);
       expect(controller.isInitialized, isTrue);
       expect(controller.value, isTrue);
-
-      expect(stringControl, isNull);
     });
 
     testWidgets('single init', (tester) async {

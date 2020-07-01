@@ -147,7 +147,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
   /// [args] - Arguments to pass to [ControlModel].
-  T getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(ControlArgs(controls).combineWith(holder.argStore).data, key: key, args: args ?? holder.args);
+  T getControl<T extends ControlModel>({dynamic key, dynamic args}) => Control.resolve<T>(ControlArgs(controls).combineWith(holder.argStore).data, key: key, args: args ?? holder.args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
