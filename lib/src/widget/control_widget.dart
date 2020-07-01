@@ -66,7 +66,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   /// Checks if [controls] is not empty.
   bool get hasControl => controls != null && controls.isNotEmpty;
 
-  ///
+  /// Focused to handle Pages or complex Widgets.
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
   ControlWidget({

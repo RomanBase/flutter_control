@@ -2,23 +2,38 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/core.dart';
 
+/// Holds arguments from Widget and State.
+/// Helps to transfer arguments between Widget Tree rebuilds and resurrection of State.
 class ControlArgHolder implements Disposable {
+  /// Manually updated validity. Mostly corresponds to [State] availability.
   bool _valid = true;
+
+  /// Holds args when [State] disposes and [Widget] goes off screen.
   ControlArgs _cache;
+
+  /// Current [State] of [Widget].
   CoreState _state;
 
+  /// Returns current [State] of [Widget].
   CoreState get state => _state;
 
+  /// Checks if [Widget] with current [State] is valid.
   bool get isValid => _valid;
 
+  /// Checks if arguments cache is used and [State] is not currently available.
   bool get isCacheActive => _cache != null;
 
+  /// Checks if [State] is available.
   bool get initialized => _state != null;
 
-  Map get args => argStore?.data;
+  /// Current args of [Widget] and [State].
+  Map get args => argStore.data;
 
+  /// [ControlArgs] that holds current args of [Widget] and [State].
   ControlArgs get argStore => _state?.args ?? _cache ?? (_cache = ControlArgs());
 
+  /// Initializes holder with given [state].
+  /// [args] are smoothly transferred between State and Cache based on current Widget lifecycle.
   void init(CoreState state) {
     _state = state;
     _valid = true;
@@ -29,12 +44,17 @@ class ControlArgHolder implements Disposable {
     }
   }
 
+  /// Adds [args] to internal args - [ControlArgs].
   void set(dynamic args) => argStore.set(args);
 
+  /// Returns object based on given [Type] and [key] from internal args - [ControlArgs].
   T get<T>({dynamic key, T defaultValue}) => Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
 
+  /// Returns all [ControlModel]s from internal args - [ControlArgs].
+  /// If none found, empty List is returned.
   List<ControlModel> findControls() => argStore.getAll<ControlModel>() ?? [];
 
+  /// Copy corresponding State and args from [oldHolder].
   void copy(ControlArgHolder oldHolder) {
     if (oldHolder.initialized) {
       init(oldHolder.state);
@@ -51,26 +71,34 @@ class ControlArgHolder implements Disposable {
   }
 }
 
+/// Base abstract Widget that controls [State], stores [args] and keeps Widget/State in harmony though lifecycle of Widget.
+/// [CoreWidget] extends [StatefulWidget] and completely solves [State] specific flow. This solution helps to use it like [StatelessWidget], but with benefits of [StatefulWidget].
+///
+/// This Widget comes with [TickerControl] and [SingleTickerControl] mixin to create [Ticker] and provide access to [vsync]. Then use [ControlModel] with [TickerComponent] to get access to [TickerProvider].
+///
+/// [ControlWidget] - Can subscribe to multiple [ControlModel]s and is typically used for Pages and complex Widgets.
+/// [StateboundWidget] - Subscribes to just one [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]. Typically used for small Widgets.
 abstract class CoreWidget extends StatefulWidget implements Initializable, Disposable {
   final holder = ControlArgHolder();
 
   /// Returns 'true' if [State] is hooked and [WidgetControlHolder] is initialized.
   bool get isInitialized => holder.initialized;
 
-  /// Returns [true] if Widget is active and [WidgetControlHolder] is not disposed.
+  /// Returns 'true' if [Widget] is active and [WidgetControlHolder] is not disposed.
   /// Widget is valid even when is not initialized yet.
   bool get isValid => holder.isValid;
 
-  ControlArgs get store => holder.argStore; //TODO
-
+  /// Returns [BuildContext] of current [State] if is available.
   BuildContext get context => holder?.state?.context;
 
+  /// Base Control Widget that handles [State] flow.
+  /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
+  ///
+  /// Check [ControlWidget] and [StateboundWidget].
   CoreWidget({Key key, dynamic args}) : super(key: key) {
     holder.set(args);
   }
 
-  /// When [RouteHandler] is used, then this function is called right after Widget construction. +
-  /// All controllers (from [initControls]) are initialized too.
   @override
   @protected
   @mustCallSuper
@@ -79,28 +107,27 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   @protected
   void onInit(Map args) {}
 
-  @protected
-  @mustCallSuper
-  bool shouldUpdate(CoreWidget oldWidget) {
-    holder.copy(oldWidget.holder);
-
-    return !holder.initialized;
-  }
-
+  /// Updates holder with arguments and checks if is [State] valid.
+  /// Returns 'true' if [State] of this Widget is OK.
   bool _updateHolder(CoreWidget oldWidget) {
     holder.copy(oldWidget.holder);
 
     return !holder.initialized;
   }
 
+  /// Called whenever Widget needs update.
+  /// Check [State.didUpdateWidget] for more info.
   void onUpdate(CoreWidget oldWidget) {}
 
+  /// Executed when [State] is changed and new [state] is available.
+  /// Widget will try to resurrect State and injects args from 'cache' in [holder].
   @protected
   @mustCallSuper
   void onStateUpdate(CoreWidget oldWidget, CoreState state) {
     _notifyHolder(state);
   }
 
+  /// Initializes and sets given [state].
   @protected
   void _notifyHolder(CoreState state) {
     assert(() {
@@ -119,6 +146,8 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
     holder.init(state);
   }
 
+  /// Called whenever dependency of Widget is changed.
+  /// Check [State.didChangeDependencies] for more info.
   @protected
   void onDependencyChanged() {
     if (this is ThemeProvider) {
@@ -126,29 +155,60 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
     }
   }
 
-  /// Adds [arg] to this widget.
+  /// Returns raw internal arg store.
+  /// Typically not used directly.
+  /// Check:
+  ///  - [addArg]
+  ///  - [setArg]
+  ///  - [getArg]
+  ///  - [removeArg]
+  ///  to modify arguments..
+  ControlArgs getArgStore() => holder.argStore;
+
+  /// Adds given [args] to this Widget's internal arg store.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
-  /// [args] are then parsed into [Map].
+  ///
+  /// Check [setArg] for more 'set' options.
+  /// Internally uses [ControlArgs]. Check [ControlArgs.set].
+  /// Use [getArgStore] to get raw access to [ControlArgs].
   void addArg(dynamic args) => holder.set(args);
 
-  void setArg({dynamic key, @required dynamic value}) => holder.argStore.add(key: key, value: value);
+  /// Adds given [args] to this Widget's internal arg store.
+  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
+  ///
+  /// Internally uses [ControlArgs]. Check [ControlArgs.set].
+  /// Use [getArgStore] to get raw access to [ControlArgs].
+  void setArg<T>({dynamic key, @required dynamic value}) => holder.argStore.add<T>(key: key, value: value);
 
-  /// Returns value by given key or type.
-  /// Args are passed to Widget in constructor and during [init] phase or can be added via [ControlWidget.addArg].
+  /// Returns value by given [key] and [Type] from this Widget's internal arg store.
+  ///
+  /// Internally uses [ControlArgs]. Check [ControlArgs.get].
+  /// Use [getArgStore] to get raw access to [ControlArgs].
   T getArg<T>({dynamic key, T defaultValue}) => holder.get<T>(key: key, defaultValue: defaultValue);
 
+  /// Removes given [arg] from this Widget's internal arg store.
+  ///
+  /// Internally uses [ControlArgs]. Check [ControlArgs.remove].
+  /// Use [getArgStore] to get raw access to [ControlArgs].
   void removeArg<T>({dynamic key}) => holder.argStore.remove<T>(key: key);
 
   @override
   void dispose() {}
 }
 
+/// [State] of [CoreWidget].
 abstract class CoreState<T extends CoreWidget> extends State<T> {
+  /// Args used via [ControlArgHolder].
   ControlArgs _args;
 
+  /// Args used via [ControlArgHolder].
   ControlArgs get args => _args ?? (_args = ControlArgs());
 
+  /// Checks is State is initialized and [CoreWidget.onInit] is called just once.
   bool _stateInitialized = false;
+
+  /// Checks if State is initialized and dependencies are set.
+  bool get isInitialized => _stateInitialized;
 
   @override
   @mustCallSuper
@@ -187,10 +247,12 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   void dispose() {
     super.dispose();
 
+    _stateInitialized = false;
     widget.holder.dispose();
   }
 }
 
+/// Mostly copy of [SingleTickerProviderStateMixin].
 class _SingleTickerProvider implements Disposable, TickerProvider {
   Ticker _ticker;
 
@@ -237,7 +299,7 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
   }
 }
 
-///Check [SingleTickerProviderStateMixin]
+/// Check [SingleTickerProviderStateMixin]
 mixin SingleTickerControl on CoreWidget implements TickerProvider {
   final _ticker = _SingleTickerProvider();
 
@@ -260,6 +322,7 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
   }
 }
 
+/// Mostly copy of [TickerProviderStateMixin].
 class _TickerProvider implements Disposable, TickerProvider {
   Set<Ticker> _tickers;
 
@@ -310,7 +373,7 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 }
 
-///Check [TickerProviderStateMixin]
+/// Check [TickerProviderStateMixin]
 mixin TickerControl on CoreWidget implements TickerProvider {
   final _ticker = _TickerProvider();
 
