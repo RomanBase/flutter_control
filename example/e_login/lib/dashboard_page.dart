@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 import 'firebase_control.dart';
 import 'login_page.dart';
 
-class DashboardPage extends BaseControlWidget with RouteControl, ThemeProvider {
+class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
   FirebaseControl get firebase => Control.get<FirebaseControl>();
 
   @override

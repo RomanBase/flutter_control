@@ -44,7 +44,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
    - **[TickerControl]** and **[SingleTickerControl]** to create [State] with **[Ticker]** and provide access to **[vsync]**.
    
   **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].\
-  **[BaseControlWidget]** is used when there is no need to construct Controllers. Controllers still can be passed through constructor or init **[args]**.
+  **[MountedControlWidget]** ---
 
 - **[StateboundWidget]** under construction.
 

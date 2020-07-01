@@ -67,6 +67,17 @@ class ControlArgs implements Disposable {
     _args.addAll(args._args);
   }
 
+  /// Combines this store with given [args].
+  /// Returns new [ControlArgs] that contains both [args].
+  ControlArgs combineWith(ControlArgs args) {
+    assert(args != null);
+
+    final store = ControlArgs(this);
+    store._args.addAll(args._args);
+
+    return store;
+  }
+
   //TODO: purpose ?
   /// Ensures that data store contains given [key]. Otherwise [value] is stored under given [key].
   bool ensureArg(dynamic key, dynamic value) {

@@ -3,89 +3,96 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-/// [ControlWidget] with just one init Controller.
+/// [ControlWidget] with just one [ControlModel].
+///
+/// {@macro control-widget}
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
+  /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
   T get control => hasControl ? controls[0] : null;
 
+  /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
   List<ControlModel> initControls() => [initControl()];
 
+  /// Tries to find or construct instance of requested [Type].
+  /// If init [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
+  /// Check [initControls] for more dependency possibilities.
+  /// Returns [ControlModel] of given [Type].
   @protected
-  T initControl() {
-    T item = holder.get<T>();
-
-    if (item == null) {
-      item = Control.get<T>(args: holder.args);
-    }
-
-    return item;
-  }
+  T initControl() => getControl<T>();
 }
 
-/// [ControlWidget] with no init Controllers.
-abstract class BaseControlWidget extends ControlWidget {
-  BaseControlWidget({Key key, dynamic args}) : super(key: key, args: args);
+/// [ControlWidget] initialized with all [ControlModel]s passed to 'constructor' and 'init' [args].
+///
+/// {@macro control-widget}
+abstract class MountedControlWidget<T extends ControlModel> extends ControlWidget {
+  /// All [ControlModel]s from [args] will be initialized with this Widget.
+  MountedControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControls() => [];
+  List<ControlModel> initControls() => holder.findControls();
 }
 
-/// Base [StatefulWidget] to cooperate with [BaseControl].
-/// [BaseControl]
-/// [StateControl]
+/// {@template control-widget}
+/// [ControlWidget] maintains larger UI parts of App (Pages or complex Widgets). Widget is created with default [ControlState] to correctly reflect lifecycle of [Widget] to Models and Controls. So there is no need to create custom [State].
+/// Widget will [init] all containing Models and pass arguments to them.
+/// [ControlWidget] is 'immutable' so all logic parts (even UI logic and animations) must be handled outside. This helps truly separate all 'code' from pure UI (also helps to reuse this code).
 ///
-/// [RouteControl] & [RouteControlProvider]
-/// [RouteHandler] & [PageRouteProvider]
+/// This Widget comes with few [mixin] classes:
+///   - [RouteControl] to abstract navigation and easily pass arguments and init other Pages.
+///   - [TickerControl] and [SingleTickerControl] to create [Ticker] and provide access to [vsync]. Then use [ControlModel] with [TickerComponent] to get access to [TickerProvider].
 ///
-/// [ControlFactory]
-/// [AppControl]
-/// [BaseLocalization]
+/// Typically one or more [ControlModel] objects handles all logic for [ControlWidget]. This solution helps to separate even [Animation] from Business Logic and UI Widgets part.
+/// And comes with [LocalizationProvider] to use [BaseLocalization] without standard delegate solution.
 ///
-/// [ControlState]
-/// [_ControlTickerState]
-/// [_ControlSingleTickerState]
-abstract class ControlWidget extends CoreWidget with LocalizationProvider implements Initializable, Disposable {
-  /// Returns [true] if [State] is hooked and [WidgetControlHolder] is initialized.
-  bool get isInitialized => holder.initialized;
-
-  /// Returns [true] if Widget is active and [WidgetControlHolder] is not disposed.
-  /// Widget is valid even when is not initialized yet.
-  bool get isValid => holder.isValid;
-
+/// [ControlWidget] - Basic Widget with manual [ControlModel] initialization.
+/// [SingleControlWidget] - Focused to single [ControlModel]. But still can handle multiple Controls.
+/// [MountedControlWidget] - Automatically uses all [ControlModel]s passed to Widget.
+///
+/// Also check [StateboundWidget] an abstract Widget focused to build smaller Widgets controlled by [StateControl] and [BaseModel].
+/// {@endtemplate}
+abstract class ControlWidget extends CoreWidget with LocalizationProvider implements Initializable, Disposable, StateNotifier {
   /// Widget's [State]
-  /// [holder] - [onInitState]
   @protected
   ControlState get state => holder.state;
 
-  /// List of Controllers passed during construction phase.
-  /// [holder] - [initControls]
+  /// List of [ControlModel]s passed during construction phase.
+  /// Objects are initialized with [initControls] - override this method to init custom/additional [ControlModel]s.
   @protected
   List<ControlModel> get controls => state?.controls;
 
-  /// Instance of [ControlFactory].
-  @protected
-  ControlFactory get factory => Control.factory();
+  /// Checks if [controls] is not empty.
+  bool get hasControl => controls != null && controls.isNotEmpty;
 
-  bool get hasControl => controls != null && controls.length > 0;
-
-  /// Default constructor
+  ///
+  /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
+  /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
   ControlWidget({
     Key key,
     dynamic args,
   }) : super(key: key, args: args);
 
-  /// Called during construction phase.
-  /// Returned controllers will be notified during Widget/State initialization.
+  /// This is a place where to fill all required [ControlModel]s for this Widget.
+  /// Called during Widget/State initialization phase.
+  ///
+  /// Dependency Injection possibilities:
+  /// [holder.findControls] - Returns [ControlModel]s from 'constructor' and 'init' [args].
+  /// [getControl] - Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
+  /// [Control.get] - Returns object from [ControlFactory].
+  /// [Control.init] - Initializes object via [ControlFactory].
+  ///
+  /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls() => holder.findControls();
+  List<ControlModel> initControls() => [];
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
 
-  /// Called during State initialization.
-  /// All controllers (from [initControls]) are subscribed to this Widget and given State.
+  /// Called during [State] initialization.
+  /// Widget will subscribe to all [controls].
+  /// Typically now need to override - check [onInit] and [onUpdate] functions.
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
@@ -127,20 +134,20 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
     });
   }
 
-  /// Notifies [State] of this [Widget].
+  @override
   void notifyState([dynamic state]) => this.state?.notifyState(state);
 
   /// Callback from [State] when state is notified.
   @protected
   void onStateChanged(dynamic state) {}
 
-  /// Returns context of this widget or [root] context that is stored in [AppControl]
+  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
   BuildContext getContext({bool root: false}) => root ? Control.root()?.context ?? context : context;
 
-  /// Returns value by given key or type.
-  /// Look up in [controls] and [factory].
-  /// Use [getArg] to look up in Widget's arguments.
-  T getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(controls, key: key, args: args);
+  /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
+  /// Specific control is determined by [Type] and [key].
+  /// [args] - Arguments to pass to [ControlModel].
+  T getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(ControlArgs(controls).combineWith(holder.argStore).data, key: key, args: args ?? holder.args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
@@ -148,7 +155,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   Widget build(BuildContext context);
 
   /// Disposes and removes all [controls].
-  /// Controller can prevent disposing [BaseControl.preventDispose].
+  /// Check [DisposeHandler] for different dispose strategies.
   @override
   @mustCallSuper
   void dispose() {
@@ -156,8 +163,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   }
 }
 
-/// Base State for ControlWidget and StateController
-/// State is subscribed to Controller which notifies back about state changes.
+/// [State] of [ControlWidget]
 class ControlState<U extends ControlWidget> extends CoreState<U> implements StateNotifier {
   List<ControlModel> controls;
 

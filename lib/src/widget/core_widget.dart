@@ -54,6 +54,13 @@ class ControlArgHolder implements Disposable {
 abstract class CoreWidget extends StatefulWidget implements Initializable, Disposable {
   final holder = ControlArgHolder();
 
+  /// Returns 'true' if [State] is hooked and [WidgetControlHolder] is initialized.
+  bool get isInitialized => holder.initialized;
+
+  /// Returns [true] if Widget is active and [WidgetControlHolder] is not disposed.
+  /// Widget is valid even when is not initialized yet.
+  bool get isValid => holder.isValid;
+
   ControlArgs get store => holder.argStore; //TODO
 
   BuildContext get context => holder?.state?.context;

@@ -1,9 +1,7 @@
 import 'package:flutter_control/core.dart';
 
 import 'dashboard_page.dart';
-import 'dashboard_page.dart';
 import 'firebase_control.dart';
-import 'login_page.dart';
 import 'login_page.dart';
 
 enum UserStatus {
@@ -52,7 +50,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MainPage extends BaseControlWidget {
+class MainPage extends ControlWidget {
   UserStatus get status => getArg<UserStatus>();
 
   @override

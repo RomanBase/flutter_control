@@ -52,7 +52,7 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl, 
   }
 }
 
-class CardWidget extends BaseControlWidget with ThemeProvider {
+class CardWidget extends ControlWidget with ThemeProvider {
   final CardModel item;
 
   CardWidget(this.item) : super(key: ObjectKey(item));

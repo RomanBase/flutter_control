@@ -139,7 +139,7 @@ class TestWidget extends ControlWidget {
   }
 }
 
-class TestBaseWidget extends BaseControlWidget {
+class TestBaseWidget extends ControlWidget {
   TestBaseWidget(dynamic args) : super(args: args);
 
   @override
