@@ -457,8 +457,10 @@ class InputField extends StateboundWidget<InputControl> with ThemeProvider {
   }
 
   @override
-  void onStateUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
-    super.onStateUpdate(oldWidget, state);
+  void onUpdate(CoreWidget oldWidget) {
+    super.onUpdate(oldWidget);
+
+    control._initControllers();
 
     control._obscure = obscureText;
     control._focusController.setContext(context);

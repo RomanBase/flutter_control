@@ -243,7 +243,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       return Navigator.of(context, rootNavigator: true);
     }
 
-    return Navigator.of(getContext(root: root));
+    return Navigator.of(getContext(root: root)) ?? Navigator.of(context, rootNavigator: root);
   }
 
   @override

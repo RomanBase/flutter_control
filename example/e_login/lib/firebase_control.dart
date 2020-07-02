@@ -5,6 +5,8 @@ class FirebaseControl {
 
   FirebaseUser get user => _user;
 
+  String get username => user?.displayName ?? '';
+
   Future<FirebaseUser> restoreUser() async => _user = await FirebaseAuth.instance.currentUser();
 
   Future<FirebaseUser> login(String username, String password) async {

@@ -11,7 +11,7 @@ class ItemModel extends BaseModel {
 }
 
 class ItemsControl extends BaseControl {
-  final loading = LoadingControl();
+  final loading = LoadingControl(LoadingStatus.done);
   final list = ListControl<BaseModel>();
 
   @override

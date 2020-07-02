@@ -114,7 +114,7 @@ class TemperatureModel extends ControlModel with StateControl {
 enum TemperatureUnit { C, F }
 
 class DashboardControl extends BaseControl with WeatherProvider {
-  final loading = LoadingControl();
+  final loading = LoadingControl(LoadingStatus.done);
 
   final location = LocationModel();
   final temperature = TemperatureModel();

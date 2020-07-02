@@ -95,7 +95,7 @@ class RowItem extends StatelessWidget with LocalizationProvider {
     return Column(
       children: <Widget>[
         Text(index.toString()),
-        Text(localizePlural('index', index, {'{n}': index.toString()})),
+        Text(localizePlural('index', index, {'n': index.toString()})),
       ],
     );
   }

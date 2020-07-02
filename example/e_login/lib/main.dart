@@ -32,14 +32,15 @@ class MyApp extends StatelessWidget {
             builder: (context) => LoadingPage(),
             load: (_) async {
               if (await Control.get<FirebaseControl>().restoreUser() != null) {
-                return UserStatus.authorized;
+                return AppState.main;
               }
 
-              return UserStatus.none;
+              return AppState.auth;
             },
           ),
         ),
-        AppState.main.build((context) => MainPage()),
+        AppState.auth.build((context) => LoginPage()),
+        AppState.main.build((context) => DashboardPage()),
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,

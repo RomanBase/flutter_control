@@ -1118,7 +1118,7 @@ class IntegerControl extends FieldControl<int> {
   int max = 0;
 
   /// Checks if clamping is required
-  bool get clamp => min != 0 || max != null;
+  bool get clamp => min != 0 || max != 0;
 
   /// Checks if clamping is required and [value] is equal to [min].
   bool get atMin => clamp && value == min;

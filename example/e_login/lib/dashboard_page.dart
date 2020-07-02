@@ -1,7 +1,6 @@
 import 'package:flutter_control/core.dart';
 
 import 'firebase_control.dart';
-import 'login_page.dart';
 
 class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
   FirebaseControl get firebase => Control.get<FirebaseControl>();
@@ -21,7 +20,7 @@ class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 64.0),
               child: Text(
-                'Hello ${firebase.user.displayName}',
+                'Hello ${firebase.username}',
                 style: font.display4,
                 textAlign: TextAlign.center,
               ),
@@ -29,7 +28,7 @@ class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
             RaisedButton(
               onPressed: () {
                 firebase.logout();
-                routeOf<LoginPage>().openRoot();
+                Control.root().setAuthState();
               },
               child: Text('logout'),
             ),

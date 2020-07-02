@@ -1,6 +1,5 @@
 import 'package:flutter_control/core.dart';
 
-import 'dashboard_page.dart';
 import 'firebase_control.dart';
 import 'registration_page.dart';
 
@@ -38,7 +37,7 @@ class LoginControl extends BaseControl with RouteControlProvider {
     loading.progress();
 
     firebase.login(username.value, password.value).then((value) {
-      routeOf<DashboardPage>().openRoot(args: value);
+      Control.root().setMainState(args: value);
     }).catchError((err) {
       message.setValue(err.message);
       loading.done();
