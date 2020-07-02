@@ -5,11 +5,12 @@
 Flutter Control is complex library to maintain App and State management.\
 Library merges multiple functionality under one hood. This approach helps to tidily bound separated logic into complex solution.
 
- - **State Management** - UI / Logic separation (inspired by BLoC).
+ - **App State Management** - Managing application state, localization and theme changes.
+ - **Widget State Management** - UI / Logic separation. Controlling State and UI updates.
  - **Dependency Injection** - Factory, Singleton and Lazy initialization.
- - **Navigation and Routing** - Routes, transitions and passing arguments to other pages and controls.
+ - **Navigation and Routing** - Routes, transitions and passing arguments to other pages and Models.
  - **Localization** - Json based localization with basic formatting.
- - **App Broadcast** - Global event/data stream to easily notify app events. 
+ - **Event System** - Global event/data stream to easily notify app events.
 
 ---
 
@@ -23,34 +24,81 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 **Flutter Control Core**
 - **[Control]** Main static class. Initializes **[ControlFactory]** and provides easy access to most of core [Control] objects like **[BaseLocalization]**, **[RouteStore]**, **[ControlBroadcast]**, etc..
 - **[ControlFactory]** Initializes and can store Controls, Models and other objects. Dependency Injection is provided during object initialization and also on demand.\
-  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use type as a key..\
-  Comes with **[Control]** a class to easily provide core functions from any part of App. Via static functionality is possible to 'get', 'set', 'init' and 'inject' objects.\
+  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
   Factory is one and only singleton in this library.\
-  Core objects of Flutter Control are stored in Factory's Storage by default (when factory is initialized via [Control]) and are accessible by their **[Type]** or via Providers.
- - **[ControlRoot]** Wraps App and initializes [Control]. It's just shortcut to start with Flutter Control. Via **[ControlScope]** is possible to maintain **[State]** of this root widget and control whole app state (localization, theme, etc.).
+  Core objects of Flutter Control are stored in Factory's Storage by default ([Control.initControl]) and are accessible by their **[Type]** or via Providers.
+- **[ControlRoot]** Wraps App and initializes [Control]. It's just shortcut to start with Flutter Control. Via **[ControlScope]** is possible to maintain **[State]** of this root widget and control whole app state (localization, theme, etc.).
   
 ```dart
-    //TODO: sample
+    Control.initControl(
+      localization: LocalizationConfig(
+        defaultLocale: 'en',
+        locales: LocalizationAsset.build(locales: ['en_US', 'es_ES']),
+      ),
+      entries: {
+        CounterListControl: CounterListControl(),
+      },
+      initializers: {
+        CounterModel: (_) => CounterModel(),
+        CounterDetailControl: (args) => CounterDetailControl(model: Parse.getArg<CounterModel>(args)),
+      },
+      routes: [
+        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+      ],
+      initAsync: () async {
+        loadPreAppConfig();
+      },
+    );
 ```
   
----  
+**ControlRoot** additionally offers App State management - home scree, localization and theme changes.
 
-- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain UI parts of App. Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models and Controls. So there is no need to create custom [State].\
+```dart
+    ControlRoot(
+      localization: LocalizationConfig(locales: [...]),
+      entries: {...},
+      initializers: {...},
+      routes: [...],
+      states: [
+        AppState.init.build(builder: (_) => LoadingPage()),
+        AppState.main.build(
+          builder: (_) => DashboardPage(),
+          transition: TransitionToDashboard(),
+        ),
+      ],
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
+        title: setup.title('app_name', 'Example App'),
+        theme: setup.theme,
+        home: home,
+        locale: setup.locale,
+        supportedLocales: setup.supportedLocales,
+        localizationsDelegates: [
+          ...
+        ],        
+      ),
+    );
+```
+
+---
+
+- **[ControlWidget]** is base abstract class (**StatefulWidget**) to maintain larger UI parts of App (Pages or complex Widgets). Widget is created with default **[ControlState]** to correctly reflect lifecycle of Widget to Models. So there is no need to create custom [State].\
   Widget will **init** all containing Models and pass arguments to them.\
-  [ControlWidget] is **immutable** so all logic parts (even UI logic and animations) must be controlled outside. This helps truly separate all **code** from pure UI (also helps to reuse this code).
+  [ControlWidget] is **immutable** so all logic parts (even UI logic and animations) must be controlled from outside. This helps truly separate all **code** from pure UI (also helps to reuse this code).
   Also **[LocalizationProvider]** is part of this Widget and it's possible to fully use library's localization without delegate.
   This Widget comes with few **[mixin]** classes:
    - **[RouteControl]** to abstract navigation and easily pass arguments and init other Pages.
    - **[TickerControl]** and **[SingleTickerControl]** to create [State] with **[Ticker]** and provide access to **[vsync]**.
    
-  **[SingleControlWidget]** is used to work with one Controller. This controller can be passed through constructor/init **[args]** or grabbed from [ControlFactory].\
-  **[MountedControlWidget]** ---
+  **[SingleControlWidget]** - Focused to single **ControlModel**. But still can handle multiple Controls.
+  **[MountedControlWidget]** - Automatically uses all **ControlModels** passed to Widget.
 
-- **[StateboundWidget]** under construction.
+- **[StateboundWidget]** - Subscribes to just one **[StateControl]** - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].\
+  Whenever state of [ControlState] is changed, this Widget is rebuild.
 
 - **[ControlModel]** is base class to maintain Business Logic parts of App.\
-  **[BaseControl]** is extended version of [ControlModel] with more functionality. Mainly used for pages or complex Widgets and also to separate robust Logic parts.\
-  **[BaseModel]** is extended but lightweight version of [ControlModel]. Mainly used for Items in dynamic List or to separate/reuse Logic parts.\
+  **[BaseControl]** is extended version of [ControlModel] with more functionality. Mainly used for Pages or complex Widgets and also to separate robust Logic parts.\
+  **[BaseModel]** is extended but lightweight version of [ControlModel]. Mainly used to control smaller Widgets like Items in dynamic List or to separate/reuse Logic parts.\
   This Controls comes with few **[mixin]** classes to extend base functionality:
    - **[RouteControlProvider]** to provide navigation outside of Widget.
    - **[StateControl]** to control state of whole Widget.
@@ -60,21 +108,33 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 
 - **[ActionControl]** is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
   Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\
-  On the Widget side is **[ActionBuilder]** to dynamically build Widgets. It's also possible to use **[ActionBuilderGroup]** for multiple Observables.\
-  Value is set directly, but property can be used privately and with **[ActionControlSub]** interface to provide subscription to public.\
-  Upon dismiss every **[ControlSubscription]** is closed.
+  On the Widget side is **[ActionBuilder]** to dynamically build Widgets. It's also possible to use **[ActionBuilderGroup]** to group values of multiple Observables.\
+  **[ActionControlSub]** provides read-only version of ActionControl.\
+  Upon dismiss of ActionControl, every **[ControlSubscription]** is closed.
 
 - **[FieldControl]** is more robust Observable solution around **[Stream]** and **[StreamController]**. Primarily is used to notify Widgets and to provide events about value changes.\
   Can listen **[Stream]**, **[Future]** or subscribe to another [FieldControl] with possibility to filter and convert values.\
   [FieldControl] comes with pre-build primitive variants as **[StringControl]**, **[DoubleControl]**, etc., where is possible to use validation, regex or value clamping. And also **[ListControl]** to work with Iterables.\
   On the Widget side is **[FieldBuilder]** and **[FieldStreamBuilder]** to dynamically build Widgets. Also **[FieldBuilderGroup]** for use with multiple Observables. It's also possible to use standard **[StreamBuilder]**.\
   Value is set directly, but property can bu used privately and to public provide just sink - **[FieldSink]** or **[FieldSinkConverter]** and stream - **[FieldControlSub]** interface to provide subscription to public.\
-  Upon dismiss every **[FieldSubscription]** is closed.
-
----
+  Upon dismiss of FieldControl, every **[FieldSubscription]** is closed.
 
 ```dart
-    //TODO: sample
+    final counter = ActionControl.broadcast<int>(0);
+
+    ActionBuilder<int>(
+      control: counter,
+      builder: (context, value) => Text(value.toString()),
+    );
+```
+
+```dart
+    final counter = FieldControl<int>(0);
+
+    FieldBuilder<int>(
+      control: counter,
+      builder: (context, value) => Text(value.toString()),
+    );
 ```
   Check [Counter Example](https://github.com/RomanBase/flutter_control/tree/master/examples/a_counter) and [TODO List Example](https://github.com/RomanBase/flutter_control/tree/master/examples/b_todo_list) at Git repository.
 
@@ -87,12 +147,28 @@ With this approach is really easy to reuse UI/animation logic on multiple widget
 **Other Important classes**
   
 - **[BaseLocalization]** Json based localization, that supports simple strings, plurals and dynamic structures.\
-  Easy access via **[LocalizationProvider]** mixin. Localization object is stored in Factory, so is accessible without context and can be used even in Models, Entities, etc.\
+  Easy access via **[LocalizationProvider]** mixin. Localization object is stored in Factory, so is accessible without context and can be used even in Models, Entities, etc. via **[Control.localization()]**\
   Localization is initialized and loaded in **[Control]** by default.\
-  And by default **[ControlWidget]** uses this localization.
+  And by default **[ControlWidget]** uses this localization with mixin.
   
 ```dart
-  //TODO: sample
+    Control.initControl(
+      localization: LocalizationConfig(
+        defaultLocale: 'en',
+        locales: LocalizationAsset.build(locales: ['en_US', 'es_ES']),
+      ),
+    );
+```
+
+```dart
+    ControlRoot(
+      localization: LocalizationConfig(
+        locales: {
+          'en': 'assets/localization/en.json',
+          'es': 'assets/localization/es.json',
+        },
+      ),
+    );
 ```
   Check [Localization Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization) and [Localization Delegate Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization_delegate) at Git repository.
   
@@ -102,23 +178,31 @@ With this approach is really easy to reuse UI/animation logic on multiple widget
   Also custom broadcaster can be created to separate events from global/default stream.
 
 ```dart
-  //TODO: sample
+  BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
+  BraodcastProvider.broadcast('on_count_changed', 10);
 ```
-
-- **[ControlTheme]** wraps **[ThemeData]**, **[MediaQuery]** into **[Device]** class and **[AssetPath]**.\
-  **Theme** is cached on their first use, so **'Theme.of'** is called just once per Widget.\
-  Control Theme adds some parameters and getters on top of standard Theme.\
-  Easy access via **[ThemeProvider]** a mixin class that initializes **[ControlTheme]**.\
-  Custom **[ControlTheme]** class builder can be used in [ControlRoot] constructor to modify default params and provide more of them.\
-  **!!! [ControlTheme]** is not **const** so it can have impact to performance, but no issues has been reported yet.. 
 
 ---
 
 - **[ControlRoute]** Specifies **[Route]** with **[Transition]** and [WidgetBuilder] settings for **[RouteHandler]**. With **[WidgetInitializer]** passing **[args]** to Widgets and Models during navigation.\
   Use **[RouteControl]** mixin to enable this navigation with Widget and **[RouteControlProvider]** mixin with [ControlModel].
+  Routes can be stored in **[RouteStore]** and initialized via [Control.initControl].
 
 ```dart
-  //TODO: sample
+    Control.initControl(
+      routes: [
+        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+        ControlRoute.build(key: 'detail_super', builder: (_) => DetailPage()).path('super').viaTransition(_transitionBuilder),
+      ],
+    );
+
+    class ListPage extends ControlWidget with RouteControl {
+      Widget build(BuildContext context){
+        ...
+        routeOf<DetailPage>().openRoute();
+        routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
+      };
+    }
 ```
   Check [Navigation Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation) and [Navigation Stack Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation_stack) at Git repository.
 
@@ -126,6 +210,7 @@ With this approach is really easy to reuse UI/animation logic on multiple widget
 
 **Other util classes**
 
+- **[ControlTheme]** and **[ThemeProvider]** Wraps **ThemeData**, **MediaQuery** and asset path helper.
 - **[InputField]** Wrapper of [TextField] to provide more functionality and control via [InputController].
 - **[DisposeHandler]** - mixin for any class, helps with object disposing.
 - **[PrefsProvider]** - mixin for any class, helps to store user preferences.

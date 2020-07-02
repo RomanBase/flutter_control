@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       }),
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()).path(''),
       ],
       theme: ThemeConfig<MyTheme>(
         builder: (context) => MyTheme(context),
@@ -64,9 +64,9 @@ class MyApp extends StatelessWidget {
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,
-        home: home,
         theme: setup.theme,
-        title: 'Flutter Example',
+        title: setup.title('app_name', 'Flutter Example'),
+        home: home,
       ),
     );
   }
