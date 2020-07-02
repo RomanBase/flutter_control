@@ -59,7 +59,7 @@ class DialogPage extends SingleControlWidget<DialogControl> with RouteControl {
       case 'sheet':
         return showModalBottomSheet(
           context: getContext(root: root), // If ControlScope.rootContext is not changed, then getContext(root: true) and userRootNavigator:true uses same Navigator.
-          useRootNavigator: false,         // But some special app scenarios can require to change ControlScope.rootContext and prefer this way instead of using useRootNavigator.
+          useRootNavigator: false, // But some special app scenarios can require to change ControlScope.rootContext and prefer this way instead of using useRootNavigator.
           builder: builder,
         );
     }

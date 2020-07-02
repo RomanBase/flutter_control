@@ -28,8 +28,7 @@ WeatherData _$WeatherDataFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$WeatherDataToJson(WeatherData instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$WeatherDataToJson(WeatherData instance) => <String, dynamic>{
       'temp': instance.temp,
       'pressure': instance.pressure,
       'humidity': instance.humidity,
@@ -60,8 +59,7 @@ WeatherSys _$WeatherSysFromJson(Map<String, dynamic> json) {
   );
 }
 
-Map<String, dynamic> _$WeatherSysToJson(WeatherSys instance) =>
-    <String, dynamic>{
+Map<String, dynamic> _$WeatherSysToJson(WeatherSys instance) => <String, dynamic>{
       'type': instance.type,
       'id': instance.id,
       'message': instance.message,
@@ -73,18 +71,10 @@ Map<String, dynamic> _$WeatherSysToJson(WeatherSys instance) =>
 Weather _$WeatherFromJson(Map<String, dynamic> json) {
   return Weather(
     json['id'] as int,
-    json['coord'] == null
-        ? null
-        : Coord.fromJson(json['coord'] as Map<String, dynamic>),
-    json['main'] == null
-        ? null
-        : WeatherData.fromJson(json['main'] as Map<String, dynamic>),
-    json['wind'] == null
-        ? null
-        : Wind.fromJson(json['wind'] as Map<String, dynamic>),
-    json['sys'] == null
-        ? null
-        : WeatherSys.fromJson(json['sys'] as Map<String, dynamic>),
+    json['coord'] == null ? null : Coord.fromJson(json['coord'] as Map<String, dynamic>),
+    json['main'] == null ? null : WeatherData.fromJson(json['main'] as Map<String, dynamic>),
+    json['wind'] == null ? null : Wind.fromJson(json['wind'] as Map<String, dynamic>),
+    json['sys'] == null ? null : WeatherSys.fromJson(json['sys'] as Map<String, dynamic>),
     json['name'] as String,
   );
 }
