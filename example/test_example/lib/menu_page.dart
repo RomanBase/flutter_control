@@ -1,5 +1,6 @@
 import 'package:flutter_control/core.dart';
 import 'package:flutter_control_example/cross_page.dart';
+import 'package:flutter_control_example/swap_page.dart';
 
 import 'cards_page.dart';
 import 'settings_page.dart';
@@ -29,6 +30,11 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
             iconBuilder: (selected) => Icons.crop,
             titleBuilder: (selected) => localize('cross'),
           ): (context) => CrossPage(),
+          MenuItem(
+            key: 'swap',
+            iconBuilder: (selected) => Icons.swap_horiz,
+            titleBuilder: (selected) => localize('swap'),
+          ): (context) => SwapPage(),
           MenuItem(
             key: 'about',
             iconBuilder: (selected) => Icons.file_upload,
