@@ -112,13 +112,6 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   **[ActionControlSub]** provides read-only version of ActionControl.\
   Upon dismiss of ActionControl, every **[ControlSubscription]** is closed.
 
-- **[FieldControl]** is more robust Observable solution around **[Stream]** and **[StreamController]**. Primarily is used to notify Widgets and to provide events about value changes.\
-  Can listen **[Stream]**, **[Future]** or subscribe to another [FieldControl] with possibility to filter and convert values.\
-  [FieldControl] comes with pre-build primitive variants as **[StringControl]**, **[DoubleControl]**, etc., where is possible to use validation, regex or value clamping. And also **[ListControl]** to work with Iterables.\
-  On the Widget side is **[FieldBuilder]** and **[FieldStreamBuilder]** to dynamically build Widgets. Also **[FieldBuilderGroup]** for use with multiple Observables. It's also possible to use standard **[StreamBuilder]**.\
-  Value is set directly, but property can bu used privately and to public provide just sink - **[FieldSink]** or **[FieldSinkConverter]** and stream - **[FieldControlSub]** interface to provide subscription to public.\
-  Upon dismiss of FieldControl, every **[FieldSubscription]** is closed.
-
 ```dart
     final counter = ActionControl.broadcast<int>(0);
 
@@ -127,6 +120,13 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
       builder: (context, value) => Text(value.toString()),
     );
 ```
+
+- **[FieldControl]** is more robust Observable solution around **[Stream]** and **[StreamController]**. Primarily is used to notify Widgets and to provide events about value changes.\
+  Can listen **[Stream]**, **[Future]** or subscribe to another [FieldControl] with possibility to filter and convert values.\
+  [FieldControl] comes with pre-build primitive variants as **[StringControl]**, **[DoubleControl]**, etc., where is possible to use validation, regex or value clamping. And also **[ListControl]** to work with Iterables.\
+  On the Widget side is **[FieldBuilder]** and **[FieldStreamBuilder]** to dynamically build Widgets. Also **[FieldBuilderGroup]** for use with multiple Observables. It's also possible to use standard **[StreamBuilder]**.\
+  Value is set directly, but property can bu used privately and to public provide just sink - **[FieldSink]** or **[FieldSinkConverter]** and stream - **[FieldControlSub]** interface to provide subscription to public.\
+  Upon dismiss of FieldControl, every **[FieldSubscription]** is closed.
 
 ```dart
     final counter = FieldControl<int>(0);
