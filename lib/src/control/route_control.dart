@@ -333,7 +333,7 @@ class ControlRouteTransition extends PageRoute {
 /// Instance of [RouteStore] is stored in [ControlFactory] -> 'Control.get<RouteStore>()'.
 ///
 /// Typically not used directly, but via framework:
-///   - fill: [Control.initControl] or [ControlRoute] routes property.
+///   - fill routes: [Control.initControl] or add routes directly.
 ///   - retrieve route: [ControlRoute.of].
 class RouteStore {
   /// Map based Route Store.
