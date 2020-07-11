@@ -25,19 +25,14 @@ abstract class StateNotifier {
 ///
 /// Extend this class to create custom controls and models.
 /// {@endtemplate}
-class ControlModel with DisposeHandler /*, Disposer*/ implements Initializable {
-  //TODO: revisit - currently totally unused..
-  /// returns instance of [ControlFactory] if available.
-  /// Will be revisited - maybe unused from v1.0.
-  ControlFactory get factory => Control.factory();
-
+class ControlModel with DisposeHandler implements Initializable {
   @override
   void init(Map args) {}
 
   //TODO: revisit
   /// Used to subscribe interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  /// Will be revisited - unused from v1.0.
+  /// Will be revisited - unused from v1.1.
   void subscribe(dynamic object) {}
 
   @override
@@ -55,10 +50,10 @@ class BaseControl extends ControlModel {
   /// Init check.
   bool _isInitialized = false;
 
-  /// Return true if init function was called before.
+  /// Return 'true' if init function was called before.
   bool get isInitialized => _isInitialized;
 
-  /// Prevent multiple times init and [onInit] will be called just once.
+  /// Prevents multiple initialization and [onInit] will be called just once.
   bool preventMultiInit = true;
 
   /// {@macro init-object}
