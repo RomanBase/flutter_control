@@ -51,11 +51,15 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
     );
 ```
   
-**ControlRoot** additionally offers App State management - home scree, localization and theme changes.
+`ControlRoot` additionally offers App State management - home scree, localization and theme changes.
 
 ```dart
     ControlRoot(
       localization: LocalizationConfig(locales: [...]),
+      theme: ThemeConfig<MyThemne>(
+        builder: (context) => MyTheme(context),
+        themes: {...},
+      ),
       entries: {...},
       initializers: {...},
       routes: [...],
