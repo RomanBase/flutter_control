@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-/// [ControlWidget] with just one [ControlModel].
+/// [ControlWidget] with one main [ControlModel].
+/// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
 ///
 /// {@macro control-widget}
 abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
@@ -14,7 +15,25 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
   SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControls() => [initControl()];
+  List<ControlModel> initControls() {
+    final control = initControl();
+
+    assert(control != null);
+
+    if (autoMountControls) {
+      final controls = holder.findControls();
+
+      if (controls.contains(control)) {
+        controls.remove(control);
+      }
+
+      controls.insert(0, control);
+
+      return controls;
+    }
+
+    return [control];
+  }
 
   /// Tries to find or construct instance of requested [Type].
   /// If init [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
@@ -55,16 +74,21 @@ abstract class MountedControlWidget<T extends ControlModel> extends ControlWidge
 /// {@endtemplate}
 abstract class ControlWidget extends CoreWidget with LocalizationProvider implements Initializable, Disposable, StateNotifier {
   /// Widget's [State]
+  /// It's available just after [ControlState] is initialized.
   @protected
   ControlState get state => holder.state;
 
-  /// List of [ControlModel]s passed during construction phase.
-  /// Objects are initialized with [initControls] - override this method to init custom/additional [ControlModel]s.
+  /// List of [ControlModel]s initialized via [initControls].
+  /// Set [autoMountControls] to automatically init all Models passed through [args].
   @protected
   List<ControlModel> get controls => state?.controls;
 
   /// Checks if [controls] is not empty.
   bool get hasControl => controls != null && controls.isNotEmpty;
+
+  /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
+  /// By default set to 'false'.
+  bool get autoMountControls => false;
 
   /// Focused to handle Pages or complex Widgets.
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
@@ -85,7 +109,7 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   ///
   /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls() => [];
+  List<ControlModel> initControls() => autoMountControls ? holder.findControls() : [];
 
   @override
   ControlState<ControlWidget> createState() => ControlState();

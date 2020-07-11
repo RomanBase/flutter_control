@@ -91,7 +91,6 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
    - **[TickerControl]** and **[SingleTickerControl]** to create [State] with **[Ticker]** and provide access to **[vsync]**.
    
   **[SingleControlWidget]** - Focused to single **ControlModel**. But still can handle multiple Controls.
-  **[MountedControlWidget]** - Automatically uses all **ControlModels** passed to Widget.
 
 - **[StateboundWidget]** - Subscribes to just one **[StateControl]** - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].\
   Whenever state of [ControlState] is changed, this Widget is rebuild.
