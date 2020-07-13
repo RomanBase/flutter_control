@@ -5,15 +5,22 @@ import 'package:flutter_control_example/swap_page.dart';
 import 'cards_page.dart';
 import 'settings_page.dart';
 
-class MenuPage extends StatelessWidget with LocalizationProvider {
-  final controller = NavigatorStackControl(initialPageIndex: 1);
+class MenuPage extends SingleControlWidget<NavigatorStackControl> with LocalizationProvider {
+  @override
+  NavigatorStackControl initControl() => NavigatorStackControl(initialPageIndex: 1);
+
+  @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    control.pageIndex.subscribe((value) => control.notifyState());
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: ObjectKey(controller),
       body: NavigatorStack.menu(
-        control: controller,
+        control: control,
         items: {
           MenuItem(
             key: 'cards',
@@ -27,8 +34,8 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
           ): (context) => SettingsPage(),
           MenuItem(
             key: 'cross',
-            iconBuilder: (selected) => Icons.crop,
-            titleBuilder: (selected) => localize('cross'),
+            iconBuilder: (selected) => selected ? Icons.filter : Icons.crop,
+            titleBuilder: (selected) => selected ? localize('cross_up') : localize('cross'),
           ): (context) => CrossPage(),
           MenuItem(
             key: 'swap',
@@ -50,23 +57,23 @@ class MenuPage extends StatelessWidget with LocalizationProvider {
           ): (context) => Container(),
         },
       ),
-      bottomNavigationBar: ActionBuilder(
-        control: controller.pageIndex,
-        builder: (context, index) {
-          return BottomNavigationBar(
-            onTap: controller.setPageIndex,
-            type: BottomNavigationBarType.fixed,
-            currentIndex: index,
-            items: [
-              for (final item in controller.menuItems)
-                BottomNavigationBarItem(
-                  icon: Icon(item.icon),
-                  title: Text(item.title),
-                )
-            ],
-          );
-        },
-      ),
+      bottomNavigationBar: control.isMenuValid
+          ? BottomNavigationBar(
+              onTap: control.setPageIndex,
+              type: BottomNavigationBarType.fixed,
+              currentIndex: control.currentPageIndex,
+              items: [
+                for (final item in control.menuItems)
+                  BottomNavigationBarItem(
+                    icon: Icon(
+                      item.icon,
+                      color: item.selected ? Colors.red : Colors.black,
+                    ),
+                    title: Text(item.title),
+                  )
+              ],
+            )
+          : null,
     );
   }
 }

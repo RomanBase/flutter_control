@@ -314,7 +314,7 @@ class _NavigatorStackState extends State<NavigatorStack> implements _StackNaviga
 /// [NavigatorStack.menu] - Simplified version of [NavigatorStack.group], can be used if access to [NavigatorControl]s is not required.
 ///
 /// [NavigatorStack]
-class NavigatorStackControl extends BaseControl {
+class NavigatorStackControl extends BaseControl with StateControl {
   /// List of Controllers set in Widget construct phase.
   List<NavigatorControl> _items;
 
@@ -322,12 +322,14 @@ class NavigatorStackControl extends BaseControl {
   List<NavigatorControl> get items => _items;
 
   /// List of MenuItems set in Widget construct phase.
-  List<MenuItem> get menuItems => _items.map((item) => item.menu).toList(growable: false);
+  List<MenuItem> get menuItems => _items == null ? [] : _items.map((item) => item.menu).toList(growable: false);
 
   /// Returns current controller - based on [currentPageIndex].
   NavigatorControl get currentControl => _items[currentPageIndex];
 
   MenuItem get currentMenu => currentControl.menu;
+
+  bool get isMenuValid => _items != null && items.length > 0;
 
   /// Notifies about page changes.
   /// Can be used with [ActionBuilder] to rebuild menu or highlight active widget.
@@ -386,8 +388,8 @@ class NavigatorStackControl extends BaseControl {
       }
     }
 
-    currentControl.selected = true;
     _pageIndex.setValue(index);
+    currentControl.selected = true;
   }
 
   void setPageByItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
