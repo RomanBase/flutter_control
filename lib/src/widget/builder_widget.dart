@@ -1,6 +1,75 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
+/// Experimental version of unified [ControlWidgetBuilder].
+/// Currently supports [ActionControl], [FieldControl], [Listenable], [Stream] and [Future].
+/// It's pretty dummy now, just builds specific Builder based on [Type] of [control].
+class ControlBuilder<T> extends StatelessWidget {
+  /// Control to subscribe.
+  final dynamic control;
+
+  /// Widget builder.
+  final ControlWidgetBuilder<T> builder;
+
+  final WidgetBuilder noData;
+
+  final bool nullOk;
+
+  const ControlBuilder({
+    Key key,
+    this.control,
+    this.builder,
+    this.noData,
+    this.nullOk: false,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    if (control is ActionControlObservable<T>) {
+      return ActionBuilder<T>(
+        control: control,
+        builder: builder,
+      );
+    }
+
+    if (control is Listenable) {
+      return NotifierBuilder<T>(
+        control: control,
+        builder: builder,
+      );
+    }
+
+    if (control is FieldControlStream<T>) {
+      return FieldBuilder<T>(
+        control: control,
+        builder: builder,
+        noData: noData,
+        nullOk: nullOk,
+      );
+    }
+
+    if (control is Stream) {
+      return FieldBuilder<T>(
+        control: FieldControl.of(control), //TODO: close stream ? Field builder can't close Stream automatically.
+        builder: builder,
+        noData: noData,
+        nullOk: nullOk,
+      );
+    }
+
+    if (control is Future) {
+      return FieldBuilder<T>(
+        control: FieldControl()..onFuture(control), //TODO: close stream ? Field builder can't close Stream automatically.
+        builder: builder,
+        noData: noData,
+        nullOk: nullOk,
+      );
+    }
+
+    return builder(context, control);
+  }
+}
+
 /// Subscribes to multiple [Stream], [Observable] and [Listenable] objects and listens about changes.
 /// Whenever one of [controls] notifies about change, Widget is rebuild.
 /// Supports [ActionControl], [FieldControl], [StateControl], [ValueListenable] and [Listenable].
