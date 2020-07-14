@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter_control/core.dart';
 
 class FieldSubscription<T> implements StreamSubscription<T>, Disposable {
@@ -856,19 +857,63 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
     WidgetBuilder noData,
     bool nullOk: false,
   }) : super(
-            key: key,
-            control: control,
-            builder: (context, snapshot) {
-              if ((snapshot.hasData && snapshot.data.length > 0) || nullOk) {
-                return builder(context, snapshot.data ?? const []);
-              }
+          key: key,
+          control: control,
+          builder: (context, snapshot) {
+            if ((snapshot.hasData && snapshot.data.length > 0) || nullOk) {
+              return builder(context, snapshot.data ?? const []);
+            }
 
-              if (noData != null) {
-                return noData(context);
-              }
+            if (noData != null) {
+              return noData(context);
+            }
 
-              return null;
-            });
+            return null;
+          },
+        );
+
+  /// Just experimental version of [ListView.builder].
+  static ListBuilder itemBuilder<T>({
+    Key key,
+    @required FieldControl<List<T>> control,
+    @required ControlWidgetBuilder<T> builder,
+    WidgetBuilder noData,
+    Axis scrollDirection = Axis.vertical,
+    bool reverse = false,
+    ScrollController controller,
+    bool primary,
+    ScrollPhysics physics,
+    bool shrinkWrap = false,
+    EdgeInsetsGeometry padding,
+    double itemExtent,
+    bool addAutomaticKeepAlives = true,
+    bool addRepaintBoundaries = true,
+    bool addSemanticIndexes = true,
+    double cacheExtent,
+    DragStartBehavior dragStartBehavior = DragStartBehavior.start,
+  }) =>
+      ListBuilder(
+        key: key,
+        control: control,
+        builder: (context, items) => ListView.builder(
+          itemCount: items.length,
+          itemBuilder: (context, index) => builder(context, items[index]),
+          scrollDirection: scrollDirection,
+          reverse: reverse,
+          controller: controller,
+          primary: primary,
+          physics: physics,
+          shrinkWrap: shrinkWrap,
+          padding: padding,
+          itemExtent: itemExtent,
+          addAutomaticKeepAlives: addAutomaticKeepAlives,
+          addRepaintBoundaries: addRepaintBoundaries,
+          addSemanticIndexes: addSemanticIndexes,
+          cacheExtent: cacheExtent,
+          dragStartBehavior: dragStartBehavior,
+        ),
+        noData: noData,
+      );
 }
 
 //########################################################################################
