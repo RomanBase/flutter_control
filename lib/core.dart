@@ -26,6 +26,7 @@ export './src/util/init_holder.dart';
 export './src/util/parser.dart';
 export './src/util/unit_id.dart';
 export './src/widget/case_widget.dart';
+export './src/widget/builder_widget.dart';
 export './src/widget/control_root.dart';
 export './src/widget/control_widget.dart';
 export './src/widget/core_widget.dart';

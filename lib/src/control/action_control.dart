@@ -334,6 +334,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 }
 
+// TODO: move to WIDGET folder in v1.1
 /// Builds Widget whenever value in [ActionControl] is changed.
 class ActionBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
@@ -413,6 +414,8 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   }
 }
 
+// TODO: remove in v1.1
+/// Will be removed in v1.1 - use [ControlBuilderGroup] instead.
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ActionBuilderGroup extends StatefulWidget {
   final List<ActionControlObservable> controls;

@@ -425,6 +425,7 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
   }
 }
 
+// TODO: move to WIDGET folder in v1.1
 /// Extends [StreamBuilder] and adds some functionality to be used easily with [FieldControl].
 /// If no [Widget] is [build] then empty [Container] is returned.
 class FieldStreamBuilder<T> extends StreamBuilder<T> {
@@ -448,6 +449,7 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
   }
 }
 
+// TODO: move to WIDGET folder in v1.1
 /// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
 class FieldBuilder<T> extends FieldStreamBuilder<T> {
   /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
@@ -477,6 +479,8 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
             });
 }
 
+// TODO: remove in v1.1
+/// Will be removed in v1.1 - use [ControlBuilderGroup] instead.
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
 class FieldBuilderGroup extends StatefulWidget {
   final List<FieldControlStream> controls;
@@ -837,6 +841,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 }
 
+// TODO: move to WIDGET folder in v1.1
 /// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
 class ListBuilder<T> extends FieldStreamBuilder<List<T>> {
   /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
@@ -919,6 +924,7 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   void status(bool loading, {dynamic msg}) => loading ? progress(msg: msg) : done(msg: msg);
 }
 
+// TODO: move to WIDGET folder in v1.1
 /// Extended [FieldStreamBuilder] version specified to build [LoadingStatus] states.
 /// Internally uses [CaseWidget] to animate Widget crossing.
 class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
