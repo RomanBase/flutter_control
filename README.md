@@ -50,8 +50,8 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
     );
 ```
 
-- `ControlRoot` Wraps [AppWidgets] and initializes [Control]. It's just shortcut to start with Flutter Control. Via `ControlScope` is possible to maintain `State` of this root widget and control whole app state (localization, theme, etc.).\  
-  Additionally offers App State management - home scree, localization and theme changes.
+- `ControlRoot` Wraps [AppWidgets] and initializes [Control]. It's just shortcut to start with Flutter Control. Via `ControlScope` is possible to maintain `State` of this root widget and control whole app state (localization, theme, etc.).\
+  Additionally offers App State management - home screen, localization and theme changes.
 
 ```dart
     ControlRoot(
@@ -140,6 +140,8 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
     );
 ```
   Check [Counter Example](https://github.com/RomanBase/flutter_control/tree/master/examples/a_counter) and [TODO List Example](https://github.com/RomanBase/flutter_control/tree/master/examples/b_todo_list) at Git repository.
+
+---
 
 Structure below shows how data and events flows between UI and Models. `ControlWidget` can use multiple `ControlModel`s - for example one for Business Logic and one for UI/animation logic part.
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/architecture_flow.png)
