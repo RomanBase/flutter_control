@@ -75,7 +75,7 @@ class CardWidget extends ControlWidget with ThemeProvider {
           children: <Widget>[
             Text(
               item.title,
-              style: font.title,
+              style: font.headline6,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),

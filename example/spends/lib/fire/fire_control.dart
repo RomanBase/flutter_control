@@ -11,7 +11,7 @@ class FireControl {
 
   FirebaseUser get user => _user.value;
 
-  bool get isUserSignedIn => !_user.isEmpty;
+  bool get isUserSignedIn => _user.isNotEmpty;
 
   String get uid => _user.value?.uid;
 

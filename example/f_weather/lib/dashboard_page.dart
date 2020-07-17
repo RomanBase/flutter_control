@@ -179,7 +179,7 @@ class DashboardPage extends ControlWidget with TickerControl {
         children: <Widget>[
           Text(
             control.loading.message ?? 'unknown error',
-            style: Theme.of(context).textTheme.body1.copyWith(color: Colors.red),
+            style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.red),
           ),
           RaisedButton(
             onPressed: ui.showInput,
@@ -216,7 +216,7 @@ class WeatherInfo extends StatelessWidget {
             children: <Widget>[
               Text(
                 '${model.temperature.toInt()}°${model.unitSign}',
-                style: Theme.of(context).textTheme.display1.copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.headline5.copyWith(color: Colors.white),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -228,7 +228,7 @@ class WeatherInfo extends StatelessWidget {
                   ),
                   Text(
                     '${model.low.toInt()}°',
-                    style: Theme.of(context).textTheme.body1.copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
                   ),
                   SizedBox(
                     width: 16.0,
@@ -239,7 +239,7 @@ class WeatherInfo extends StatelessWidget {
                   ),
                   Text(
                     '${model.high.toInt()}°',
-                    style: Theme.of(context).textTheme.body2.copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white),
                   ),
                 ],
               ),
@@ -249,7 +249,7 @@ class WeatherInfo extends StatelessWidget {
 
         return Text(
           'What\'s the weather ?',
-          style: Theme.of(context).textTheme.body1.copyWith(color: Colors.white),
+          style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
         );
       },
     );
@@ -288,7 +288,7 @@ class LocationInfo extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: Text(
                           model.place ?? 'search',
-                          style: Theme.of(context).textTheme.display2.copyWith(color: Colors.white),
+                          style: Theme.of(context).textTheme.headline4.copyWith(color: Colors.white),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -315,7 +315,7 @@ class LocationInfo extends StatelessWidget {
                   Center(
                     child: Text(
                       model.isAvailable ? 'lat: ${model.lat}, lng: ${model.lng}' : 'check weather at your location ?',
-                      style: Theme.of(context).textTheme.body1.copyWith(color: Colors.white),
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
                     ),
                   ),
                   Align(

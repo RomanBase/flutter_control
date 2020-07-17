@@ -8,7 +8,7 @@ final broadcast = Control.broadcaster();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final isInitialized = await Control.initControl(
+  final isInitialized = Control.initControl(
     debug: false,
     entries: {
       ControlModel: BaseControl(),

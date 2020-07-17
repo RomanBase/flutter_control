@@ -73,7 +73,7 @@ class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, The
                 padding: const EdgeInsets.symmetric(vertical: 64.0),
                 child: Text(
                   'Welcome',
-                  style: font.display2,
+                  style: font.headline3,
                 ),
               ),
               InputField(
@@ -115,7 +115,7 @@ class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, The
                   control: control.message,
                   builder: (context, value) => Text(
                     value,
-                    style: font.body2.copyWith(color: Colors.red),
+                    style: font.bodyText2.copyWith(color: Colors.red),
                     textAlign: TextAlign.center,
                   ),
                 ),

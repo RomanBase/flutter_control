@@ -30,7 +30,7 @@ class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<Sp
                   TabRow(
                     title: 'Average month spends',
                     control: control.monthAvgSpend,
-                    style: font.body2,
+                    style: font.bodyText2,
                   ),
                   SizedBox(
                     height: theme.paddingQuarter,

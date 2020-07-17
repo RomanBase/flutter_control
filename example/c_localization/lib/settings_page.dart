@@ -17,7 +17,7 @@ class SettingsPage extends ControlWidget {
                 'en': 'Hi, current localization is se to English.',
                 'es': 'Hola, la localización actual es para español.',
               }),
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
               textAlign: TextAlign.center,
             ),
             Padding(

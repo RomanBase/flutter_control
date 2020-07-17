@@ -27,7 +27,7 @@ class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvid
                 TabRow(
                   title: 'Extra year earnings',
                   control: control.extraEarnings,
-                  style: font.body2,
+                  style: font.bodyText2,
                 ),
                 SizedBox(
                   height: theme.paddingQuarter,

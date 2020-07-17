@@ -21,6 +21,8 @@ class _UIControl extends ControlModel {
 
     _cross = args.getArg<CrossControl>();
 
+    printDebug(_cross);
+
     printDebug('INIT UI -------------------------------- UI');
     printDebug(args);
     printDebug('-------------------------------------------');

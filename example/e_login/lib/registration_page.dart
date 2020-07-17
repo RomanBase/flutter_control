@@ -81,7 +81,7 @@ class RegistrationPage extends SingleControlWidget<RegistrationControl> with Rou
                     padding: const EdgeInsets.symmetric(vertical: 64.0),
                     child: Text(
                       'New User',
-                      style: font.display2,
+                      style: font.headline5,
                     ),
                   ),
                   InputField(
@@ -124,7 +124,7 @@ class RegistrationPage extends SingleControlWidget<RegistrationControl> with Rou
                       control: control.message,
                       builder: (context, value) => Text(
                         value,
-                        style: font.body2.copyWith(color: Colors.red),
+                        style: font.bodyText2.copyWith(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                     ),

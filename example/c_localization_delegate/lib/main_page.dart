@@ -22,7 +22,7 @@ class MainPage extends ControlWidget with RouteControl {
           children: <Widget>[
             Text(
               LocalizationProvider.of(context).localize('title'),
-              style: Theme.of(context).textTheme.display2,
+              style: Theme.of(context).textTheme.headline3,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24.0),
@@ -56,7 +56,7 @@ class MainPage extends ControlWidget with RouteControl {
                 'en': 'Hi, current localization is se to English.',
                 'es': 'Hola, la localización actual es para español.',
               }),
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
               textAlign: TextAlign.center,
             ),
             Padding(

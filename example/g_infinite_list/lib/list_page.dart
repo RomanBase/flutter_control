@@ -97,7 +97,7 @@ class ListItem extends StatelessWidget {
       child: Center(
         child: Text(
           model.title,
-          style: Theme.of(context).textTheme.display3,
+          style: Theme.of(context).textTheme.headline3,
         ),
       ),
     );

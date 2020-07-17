@@ -16,7 +16,7 @@ class TabRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = this.style ?? Theme.of(context).textTheme.body1;
+    final style = this.style ?? Theme.of(context).textTheme.bodyText1;
 
     return Row(
       children: <Widget>[

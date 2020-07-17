@@ -39,12 +39,12 @@ class EarningsListItem extends SingleControlWidget<EarningsItemModel> with Theme
                   children: <Widget>[
                     Text(
                       item.title,
-                      style: font.body1,
+                      style: font.bodyText1,
                     ),
                     if (item.note != null)
                       Text(
                         item.note,
-                        style: font.body2,
+                        style: font.bodyText2,
                       ),
                   ],
                 ),
@@ -57,11 +57,11 @@ class EarningsListItem extends SingleControlWidget<EarningsItemModel> with Theme
                 children: <Widget>[
                   Text(
                     item.yearEarnings.toInt().toString(),
-                    style: item.isSub ? font.body2 : font.body1,
+                    style: item.isSub ? font.bodyText2 : font.bodyText1,
                   ),
                   Text(
                     item.monthEarnings.toInt().toString(),
-                    style: item.isSub ? font.body1 : font.body2,
+                    style: item.isSub ? font.bodyText1 : font.bodyText2,
                   ),
                 ],
               ),

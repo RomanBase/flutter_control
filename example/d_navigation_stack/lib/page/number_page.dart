@@ -67,14 +67,14 @@ class NumberPage extends SingleControlWidget<NumberControl> with RouteControl {
           children: <Widget>[
             Text(
               'Number provided via args:',
-              style: Theme.of(context).textTheme.title,
+              style: Theme.of(context).textTheme.headline6,
             ),
             SizedBox(
               height: 16.0,
             ),
             Text(
               getArg<int>(defaultValue: -1).toString(),
-              style: Theme.of(context).textTheme.display2,
+              style: Theme.of(context).textTheme.headline4,
             ),
             SizedBox(
               height: 32.0,
@@ -86,7 +86,7 @@ class NumberPage extends SingleControlWidget<NumberControl> with RouteControl {
               control: control.number,
               builder: (context, value) => Text(
                 value.toString(),
-                style: Theme.of(context).textTheme.title,
+                style: Theme.of(context).textTheme.headline6,
               ),
             ),
             Padding(

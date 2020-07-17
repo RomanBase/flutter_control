@@ -30,7 +30,7 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
                   TabRow(
                     title: 'Average month spends',
                     control: control.monthAvgSpend,
-                    style: font.body2,
+                    style: font.bodyText2,
                   ),
                   SizedBox(
                     height: theme.paddingQuarter,
@@ -98,12 +98,12 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
                     children: <Widget>[
                       Text(
                         control.group.item.title,
-                        style: font.title,
+                        style: font.headline6,
                       ),
                       if (control.group.item.hasNote)
                         Text(
                           control.group.item.note,
-                          style: font.body2.copyWith(color: theme.dark),
+                          style: font.bodyText2.copyWith(color: theme.dark),
                         ),
                     ],
                   );

@@ -45,9 +45,9 @@ class SpendTheme extends ControlTheme {
       );
 
   TextTheme buildTextTheme(Color colorA, Color colorB) => TextTheme(
-        subtitle: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 14.0, letterSpacing: 1.5),
-        body1: TextStyle(color: colorA, fontSize: 14.0),
-        body2: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 12.0),
+        subtitle1: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 14.0, letterSpacing: 1.5),
+        bodyText1: TextStyle(color: colorA, fontSize: 14.0),
+        bodyText2: TextStyle(color: colorB, fontWeight: FontWeight.w300, fontSize: 12.0),
         button: TextStyle(color: colorA, fontWeight: FontWeight.w700),
       );
 }

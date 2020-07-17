@@ -287,7 +287,7 @@ class InitPage extends ControlWidget with ThemeProvider<SpendTheme>, TickerContr
                     onPressed: () => uiControl.setSignMode(SignMode.sign_pass),
                     child: Text(
                       'Forgotten password ?',
-                      style: font.body2,
+                      style: font.bodyText2,
                     ),
                   ),
                 ),

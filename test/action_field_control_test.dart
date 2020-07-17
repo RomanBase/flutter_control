@@ -2,7 +2,7 @@ import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  final key = Key('lock');
+  //final key = Key('lock');
 
   group('Field Control', () {
     test('value modification', () {
@@ -85,6 +85,8 @@ void main() {
       controller.dispose();
 
       expect(sub2.isActive, isFalse);
+
+      sub2.cancel();
     });
 
     test('list sub to control', () {

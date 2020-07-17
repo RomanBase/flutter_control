@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter_control/core.dart';
 
 class FieldSubscription<T> implements StreamSubscription<T>, Disposable {

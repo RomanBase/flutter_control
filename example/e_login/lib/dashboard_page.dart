@@ -14,14 +14,14 @@ class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
           children: <Widget>[
             Text(
               'Yay, you are logged in !',
-              style: font.display3,
+              style: font.headline3,
               textAlign: TextAlign.center,
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 64.0),
               child: Text(
                 'Hello ${firebase.username}',
-                style: font.display4,
+                style: font.headline2,
                 textAlign: TextAlign.center,
               ),
             ),
