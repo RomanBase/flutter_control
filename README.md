@@ -237,6 +237,6 @@ Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_con
 
 ---
 
-**Full Core Structure**
+**Core Structure**
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure.png)
