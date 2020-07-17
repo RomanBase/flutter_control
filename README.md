@@ -1,5 +1,7 @@
 [![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
 
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
+
 ---
 
 Flutter Control is complex library to maintain App and State management.\

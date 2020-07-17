@@ -1,5 +1,6 @@
 import 'package:flutter_control/core.dart';
 
+/// Still experimental control for [TextField] builder..
 class InputControlV2 extends TextEditingController with Disposable, StateControl {
   FocusNode _focus;
 
@@ -132,6 +133,7 @@ class InputControlV2 extends TextEditingController with Disposable, StateControl
   }
 }
 
+/// Still experimental [TextField] builder..
 class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
   final String label;
   final String hint;
@@ -178,21 +180,3 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
 }
 
 typedef Widget InputBuilder(BuildContext context, InputControlV2 scope, InputDecoration decoration);
-
-class _Test extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return InputFieldV2(
-      control: null,
-      builder: (context, scope, decoration) {
-        return TextField(
-          controller: scope,
-          focusNode: scope.focus,
-          onSubmitted: scope.submit,
-          onChanged: scope.change,
-          decoration: decoration,
-        );
-      },
-    );
-  }
-}
