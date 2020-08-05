@@ -229,7 +229,8 @@ class InputControl extends ControlModel with StateControl {
       unfocusChain();
     }
 
-    final isNextValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
+    final isNextValid = _next.validateChain(
+        unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isNextValid;
   }
@@ -477,12 +478,18 @@ class InputField extends StateboundWidget<InputControl> with ThemeProvider {
       focusNode: control._focusController,
       decoration: (decoration ??
               InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-                labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-                hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                border:
+                    UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+                focusedBorder:
+                    UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                disabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+                labelStyle:
+                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                hintStyle:
+                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
               ))
           .copyWith(
         labelText: label,

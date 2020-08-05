@@ -62,7 +62,8 @@ class BaseControl extends ControlModel {
   @mustCallSuper
   void init(Map args) {
     if (isInitialized && preventMultiInit) {
-      printDebug('controller is already initialized: ${this.runtimeType.toString()}');
+      printDebug(
+          'controller is already initialized: ${this.runtimeType.toString()}');
       return;
     }
 
@@ -155,7 +156,8 @@ mixin StateControl on Disposable implements StateNotifier, Listenable {
   void addListener(VoidCallback listener) => _notifier.addListener(listener);
 
   @override
-  void removeListener(VoidCallback listener) => _notifier.removeListener(listener);
+  void removeListener(VoidCallback listener) =>
+      _notifier.removeListener(listener);
 
   @override
   void dispose() {
@@ -191,7 +193,8 @@ mixin RouteControlProvider on ControlModel {
   }
 
   /// {@macro route-store-get}
-  RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(_navigator);
+  RouteHandler routeOf<T>([dynamic identifier]) =>
+      ControlRoute.of<T>(identifier)?.navigator(_navigator);
 
   /// {@macro route-open}
   RouteHandler openRoute(
@@ -203,7 +206,8 @@ mixin RouteControlProvider on ControlModel {
   }) {
     final handler = RouteHandler(_navigator, route);
 
-    final future = handler.openRoute(root: root, replacement: replacement, args: args);
+    final future =
+        handler.openRoute(root: root, replacement: replacement, args: args);
 
     if (result != null) {
       future.then(result);
@@ -236,7 +240,8 @@ mixin RouteControlProvider on ControlModel {
     dynamic type,
     dynamic args,
   }) {
-    return RouteHandler(_navigator, route).openDialog(root: root, type: type, args: args);
+    return RouteHandler(_navigator, route)
+        .openDialog(root: root, type: type, args: args);
   }
 
   /// {@macro route-close}

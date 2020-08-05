@@ -16,7 +16,8 @@ class WeatherRepo {
     printDebug(result.body);
 
     if (result.statusCode != 200) {
-      throw Parse.getArgFromString(result.body, key: 'message', defaultValue: 'something went wrong');
+      throw Parse.getArgFromString(result.body,
+          key: 'message', defaultValue: 'something went wrong');
     }
 
     return Weather.fromJson(jsonDecode(result.body));

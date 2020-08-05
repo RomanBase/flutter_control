@@ -17,8 +17,10 @@ class FireControl {
 
   ActionControlObservable<FirebaseUser> get userSub => _user.sub;
 
-  Future<FirebaseUser> signUp(String email, String password, String nickname) async {
-    final user = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+  Future<FirebaseUser> signUp(
+      String email, String password, String nickname) async {
+    final user = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
 
     final info = UserUpdateInfo()..displayName = nickname;
 
@@ -28,12 +30,14 @@ class FireControl {
   }
 
   Future<FirebaseUser> signIn(String email, String password) async {
-    final user = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+    final user = await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password);
 
     return _user.value = user.user;
   }
 
-  Future<FirebaseUser> restore() async => _user.value = await FirebaseAuth.instance.currentUser();
+  Future<FirebaseUser> restore() async =>
+      _user.value = await FirebaseAuth.instance.currentUser();
 
   Future<FirebaseUser> signInWithGoogle() async {
     final google = GoogleSignIn(scopes: [
@@ -49,7 +53,8 @@ class FireControl {
     }
 
     final auth = await acc.authentication;
-    final credential = GoogleAuthProvider.getCredential(idToken: auth.idToken, accessToken: auth.accessToken);
+    final credential = GoogleAuthProvider.getCredential(
+        idToken: auth.idToken, accessToken: auth.accessToken);
 
     final user = await FirebaseAuth.instance.signInWithCredential(credential);
 

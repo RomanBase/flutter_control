@@ -9,7 +9,10 @@ enum EarningsType {
 extension EarningTypeExtension on EarningsType {
   String asData() => this.toString().split('.')[1];
 
-  EarningsType asType(dynamic value) => value == null ? this : EarningsType.values.firstWhere((item) => item.asData() == value, orElse: () => this);
+  EarningsType asType(dynamic value) => value == null
+      ? this
+      : EarningsType.values
+          .firstWhere((item) => item.asData() == value, orElse: () => this);
 }
 
 class EarningsItem {
@@ -119,5 +122,6 @@ class EarningsItem {
         type: type ?? this.type,
       );
 
-  static int Function(EarningsItem a, EarningsItem b) get byTitle => (a, b) => a.title.compareTo(b.title);
+  static int Function(EarningsItem a, EarningsItem b) get byTitle =>
+      (a, b) => a.title.compareTo(b.title);
 }

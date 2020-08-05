@@ -71,7 +71,10 @@ class RoundedButton extends StatelessWidget with ThemeProvider {
     }
 
     final textStyle = style ?? font.button;
-    final text = title != null ? Text(title, style: tint != null ? textStyle.copyWith(color: tint) : textStyle) : null;
+    final text = title != null
+        ? Text(title,
+            style: tint != null ? textStyle.copyWith(color: tint) : textStyle)
+        : null;
 
     if (icon != null) {
       final list = List<Widget>();
@@ -103,7 +106,8 @@ class RoundedButton extends StatelessWidget with ThemeProvider {
   }
 
   RoundedRectangleBorder _buttonShape(double radius) {
-    return RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(radius)));
+    return RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(radius)));
   }
 }
 
@@ -145,7 +149,8 @@ class _FadeButtonState extends State<FadeButton> with ThemeProvider {
         width: widget.width,
         height: widget.height,
         color: Colors.transparent,
-        padding: widget.padding ?? EdgeInsets.symmetric(horizontal: theme.paddingHalf),
+        padding: widget.padding ??
+            EdgeInsets.symmetric(horizontal: theme.paddingHalf),
         child: AnimatedOpacity(
           opacity: _opacity,
           duration: widget.duration,

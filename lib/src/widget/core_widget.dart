@@ -30,7 +30,8 @@ class ControlArgHolder implements Disposable {
   Map get args => argStore.data;
 
   /// [ControlArgs] that holds current args of [Widget] and [State].
-  ControlArgs get argStore => _state?.args ?? _cache ?? (_cache = ControlArgs());
+  ControlArgs get argStore =>
+      _state?.args ?? _cache ?? (_cache = ControlArgs());
 
   /// Initializes holder with given [state].
   /// [args] are smoothly transferred between State and Cache based on current Widget lifecycle.
@@ -48,7 +49,8 @@ class ControlArgHolder implements Disposable {
   void set(dynamic args) => argStore.set(args);
 
   /// Returns object based on given [Type] and [key] from internal args - [ControlArgs].
-  T get<T>({dynamic key, T defaultValue}) => Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
+  T get<T>({dynamic key, T defaultValue}) =>
+      Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
 
   /// Returns all [ControlModel]s from internal args - [ControlArgs].
   /// If none found, empty List is returned.
@@ -78,7 +80,8 @@ class ControlArgHolder implements Disposable {
 ///
 /// [ControlWidget] - Can subscribe to multiple [ControlModel]s and is typically used for Pages and complex Widgets.
 /// [StateboundWidget] - Subscribes to just one [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]. Typically used for small Widgets.
-abstract class CoreWidget extends StatefulWidget implements Initializable, Disposable {
+abstract class CoreWidget extends StatefulWidget
+    implements Initializable, Disposable {
   final holder = ControlArgHolder();
 
   /// Returns 'true' if [State] is hooked and [WidgetControlHolder] is initialized.
@@ -178,13 +181,15 @@ abstract class CoreWidget extends StatefulWidget implements Initializable, Dispo
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.set].
   /// Use [getArgStore] to get raw access to [ControlArgs].
-  void setArg<T>({dynamic key, @required dynamic value}) => holder.argStore.add<T>(key: key, value: value);
+  void setArg<T>({dynamic key, @required dynamic value}) =>
+      holder.argStore.add<T>(key: key, value: value);
 
   /// Returns value by given [key] and [Type] from this Widget's internal arg store.
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.get].
   /// Use [getArgStore] to get raw access to [ControlArgs].
-  T getArg<T>({dynamic key, T defaultValue}) => holder.get<T>(key: key, defaultValue: defaultValue);
+  T getArg<T>({dynamic key, T defaultValue}) =>
+      holder.get<T>(key: key, defaultValue: defaultValue);
 
   /// Removes given [arg] from this Widget's internal arg store.
   ///
@@ -261,14 +266,18 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
     assert(() {
       if (_ticker == null) return true;
       throw FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary('$runtimeType is a SingleTickerProviderStateMixin but multiple tickers were created.'),
-        ErrorDescription('A SingleTickerProviderStateMixin can only be used as a TickerProvider once.'),
-        ErrorHint('If a State is used for multiple AnimationController objects, or if it is passed to other '
+        ErrorSummary(
+            '$runtimeType is a SingleTickerProviderStateMixin but multiple tickers were created.'),
+        ErrorDescription(
+            'A SingleTickerProviderStateMixin can only be used as a TickerProvider once.'),
+        ErrorHint(
+            'If a State is used for multiple AnimationController objects, or if it is passed to other '
             'objects and those objects might use it more than one time in total, then instead of '
             'mixing in a SingleTickerProviderStateMixin, use a regular TickerProviderStateMixin.')
       ]);
     }());
-    _ticker = Ticker(onTick, debugLabel: kDebugMode ? 'created by $this' : null);
+    _ticker =
+        Ticker(onTick, debugLabel: kDebugMode ? 'created by $this' : null);
     // We assume that this is called from initState, build, or some sort of
     // event handler, and that thus TickerMode.of(context) would return true. We
     // can't actually check that here because if we're in initState then we're
@@ -284,7 +293,8 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
       if (_ticker == null || !_ticker.isActive) return true;
       throw FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary('$this was disposed with an active Ticker.'),
-        ErrorDescription('$runtimeType created a Ticker via its SingleTickerProviderStateMixin, but at the time '
+        ErrorDescription(
+            '$runtimeType created a Ticker via its SingleTickerProviderStateMixin, but at the time '
             'dispose() was called on the mixin, that Ticker was still active. The Ticker must '
             'be disposed before calling super.dispose().'),
         ErrorHint('Tickers used by AnimationControllers '
@@ -344,7 +354,8 @@ class _TickerProvider implements Disposable, TickerProvider {
     _tickers.remove(ticker);
   }
 
-  void _muteTicker(bool muted) => _tickers?.forEach((item) => item.muted = muted);
+  void _muteTicker(bool muted) =>
+      _tickers?.forEach((item) => item.muted = muted);
 
   @override
   void dispose() {
@@ -354,7 +365,8 @@ class _TickerProvider implements Disposable, TickerProvider {
           if (ticker.isActive) {
             throw FlutterError.fromParts(<DiagnosticsNode>[
               ErrorSummary('$this was disposed with an active Ticker.'),
-              ErrorDescription('$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
+              ErrorDescription(
+                  '$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
                   'dispose() was called on the mixin, that Ticker was still active. All Tickers must '
                   'be disposed before calling super.dispose().'),
               ErrorHint('Tickers used by AnimationControllers '
@@ -402,7 +414,8 @@ class _WidgetTicker extends Ticker {
 
   bool get isMounted => _creator != null;
 
-  _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel}) : super(onTick, debugLabel: debugLabel);
+  _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel})
+      : super(onTick, debugLabel: debugLabel);
 
   @override
   void dispose() {

@@ -126,7 +126,9 @@ class _CaseWidgetState extends State<CaseWidget> {
 
   /// Checks if is necessary to rebuild current Widget.
   void _updateCurrentInitializer() {
-    if (currentInitializer != null && widget.activeCase != null && builders.containsKey(widget.activeCase)) {
+    if (currentInitializer != null &&
+        widget.activeCase != null &&
+        builders.containsKey(widget.activeCase)) {
       final builder = builders[widget.activeCase];
       final origin = currentInitializer;
 

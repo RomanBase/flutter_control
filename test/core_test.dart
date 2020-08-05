@@ -25,11 +25,13 @@ void main() {
   });
 
   test('typedefs', () {
-    Initializer<TestInitWidget> initializer = (args) => TestInitWidget(args: args);
+    Initializer<TestInitWidget> initializer =
+        (args) => TestInitWidget(args: args);
     ValueCallback<String> valueCallback = (value) => expect(value, 'value');
     ValueConverter<String> valueConverter = (value) => value.toString();
     EntryConverter<String> entryConverter = (key, value) => '${key}_$value';
-    ControlWidgetBuilder<String> controlWidgetBuilder = (context, value) => TestInitWidget(args: value);
+    ControlWidgetBuilder<String> controlWidgetBuilder =
+        (context, value) => TestInitWidget(args: value);
     Predicate<String> predicate = (value) => value.isNotEmpty;
 
     final initObject = initializer('args');

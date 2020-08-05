@@ -1,7 +1,8 @@
 import 'package:flutter_control/core.dart';
 
 /// Still experimental control for [TextField] builder..
-class InputControlV2 extends TextEditingController with Disposable, StateControl {
+class InputControlV2 extends TextEditingController
+    with Disposable, StateControl {
   FocusNode _focus;
 
   FocusNode get focus => _focus ?? (_focus = FocusNode());
@@ -32,13 +33,15 @@ class InputControlV2 extends TextEditingController with Disposable, StateControl
   set text(String newText) {
     value = value.copyWith(
       text: newText,
-      selection: TextSelection.collapsed(offset: newText == null ? -1 : newText.length),
+      selection: TextSelection.collapsed(
+          offset: newText == null ? -1 : newText.length),
       composing: TextRange.empty,
     );
   }
 
   InputControlV2({String text, this.regex}) {
-    value = text == null ? TextEditingValue.empty : TextEditingValue(text: text);
+    value =
+        text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
   InputControlV2 next(InputControlV2 control) {
@@ -122,7 +125,8 @@ class InputControlV2 extends TextEditingController with Disposable, StateControl
       unfocusChain();
     }
 
-    final isChainValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
+    final isChainValid = _next.validateChain(
+        unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isChainValid;
   }
@@ -161,9 +165,12 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
 
     final decoration = InputDecoration(
       border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-      disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+      enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+      focusedBorder:
+          UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+      disabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: cursor.withOpacity(0.25))),
       labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
       hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
       labelText: label,
@@ -179,4 +186,5 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
   }
 }
 
-typedef Widget InputBuilder(BuildContext context, InputControlV2 scope, InputDecoration decoration);
+typedef Widget InputBuilder(
+    BuildContext context, InputControlV2 scope, InputDecoration decoration);

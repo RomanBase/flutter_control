@@ -4,7 +4,8 @@ import 'package:spends/control/spend/spend_item_model.dart';
 import 'package:spends/entity/spend_item.dart';
 import 'package:spends/theme.dart';
 
-class SpendListItem extends SingleControlWidget<SpendItemModel> with ThemeProvider<SpendTheme> {
+class SpendListItem extends SingleControlWidget<SpendItemModel>
+    with ThemeProvider<SpendTheme> {
   final ValueCallback<SpendItemModel> onPressed;
   final ValueCallback<SpendItemModel> onRemove;
 
@@ -22,7 +23,8 @@ class SpendListItem extends SingleControlWidget<SpendItemModel> with ThemeProvid
       child: Container(
         margin: EdgeInsets.only(top: 1),
         child: FlatButton(
-          padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingQuarter),
+          padding: EdgeInsets.symmetric(
+              horizontal: theme.padding, vertical: theme.paddingQuarter),
           onPressed: () => onPressed(control),
           child: Row(
             children: <Widget>[

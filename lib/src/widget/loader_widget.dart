@@ -104,6 +104,7 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
 
   @override
   Widget build(BuildContext context) {
-    return WidgetInitializer.of((context) => builder(context), control).getWidget(context, args: holder.args);
+    return WidgetInitializer.of((context) => builder(context), control)
+        .getWidget(context, args: holder.args);
   }
 }

@@ -29,13 +29,15 @@ void main() {
       final controllerConvSub = FieldControl<String>();
 
       controller.streamTo(controllerSub);
-      controller.streamTo(controllerConvSub, converter: (value) => value.toString());
+      controller.streamTo(controllerConvSub,
+          converter: (value) => value.toString());
 
       expect(controllerSub.value, 1);
       expect(controllerConvSub.value, '1');
 
       controllerSub.subscribe((value) => expect(value, 2), current: false);
-      controllerConvSub.subscribe((value) => expect(value, '2'), current: false);
+      controllerConvSub.subscribe((value) => expect(value, '2'),
+          current: false);
 
       controller.setValue(controller.value + 1);
     });
@@ -46,10 +48,12 @@ void main() {
       final controllerConvSub = FieldControl<String>();
 
       controllerSub.subscribeTo(controller.stream);
-      controllerConvSub.subscribeTo(controller.stream, converter: (value) => value.toString());
+      controllerConvSub.subscribeTo(controller.stream,
+          converter: (value) => value.toString());
 
       controllerSub.subscribe((value) => expect(value, 2), current: false);
-      controllerConvSub.subscribe((value) => expect(value, '2'), current: false);
+      controllerConvSub.subscribe((value) => expect(value, '2'),
+          current: false);
 
       expect(controllerSub.value, isNull);
       expect(controllerConvSub.value, isNull);
@@ -60,7 +64,8 @@ void main() {
     test('value sink', () {
       final controller = FieldControl<int>(1);
       final sink = controller.sink;
-      final sinkConv = controller.sinkConverter((value) => Parse.toInteger(value));
+      final sinkConv =
+          controller.sinkConverter((value) => Parse.toInteger(value));
 
       controller.subscribe((value) => expect(value, 2), current: false);
 
@@ -95,7 +100,10 @@ void main() {
       final controllerConvSub = ListControl<String>();
 
       controller.filterTo(controllerSub, filter: (item) => item % 2 == 0);
-      controller.filterTo(controllerConvSub, filter: (item) => item % 2 == 0, converter: (value) => Parse.toList(value, converter: (item) => item.toString()));
+      controller.filterTo(controllerConvSub,
+          filter: (item) => item % 2 == 0,
+          converter: (value) =>
+              Parse.toList(value, converter: (item) => item.toString()));
 
       expect(controllerSub[0], 2);
       expect(controllerConvSub[0], '2');

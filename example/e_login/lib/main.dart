@@ -28,7 +28,8 @@ class MyApp extends StatelessWidget {
       states: [
         AppState.init.build(
           (context) => InitLoader.of(
-            delay: const Duration(seconds: 1), //minimal duration of loading page
+            delay:
+                const Duration(seconds: 1), //minimal duration of loading page
             builder: (context) => LoadingPage(),
             load: (_) async {
               if (await Control.get<FirebaseControl>().restoreUser() != null) {

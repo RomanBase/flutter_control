@@ -15,19 +15,24 @@ class MainPage extends ControlWidget with RouteControl {
       child: Column(
         children: <Widget>[
           RaisedButton(
-            onPressed: () => Navigator.of(context).push(initRouteOf<NumberPage>(args: math.Random().nextInt(42))),
+            onPressed: () => Navigator.of(context)
+                .push(initRouteOf<NumberPage>(args: math.Random().nextInt(42))),
             child: Text('open page - nav'),
           ),
           RaisedButton(
-            onPressed: () => routeOf<NumberPage>().openRoute(args: math.Random().nextInt(42)),
+            onPressed: () => routeOf<NumberPage>()
+                .openRoute(args: math.Random().nextInt(42)),
             child: Text('open page - control'),
           ),
           RaisedButton(
-            onPressed: () => routeOf('/NumberPage/scale').openRoute(args: math.Random().nextInt(42)),
+            onPressed: () => routeOf('/NumberPage/scale')
+                .openRoute(args: math.Random().nextInt(42)),
             child: Text('open page - scale transition'),
           ),
           RaisedButton(
-            onPressed: () => routeOf<NumberPage>().viaRoute(NavTransitions.slideRoute).openRoute(args: math.Random().nextInt(42)),
+            onPressed: () => routeOf<NumberPage>()
+                .viaRoute(NavTransitions.slideRoute)
+                .openRoute(args: math.Random().nextInt(42)),
             child: Text('open page - slide route'),
           ),
         ],

@@ -1,7 +1,8 @@
 import 'package:flutter_control/core.dart';
 import 'package:spends/control/account/account_control.dart';
 
-class AccountPage extends SingleControlWidget<AccountControl> with RouteControl {
+class AccountPage extends SingleControlWidget<AccountControl>
+    with RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

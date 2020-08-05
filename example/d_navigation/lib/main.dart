@@ -18,7 +18,10 @@ class MyApp extends StatelessWidget {
       },
       routes: [
         ControlRoute.build<NumberPage>(builder: (_) => NumberPage()),
-        ControlRoute.build<NumberPage>(builder: (_) => NumberPage()).path('/scale').viaTransition(NavTransitions.scaleTransition, Duration(milliseconds: 750)),
+        ControlRoute.build<NumberPage>(builder: (_) => NumberPage())
+            .path('/scale')
+            .viaTransition(
+                NavTransitions.scaleTransition, Duration(milliseconds: 750)),
         ControlRoute.build<CustomDialog>(builder: (_) => CustomDialog()),
       ],
       states: [

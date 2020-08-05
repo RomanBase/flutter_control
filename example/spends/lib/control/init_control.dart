@@ -49,7 +49,9 @@ class InitControl extends InitLoaderControl with FireProvider {
   void signUp() async {
     loading.progress();
 
-    await fire.signUp(username.value, password.value, nickname.value).then((user) {
+    await fire
+        .signUp(username.value, password.value, nickname.value)
+        .then((user) {
       loading.done();
     }).catchError((err) {
       loading.error();

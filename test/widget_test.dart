@@ -106,7 +106,8 @@ void main() {
       final initializer = WidgetInitializer.of((context) => TestWidget(10));
       initializer.data = 'init';
 
-      await tester.pumpWidget(Builder(builder: initializer.wrap(args: {'key': 'args'})));
+      await tester.pumpWidget(
+          Builder(builder: initializer.wrap(args: {'key': 'args'})));
 
       expect(initializer.isInitialized, isTrue);
 
@@ -114,7 +115,8 @@ void main() {
 
       expect(widget, isNotNull);
       // ignore: invalid_use_of_protected_member
-      expect(widget.holder.args.length, 4); // '10', 'init', 'args', ControlModel.
+      expect(
+          widget.holder.args.length, 4); // '10', 'init', 'args', ControlModel.
       expect(widget.getArg<int>(), 10);
       expect(widget.getArg(key: String), 'init');
       expect(widget.getArg(key: 'key'), 'args');

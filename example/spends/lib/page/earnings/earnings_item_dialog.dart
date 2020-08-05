@@ -6,7 +6,8 @@ import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 import 'package:spends/widget/menu_picker.dart';
 
-class EarningsItemDialog extends SingleControlWidget<EarningsItemControl> with ThemeProvider<SpendTheme>, RouteControl {
+class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
+    with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

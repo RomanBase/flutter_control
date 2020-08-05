@@ -7,7 +7,8 @@ import 'package:spends/widget/tab_row.dart';
 import 'earnings_item_dialog.dart';
 import 'earnings_list_item.dart';
 
-class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvider<SpendTheme>, RouteControl {
+class EarningsPage extends SingleControlWidget<EarningsControl>
+    with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,7 +16,11 @@ class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvid
         children: <Widget>[
           Container(
             width: device.width,
-            padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
+            padding: EdgeInsets.only(
+                top: device.topBorderSize + theme.padding,
+                bottom: theme.padding,
+                left: theme.padding,
+                right: theme.padding),
             color: theme.primaryColor,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -44,7 +49,8 @@ class EarningsPage extends SingleControlWidget<EarningsControl> with ThemeProvid
               control: control.list,
               builder: (context, data) => ListView.builder(
                 physics: BouncingScrollPhysics(),
-                padding: EdgeInsets.only(top: theme.paddingQuad, bottom: theme.paddingExtended),
+                padding: EdgeInsets.only(
+                    top: theme.paddingQuad, bottom: theme.paddingExtended),
                 itemCount: data.length,
                 itemBuilder: (context, index) => EarningsListItem(
                   model: data[index],

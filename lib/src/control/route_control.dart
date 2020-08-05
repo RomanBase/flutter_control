@@ -3,7 +3,8 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-typedef RouteWidgetBuilder = Route Function(WidgetBuilder builder, RouteSettings settings);
+typedef RouteWidgetBuilder = Route Function(
+    WidgetBuilder builder, RouteSettings settings);
 
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
@@ -13,7 +14,8 @@ abstract class RouteNavigator {
   /// [root] - pushes route into root Navigator - onto top of everything.
   /// [replacement] - pushes route as replacement of current route.
   /// {@endtemplate}
-  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false});
+  Future<dynamic> openRoute(Route route,
+      {bool root: false, bool replacement: false});
 
   /// {@template route-root}
   /// Clears current [Navigator] and opens new [Route].
@@ -24,7 +26,8 @@ abstract class RouteNavigator {
   /// Opens specific dialog based on given [type]
   /// Be default opens simple pop-up dialog.
   /// {@endtemplate}
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: true, dynamic type});
+  Future<dynamic> openDialog(WidgetBuilder builder,
+      {bool root: true, dynamic type});
 
   /// {@template route-back-root}
   /// Goes back in navigation stack until first [Route].
@@ -34,7 +37,10 @@ abstract class RouteNavigator {
   /// {@template route-back-to}
   /// Goes back in navigation stack until [Route] found.
   /// {@endtemplate}
-  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate});
+  void backTo(
+      {Route route,
+      String identifier,
+      bool Function(Route<dynamic>) predicate});
 
   /// {@template route-close}
   /// Pops [Route] from navigation stack.
@@ -81,32 +87,38 @@ class RouteHandler {
   ///
   /// Do not open multiple routes from one handler !
   RouteHandler(this.navigator, this.routeProvider) {
-    assert(navigator != null, 'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
+    assert(navigator != null,
+        'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
     assert(routeProvider != null);
   }
 
   /// Creates copy of [RouteHandler] with given builder.
   ///
   /// @{macro route-route}
-  RouteHandler viaRoute(RouteWidgetBuilder builder) => RouteHandler(navigator, routeProvider.viaRoute(builder));
+  RouteHandler viaRoute(RouteWidgetBuilder builder) =>
+      RouteHandler(navigator, routeProvider.viaRoute(builder));
 
   /// Creates copy of [RouteHandler] with given transition.
   ///
   /// @{macro route-transition}
-  RouteHandler viaTransition(RouteTransitionsBuilder transition) => RouteHandler(navigator, routeProvider.viaTransition(transition));
+  RouteHandler viaTransition(RouteTransitionsBuilder transition) =>
+      RouteHandler(navigator, routeProvider.viaTransition(transition));
 
   /// Creates copy of [RouteHandler] with given path name.
   ///
   /// @{macro route-path}
-  RouteHandler path(String path) => RouteHandler(navigator, routeProvider.path(path));
+  RouteHandler path(String path) =>
+      RouteHandler(navigator, routeProvider.path(path));
 
   /// Creates copy of [RouteHandler] with given identifier.
   ///
   /// @{macro route-named}
-  RouteHandler named(String identifier) => RouteHandler(navigator, routeProvider.named(identifier));
+  RouteHandler named(String identifier) =>
+      RouteHandler(navigator, routeProvider.named(identifier));
 
   /// @{macro route-open}
-  Future<dynamic> openRoute({bool root: false, bool replacement: false, dynamic args}) {
+  Future<dynamic> openRoute(
+      {bool root: false, bool replacement: false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");
 
     _result = navigator.openRoute(
@@ -250,19 +262,22 @@ class ControlRoute {
   /// {@template route-route}
   /// Setups new [routeBuilder] and returns copy of [ControlRoute] with new settings..
   /// {@endtemplate}
-  ControlRoute viaRoute(RouteWidgetBuilder routeBuilder) => _copyWith(routeBuilder: routeBuilder);
+  ControlRoute viaRoute(RouteWidgetBuilder routeBuilder) =>
+      _copyWith(routeBuilder: routeBuilder);
 
   /// {@template route-transition}
   /// Setups new [transition] with given [duration] and returns copy of [ControlRoute] with new settings..
   /// [ControlRouteTransition] is used as [PageRoute].
   /// {@endtemplate}
-  ControlRoute viaTransition(RouteTransitionsBuilder transition, [Duration duration = const Duration(milliseconds: 300)]) => _copyWith(
-      routeBuilder: (builder, settings) => ControlRouteTransition(
-            builder: builder,
-            transition: transition,
-            duration: duration,
-            settings: settings,
-          ));
+  ControlRoute viaTransition(RouteTransitionsBuilder transition,
+          [Duration duration = const Duration(milliseconds: 300)]) =>
+      _copyWith(
+          routeBuilder: (builder, settings) => ControlRouteTransition(
+                builder: builder,
+                transition: transition,
+                duration: duration,
+                settings: settings,
+              ));
 
   /// {@template route-path}
   /// Alters current [identifier] with given [path] and returns copy of [ControlRoute] with new settings.
@@ -270,7 +285,9 @@ class ControlRoute {
   /// ControlRoute.of<DetailPage>().path('/detail/123');
   /// ```
   /// {@endtemplate}
-  ControlRoute path(String path) => _copyWith(identifier: RouteStore.routePathIdentifier(identifier: identifier, path: path));
+  ControlRoute path(String path) => _copyWith(
+      identifier:
+          RouteStore.routePathIdentifier(identifier: identifier, path: path));
 
   /// {@template route-name}
   /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
@@ -278,14 +295,19 @@ class ControlRoute {
   ControlRoute named(String identifier) => _copyWith(identifier: identifier);
 
   /// Creates copy of [RouteControl] with given settings.
-  ControlRoute _copyWith({dynamic identifier, dynamic settings, RouteWidgetBuilder routeBuilder}) => ControlRoute._()
-    ..identifier = identifier ?? this.identifier
-    ..settings = settings ?? this.settings
-    .._builder = _builder
-    .._routeBuilder = routeBuilder ?? this._routeBuilder;
+  ControlRoute _copyWith(
+          {dynamic identifier,
+          dynamic settings,
+          RouteWidgetBuilder routeBuilder}) =>
+      ControlRoute._()
+        ..identifier = identifier ?? this.identifier
+        ..settings = settings ?? this.settings
+        .._builder = _builder
+        .._routeBuilder = routeBuilder ?? this._routeBuilder;
 
   /// Initializes [RouteHandler] with given [navigator] and this Route provider.
-  RouteHandler navigator(RouteNavigator navigator) => RouteHandler(navigator, this);
+  RouteHandler navigator(RouteNavigator navigator) =>
+      RouteHandler(navigator, this);
 
   /// Registers this Route to [RouteStore].
   void register<T>() => Control.get<RouteStore>()?.addRoute<T>(this);
@@ -317,10 +339,14 @@ class ControlRouteTransition extends PageRoute {
   String get barrierLabel => null;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => builder(context);
+  Widget buildPage(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation) =>
+      builder(context);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) => transition(context, animation, secondaryAnimation, child);
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation, Widget child) =>
+      transition(context, animation, secondaryAnimation, child);
 
   @override
   bool get maintainState => true;
@@ -382,7 +408,8 @@ class RouteStore {
 
     assert(() {
       if (_routes.containsKey(identifier)) {
-        printDebug('Storage already contains key: $identifier. Route of this key will be overriden.');
+        printDebug(
+            'Storage already contains key: $identifier. Route of this key will be overriden.');
       }
       return true;
     }());

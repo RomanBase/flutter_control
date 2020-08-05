@@ -7,16 +7,20 @@ class FirebaseControl {
 
   String get username => user?.displayName ?? '';
 
-  Future<FirebaseUser> restoreUser() async => _user = await FirebaseAuth.instance.currentUser();
+  Future<FirebaseUser> restoreUser() async =>
+      _user = await FirebaseAuth.instance.currentUser();
 
   Future<FirebaseUser> login(String username, String password) async {
-    final response = await FirebaseAuth.instance.signInWithEmailAndPassword(email: username, password: password);
+    final response = await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: username, password: password);
 
     return _user = response.user;
   }
 
-  Future<FirebaseUser> register(String username, String password, String nickname) async {
-    final response = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: username, password: password);
+  Future<FirebaseUser> register(
+      String username, String password, String nickname) async {
+    final response = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: username, password: password);
 
     _user = response.user;
 

@@ -44,10 +44,18 @@ WeatherSys _$WeatherSysFromJson(Map<String, dynamic> json) {
 Weather _$WeatherFromJson(Map<String, dynamic> json) {
   return Weather(
     json['id'] as int,
-    json['coord'] == null ? null : Coord.fromJson(json['coord'] as Map<String, dynamic>),
-    json['main'] == null ? null : WeatherData.fromJson(json['main'] as Map<String, dynamic>),
-    json['wind'] == null ? null : Wind.fromJson(json['wind'] as Map<String, dynamic>),
-    json['sys'] == null ? null : WeatherSys.fromJson(json['sys'] as Map<String, dynamic>),
+    json['coord'] == null
+        ? null
+        : Coord.fromJson(json['coord'] as Map<String, dynamic>),
+    json['main'] == null
+        ? null
+        : WeatherData.fromJson(json['main'] as Map<String, dynamic>),
+    json['wind'] == null
+        ? null
+        : Wind.fromJson(json['wind'] as Map<String, dynamic>),
+    json['sys'] == null
+        ? null
+        : WeatherSys.fromJson(json['sys'] as Map<String, dynamic>),
     json['name'] as String,
   );
 }

@@ -25,7 +25,8 @@ class DialogPage extends SingleControlWidget<DialogControl> with RouteControl {
             child: Text('popup inside'),
           ),
           RaisedButton(
-            onPressed: () => openDialog((_) => CustomDialog(), type: 'custom_dialog'),
+            onPressed: () =>
+                openDialog((_) => CustomDialog(), type: 'custom_dialog'),
             child: Text('custom dialog'),
           ),
           RaisedButton(
@@ -48,7 +49,9 @@ class DialogPage extends SingleControlWidget<DialogControl> with RouteControl {
             return Container(
               color: Colors.black45,
               child: SlideTransition(
-                position: Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero).animate(anim),
+                position:
+                    Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero)
+                        .animate(anim),
                 child: builder(context),
               ),
             );
@@ -58,8 +61,11 @@ class DialogPage extends SingleControlWidget<DialogControl> with RouteControl {
         );
       case 'sheet':
         return showModalBottomSheet(
-          context: getContext(root: root), // If ControlScope.rootContext is not changed, then getContext(root: true) and userRootNavigator:true uses same Navigator.
-          useRootNavigator: false, // But some special app scenarios can require to change ControlScope.rootContext and prefer this way instead of using useRootNavigator.
+          context: getContext(
+              root:
+                  root), // If ControlScope.rootContext is not changed, then getContext(root: true) and userRootNavigator:true uses same Navigator.
+          useRootNavigator:
+              false, // But some special app scenarios can require to change ControlScope.rootContext and prefer this way instead of using useRootNavigator.
           builder: builder,
         );
     }

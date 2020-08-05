@@ -53,8 +53,10 @@ class MyApp extends StatelessWidget {
       routes: [
         ControlRoute.build<SpendItemDialog>(builder: (_) => SpendItemDialog()),
         ControlRoute.build<SpendGroupPage>(builder: (_) => SpendGroupPage()),
-        ControlRoute.build<SpendGroupEditDialog>(builder: (_) => SpendGroupEditDialog()),
-        ControlRoute.build<EarningsItemDialog>(builder: (_) => EarningsItemDialog()),
+        ControlRoute.build<SpendGroupEditDialog>(
+            builder: (_) => SpendGroupEditDialog()),
+        ControlRoute.build<EarningsItemDialog>(
+            builder: (_) => EarningsItemDialog()),
         ControlRoute.build<AccountPage>(builder: (_) => AccountPage()),
         ControlRoute.build<EarningsPage>(builder: (_) => EarningsPage()),
       ],
@@ -67,7 +69,8 @@ class MyApp extends StatelessWidget {
         initTheme: Brightness.dark,
       ),
       states: [
-        AppState.init.build((context) => InitLoader(builder: (_) => InitPage())),
+        AppState.init
+            .build((context) => InitLoader(builder: (_) => InitPage())),
         AppState.main.build((context) => MenuPage()),
       ],
       app: (setup, home) => MaterialApp(

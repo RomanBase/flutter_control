@@ -6,7 +6,8 @@ import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
 import 'package:spends/widget/menu_picker.dart';
 
-class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemeProvider<SpendTheme>, RouteControl {
+class SpendItemDialog extends SingleControlWidget<SpendItemControl>
+    with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -62,7 +63,8 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
                       }
 
                       return Padding(
-                        padding: EdgeInsets.symmetric(vertical: theme.paddingMid),
+                        padding:
+                            EdgeInsets.symmetric(vertical: theme.paddingMid),
                         child: Column(
                           children: <Widget>[
                             Row(
@@ -73,7 +75,8 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl> with ThemePr
                                     control: control.value,
                                     keyboardType: TextInputType.number,
                                     textInputAction: TextInputAction.next,
-                                    decoration: RoundInputDecoration(color: theme.lightGray),
+                                    decoration: RoundInputDecoration(
+                                        color: theme.lightGray),
                                     label: localize('value'),
                                   ),
                                 ),

@@ -31,7 +31,9 @@ class MenuPicker extends StatelessWidget with ThemeProvider<SpendTheme> {
     return ActionBuilder(
         control: control,
         builder: (context, value) {
-          final buttons = items.map((item) => _buildItem(context, item, value == item.key)).toList(growable: false);
+          final buttons = items
+              .map((item) => _buildItem(context, item, value == item.key))
+              .toList(growable: false);
 
           return wrap
               ? Wrap(

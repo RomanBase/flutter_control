@@ -8,7 +8,8 @@ import 'spend_group_page.dart';
 import 'spend_item_dialog.dart';
 import 'spend_list_item.dart';
 
-class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<SpendTheme>, RouteControl {
+class SpendsPage extends SingleControlWidget<SpendControl>
+    with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +19,11 @@ class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<Sp
             tag: 'toolbar',
             child: Container(
               width: device.width,
-              padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
+              padding: EdgeInsets.only(
+                  top: device.topBorderSize + theme.padding,
+                  bottom: theme.padding,
+                  left: theme.padding,
+                  right: theme.padding),
               color: theme.primaryColorDark,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -48,13 +53,15 @@ class SpendsPage extends SingleControlWidget<SpendControl> with ThemeProvider<Sp
               control: control.list,
               builder: (context, data) => ListView.builder(
                 physics: BouncingScrollPhysics(),
-                padding: EdgeInsets.only(top: theme.paddingQuad, bottom: theme.paddingExtended),
+                padding: EdgeInsets.only(
+                    top: theme.paddingQuad, bottom: theme.paddingExtended),
                 itemCount: data.length,
                 itemBuilder: (context, index) => SpendListItem(
                   model: data[index],
                   onPressed: (item) {
                     if (item.item.isGroup) {
-                      routeOf<SpendGroupPage>().openRoute(args: item, root: true);
+                      routeOf<SpendGroupPage>()
+                          .openRoute(args: item, root: true);
                     } else {
                       routeOf<SpendItemDialog>().openDialog(args: item);
                     }

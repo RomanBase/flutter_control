@@ -50,7 +50,8 @@ class CrossPage extends SingleControlWidget<CrossControl> {
                 builders: {
                   'blue': (_) => CrossControlPage('red', Colors.blue),
                   'red': (_) => CrossControlPage('orange', Colors.red),
-                  'orange': (_) => CrossControlPage('placeholder', Colors.orange),
+                  'orange': (_) =>
+                      CrossControlPage('placeholder', Colors.orange),
                 },
                 placeholder: (_) => CrossControlPage('blue', Colors.black),
                 transitionIn: CrossTransition(

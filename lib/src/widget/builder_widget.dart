@@ -50,7 +50,8 @@ class ControlBuilder<T> extends StatelessWidget {
 
     if (control is Stream) {
       return FieldBuilder<T>(
-        control: FieldControl.of(control), //TODO: close stream ? Field builder can't close Stream automatically.
+        control: FieldControl.of(
+            control), //TODO: close stream ? Field builder can't close Stream automatically.
         builder: builder,
         noData: noData,
         nullOk: nullOk,
@@ -59,7 +60,9 @@ class ControlBuilder<T> extends StatelessWidget {
 
     if (control is Future) {
       return FieldBuilder<T>(
-        control: FieldControl()..onFuture(control), //TODO: close stream ? Field builder can't close Stream automatically.
+        control: FieldControl()
+          ..onFuture(
+              control), //TODO: close stream ? Field builder can't close Stream automatically.
         builder: builder,
         noData: noData,
         nullOk: nullOk,

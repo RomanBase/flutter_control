@@ -7,7 +7,8 @@ import 'package:flutter_control/core.dart';
 /// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
 ///
 /// {@macro control-widget}
-abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget {
+abstract class SingleControlWidget<T extends ControlModel>
+    extends ControlWidget {
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
   T get control => hasControl ? controls[0] : null;
 
@@ -48,7 +49,8 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
 /// [ControlWidget] initialized with all [ControlModel]s passed to 'constructor' and 'init' [args].
 ///
 /// {@macro control-widget}
-abstract class MountedControlWidget<T extends ControlModel> extends ControlWidget {
+abstract class MountedControlWidget<T extends ControlModel>
+    extends ControlWidget {
   /// All [ControlModel]s from [args] will be initialized with this Widget.
   MountedControlWidget({Key key, dynamic args}) : super(key: key, args: args);
 
@@ -74,7 +76,9 @@ abstract class MountedControlWidget<T extends ControlModel> extends ControlWidge
 ///
 /// Also check [StateboundWidget] an abstract Widget focused to build smaller Widgets controlled by [StateControl] and [BaseModel].
 /// {@endtemplate}
-abstract class ControlWidget extends CoreWidget with LocalizationProvider implements Initializable, Disposable, StateNotifier {
+abstract class ControlWidget extends CoreWidget
+    with LocalizationProvider
+    implements Initializable, Disposable, StateNotifier {
   /// Widget's [State]
   /// It's available just after [ControlState] is initialized.
   @protected
@@ -111,7 +115,8 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   ///
   /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls() => autoMountControls ? holder.findControls() : [];
+  List<ControlModel> initControls() =>
+      autoMountControls ? holder.findControls() : [];
 
   @override
   ControlState<ControlWidget> createState() => ControlState();
@@ -168,12 +173,17 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
   void onStateChanged(dynamic state) {}
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
-  BuildContext getContext({bool root: false}) => root ? Control.root()?.context ?? context : context;
+  BuildContext getContext({bool root: false}) =>
+      root ? Control.root()?.context ?? context : context;
 
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
   /// [args] - Arguments to pass to [ControlModel].
-  T getControl<T extends ControlModel>({dynamic key, dynamic args}) => Control.resolve<T>(ControlArgs(controls).combineWith(holder.argStore).data, key: key, args: args ?? holder.args);
+  T getControl<T extends ControlModel>({dynamic key, dynamic args}) =>
+      Control.resolve<T>(
+          ControlArgs(controls).combineWith(holder.argStore).data,
+          key: key,
+          args: args ?? holder.args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
@@ -190,7 +200,8 @@ abstract class ControlWidget extends CoreWidget with LocalizationProvider implem
 }
 
 /// [State] of [ControlWidget]
-class ControlState<U extends ControlWidget> extends CoreState<U> implements StateNotifier {
+class ControlState<U extends ControlWidget> extends CoreState<U>
+    implements StateNotifier {
   List<ControlModel> controls;
 
   @override
@@ -259,7 +270,8 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   /// Returns currently active [Route].
   /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
   /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.
-  Route getActiveRoute() => getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
+  Route getActiveRoute() =>
+      getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
 
   /// Returns requested [Navigator].
   /// [root] - closest or first.
@@ -269,7 +281,8 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       return Navigator.of(context, rootNavigator: true);
     }
 
-    return Navigator.of(getContext(root: root)) ?? Navigator.of(context, rootNavigator: root);
+    return Navigator.of(getContext(root: root)) ??
+        Navigator.of(context, rootNavigator: root);
   }
 
   @override
@@ -283,15 +296,18 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   }
 
   /// {@macro route-store-get}
-  RouteHandler routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(this);
+  RouteHandler routeOf<T>([dynamic identifier]) =>
+      ControlRoute.of<T>(identifier)?.navigator(this);
 
   /// Initializes and returns [Route] via [RouteStore] and [RouteControl].
   ///
   /// {@macro route-store-get}
-  Route initRouteOf<T>({dynamic identifier, dynamic args}) => ControlRoute.of<T>(identifier)?.init(args: args);
+  Route initRouteOf<T>({dynamic identifier, dynamic args}) =>
+      ControlRoute.of<T>(identifier)?.init(args: args);
 
   @override
-  Future<dynamic> openRoute(Route route, {bool root: false, bool replacement: false}) {
+  Future<dynamic> openRoute(Route route,
+      {bool root: false, bool replacement: false}) {
     if (replacement) {
       return getNavigator().pushReplacement(route);
     } else {
@@ -305,11 +321,18 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   }
 
   @override
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root: true, dynamic type}) async {
-    return showDialog(context: getContext(root: root), builder: (context) => builder(context), useRootNavigator: false);
+  Future<dynamic> openDialog(WidgetBuilder builder,
+      {bool root: true, dynamic type}) async {
+    return showDialog(
+        context: getContext(root: root),
+        builder: (context) => builder(context),
+        useRootNavigator: false);
   }
 
-  void backTo({Route route, String identifier, bool Function(Route<dynamic>) predicate}) {
+  void backTo(
+      {Route route,
+      String identifier,
+      bool Function(Route<dynamic>) predicate}) {
     if (route != null) {
       getNavigator().popUntil((item) => item == route);
     }

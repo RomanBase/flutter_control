@@ -1,6 +1,7 @@
 import 'package:flutter_control/core.dart';
 
-typedef CrossTransitionBuilder = Widget Function(BuildContext context, Animation anim, Widget firstWidget, Widget secondWidget);
+typedef CrossTransitionBuilder = Widget Function(BuildContext context,
+    Animation anim, Widget firstWidget, Widget secondWidget);
 
 /// Holds anim duration and transition builder.
 class CrossTransition {
@@ -45,7 +46,8 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    animation = AnimationController(vsync: ticker, duration: Duration(milliseconds: 300));
+    animation = AnimationController(
+        vsync: ticker, duration: Duration(milliseconds: 300));
     animation.addListener(() {
       notifyState();
     });
@@ -127,7 +129,8 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
 /// Handles transition between two Widgets.
 /// This transition is controlled by [TransitionControl] and can be played both ways.
 /// Only one [Widget] is used at given time, second [Widget] is disposed when animation ends.
-class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTickerControl {
+class TransitionHolder extends StateboundWidget<TransitionControl>
+    with SingleTickerControl {
   /// Arg key for first widget. Actual [Key] is stored in [ControlArgHolder].
   static const _firstKey = 'first_key';
 
@@ -160,10 +163,12 @@ class TransitionHolder extends StateboundWidget<TransitionControl> with SingleTi
   Animation get animation => control.animation;
 
   /// Returns transition for [TransitionControl.crossIn].
-  CrossTransitionBuilder get transitionInBuilder => transitionIn?.builder ?? CrossTransitions.fadeCross();
+  CrossTransitionBuilder get transitionInBuilder =>
+      transitionIn?.builder ?? CrossTransitions.fadeCross();
 
   /// Returns transition for [TransitionControl.crossOut].
-  CrossTransitionBuilder get transitionOutBuilder => transitionOut?.builder ?? CrossTransitions.fadeCross();
+  CrossTransitionBuilder get transitionOutBuilder =>
+      transitionOut?.builder ?? CrossTransitions.fadeCross();
 
   /// Keyed first Widget.
   Widget get _firstWidget => KeyedSubtree(
@@ -273,7 +278,8 @@ class CrossTransitions {
 
   static get _progressReverse => Tween<double>(begin: 1.0, end: 0.0);
 
-  static CrossTransitionBuilder fade({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fade({Color backgroundColor}) =>
+      (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeOut.to(0.65),
@@ -301,7 +307,8 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder fadeOutFadeIn({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fadeOutFadeIn({Color backgroundColor}) =>
+      (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeIn.to(0.35),
@@ -329,7 +336,8 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder fadeCross({Color backgroundColor}) => (context, anim, firstWidget, secondWidget) {
+  static CrossTransitionBuilder fadeCross({Color backgroundColor}) =>
+      (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
           parent: anim,
           curve: Curves.easeOut,

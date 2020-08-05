@@ -29,7 +29,8 @@ class ControlBroadcast implements Disposable {
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData, {bool current: true}) {
+  BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData,
+      {bool current: true}) {
     assert(onData != null);
 
     final sub = BroadcastSubscription<T>._(key)
@@ -38,7 +39,9 @@ class ControlBroadcast implements Disposable {
 
     _subscriptions.add(sub);
 
-    if (current && _store.containsKey(key) && sub.isValidForBroadcast(sub.key, _store[key])) {
+    if (current &&
+        _store.containsKey(key) &&
+        sub.isValidForBroadcast(sub.key, _store[key])) {
       sub._notify(_store[key]);
     }
 
@@ -123,7 +126,10 @@ class BroadcastSubscription<T> implements Disposable {
   BroadcastSubscription._(this.key);
 
   /// Checks if [key] and [value] is eligible for this subscription.
-  bool isValidForBroadcast(dynamic key, dynamic value) => _active && (value == null || value is T) && (key == null || key == this.key);
+  bool isValidForBroadcast(dynamic key, dynamic value) =>
+      _active &&
+      (value == null || value is T) &&
+      (key == null || key == this.key);
 
   /// Pauses this subscription and [ControlBroadcast.broadcast] will skip this sub during next event.
   void pause() => _active = false;

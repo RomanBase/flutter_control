@@ -4,7 +4,8 @@ class UnitId {
   static const az = 'abcdefghijklmnopqrstuvwxyz';
   static const aZ = 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ';
   static const azn = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  static const aZn = 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789';
+  static const aZn =
+      'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789';
   static const hex = '0123456789ABCDEF';
 
   /// Cycles through given [sequence] and builds String based on given [index] number.
@@ -19,7 +20,8 @@ class UnitId {
       final count = sequence.length;
       final num = index ~/ count;
 
-      return cycleId(num - 1, sequence) + cycleId(index - count * num, sequence);
+      return cycleId(num - 1, sequence) +
+          cycleId(index - count * num, sequence);
     }
 
     return sequence[index];
@@ -34,7 +36,8 @@ class UnitId {
   /// 1 - b
   /// 26 - aa
   /// 27 - ab
-  static String charId(int index, {int digitOffset: 0}) => cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
+  static String charId(int index, {int digitOffset: 0}) =>
+      cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
 
   /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds 4 random chars to end of String.
   /// [UnitId.aZn] is used as input - so result is case sensitive and with numbers.
@@ -45,7 +48,11 @@ class UnitId {
   }
 
   /// Returns random String with given [length] and settings.
-  static String randomId({int length: 8, bool includeNums: false, bool toLower: false, bool toUpper: false}) {
+  static String randomId(
+      {int length: 8,
+      bool includeNums: false,
+      bool toLower: false,
+      bool toUpper: false}) {
     String sequence = az;
 
     if (includeNums) {

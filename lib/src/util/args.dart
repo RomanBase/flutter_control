@@ -50,7 +50,8 @@ class ControlArgs implements Disposable {
 
   /// Adds [value] to data store under given [key].
   /// [ControlFactory.keyOf] is used to determine store key.
-  void add<T>({dynamic key, @required dynamic value}) => _args[Control.factory().keyOf<T>(key: key, value: value)] = value;
+  void add<T>({dynamic key, @required dynamic value}) =>
+      _args[Control.factory().keyOf<T>(key: key, value: value)] = value;
 
   /// Clears original data and stores items from [args].
   void swap(ControlArgs args) {
@@ -93,7 +94,8 @@ class ControlArgs implements Disposable {
   }
 
   /// Returns object of given [key] or [defaultValue].
-  T get<T>({dynamic key, T defaultValue}) => Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
+  T get<T>({dynamic key, T defaultValue}) =>
+      Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
   /// Returns all items for given [test].
   List<T> getAll<T>({Predicate test}) {

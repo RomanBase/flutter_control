@@ -4,7 +4,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
-typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(
+    Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String locale);
 
 /// Map of supported locales, default locale and loading rules.
@@ -46,7 +47,8 @@ class LocalizationConfig {
   List<LocalizationAsset> toAssets() {
     final localizationAssets = List<LocalizationAsset>();
 
-    locales.forEach((key, value) => localizationAssets.add(LocalizationAsset(key.replaceAll('-', '_'), value)));
+    locales.forEach((key, value) => localizationAssets
+        .add(LocalizationAsset(key.replaceAll('-', '_'), value)));
 
     return localizationAssets;
   }
@@ -98,7 +100,8 @@ class LocalizationAsset {
 
   /// Builds a map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
-  static Map<String, String> build({AssetPath path: const AssetPath(), List<String> locales}) {
+  static Map<String, String> build(
+      {AssetPath path: const AssetPath(), List<String> locales}) {
     final map = Map<String, String>();
 
     locales.forEach((locale) => map[locale] = path.localization(locale));
@@ -172,7 +175,8 @@ class BaseLocalization with PrefsProvider {
   bool get isActive => _data.length > 0;
 
   /// Is [true] if any [LocalizationAsset] is valid.
-  bool get hasValidAsset => assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
+  bool get hasValidAsset =>
+      assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
 
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;
@@ -195,8 +199,10 @@ class BaseLocalization with PrefsProvider {
   /// Every localization change is broadcasted with result of data load.
   ///
   /// [callback] to listen results of locale changes.
-  static BroadcastSubscription<LocalizationArgs> subscribeChanges(ValueCallback<LocalizationArgs> callback) {
-    return BroadcastProvider.subscribe<LocalizationArgs>(BaseLocalization, callback);
+  static BroadcastSubscription<LocalizationArgs> subscribeChanges(
+      ValueCallback<LocalizationArgs> callback) {
+    return BroadcastProvider.subscribe<LocalizationArgs>(
+        BaseLocalization, callback);
   }
 
   /// Should be called first.
@@ -204,7 +210,8 @@ class BaseLocalization with PrefsProvider {
   ///
   /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
   /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
-  Future<LocalizationArgs> init({bool loadDefaultLocale: true, bool handleSystemLocale: true}) async {
+  Future<LocalizationArgs> init(
+      {bool loadDefaultLocale: true, bool handleSystemLocale: true}) async {
     loading = true;
 
     await prefs.mount();
@@ -253,7 +260,9 @@ class BaseLocalization with PrefsProvider {
   ///
   /// Returns preferred locale of this app instance.
   String getSystemLocale() {
-    return prefs.get(preference_key) ?? getAvailableAssetLocaleForDevice() ?? deviceLocale?.toString();
+    return prefs.get(preference_key) ??
+        getAvailableAssetLocaleForDevice() ??
+        deviceLocale?.toString();
   }
 
   /// Checks if preferred locale is loaded.
@@ -289,7 +298,8 @@ class BaseLocalization with PrefsProvider {
   /// [resetPreferred] - to reset preferred locale stored in shared preferences.
   /// Returns result of localization change [LocalizationArgs].
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> loadDefaultLocalization({bool resetPreferred: false}) {
+  Future<LocalizationArgs> loadDefaultLocalization(
+      {bool resetPreferred: false}) {
     if (resetPreferred) {
       resetPreferredLocale();
     }
@@ -325,7 +335,8 @@ class BaseLocalization with PrefsProvider {
   ///
   /// Returns result of localization change [LocalizationArgs].
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> changeLocale(String locale, {bool preferred: true}) async {
+  Future<LocalizationArgs> changeLocale(String locale,
+      {bool preferred: true}) async {
     loading = true;
 
     if (locale == null || !isLocalizationAvailable(locale)) {
@@ -369,7 +380,8 @@ class BaseLocalization with PrefsProvider {
   ///
   /// Returns result of localization change [LocalizationArgs].
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data, {String locale}) async {
+  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data,
+      {String locale}) async {
     data.forEach((key, value) => _data[key] = value);
 
     if (locale != null) {
@@ -450,7 +462,8 @@ class BaseLocalization with PrefsProvider {
   Locale getLocale(String locale) => getAsset(locale)?.toLocale();
 
   /// Loads localization from asset file for given [locale] and [path].
-  Future<LocalizationArgs> _loadAssetLocalization(String locale, String path) async {
+  Future<LocalizationArgs> _loadAssetLocalization(
+      String locale, String path) async {
     if (path == null) {
       return LocalizationArgs(
         locale: locale,
@@ -571,7 +584,8 @@ class BaseLocalization with PrefsProvider {
         final data = _data[key];
         final nums = List<int>();
 
-        data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+        data.forEach(
+            (num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
         nums.sort();
 
         String output;
@@ -669,7 +683,8 @@ class BaseLocalization with PrefsProvider {
   /// [parser] custom parser of returned data - can return custom Address class.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) {
+  dynamic localizeDynamic(String key,
+      {LocalizationParser parser, dynamic defaultValue}) {
     if (_data.containsKey(key)) {
       if (parser != null) {
         return parser(_data[key], locale);
@@ -689,7 +704,8 @@ class BaseLocalization with PrefsProvider {
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(dynamic data, {String locale, String defaultLocale}) {
+  String extractLocalization(dynamic data,
+      {String locale, String defaultLocale}) {
     locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 
@@ -713,12 +729,14 @@ class BaseLocalization with PrefsProvider {
   /// Sets custom extractor for [extractLocalization].
   ///
   /// Default extractor is [Map] based: {'locale': 'value'}.
-  void setCustomExtractor(LocalizationExtractor extractor) => _mapExtractor = extractor;
+  void setCustomExtractor(LocalizationExtractor extractor) =>
+      _mapExtractor = extractor;
 
   /// Sets custom decorator for string formatting
   ///
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
-  void setCustomParamDecorator(ParamDecoratorFormat decorator) => _paramDecorator = decorator;
+  void setCustomParamDecorator(ParamDecoratorFormat decorator) =>
+      _paramDecorator = decorator;
 
   /// Updates value in current localization set.
   /// This update is only runtime and isn't stored to localization file.
@@ -762,7 +780,8 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
   Locale get locale => localization.getLocale(localization.locale);
 
   @override
-  bool isSupported(Locale locale) => localization.isLocalizationAvailable(locale.toString());
+  bool isSupported(Locale locale) =>
+      localization.isLocalizationAvailable(locale.toString());
 
   @override
   Future<BaseLocalization> load(Locale locale) async {
@@ -790,7 +809,8 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 /// Access to [BaseLocalizationDelegate] is handled via static functions.
 mixin LocalizationProvider {
   /// Shortcut for delegate of default [BaseLocalization].
-  static BaseLocalizationDelegate get delegate => Control.localization().delegate;
+  static BaseLocalizationDelegate get delegate =>
+      Control.localization().delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
@@ -809,19 +829,23 @@ mixin LocalizationProvider {
 
   ///[BaseLocalization.localizeOr]
   @protected
-  String localizeOr(String key, List<String> alterKeys) => localization.localizeOr(key, alterKeys);
+  String localizeOr(String key, List<String> alterKeys) =>
+      localization.localizeOr(key, alterKeys);
 
   ///[BaseLocalization.localizeFormat]
   @protected
-  String localizeFormat(String key, Map<String, String> params) => localization.localizeFormat(key, params);
+  String localizeFormat(String key, Map<String, String> params) =>
+      localization.localizeFormat(key, params);
 
   ///[BaseLocalization.localizePlural]
   @protected
-  String localizePlural(String key, int plural, [Map<String, String> params]) => localization.localizePlural(key, plural, params);
+  String localizePlural(String key, int plural, [Map<String, String> params]) =>
+      localization.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeGender]
   @protected
-  String localizeGender(String key, String gender) => localization.localizeGender(key, gender);
+  String localizeGender(String key, String gender) =>
+      localization.localizeGender(key, gender);
 
   ///[BaseLocalization.localizeList]
   @protected
@@ -829,9 +853,15 @@ mixin LocalizationProvider {
 
   ///[BaseLocalization.localizeDynamic]
   @protected
-  dynamic localizeDynamic(String key, {LocalizationParser parser, dynamic defaultValue}) => localization.localizeDynamic(key, parser: parser, defaultValue: defaultValue);
+  dynamic localizeDynamic(String key,
+          {LocalizationParser parser, dynamic defaultValue}) =>
+      localization.localizeDynamic(key,
+          parser: parser, defaultValue: defaultValue);
 
   ///[BaseLocalization.extractLocalization]
   @protected
-  String extractLocalization(dynamic data, {String locale, String defaultLocale}) => localization.extractLocalization(data, locale: locale, defaultLocale: defaultLocale);
+  String extractLocalization(dynamic data,
+          {String locale, String defaultLocale}) =>
+      localization.extractLocalization(data,
+          locale: locale, defaultLocale: defaultLocale);
 }

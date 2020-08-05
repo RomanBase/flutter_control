@@ -21,11 +21,13 @@ final _menu = [
   ),
   TabItem(
     key: 'inside',
-    builder: (_) => NavigatorStack.single(builder: (_) => MainPage(), control: _insideControl),
+    builder: (_) => NavigatorStack.single(
+        builder: (_) => MainPage(), control: _insideControl),
   ),
   TabItem(
     key: 'dialog',
-    builder: (_) => NavigatorStack.single(builder: (_) => DialogPage(), control: _dialogControl),
+    builder: (_) => NavigatorStack.single(
+        builder: (_) => DialogPage(), control: _dialogControl),
   ),
   TabItem(
     key: 'hello',
@@ -33,7 +35,8 @@ final _menu = [
   ),
 ];
 
-class TabControl extends ControlModel with RouteControlProvider, TickerComponent {
+class TabControl extends ControlModel
+    with RouteControlProvider, TickerComponent {
   TabController tab;
 
   @override
@@ -69,7 +72,8 @@ class TabControl extends ControlModel with RouteControlProvider, TickerComponent
   }
 }
 
-class MenuPage extends SingleControlWidget<TabControl> with TickerControl, RouteControl {
+class MenuPage extends SingleControlWidget<TabControl>
+    with TickerControl, RouteControl {
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -94,7 +98,8 @@ class MenuPage extends SingleControlWidget<TabControl> with TickerControl, Route
                     for (int i = 0; i < _menu.length; i++)
                       RaisedButton(
                         onPressed: () => tab.index = i,
-                        color: tab.index == i ? Colors.amberAccent : Colors.grey,
+                        color:
+                            tab.index == i ? Colors.amberAccent : Colors.grey,
                         child: Text(_menu[i].key),
                       ),
                   ],

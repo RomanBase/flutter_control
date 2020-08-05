@@ -6,7 +6,9 @@ typedef InitInjection<T> = void Function(T item, dynamic args);
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
-  static Injector of(Map<Type, InitInjection> injectors, {InitInjection other}) => BaseInjector(injectors: injectors, other: other);
+  static Injector of(Map<Type, InitInjection> injectors,
+          {InitInjection other}) =>
+      BaseInjector(injectors: injectors, other: other);
 }
 
 class BaseInjector implements Injector, Disposable {
@@ -29,7 +31,8 @@ class BaseInjector implements Injector, Disposable {
 
     assert(() {
       if (_injectors.containsKey(T)) {
-        printDebug('Injector already contains type: ${T.toString()}. Injection of this type will be overriden.');
+        printDebug(
+            'Injector already contains type: ${T.toString()}. Injection of this type will be overriden.');
       }
       return true;
     }());
@@ -56,7 +59,8 @@ class BaseInjector implements Injector, Disposable {
     }
 
     if (T != dynamic) {
-      final key = _injectors.keys.firstWhere((item) => item.runtimeType is T, orElse: () => null);
+      final key = _injectors.keys
+          .firstWhere((item) => item.runtimeType is T, orElse: () => null);
 
       if (key != null) {
         return _injectors[key];

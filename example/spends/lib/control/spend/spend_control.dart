@@ -15,7 +15,10 @@ class SpendControl extends BaseControl with RepoProvider {
   final monthSubSpend = StringControl();
 
   //TODO: group in group - func
-  List<SpendItem> get groups => list.where((model) => model.item.isGroup).map((model) => model.item).toList(growable: false);
+  List<SpendItem> get groups => list
+      .where((model) => model.item.isGroup)
+      .map((model) => model.item)
+      .toList(growable: false);
 
   @override
   void onInit(Map args) {
@@ -60,7 +63,8 @@ class SpendControl extends BaseControl with RepoProvider {
   }
 
   //TODO: group in group
-  SpendItemModel findGroup(String id) => list.firstWhere((model) => model.item.id == id && model.item.isGroup);
+  SpendItemModel findGroup(String id) =>
+      list.firstWhere((model) => model.item.id == id && model.item.isGroup);
 
   Future<void> addItem(SpendItem item) async {
     if (item.groupId != null) {

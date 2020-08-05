@@ -16,7 +16,8 @@ class _UIControl extends ControlModel {
   }
 
   void _onScroll() {
-    if (scroll.position.pixels >= scroll.position.maxScrollExtent - _offset && _control.loading.isDone) {
+    if (scroll.position.pixels >= scroll.position.maxScrollExtent - _offset &&
+        _control.loading.isDone) {
       _control.loadMore();
     }
   }

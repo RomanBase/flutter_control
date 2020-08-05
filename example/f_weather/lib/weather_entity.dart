@@ -24,7 +24,8 @@ class WeatherData {
   @JsonKey(name: 'temp_max')
   final double tempMax;
 
-  WeatherData(this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax);
+  WeatherData(
+      this.temp, this.pressure, this.humidity, this.tempMin, this.tempMax);
 
   factory WeatherData.fromJson(Map json) => _$WeatherDataFromJson(json);
 }
@@ -48,7 +49,8 @@ class WeatherSys {
   final int sunrise;
   final int sunset;
 
-  WeatherSys(this.type, this.id, this.message, this.country, this.sunrise, this.sunset);
+  WeatherSys(this.type, this.id, this.message, this.country, this.sunrise,
+      this.sunset);
 
   factory WeatherSys.fromJson(Map json) => _$WeatherSysFromJson(json);
 }
@@ -65,7 +67,8 @@ class Weather {
   final WeatherSys sys;
   final String name;
 
-  String get nameWithCountry => sys?.country != null ? '$name, ${sys.country}' : name;
+  String get nameWithCountry =>
+      sys?.country != null ? '$name, ${sys.country}' : name;
 
   Weather(this.id, this.coord, this.data, this.wind, this.sys, this.name);
 

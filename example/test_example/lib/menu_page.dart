@@ -5,9 +5,11 @@ import 'package:flutter_control_example/swap_page.dart';
 import 'cards_page.dart';
 import 'settings_page.dart';
 
-class MenuPage extends SingleControlWidget<NavigatorStackControl> with LocalizationProvider {
+class MenuPage extends SingleControlWidget<NavigatorStackControl>
+    with LocalizationProvider {
   @override
-  NavigatorStackControl initControl() => NavigatorStackControl(initialPageIndex: 1);
+  NavigatorStackControl initControl() =>
+      NavigatorStackControl(initialPageIndex: 1);
 
   @override
   void onInit(Map args) {
@@ -35,7 +37,8 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> with Localizat
           MenuItem(
             key: 'cross',
             iconBuilder: (selected) => selected ? Icons.filter : Icons.crop,
-            titleBuilder: (selected) => selected ? localize('cross_up') : localize('cross'),
+            titleBuilder: (selected) =>
+                selected ? localize('cross_up') : localize('cross'),
           ): (context) => CrossPage(),
           MenuItem(
             key: 'swap',

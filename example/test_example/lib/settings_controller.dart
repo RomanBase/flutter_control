@@ -1,6 +1,7 @@
 import 'package:flutter_control/core.dart';
 
-class SettingsController extends BaseControl with LocalizationProvider, PrefsProvider, ThemeProvider {
+class SettingsController extends BaseControl
+    with LocalizationProvider, PrefsProvider, ThemeProvider {
   final localizationLoading = LoadingControl();
 
   void changeLocaleToEN() => changeLocale('en_US');

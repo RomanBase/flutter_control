@@ -5,11 +5,13 @@ import 'package:spends/data/spend_repo.dart';
 mixin RepoProvider {
   SpendRepo _spendRepo;
 
-  SpendRepo get spendRepo => _spendRepo ?? (_spendRepo = Control.init<SpendRepo>());
+  SpendRepo get spendRepo =>
+      _spendRepo ?? (_spendRepo = Control.init<SpendRepo>());
 
   EarningsRepo _earningsRepo;
 
-  EarningsRepo get earningsRepo => _earningsRepo ?? (_earningsRepo = Control.init<EarningsRepo>());
+  EarningsRepo get earningsRepo =>
+      _earningsRepo ?? (_earningsRepo = Control.init<EarningsRepo>());
 
   static Map<Type, Initializer> initializers({
     @required Initializer<SpendRepo> spendRepo,

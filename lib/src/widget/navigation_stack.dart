@@ -233,7 +233,8 @@ class NavigatorStack extends StatefulWidget {
   _NavigatorStackState createState() => _NavigatorStackState();
 }
 
-class _NavigatorStackState extends State<NavigatorStack> implements _StackNavigator {
+class _NavigatorStackState extends State<NavigatorStack>
+    implements _StackNavigator {
   BuildContext _navigatorContext;
 
   @override
@@ -322,7 +323,9 @@ class NavigatorStackControl extends BaseControl with StateControl {
   List<NavigatorControl> get items => _items;
 
   /// List of MenuItems set in Widget construct phase.
-  List<MenuItem> get menuItems => _items == null ? [] : _items.map((item) => item.menu).toList(growable: false);
+  List<MenuItem> get menuItems => _items == null
+      ? []
+      : _items.map((item) => item.menu).toList(growable: false);
 
   /// Returns current controller - based on [currentPageIndex].
   NavigatorControl get currentControl => _items[currentPageIndex];
@@ -394,7 +397,9 @@ class NavigatorStackControl extends BaseControl with StateControl {
 
   void setPageByItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
 
-  void setPageByKey(dynamic key) => setPageByItem(menuItems.firstWhere((item) => item.key == key, orElse: () => MenuItem(key: null)));
+  void setPageByKey(dynamic key) =>
+      setPageByItem(menuItems.firstWhere((item) => item.key == key,
+          orElse: () => MenuItem(key: null)));
 
   void setInitialPage() => setPageIndex(_initialIndex ?? 0);
 
@@ -434,7 +439,8 @@ class NavigatorStackControl extends BaseControl with StateControl {
   }
 }
 
-typedef StackGroupBuilder = Widget Function(BuildContext context, int index, List<NavigatorStack> items);
+typedef StackGroupBuilder = Widget Function(
+    BuildContext context, int index, List<NavigatorStack> items);
 
 class StackGroupBuilders {
   static StackGroupBuilder get stack => (context, index, items) => IndexedStack(
@@ -443,7 +449,8 @@ class StackGroupBuilders {
         children: items,
       );
 
-  static StackGroupBuilder get single => (context, index, items) => items[index];
+  static StackGroupBuilder get single =>
+      (context, index, items) => items[index];
 }
 
 /// [NavigatorStack]
@@ -470,7 +477,8 @@ class NavigatorStackGroup extends StatefulWidget {
   _NavigatorStackGroupState createState() => _NavigatorStackGroupState();
 }
 
-class _NavigatorStackGroupState extends State<NavigatorStackGroup> with SingleTickerProviderStateMixin {
+class _NavigatorStackGroupState extends State<NavigatorStackGroup>
+    with SingleTickerProviderStateMixin {
   NavigatorStackControl get control => widget.control;
 
   List<NavigatorStack> _items;
@@ -502,7 +510,8 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> with SingleTi
   void _updateIndex() {
     if (control._initialIndex == null && widget.initialIndex != null) {
       control._initialIndex = widget.initialIndex;
-      control._pageIndex.setValue(control._initialIndex, notifyListeners: false);
+      control._pageIndex
+          .setValue(control._initialIndex, notifyListeners: false);
     }
   }
 
@@ -519,10 +528,15 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> with SingleTi
     }
 
     final oldMenu = control.menuItems;
-    final newMenu = widget.items.map((page) => page.control.menu).toList(growable: false);
+    final newMenu =
+        widget.items.map((page) => page.control.menu).toList(growable: false);
 
-    final oldMenuHasKeys = oldMenu.firstWhere((item) => item.key == null, orElse: () => null) == null;
-    final newMenuHasKeys = newMenu.firstWhere((item) => item.key == null, orElse: () => null) == null;
+    final oldMenuHasKeys =
+        oldMenu.firstWhere((item) => item.key == null, orElse: () => null) ==
+            null;
+    final newMenuHasKeys =
+        newMenu.firstWhere((item) => item.key == null, orElse: () => null) ==
+            null;
 
     if (oldMenuHasKeys && newMenuHasKeys) {
       if (oldMenu.length == newMenu.length) {
@@ -574,7 +588,8 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> with SingleTi
     return ActionBuilder(
       control: widget.control.pageIndex,
       builder: (context, index) {
-        final stack = (widget.builder ?? StackGroupBuilders.stack)(context, index, _items);
+        final stack = (widget.builder ?? StackGroupBuilders.stack)(
+            context, index, _items);
 
         if (widget.overrideNavigation) {
           return WillPopScope(
@@ -601,10 +616,14 @@ class _InstantRoute extends PageRoute {
   String get barrierLabel => null;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) => builder(context);
+  Widget buildPage(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation) =>
+      builder(context);
 
   @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) => child;
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation, Widget child) =>
+      child;
 
   @override
   bool get maintainState => true;

@@ -7,7 +7,8 @@ class AssetPath {
   const AssetPath({this.rootDir: 'assets'});
 
   /// Refers to assets/path
-  String root(String path) => path.startsWith('/') ? "$rootDir$path" : "$rootDir/$path";
+  String root(String path) =>
+      path.startsWith('/') ? "$rootDir$path" : "$rootDir/$path";
 
   /// Refers to assets/images/name.ext
   /// Default [ext] is 'png'.
@@ -28,7 +29,8 @@ class AssetPath {
 
   /// Refers to assets/localization/name.ext
   /// Default [ext] is 'json'.
-  String localization(String name, [String ext = 'json']) => root("localization/$name.$ext");
+  String localization(String name, [String ext = 'json']) =>
+      root("localization/$name.$ext");
 }
 
 /// Wraps [ThemeData] and [Device] to provide more settings and custom properties that are more app design specific.
@@ -124,9 +126,11 @@ class ControlTheme {
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  Size get toolbarAreaSize => Size(device.width, device.topBorderSize + barHeight);
+  Size get toolbarAreaSize =>
+      Size(device.width, device.topBorderSize + barHeight);
 
-  Size get menuAreaSize => Size(device.width, device.bottomBorderSize + barHeight);
+  Size get menuAreaSize =>
+      Size(device.width, device.bottomBorderSize + barHeight);
 
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -165,7 +169,8 @@ class ControlTheme {
     assert(_context != null);
   }
 
-  static BroadcastSubscription<ControlTheme> subscribeChanges(ValueCallback<ControlTheme> callback) {
+  static BroadcastSubscription<ControlTheme> subscribeChanges(
+      ValueCallback<ControlTheme> callback) {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }
 
@@ -207,14 +212,17 @@ class ControlTheme {
 
   @override
   bool operator ==(other) {
-    return other is ControlTheme && data == other.data && this.runtimeType == other.runtimeType;
+    return other is ControlTheme &&
+        data == other.data &&
+        this.runtimeType == other.runtimeType;
   }
 
   @override
   int get hashCode => data.hashCode;
 }
 
-typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(T control);
+typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(
+    T control);
 
 class ThemeConfig<T extends ControlTheme> {
   static const preference_key = 'control_theme';
@@ -223,11 +231,14 @@ class ThemeConfig<T extends ControlTheme> {
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
-  Initializer<T> get initializer => (context) => builder(context)..config = this;
+  Initializer<T> get initializer =>
+      (context) => builder(context)..config = this;
 
-  String get preferredThemeName => Control.get<BasePrefs>().get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
+  String get preferredThemeName => Control.get<BasePrefs>()
+      .get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
 
-  static Brightness get platformBrightness => SchedulerBinding.instance.window.platformBrightness;
+  static Brightness get platformBrightness =>
+      SchedulerBinding.instance.window.platformBrightness;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({
@@ -239,13 +250,16 @@ class ThemeConfig<T extends ControlTheme> {
   bool contains(dynamic key) {
     key = Parse.name(key);
 
-    return themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null) != null;
+    return themes.keys.firstWhere((item) => Parse.name(item) == key,
+            orElse: () => null) !=
+        null;
   }
 
   ThemeData getTheme(dynamic key, T control) {
     key = Parse.name(key);
 
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
+    key = themes.keys
+        .firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
 
     if (themes.containsKey(key)) {
       return themes[key](control);
@@ -258,9 +272,11 @@ class ThemeConfig<T extends ControlTheme> {
 
   ThemeData getSystemTheme(T control) => getTheme(preferredThemeName, control);
 
-  void setAsPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, Parse.name(initTheme));
+  void setAsPreferred() => Control.get<BasePrefs>()
+      .set(ThemeConfig.preference_key, Parse.name(initTheme));
 
-  void resetPreferred() => Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
+  void resetPreferred() =>
+      Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
 
   ThemeConfig copyWith({
     dynamic theme,
@@ -273,7 +289,8 @@ class ThemeConfig<T extends ControlTheme> {
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>([BuildContext context]) => Control.init<ControlTheme>(context);
+  static T of<T extends ControlTheme>([BuildContext context]) =>
+      Control.init<ControlTheme>(context);
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
@@ -319,6 +336,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   void invalidateTheme([BuildContext context]) {
-    theme?.invalidate(context != null && themeScope == ControlTheme.scope ? context : null);
+    theme?.invalidate(
+        context != null && themeScope == ControlTheme.scope ? context : null);
   }
 }

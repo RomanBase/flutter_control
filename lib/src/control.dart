@@ -103,7 +103,11 @@ class Control {
       initAsync: () async {
         await prefs.init();
         await FutureBlock.wait([
-          localization.initLocale ? loc.init(loadDefaultLocale: localization.loadDefaultLocale, handleSystemLocale: localization.handleSystemLocale) : null,
+          localization.initLocale
+              ? loc.init(
+                  loadDefaultLocale: localization.loadDefaultLocale,
+                  handleSystemLocale: localization.handleSystemLocale)
+              : null,
           initAsync?.call(),
         ]);
       },
@@ -127,13 +131,15 @@ class Control {
   /// [Control] provides static call for this function via [Control.get].
   ///
   /// nullable
-  static T get<T>({dynamic key, dynamic args, bool withInjector: true}) => factory().get<T>(key: key, args: args, withInjector: withInjector);
+  static T get<T>({dynamic key, dynamic args, bool withInjector: true}) =>
+      factory().get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Returns [key] of stored [value].
-  static dynamic set<T>({dynamic key, @required dynamic value}) => factory().set<T>(key: key, value: value);
+  static dynamic set<T>({dynamic key, @required dynamic value}) =>
+      factory().set<T>(key: key, value: value);
 
   /// Returns new object of requested [Type] via initializer in [ControlFactory].
   /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
@@ -153,13 +159,17 @@ class Control {
   /// [Initializable.init] is called only when [args] are not null.
   ///
   /// [Control] provides static call for this function via [Control.inject].
-  static void inject<T>(dynamic item, {dynamic args}) => factory().inject(item, args: args, withInjector: true, withArgs: true);
+  static void inject<T>(dynamic item, {dynamic args}) =>
+      factory().inject(item, args: args, withInjector: true, withArgs: true);
 
   /// Executes sequence of functions to retrieve expected object.
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] / [ControlFactory.init] is executed.
   /// Returns object from [source] or via [ControlFactory] or [defaultValue].
   /// nullable
-  static T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) => factory().resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
+  static T resolve<T>(dynamic source,
+          {dynamic key, dynamic args, T defaultValue}) =>
+      factory()
+          .resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
   /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
@@ -167,7 +177,8 @@ class Control {
   /// Set [dispose] to dispose removed object/s.
   ///
   /// Returns number of removed items.
-  static int remove<T>({dynamic key, bool dispose: false}) => factory().remove<T>(key: key, dispose: dispose);
+  static int remove<T>({dynamic key, bool dispose: false}) =>
+      factory().remove<T>(key: key, dispose: dispose);
 }
 
 /// Provider of [ControlBroadcast].
@@ -182,26 +193,32 @@ class BroadcastProvider {
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  static BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData) => ControlFactory._instance._broadcast.subscribe(key, onData);
+  static BroadcastSubscription<T> subscribe<T>(
+          dynamic key, ValueChanged<T> onData) =>
+      ControlFactory._instance._broadcast.subscribe(key, onData);
 
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  static BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) => ControlFactory._instance._broadcast.subscribeEvent(key, callback);
+  static BroadcastSubscription subscribeEvent(
+          dynamic key, VoidCallback callback) =>
+      ControlFactory._instance._broadcast.subscribeEvent(key, callback);
 
   /// Sends [value] to global object stream.
   /// Subs with same [key] and [value] type will be notified.
   /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
   ///
   /// Returns number of notified subs.
-  static void broadcast(dynamic key, dynamic value, {bool store: false}) => ControlFactory._instance._broadcast.broadcast(key, value, store: store);
+  static void broadcast(dynamic key, dynamic value, {bool store: false}) =>
+      ControlFactory._instance._broadcast.broadcast(key, value, store: store);
 
   /// Sends event to global event stream.
   /// Subs with same [key] will be notified.
   ///
   /// Returns number of notified subs.
-  static void broadcastEvent(dynamic key) => ControlFactory._instance._broadcast.broadcastEvent(key);
+  static void broadcastEvent(dynamic key) =>
+      ControlFactory._instance._broadcast.broadcastEvent(key);
 }
 
 /// Main singleton class.
@@ -261,7 +278,11 @@ class ControlFactory with Disposable {
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   ///
   /// Factory can be initialized just once - until [ControlFactory.clear] is executed.
-  bool initialize({Map entries, Map<Type, Initializer> initializers, Injector injector, Future Function() initAsync}) {
+  bool initialize(
+      {Map entries,
+      Map<Type, Initializer> initializers,
+      Injector injector,
+      Future Function() initAsync}) {
     if (_initialized) {
       return false;
     }
@@ -291,7 +312,8 @@ class ControlFactory with Disposable {
       if (value is DisposeHandler) {
         value.preferSoftDispose = true;
 
-        printDebug('Factory prefers soft dispose of $key - ${value.runtimeType.toString()}');
+        printDebug(
+            'Factory prefers soft dispose of $key - ${value.runtimeType.toString()}');
       }
     });
 
@@ -347,7 +369,8 @@ class ControlFactory with Disposable {
   void setInitializer<T>(Initializer<T> initializer) {
     assert(() {
       if (_initializers.containsKey(T)) {
-        printDebug('Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be overriden.');
+        printDebug(
+            'Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be overriden.');
       }
       return true;
     }());
@@ -367,7 +390,8 @@ class ControlFactory with Disposable {
     assert(key != null);
     assert(() {
       if (_items.containsKey(key) && _items[key] != value) {
-        printDebug('Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
+        printDebug(
+            'Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
       }
       return true;
     }());
@@ -407,9 +431,11 @@ class ControlFactory with Disposable {
       T item;
 
       if (T != dynamic) {
-        item = _items.values.firstWhere((item) => item is T, orElse: () => null);
+        item =
+            _items.values.firstWhere((item) => item is T, orElse: () => null);
       } else if (key == Type) {
-        item = _items.values.firstWhere((item) => item.runtimeType == key, orElse: () => null);
+        item = _items.values
+            .firstWhere((item) => item.runtimeType == key, orElse: () => null);
       }
 
       if (item != null) {
@@ -462,7 +488,8 @@ class ControlFactory with Disposable {
   /// [Initializable.init] is called only when [args] are not null.
   ///
   /// [Control] provides static call for this function via [Control.inject].
-  void inject<T>(dynamic item, {dynamic args, bool withInjector: true, bool withArgs: true}) {
+  void inject<T>(dynamic item,
+      {dynamic args, bool withInjector: true, bool withArgs: true}) {
     if (withInjector && _injector != null) {
       _injector.inject<T>(item, args);
     }
@@ -499,7 +526,8 @@ class ControlFactory with Disposable {
     if (_initializers.containsKey(T)) {
       return _initializers[T];
     } else if (T != dynamic) {
-      final key = _initializers.keys.firstWhere((item) => item is T, orElse: () => null);
+      final key = _initializers.keys
+          .firstWhere((item) => item is T, orElse: () => null);
 
       if (key != null) {
         return _initializers[key];
@@ -586,7 +614,12 @@ class ControlFactory with Disposable {
       }
 
       //TODO: subtype
-      if (_items.values.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null || _initializers.keys.firstWhere((item) => item.runtimeType == value, orElse: () => null) != null) {
+      if (_items.values.firstWhere((item) => item.runtimeType == value,
+                  orElse: () => null) !=
+              null ||
+          _initializers.keys.firstWhere((item) => item.runtimeType == value,
+                  orElse: () => null) !=
+              null) {
         return true;
       }
     }
@@ -600,7 +633,8 @@ class ControlFactory with Disposable {
   /// This function do not check subtypes!
   ///
   /// Returns true if [key] is found.
-  bool containsKey(dynamic key) => _items.containsKey(key) || key is Type && _initializers.containsKey(key);
+  bool containsKey(dynamic key) =>
+      _items.containsKey(key) || key is Type && _initializers.containsKey(key);
 
   /// Checks if Type is in Factory.
   /// Looks to store and initializers.

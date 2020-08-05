@@ -29,7 +29,8 @@ class MyApp extends StatelessWidget {
         'cards': CardsController(),
       },
       initializers: {
-        DetailController: (args) => DetailController(Parse.getArg<CardModel>(args)),
+        DetailController: (args) =>
+            DetailController(Parse.getArg<CardModel>(args)),
         CrossControl: (args) => CrossControl(),
       },
       injector: Injector.of({
@@ -87,7 +88,9 @@ class MyTheme extends ControlTheme {
         ThemeData: (_) => ThemeData(
               primaryColor: Colors.deepOrange,
             ),
-        Brightness.light: (_) => ThemeData.light().copyWith(primaryColor: Colors.green),
-        Brightness.dark: (_) => ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
+        Brightness.light: (_) =>
+            ThemeData.light().copyWith(primaryColor: Colors.green),
+        Brightness.dark: (_) =>
+            ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
       };
 }

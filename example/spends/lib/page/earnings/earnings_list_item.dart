@@ -4,7 +4,8 @@ import 'package:spends/control/earnings/earnings_item_model.dart';
 import 'package:spends/entity/earnings_item.dart';
 import 'package:spends/theme.dart';
 
-class EarningsListItem extends SingleControlWidget<EarningsItemModel> with ThemeProvider<SpendTheme> {
+class EarningsListItem extends SingleControlWidget<EarningsItemModel>
+    with ThemeProvider<SpendTheme> {
   final ValueCallback<EarningsItemModel> onPressed;
   final ValueCallback<EarningsItemModel> onRemove;
 
@@ -22,7 +23,8 @@ class EarningsListItem extends SingleControlWidget<EarningsItemModel> with Theme
       child: Container(
         margin: EdgeInsets.only(top: 1),
         child: FlatButton(
-          padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingQuarter),
+          padding: EdgeInsets.symmetric(
+              horizontal: theme.padding, vertical: theme.paddingQuarter),
           onPressed: () => onPressed(control),
           child: Row(
             children: <Widget>[

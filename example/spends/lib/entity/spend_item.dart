@@ -9,7 +9,10 @@ enum SpendType {
 extension SpendTypeExtension on SpendType {
   String asData() => this.toString().split('.')[1];
 
-  SpendType asType(dynamic value) => value == null ? this : SpendType.values.firstWhere((item) => item.asData() == value, orElse: () => this);
+  SpendType asType(dynamic value) => value == null
+      ? this
+      : SpendType.values
+          .firstWhere((item) => item.asData() == value, orElse: () => this);
 }
 
 class SpendItem {
@@ -110,7 +113,9 @@ class SpendItem {
         'note': note,
         'value': value.toDouble(),
         'type': type.asData(),
-        'items': (items != null && items.length > 0) ? items.map((item) => item.asData()).toList() : null,
+        'items': (items != null && items.length > 0)
+            ? items.map((item) => item.asData()).toList()
+            : null,
       };
 
   SpendItem copyWith({
@@ -146,7 +151,8 @@ class SpendItem {
         return 0;
       };
 
-  static int Function(SpendItem a, SpendItem b) get byTitle => (a, b) => a.title.compareTo(b.title);
+  static int Function(SpendItem a, SpendItem b) get byTitle =>
+      (a, b) => a.title.compareTo(b.title);
 
   static int Function(SpendItem a, SpendItem b) get byYearSpend => (a, b) {
         if (a.yearSpend > b.yearSpend) {

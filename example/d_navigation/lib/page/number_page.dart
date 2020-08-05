@@ -39,7 +39,9 @@ class NumberControl extends ControlModel with RouteControlProvider {
   openNext() async {
     stopTimer();
 
-    await routeOf<NumberPage>().path('/${number.value}').openRoute(args: [number.value, true]);
+    await routeOf<NumberPage>()
+        .path('/${number.value}')
+        .openRoute(args: [number.value, true]);
 
     startTimer();
   }

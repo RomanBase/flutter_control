@@ -8,7 +8,8 @@ import 'spend_group_edit_dialog.dart';
 import 'spend_item_dialog.dart';
 import 'spend_list_item.dart';
 
-class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemeProvider<SpendTheme>, RouteControl {
+class SpendGroupPage extends SingleControlWidget<SpendGroupControl>
+    with ThemeProvider<SpendTheme>, RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +19,11 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
             tag: 'toolbar',
             child: Container(
               width: device.width,
-              padding: EdgeInsets.only(top: device.topBorderSize + theme.padding, bottom: theme.padding, left: theme.padding, right: theme.padding),
+              padding: EdgeInsets.only(
+                  top: device.topBorderSize + theme.padding,
+                  bottom: theme.padding,
+                  left: theme.padding,
+                  right: theme.padding),
               color: theme.primaryColorDark,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -48,12 +53,14 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
               control: control.list,
               builder: (context, data) => ListView.builder(
                 physics: BouncingScrollPhysics(),
-                padding: EdgeInsets.only(top: theme.paddingQuad, bottom: theme.paddingExtended),
+                padding: EdgeInsets.only(
+                    top: theme.paddingQuad, bottom: theme.paddingExtended),
                 itemCount: data.length,
                 itemBuilder: (context, index) => SpendListItem(
                   model: data[index],
                   onPressed: (item) {
-                    routeOf<SpendItemDialog>().openDialog(args: [item, control]);
+                    routeOf<SpendItemDialog>()
+                        .openDialog(args: [item, control]);
                   },
                   onRemove: (item) => control.removeItem(item),
                 ),
@@ -84,7 +91,8 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl> with ThemePr
               ),
               IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () => routeOf<SpendGroupEditDialog>().openDialog(args: control.group),
+                onPressed: () => routeOf<SpendGroupEditDialog>()
+                    .openDialog(args: control.group),
               ),
               SizedBox(
                 width: theme.padding,

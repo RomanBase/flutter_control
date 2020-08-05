@@ -65,12 +65,16 @@ class MainPage extends ControlWidget with RouteControl {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: () => Control.broadcaster().broadcast(Locale, Locale('en')),
-                    child: Text(LocalizationProvider.of(context).localize('button_en')),
+                    onPressed: () =>
+                        Control.broadcaster().broadcast(Locale, Locale('en')),
+                    child: Text(
+                        LocalizationProvider.of(context).localize('button_en')),
                   ),
                   RaisedButton(
-                    onPressed: () => Control.broadcaster().broadcast(Locale, Locale('es')),
-                    child: Text(LocalizationProvider.of(context).localize('button_es')),
+                    onPressed: () =>
+                        Control.broadcaster().broadcast(Locale, Locale('es')),
+                    child: Text(
+                        LocalizationProvider.of(context).localize('button_es')),
                   ),
                 ],
               ),
@@ -95,7 +99,8 @@ class RowItem extends StatelessWidget {
     return Column(
       children: <Widget>[
         Text(index.toString()),
-        Text(LocalizationProvider.of(context).localizePlural('index', index, {'n': index.toString()})),
+        Text(LocalizationProvider.of(context)
+            .localizePlural('index', index, {'n': index.toString()})),
       ],
     );
   }

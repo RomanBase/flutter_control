@@ -7,7 +7,8 @@ import 'earnings/earnings_item_dialog.dart';
 import 'earnings/earnings_page.dart';
 import 'spend/spend_item_dialog.dart';
 
-class MenuPage extends SingleControlWidget<NavigatorStackControl> with RouteControl, ThemeProvider<SpendTheme> {
+class MenuPage extends SingleControlWidget<NavigatorStackControl>
+    with RouteControl, ThemeProvider<SpendTheme> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

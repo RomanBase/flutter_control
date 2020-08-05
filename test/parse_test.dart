@@ -5,7 +5,18 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const list = <int>[0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const map = <String, int>{'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9};
+  const map = <String, int>{
+    '0': 0,
+    '1': 1,
+    '2': 2,
+    '3': 3,
+    '4': 4,
+    '5': 5,
+    '6': 6,
+    '7': 7,
+    '8': 8,
+    '9': 9
+  };
 
   group('Parse primitives', () {
     test('string', () {
@@ -43,14 +54,17 @@ void main() {
     test('list', () {
       final parse1 = Parse.toList<int>(list, hardCast: true);
       final parse2 = Parse.toList<int>(list, hardCast: false);
-      final parse3 = Parse.toList<String>(list, converter: (item) => item.toString());
+      final parse3 =
+          Parse.toList<String>(list, converter: (item) => item.toString());
 
       final parse4 = Parse.toList<int>(map, hardCast: true);
       final parse5 = Parse.toList<int>(map, hardCast: false);
 
-      final parse6 = Parse.toList<String>(map, converter: (item) => item.toString());
+      final parse6 =
+          Parse.toList<String>(map, converter: (item) => item.toString());
       final parse7 = Parse.toList<String>('value');
-      final parse8 = Parse.toList<String>(0, converter: (value) => value.toString());
+      final parse8 =
+          Parse.toList<String>(0, converter: (value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
@@ -69,9 +83,13 @@ void main() {
     });
 
     test('list entry', () {
-      final parse1 = Parse.toList<int>(list, entryConverter: (index, value) => Parse.toInteger(index) + value);
-      final parse2 = Parse.toList<int>(map, entryConverter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
-      final parse3 = Parse.toList<String>(0, entryConverter: (index, value) => value.toString());
+      final parse1 = Parse.toList<int>(list,
+          entryConverter: (index, value) => Parse.toInteger(index) + value);
+      final parse2 = Parse.toList<int>(map,
+          entryConverter: (index, value) =>
+              Parse.toInteger(index) + Parse.toInteger(value));
+      final parse3 = Parse.toList<String>(0,
+          entryConverter: (index, value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
@@ -85,14 +103,17 @@ void main() {
     test('map', () {
       final parse1 = Parse.toMap<int>(list, hardCast: true);
       final parse2 = Parse.toMap<int>(list, hardCast: false);
-      final parse3 = Parse.toMap<String>(list, converter: (item) => item.toString());
+      final parse3 =
+          Parse.toMap<String>(list, converter: (item) => item.toString());
 
       final parse4 = Parse.toMap<int>(map, hardCast: true);
       final parse5 = Parse.toMap<int>(map, hardCast: false);
-      final parse6 = Parse.toMap<String>(map, converter: (item) => item.toString());
+      final parse6 =
+          Parse.toMap<String>(map, converter: (item) => item.toString());
 
       final parse7 = Parse.toMap<String>('value');
-      final parse8 = Parse.toMap<String>(0, converter: (value) => value.toString());
+      final parse8 =
+          Parse.toMap<String>(0, converter: (value) => value.toString());
 
       final parse9 = Parse.toMap<String>(list, hardCast: true);
 
@@ -115,9 +136,13 @@ void main() {
     });
 
     test('map entry', () {
-      final parse1 = Parse.toMap<int>(list, entryConverter: (index, value) => Parse.toInteger(index) + value);
-      final parse2 = Parse.toMap<int>(map, entryConverter: (index, value) => Parse.toInteger(index) + Parse.toInteger(value));
-      final parse3 = Parse.toMap<String>(0, entryConverter: (index, value) => value.toString());
+      final parse1 = Parse.toMap<int>(list,
+          entryConverter: (index, value) => Parse.toInteger(index) + value);
+      final parse2 = Parse.toMap<int>(map,
+          entryConverter: (index, value) =>
+              Parse.toInteger(index) + Parse.toInteger(value));
+      final parse3 = Parse.toMap<String>(0,
+          entryConverter: (index, value) => value.toString());
 
       expect(parse1.length, 10);
       expect(parse2.length, 10);
@@ -134,7 +159,8 @@ void main() {
       final parse0 = Parse.getArgFromList(null, defaultValue: -1);
       final parse1 = Parse.getArgFromList<int>(list);
       final parse2 = Parse.getArgFromList(list, predicate: (item) => item == 5);
-      final parse3 = Parse.getArgFromList(list, predicate: (item) => item == -1, defaultValue: 10);
+      final parse3 = Parse.getArgFromList(list,
+          predicate: (item) => item == -1, defaultValue: 10);
       final ext = list.getArg(predicate: (item) => item == 5);
 
       expect(parse0, -1);
@@ -148,7 +174,8 @@ void main() {
       final parse0 = Parse.getArgFromMap(null, defaultValue: -1);
       final parse1 = Parse.getArgFromMap<int>(map);
       final parse2 = Parse.getArgFromMap(map, predicate: (item) => item == 5);
-      final parse3 = Parse.getArgFromMap(map, predicate: (item) => item == -1, defaultValue: 10);
+      final parse3 = Parse.getArgFromMap(map,
+          predicate: (item) => item == -1, defaultValue: 10);
       final parse4 = Parse.getArgFromMap(map, key: int);
       final parse5 = Parse.getArgFromMap(map, key: '5');
       final parse6 = Parse.getArgFromMap<double>(map, defaultValue: -1.0);
@@ -169,7 +196,8 @@ void main() {
 
       final parse0 = Parse.getArgFromString(null, defaultValue: 'empty');
       final parse1 = Parse.getArgFromString(json, key: '5');
-      final parse2 = Parse.getArgFromString(json, predicate: (item) => item == 5);
+      final parse2 =
+          Parse.getArgFromString(json, predicate: (item) => item == 5);
       final parse3 = Parse.getArgFromString('null');
 
       expect(parse0, 'empty');
