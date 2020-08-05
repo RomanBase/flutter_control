@@ -97,6 +97,9 @@ abstract class FieldControlStream<T> {
   /// Current value - last passed object to [Stream].
   T get value => null;
 
+  /// Dynamic metadata of this control.
+  dynamic get data => null;
+
   /// Subscribes callback to [Stream] changes.
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   /// [FieldSubscription] is automatically closed during dispose phase of [FieldControl].
@@ -123,9 +126,14 @@ class FieldControlSub<T> implements FieldControlStream<T> {
   /// Private constructor used by [FieldControl].
   FieldControlSub._(this._parent);
 
+  @override
   Stream<T> get stream => _parent.stream;
 
+  @override
   T get value => _parent.value;
+
+  @override
+  dynamic get data => _parent.data;
 
   @override
   FieldSubscription subscribe(void Function(T event) onData, {Function onError, void Function() onDone, bool cancelOnError = false, bool current = true}) {
@@ -160,7 +168,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Use [sinkConverter] to convert input data.
   Sink<T> get sink => FieldSink<T>(this);
 
-  /// Default stream of this control.
+  @override
   Stream<T> get stream => _stream.stream;
 
   /// Checks if [Stream] is not closed.
@@ -172,11 +180,11 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Current value.
   T _value;
 
-  /// Returns current value - last passed to Stream.
+  @override
   T get value => _value;
 
   /// Sets value to [Stream] and notifies listeners.
-  set value(value) => setValue(value);
+  set value(T value) => setValue(value);
 
   /// Checks if [value] is not 'null'.
   bool get isNotEmpty => _value != null;
@@ -186,6 +194,9 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
 
   /// Returns [FieldControlSub] to provide read only version of [FieldControl].
   FieldControlSub<T> get sub => FieldControlSub<T>._(this);
+
+  @override
+  dynamic data;
 
   /// Initializes control and [Stream] with default [value].
   FieldControl([T value]) {
@@ -204,6 +215,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
+  @override
   bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
 
   /// Initializes [FieldControl] and subscribes it to given [stream].
@@ -302,6 +314,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
     );
   }
 
+  @override
   FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
@@ -320,6 +333,7 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
     );
   }
 
+  @override
   FieldSubscription streamTo(FieldControl control, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
     if (value != null && value != control.value) {
       control.setValue(converter != null ? converter(value) : value);
@@ -605,8 +619,6 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// [List.first]
   T get first => value.first;
-
-  dynamic data;
 
   /// Filters data into given [controller].
   StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter, Predicate<T> filter}) {
