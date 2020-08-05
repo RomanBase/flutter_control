@@ -18,8 +18,6 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
   List<ControlModel> initControls() {
     final control = initControl();
 
-    assert(control != null);
-
     if (autoMountControls) {
       final controls = holder.findControls();
 
@@ -30,6 +28,10 @@ abstract class SingleControlWidget<T extends ControlModel> extends ControlWidget
       controls.insert(0, control);
 
       return controls;
+    }
+
+    if (control == null) {
+      printDebug('NULL Control - $this');
     }
 
     return [control];
