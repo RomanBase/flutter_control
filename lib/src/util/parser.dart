@@ -641,7 +641,8 @@ extension IterableExtension on Iterable {
           yield item;
         })
         .skip(1)
-        .toList();
+        .toList()
+        .cast<T>();
 
     if (header != null) {
       list.insert(0, header);
