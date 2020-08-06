@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-/// Extended [CoreWidget] what subscribes to just one [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].
-/// And state of this Widget is controlled from outside by [StateControl.notifyState].
-/// Whenever state of [ControlState] is changed, this Widget is rebuild.
+/// Extended [CoreWidget] what subscribes to just one [Listenable] or [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].
+/// And state of this Widget is controlled from outside by [StateControl.notifyState] or by [ChangeNotifier.notifyListeners].
+/// Whenever state of [ControlState]/[ChangeNotifier] is changed, this Widget is rebuild.
 abstract class StateboundWidget<T extends Listenable> extends CoreWidget
     with LocalizationProvider {
   /// Current [StateControl] that notifies Widget about changes.
   @protected
   final T control;
 
-  /// Current state [value] of [StateControl]
+  /// Current value of [control].
+  /// [StateControl] returns [value] of state -> [StateControl.state.value].
+  /// [ValueListenable] returns it's [value].
+  /// [fallbackState] value or 'null' is returned otherwise.
   @protected
   dynamic get state {
     if (control is ValueListenable) {
@@ -24,11 +27,13 @@ abstract class StateboundWidget<T extends Listenable> extends CoreWidget
     return fallbackState?.call(control);
   }
 
+  /// Function that returns fallback [value] of [state] when no-value [control] is used.
   final dynamic Function(T control) fallbackState;
 
-  /// Widget that is controlled by [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]..
+  /// Widget that is controlled by [Listenable] or [StateControl].
   /// [control] - State to subscribe. Whenever state is changed, this Widget is rebuild.
   /// [args] - Initial arguments to store. Can be whatever - [Object], [Iterable], [Map] and also [ControlArgs]. This arguments will be passed to [control] if implements [Initializable].
+  /// [fallbackState] - Builds fallback [value] of [state]. This value is used when no-value [control] is used (e.g. pure [Listenable]).
   StateboundWidget({
     Key key,
     @required this.control,
