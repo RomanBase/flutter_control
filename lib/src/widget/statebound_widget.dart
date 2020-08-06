@@ -14,11 +14,11 @@ abstract class StateboundWidget<T extends Listenable> extends CoreWidget
   @protected
   dynamic get state {
     if (control is ValueListenable) {
-      (control as ValueListenable).value;
+      return (control as ValueListenable).value;
     }
 
     if (control is StateControl) {
-      (control as StateControl).state.value;
+      return (control as StateControl).state.value;
     }
 
     return fallbackState?.call(control);
