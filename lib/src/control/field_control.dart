@@ -137,14 +137,22 @@ abstract class FieldControlStream<T> {
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   /// [FieldSubscription] is automatically closed during dispose phase of [FieldControl].
   /// Returns [FieldSubscription] for manual cancellation.
-  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true});
+  FieldSubscription subscribe(void onData(T event),
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      bool current: true});
 
   /// Given [control] will subscribe to [Stream] of this Field.
   /// Whenever value in [Stream] is changed [control] will be notified.
   /// Via [ValueConverter] is possible to convert value from input stream type to own stream value.
   /// [StreamSubscription] is automatically closed during dispose phase of [control].
   /// Returns [FieldSubscription] for manual cancellation.
-  FieldSubscription streamTo(FieldControl control, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter});
+  FieldSubscription streamTo(FieldControl control,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      ValueConverter converter});
 
   bool equal(FieldControlStream other);
 }
@@ -172,13 +180,29 @@ class FieldControlSub<T> implements FieldControlStream<T> {
   FieldControlListenable get listenable => FieldControlListenable<T>(_parent);
 
   @override
-  FieldSubscription subscribe(void Function(T event) onData, {Function onError, void Function() onDone, bool cancelOnError = false, bool current = true}) {
-    return _parent.subscribe(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError, current: current);
+  FieldSubscription subscribe(void Function(T event) onData,
+      {Function onError,
+      void Function() onDone,
+      bool cancelOnError = false,
+      bool current = true}) {
+    return _parent.subscribe(onData,
+        onError: onError,
+        onDone: onDone,
+        cancelOnError: cancelOnError,
+        current: current);
   }
 
   @override
-  FieldSubscription streamTo(FieldControl control, {Function onError, void Function() onDone, bool cancelOnError = false, converter}) {
-    return _parent.streamTo(control, onError: onError, onDone: onDone, cancelOnError: cancelOnError, converter: converter);
+  FieldSubscription streamTo(FieldControl control,
+      {Function onError,
+      void Function() onDone,
+      bool cancelOnError = false,
+      converter}) {
+    return _parent.streamTo(control,
+        onError: onError,
+        onDone: onDone,
+        cancelOnError: cancelOnError,
+        converter: converter);
   }
 
   @override
@@ -186,10 +210,12 @@ class FieldControlSub<T> implements FieldControlStream<T> {
 
   @override
   bool operator ==(other) {
-    return other is FieldControlStream && other.value == value || other == value;
+    return other is FieldControlStream && other.value == value ||
+        other == value;
   }
 
-  bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
+  bool equal(FieldControlStream other) =>
+      identityHashCode(this) == identityHashCode(other);
 }
 
 /// {@macro action-control}
@@ -249,17 +275,24 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
 
   @override
   bool operator ==(other) {
-    return other is FieldControlStream && other.value == value || other == value;
+    return other is FieldControlStream && other.value == value ||
+        other == value;
   }
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
   @override
-  bool equal(FieldControlStream other) => identityHashCode(this) == identityHashCode(other);
+  bool equal(FieldControlStream other) =>
+      identityHashCode(this) == identityHashCode(other);
 
   /// Initializes [FieldControl] and subscribes it to given [stream].
   /// Check [subscribeTo] function for more info.
-  factory FieldControl.of(Stream stream, {T initValue, Function onError, void onDone(), bool cancelOnError: false, ValueConverter<T> converter}) {
+  factory FieldControl.of(Stream stream,
+      {T initValue,
+      Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      ValueConverter<T> converter}) {
     final control = FieldControl(initValue);
 
     control.subscribeTo(
@@ -302,10 +335,12 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
 
   /// Returns [Sink] with custom [ValueConverter].
-  Sink sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
+  Sink sinkConverter(ValueConverter<T> converter) =>
+      FieldSinkConverter(this, converter);
 
   /// Creates sub and stores reference for later dispose..
-  FieldSubscription _addSub(StreamSubscription subscription, {Function onError, void onDone(), bool cancelOnError: false}) {
+  FieldSubscription _addSub(StreamSubscription subscription,
+      {Function onError, void onDone(), bool cancelOnError: false}) {
     if (_subscriptions == null) {
       _subscriptions = List();
     }
@@ -323,14 +358,19 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   /// Sets [value] after [future] finishes.
   /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
   /// Returns [Future] to await and register other callbacks.
-  Future onFuture(Future future, {ValueConverter converter}) => future.then((value) => setValue(converter == null ? value : converter(value)));
+  Future onFuture(Future future, {ValueConverter converter}) => future
+      .then((value) => setValue(converter == null ? value : converter(value)));
 
   /// Subscribes this field to given [Stream].
   /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
   /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
   /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
   /// Returns [FieldSubscription] for manual cancellation.
-  FieldSubscription subscribeTo(Stream stream, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
+  FieldSubscription subscribeTo(Stream stream,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      ValueConverter converter}) {
     return _addSub(
       stream.listen(
         (data) {
@@ -354,7 +394,11 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   }
 
   @override
-  FieldSubscription subscribe(void onData(T event), {Function onError, void onDone(), bool cancelOnError: false, bool current: true}) {
+  FieldSubscription subscribe(void onData(T event),
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      bool current: true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
@@ -373,7 +417,11 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   }
 
   @override
-  FieldSubscription streamTo(FieldControl control, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter}) {
+  FieldSubscription streamTo(FieldControl control,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      ValueConverter converter}) {
     if (value != null && value != control.value) {
       control.setValue(converter != null ? converter(value) : value);
     }
@@ -411,7 +459,8 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   }
 
   /// Cancels and removes specific subscription
-  void cancelSubscription(FieldSubscription subscription, {bool dispose: true}) {
+  void cancelSubscription(FieldSubscription subscription,
+      {bool dispose: true}) {
     if (_subscriptions != null) {
       _subscriptions.remove(subscription);
 
@@ -426,7 +475,8 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
   }
 
   /// Checks if given [subscription] is subscribed to [Stream] and is active.
-  bool isSubscriptionValid(FieldSubscription subscription) => isActive && _subscriptions.contains(subscription);
+  bool isSubscriptionValid(FieldSubscription subscription) =>
+      isActive && _subscriptions.contains(subscription);
 
   @override
   String toString() {
@@ -562,7 +612,8 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
   final _subs = List<FieldSubscription>();
 
   /// Maps values from controls to List.
-  List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
+  List _mapValues() =>
+      widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {
@@ -660,7 +711,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   T get first => value.first;
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl controller, {Function onError, void onDone(), bool cancelOnError: false, ValueConverter converter, Predicate<T> filter}) {
+  StreamSubscription filterTo(FieldControl controller,
+      {Function onError,
+      void onDone(),
+      bool cancelOnError: false,
+      ValueConverter converter,
+      Predicate<T> filter}) {
     return subscribe(
       (data) {
         if (filter != null) {
@@ -823,7 +879,8 @@ class ListControl<T> extends FieldControl<List<T>> {
   T reduce(T combine(T value, T element)) => value.reduce(combine);
 
   /// [Iterable.fold].
-  E fold<E>(E initialValue, E combine(E previousValue, T element)) => value.fold(initialValue, combine);
+  E fold<E>(E initialValue, E combine(E previousValue, T element)) =>
+      value.fold(initialValue, combine);
 
   /// [Iterable.every].
   bool every(bool test(T element)) => value.every(test);
@@ -864,10 +921,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   Iterable<T> where(Predicate<T> test) => value.where(test);
 
   /// [Iterable.indexWhere]
-  int indexWhere(Predicate<T> test, [int start = 0]) => value.indexWhere(test, start);
+  int indexWhere(Predicate<T> test, [int start = 0]) =>
+      value.indexWhere(test, start);
 
   /// [List.lastIndexWhere].
-  int lastIndexWhere(bool test(T element), [int start]) => value.lastIndexWhere(test, start);
+  int lastIndexWhere(bool test(T element), [int start]) =>
+      value.lastIndexWhere(test, start);
 
   /// [Iterable.indexOf]
   int indexOf(T object) => value.indexOf(object);
@@ -946,7 +1005,8 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   dynamic message;
 
   /// [FieldControl] of [LoadingStatus].
-  LoadingControl([LoadingStatus status = LoadingStatus.initial]) : super(status);
+  LoadingControl([LoadingStatus status = LoadingStatus.initial])
+      : super(status);
 
   /// Changes status and sets inner message.
   void setStatus(LoadingStatus status, {dynamic msg}) {
@@ -973,7 +1033,8 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   /// Changes status based on given [loading] value and sets inner message.
   /// 'true' - [LoadingStatus.progress].
   /// 'false' - [LoadingStatus.done].
-  void status(bool loading, {dynamic msg}) => loading ? progress(msg: msg) : done(msg: msg);
+  void status(bool loading, {dynamic msg}) =>
+      loading ? progress(msg: msg) : done(msg: msg);
 }
 
 // TODO: move to WIDGET folder in v1.1
@@ -1008,21 +1069,26 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
           key: key,
           control: control,
           builder: (context, snapshot) {
-            final state = snapshot.hasData ? snapshot.data : LoadingStatus.initial;
+            final state =
+                snapshot.hasData ? snapshot.data : LoadingStatus.initial;
 
             return CaseWidget(
               activeCase: state,
               builders: {
                 LoadingStatus.initial: initial,
-                LoadingStatus.progress: progress ?? (context) => Center(child: CircularProgressIndicator()),
+                LoadingStatus.progress: progress ??
+                    (context) => Center(child: CircularProgressIndicator()),
                 LoadingStatus.done: done,
-                LoadingStatus.error: error ?? (context) => Center(child: Text(control.message ?? 'error')),
+                LoadingStatus.error: error ??
+                    (context) =>
+                        Center(child: Text(control.message ?? 'error')),
                 LoadingStatus.outdated: outdated,
                 LoadingStatus.unknown: unknown,
               },
               placeholder: (_) => Container(),
               transitionIn: CrossTransition(
-                builder: CrossTransitions.fadeOutFadeIn(backgroundColor: Colors.transparent),
+                builder: CrossTransitions.fadeOutFadeIn(
+                    backgroundColor: Colors.transparent),
               ),
               transitions: transitions,
             );
@@ -1154,9 +1220,11 @@ class DoubleControl extends FieldControl<double> {
   /// [max] - Override of [DoubleControl.max].
   ///
   /// Range is typically used with [DoubleControl.inRange] constructor and then setting value via [setValue] or [value] setter.
-  void setInRange(double value, {double min, double max, bool notifyListeners: true}) {
+  void setInRange(double value,
+      {double min, double max, bool notifyListeners: true}) {
     if (clamp) {
-      super.setValue((value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
+      super.setValue(
+          (value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
         super.setValue(value, notifyListeners: notifyListeners);
@@ -1209,7 +1277,8 @@ class IntegerControl extends FieldControl<int> {
   /// Range is typically used with [DoubleControl.inRange] constructor and then setting value via [setValue] or [value] setter.
   void setInRange(int value, {int min, int max, bool notifyListeners: true}) {
     if (clamp) {
-      super.setValue((value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
+      super.setValue(
+          (value ?? min ?? this.min).clamp(min ?? this.min, max ?? this.max));
     } else {
       if (value >= min && value <= max) {
         super.setValue(value, notifyListeners: notifyListeners);

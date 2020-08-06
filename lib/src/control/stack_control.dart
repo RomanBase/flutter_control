@@ -48,7 +48,8 @@ class StackControl<T> implements ActionControlObservable<T>, Disposable {
   ActionControlObservable<T> get sub => ActionControlSub<T>(_control);
 
   @override
-  ActionControlListenable<T> get listenable => ActionControlListenable<T>(_control);
+  ActionControlListenable<T> get listenable =>
+      ActionControlListenable<T>(_control);
 
   StackControl({T value, bool root = false}) {
     _root = root;
@@ -184,14 +185,19 @@ class StackControl<T> implements ActionControlObservable<T>, Disposable {
   void cancel([ActionSubscription sub]) => _control.cancel(sub);
 
   /// [ActionControlObservable.subscribe]
-  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) => _control.subscribe(action, current: current);
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+          {bool current: true}) =>
+      _control.subscribe(action, current: current);
 
   /// [ActionControlObservable.once]
-  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _control.once(action, until: until, current: current);
+  ActionSubscription<T> once(ValueCallback<T> action,
+          {Predicate<T> until, bool current: true}) =>
+      _control.once(action, until: until, current: current);
 
   @override
   bool operator ==(other) {
-    return other is ActionControlObservable && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value ||
+        other == value;
   }
 
   /// [ActionControlObservable.equal]
