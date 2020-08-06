@@ -64,13 +64,19 @@ class ActionSubscription<T> implements Disposable {
   }
 }
 
+/// [ValueListenable] version of [ActionControlObservable].
+/// Wraps [ActionControl] and provides [Listenable] api.
 class ActionControlListenable<T> implements ValueListenable<T>, Disposable {
+  /// Actual control to subscribe.
   ActionControl<T> _parent;
 
+  /// Checks if parent [FieldControl.isActive] and any callback is registered.
   final _callbacks = Map<VoidCallback, ActionSubscription>();
 
+  @override
   T get value => _parent.value;
 
+  /// Wraps [ActionControl] to [Listenable] version.
   ActionControlListenable(this._parent);
 
   @override
