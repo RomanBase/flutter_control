@@ -13,16 +13,18 @@ abstract class StateboundWidget<T extends Listenable> extends CoreWidget
   /// Current state [value] of [StateControl]
   @protected
   dynamic get state {
-    if (control is StateControl) {
-      (control as StateControl).state.value;
-    }
-
     if (control is ValueListenable) {
       (control as ValueListenable).value;
     }
 
-    return null;
+    if (control is StateControl) {
+      (control as StateControl).state.value;
+    }
+
+    return fallbackState?.call(control);
   }
+
+  final dynamic Function(T control) fallbackState;
 
   /// Widget that is controlled by [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]..
   /// [control] - State to subscribe. Whenever state is changed, this Widget is rebuild.
@@ -31,6 +33,7 @@ abstract class StateboundWidget<T extends Listenable> extends CoreWidget
     Key key,
     @required this.control,
     dynamic args,
+    this.fallbackState,
   }) : super(key: key, args: args);
 
   @override
