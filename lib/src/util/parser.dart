@@ -628,4 +628,29 @@ extension IterableExtension on Iterable {
   T getArg<T>({bool Function(dynamic) predicate, T defaultValue}) =>
       Parse.getArgFromList<T>(this,
           predicate: predicate, defaultValue: defaultValue);
+
+  List<T> insertEvery<T>(T Function(T item) builder, {T header, T footer}) {
+    final list = this
+        .expand((item) sync* {
+          final newItem = builder(item);
+
+          if (newItem != null) {
+            yield newItem;
+          }
+
+          yield item;
+        })
+        .skip(1)
+        .toList();
+
+    if (header != null) {
+      list.insert(0, header);
+    }
+
+    if (footer != null) {
+      list.add(footer);
+    }
+
+    return list;
+  }
 }
