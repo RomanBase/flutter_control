@@ -1,17 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Extended [CoreWidget] what subscribes to just one [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].
 /// And state of this Widget is controlled from outside by [StateControl.notifyState].
 /// Whenever state of [ControlState] is changed, this Widget is rebuild.
-abstract class StateboundWidget<T extends StateControl> extends CoreWidget
-    with LocalizationProvider {
+abstract class StateboundWidget<T extends Listenable> extends CoreWidget with LocalizationProvider {
   /// Current [StateControl] that notifies Widget about changes.
   @protected
   final T control;
 
   /// Current state [value] of [StateControl]
   @protected
-  dynamic get state => control.state.value;
+  dynamic get state {
+    if (control is StateControl) {
+      (control as StateControl).state.value;
+    }
+
+    if (control is ValueListenable) {
+      (control as ValueListenable).value;
+    }
+
+    return null;
+  }
 
   /// Widget that is controlled by [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel]..
   /// [control] - State to subscribe. Whenever state is changed, this Widget is rebuild.
@@ -26,7 +36,9 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget
   void onInit(Map args) {
     super.onInit(args);
 
-    control.onStateInitialized();
+    if (control is StateControl) {
+      (control as StateControl).onStateInitialized();
+    }
   }
 
   @override
@@ -43,8 +55,7 @@ abstract class StateboundWidget<T extends StateControl> extends CoreWidget
 
 /// [State] of [StateboundWidget].
 /// Handles [StateControl] and rebuilds Widget whenever state is notified.
-class _WidgetboundState<T extends StateControl>
-    extends CoreState<StateboundWidget<T>> implements StateNotifier {
+class _WidgetboundState<T extends Listenable> extends CoreState<StateboundWidget<T>> implements StateNotifier {
   /// Current [ControlState].
   T control;
 
@@ -107,8 +118,8 @@ class _WidgetboundState<T extends StateControl>
 
       if (control is DisposeHandler) {
         (control as DisposeHandler).requestDispose(this);
-      } else {
-        control.dispose();
+      } else if (control is Disposable) {
+        (control as Disposable).dispose();
       }
 
       control = null;
