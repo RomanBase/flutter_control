@@ -265,6 +265,16 @@ class ControlRoute {
   ControlRoute viaRoute(RouteWidgetBuilder routeBuilder) =>
       _copyWith(routeBuilder: routeBuilder);
 
+  /// {@macro route-route}
+  /// Via [MaterialPageRoute].
+  ControlRoute viaMaterialRoute() => viaRoute((builder, settings) =>
+      MaterialPageRoute(builder: builder, settings: settings));
+
+  /// {@macro route-route}
+  /// Via [CupertinoPageRoute].
+  ControlRoute viaCupertinoRoute() => viaRoute((builder, settings) =>
+      CupertinoPageRoute(builder: builder, settings: settings));
+
   /// {@template route-transition}
   /// Setups new [transition] with given [duration] and returns copy of [ControlRoute] with new settings..
   /// [ControlRouteTransition] is used as [PageRoute].
