@@ -1,37 +1,45 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup implements ActionControlObservable<List>, Disposable {
+class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
   final _items = List<DisposableToken>();
 
-  final _control = ActionControl.broadcast<List>();
+  final _control = ActionControl.broadcast<Iterable>();
 
   @override
-  List get value => _control.value;
+  Iterable get value => _control.value;
 
-  List get _values => _items.map((item) {
-        if (item is ActionControlObservable) {
-          return (item as ActionControlObservable).value;
-        }
+  Iterable get _values => _items.map((item) => _getValue(item));
 
-        if (item is FieldControlStream) {
-          return (item as FieldControlStream).value;
-        }
+  int get length => _items.length;
 
-        if (item is ValueListenable) {
-          return (item as ValueListenable).value;
-        }
-
-        return item;
-      });
+  operator [](int index) => _getValue(_items[index]);
 
   ObservableGroup([List observables]) {
     observables?.forEach((item) => join(item));
   }
 
+  dynamic _getValue(DisposableToken token) {
+    final item = token.data;
+
+    if (item is ActionControlObservable) {
+      return item.value;
+    }
+
+    if (item is FieldControlStream) {
+      return item.value;
+    }
+
+    if (item is ValueListenable) {
+      return item.value;
+    }
+
+    return item;
+  }
+
   /// Supports [ActionControl], [FieldControl] and [Listenable].
   DisposableToken join(dynamic observer) {
-    final token = DisposableToken(parent: this);
+    final token = DisposableToken(parent: this, data: observer);
     token.onDispose = () {
       _items.remove(token);
       token.finish();
@@ -67,17 +75,13 @@ class ObservableGroup implements ActionControlObservable<List>, Disposable {
   void notify() => _control.notify();
 
   @override
-  ActionControlListenable<List> get listenable => _control.listenable;
+  ActionControlListenable<Iterable> get listenable => _control.listenable;
 
   @override
-  ActionSubscription<List> once(ValueCallback<List> action,
-          {Predicate<List> until, bool current = true}) =>
-      _control.once(action, until: until, current: current);
+  ActionSubscription<Iterable> once(ValueCallback<Iterable> action, {Predicate<List> until, bool current = true}) => _control.once(action, until: until, current: current);
 
   @override
-  ActionSubscription<List> subscribe(ValueCallback<List> action,
-          {bool current = true}) =>
-      _control.subscribe(action, current: current);
+  ActionSubscription<Iterable> subscribe(ValueCallback<Iterable> action, {bool current = true}) => _control.subscribe(action, current: current);
 
   /// [ActionControlObservable.equal]
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
