@@ -95,31 +95,53 @@ mixin ReferenceCounter on DisposeHandler {
   }
 }
 
+//TODO: Client vs. System events..
+/// Propagates `thread` notifications that can be canceled.
+///
+/// For example can be used to represent Image upload Stream that can be canceled.
 class DisposableToken implements Disposable {
-  dynamic parent;
+  /// Parent of this token.
+  final dynamic parent;
+
+  /// Additional data of this token.
   dynamic data;
 
+  /// Callback when token is finished and [finish] called.
+  /// Typically used by Client.
   VoidCallback onFinish;
+
+  /// Callback when token is canceled and [finish] called.
+  /// Typically used by System.
   VoidCallback onCancel;
+
+  /// Callback when token is disposed and [finish] called.
+  /// Typically used by System.
   VoidCallback onDispose;
 
+  /// Checks if token is active.
   bool _isActive = true;
 
+  /// Checks if [cancel] or [dispose] hasn't been executed.
   bool get isActive => _isActive;
 
+  /// Checks if token is finalized.
   bool _isFinished = false;
 
+  /// Checks if [finish] has been executed.
   bool get isFinished => _isFinished;
 
-  final bool autoDispose;
-
+  /// Propagates `thread` notifications with possibility to cancel operations.
+  ///
+  /// [parent] - Parent object of this token.
+  /// [data] - Initial token data.
   DisposableToken({
     this.parent,
     this.data,
-    this.autoDispose: true,
   });
 
-  void finish() {
+  /// Finishes this token an notifies [onFinish] listener.
+  /// Typically called by API.
+  void finish([bool autoDispose = true]) {
     _isFinished = true;
     onFinish?.call();
 
@@ -128,7 +150,9 @@ class DisposableToken implements Disposable {
     }
   }
 
-  void cancel() {
+  /// Cancels this token an notifies [onCancel] listener.
+  /// Typically called by Client.
+  void cancel([bool autoDispose = true]) {
     _isActive = false;
     onCancel?.call();
 
