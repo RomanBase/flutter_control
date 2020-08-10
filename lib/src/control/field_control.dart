@@ -87,15 +87,22 @@ class FieldSubscription<T> implements StreamSubscription<T>, Disposable {
   }
 }
 
+/// [ValueListenable] version of [FieldControlStream].
+/// Wraps [FieldControl] and provides [Listenable] api.
 class FieldControlListenable<T> implements ValueListenable<T>, Disposable {
+  /// Actual control to subscribe.
   FieldControl<T> _parent;
 
+  /// Map of active callbacks and their subscriptions.
   final _callbacks = Map<VoidCallback, FieldSubscription>();
 
+  /// Checks if parent [FieldControl.isActive] and any callback is registered.
   bool get isActive => _parent.isActive && _callbacks.isNotEmpty;
 
+  @override
   T get value => _parent.value;
 
+  /// Wraps [FieldControl] to [Listenable] version.
   FieldControlListenable(this._parent);
 
   @override
@@ -116,6 +123,7 @@ class FieldControlListenable<T> implements ValueListenable<T>, Disposable {
   }
 }
 
+//TODO: check all possible abstract functions from FieldControl.
 /// {@template action-control}
 /// Async broadcast [Stream] solution based on subscription and listening about [value] changes.
 /// Last [value] is always stored.
@@ -164,7 +172,7 @@ class FieldControlSub<T> implements FieldControlStream<T> {
   /// Actual control to subscribe.
   final FieldControl<T> _parent;
 
-  /// Private constructor used by [FieldControl].
+  /// Wraps [FieldControl] and creates read-only version.
   FieldControlSub(this._parent);
 
   @override
