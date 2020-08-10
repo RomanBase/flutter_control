@@ -84,6 +84,7 @@ class ObservableGroup implements ActionControlObservable<List>, Disposable {
 
   @override
   void dispose() {
+    _control.dispose();
     _items.forEach((item) => item.cancel());
     _items.clear();
   }
