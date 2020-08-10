@@ -94,3 +94,56 @@ mixin ReferenceCounter on DisposeHandler {
     clear();
   }
 }
+
+class DisposableToken implements Disposable {
+  dynamic parent;
+  dynamic data;
+
+  VoidCallback onFinish;
+  VoidCallback onCancel;
+  VoidCallback onDispose;
+
+  bool _isActive = true;
+
+  bool get isActive => _isActive;
+
+  bool _isFinished = false;
+
+  bool get isFinished => _isFinished;
+
+  final bool autoDispose;
+
+  DisposableToken({
+    this.parent,
+    this.data,
+    this.autoDispose: true,
+  });
+
+  void finish() {
+    _isFinished = true;
+    onFinish?.call();
+
+    if (autoDispose) {
+      dispose();
+    }
+  }
+
+  void cancel() {
+    _isActive = false;
+    onCancel?.call();
+
+    if (autoDispose) {
+      dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    _isActive = false;
+
+    onDispose?.call();
+    onDispose = null;
+    onFinish = null;
+    onCancel = null;
+  }
+}
