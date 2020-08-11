@@ -9,8 +9,6 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
   @override
   Iterable get value => _control.value;
 
-  Iterable get _values => _items.map((item) => _getValue(item));
-
   int get length => _items.length;
 
   operator [](int index) => _getValue(_items[index]);
@@ -20,6 +18,10 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
   }
 
   dynamic _getValue(DisposableToken token) {
+    if (token == null) {
+      return null;
+    }
+
     final item = token.data;
 
     if (item is ActionControlObservable) {
@@ -37,25 +39,29 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
     return item;
   }
 
-  /// Supports [ActionControl], [FieldControl] and [Listenable].
+  Iterable _getValues() => _items.map((item) => _getValue(item));
+
+  /// Supports [ActionControl], [FieldControl] and [Listenable]. Other objects will be passed unchanged.
   DisposableToken join(dynamic observer) {
-    final token = DisposableToken(parent: this, data: observer);
-    token.onDispose = () {
-      _items.remove(token);
-      token.finish();
-    };
+    final event = DisposableClient(parent: this);
 
     if (observer is ActionControlObservable) {
       final sub = observer.subscribe((value) => _notifyControl());
-      token.onCancel = sub.dispose;
+      event.onCancel = sub.dispose;
     } else if (observer is FieldControlStream) {
       // ignore: cancel_subscriptions
       final sub = observer.subscribe((event) => _notifyControl());
-      token.onCancel = sub.dispose;
+      event.onCancel = sub.dispose;
     } else if (observer is Listenable) {
       observer.addListener(_notifyControl);
-      token.onCancel = () => observer.removeListener(_notifyControl);
+      event.onCancel = () => observer.removeListener(_notifyControl);
     }
+
+    final token = event.asToken(data: observer);
+
+    event.onDispose = () {
+      _items.remove(token);
+    };
 
     _items.add(token);
 
@@ -70,7 +76,7 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
     }
   }
 
-  void _notifyControl() => _control.value = _values;
+  void _notifyControl() => _control.value = _getValues();
 
   void notify() => _control.notify();
 

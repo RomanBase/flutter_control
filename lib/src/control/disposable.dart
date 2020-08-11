@@ -95,28 +95,61 @@ mixin ReferenceCounter on DisposeHandler {
   }
 }
 
-//TODO: Client vs. System events..
+/// {@template disposable-client}
 /// Propagates `thread` notifications that can be canceled.
 ///
 /// For example can be used to represent Image upload Stream that can be canceled.
-class DisposableToken implements Disposable {
-  /// Parent of this token.
+/// {@end-template}
+class DisposableClientBase implements Disposable {
+  /// Parent of this disposer.
   final dynamic parent;
 
-  /// Additional data of this token.
-  dynamic data;
-
   /// Callback when token is finished and [finish] called.
-  /// Typically used by Client.
   VoidCallback onFinish;
 
   /// Callback when token is canceled and [finish] called.
-  /// Typically used by System.
   VoidCallback onCancel;
 
   /// Callback when token is disposed and [finish] called.
-  /// Typically used by System.
   VoidCallback onDispose;
+
+  /// Propagates `thread` notifications with possibility to cancel operations.
+  /// [parent] - Parent object of this client.
+  DisposableClientBase({this.parent});
+
+  /// Finishes this token and notifies [onFinish] listener.
+  void finish() => onFinish?.call();
+
+  /// Cancels this token and notifies [onCancel] listener.
+  void cancel() => onCancel?.call();
+
+  @override
+  void dispose() {
+    onDispose?.call();
+  }
+}
+
+/// {@macro disposable-client}
+/// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
+class DisposableClient extends DisposableClientBase {
+  /// Propagates `thread` notifications with possibility to cancel operations.
+  /// [parent] - Parent object of this client.
+  DisposableClient({dynamic parent}) : super(parent: parent);
+
+  /// Creates [DisposableToken] that can be used by `Client`.
+  DisposableToken asToken({dynamic data}) => DisposableToken(this, data: data);
+}
+
+/// {@macro disposable-client}
+/// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
+class DisposableToken extends DisposableClientBase {
+  final DisposableClientBase _client;
+
+  @override
+  dynamic get parent => _client.parent;
+
+  /// Additional data of this token.
+  dynamic data;
 
   /// Checks if token is active.
   bool _isActive = true;
@@ -132,17 +165,45 @@ class DisposableToken implements Disposable {
 
   /// Propagates `thread` notifications with possibility to cancel operations.
   ///
+  /// [_client] - Parent client of this token.
+  /// [data] - Initial token data.
+  DisposableToken(
+    this._client, {
+    this.data,
+  }) : assert(_client != null);
+
+  /// Propagates `thread` notifications with possibility to cancel operations.
+  ///
   /// [parent] - Parent object of this token.
   /// [data] - Initial token data.
-  DisposableToken({
-    this.parent,
-    this.data,
-  });
+  /// [onCancel] - Client event that is called when token is canceled.
+  /// [onFinish] - Client event that is called when token is finished.
+  /// [onDispose] - Client event that is called when token is disposed.
+  factory DisposableToken.client({
+    dynamic parent,
+    VoidCallback onCancel,
+    VoidCallback onFinish,
+    VoidCallback onDispose,
+    dynamic data,
+  }) =>
+      DisposableToken(
+        DisposableClientBase(
+          parent: parent,
+        )
+          ..onCancel = onCancel
+          ..onFinish = onFinish
+          ..onDispose = onDispose,
+        data: data,
+      );
 
-  /// Finishes this token an notifies [onFinish] listener.
+  /// Finishes this token and notifies [onFinish] listener.
   /// Typically called by API.
+  @override
   void finish([bool autoDispose = true]) {
+    super.finish();
+
     _isFinished = true;
+    _client.onFinish?.call();
     onFinish?.call();
 
     if (autoDispose) {
@@ -150,9 +211,12 @@ class DisposableToken implements Disposable {
     }
   }
 
-  /// Cancels this token an notifies [onCancel] listener.
+  /// Cancels this token and notifies [onCancel] listener.
   /// Typically called by Client.
+  @override
   void cancel([bool autoDispose = true]) {
+    super.cancel();
+
     _isActive = false;
     onCancel?.call();
 
@@ -163,6 +227,8 @@ class DisposableToken implements Disposable {
 
   @override
   void dispose() {
+    super.onDispose();
+
     _isActive = false;
 
     onDispose?.call();
