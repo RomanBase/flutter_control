@@ -84,10 +84,14 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
   ActionControlListenable<Iterable> get listenable => _control.listenable;
 
   @override
-  ActionSubscription<Iterable> once(ValueCallback<Iterable> action, {Predicate<List> until, bool current = true}) => _control.once(action, until: until, current: current);
+  ActionSubscription<Iterable> once(ValueCallback<Iterable> action,
+          {Predicate<List> until, bool current = true}) =>
+      _control.once(action, until: until, current: current);
 
   @override
-  ActionSubscription<Iterable> subscribe(ValueCallback<Iterable> action, {bool current = true}) => _control.subscribe(action, current: current);
+  ActionSubscription<Iterable> subscribe(ValueCallback<Iterable> action,
+          {bool current = true}) =>
+      _control.subscribe(action, current: current);
 
   /// [ActionControlObservable.equal]
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
