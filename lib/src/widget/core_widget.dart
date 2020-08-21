@@ -197,6 +197,16 @@ abstract class CoreWidget extends StatefulWidget
   /// Use [getArgStore] to get raw access to [ControlArgs].
   void removeArg<T>({dynamic key}) => holder.argStore.remove<T>(key: key);
 
+  /// Registers object to lifecycle of [State].
+  ///
+  /// Widget with State must be initialized before executing this function - check [isInitialized].
+  /// It's safe to register objects in/after [onInit] function.
+  void register(Disposable object) {
+    assert(isInitialized);
+
+    holder.state.registerToDispose(object);
+  }
+
   @override
   void dispose() {}
 }
@@ -214,6 +224,21 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
   /// Checks if State is initialized and dependencies are set.
   bool get isInitialized => _stateInitialized;
+
+  /// Objects to dispose with State.
+  List<Disposable> _objects;
+
+  /// Registers object to dispose with this State.
+  void registerToDispose(Disposable object) {
+    if (_objects == null) {
+      _objects = List<Disposable>();
+    }
+
+    _objects.add(object);
+  }
+
+  /// Unregisters object to dispose from this State.
+  void unregisterFromDispose(Disposable object) => _objects?.remove(object);
 
   @override
   @mustCallSuper
@@ -254,6 +279,9 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     _stateInitialized = false;
     widget.holder.dispose();
+
+    _objects?.forEach((element) => element.dispose());
+    _objects = null;
   }
 }
 
