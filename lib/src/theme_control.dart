@@ -120,7 +120,13 @@ class ControlTheme {
 
   Color get primaryColorLight => data.primaryColorLight;
 
+  Color get accentColorLight => data.accentColor.withOpacity(0.5);
+
   Color get accentColor => data.accentColor;
+
+  Color get accentColorDark => data.accentColor;
+
+  Color get tintColor => data.accentColor;
 
   Color get backgroundColor => data.backgroundColor;
 
