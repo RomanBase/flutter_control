@@ -227,7 +227,7 @@ class DisposableToken extends DisposableClientBase {
 
   @override
   void dispose() {
-    super.onDispose();
+    super.dispose();
 
     _isActive = false;
 
