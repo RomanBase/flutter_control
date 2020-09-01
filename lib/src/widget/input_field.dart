@@ -108,8 +108,13 @@ class InputControl extends ControlModel with StateControl {
   }
 
   /// Sets text and notify InputField State to change Widget.
-  void setError(String text) {
+  void setError(String text, [bool valid]) {
     _error = text;
+
+    if (valid != null) {
+      _isValid = valid;
+    }
+
     notifyState();
   }
 
