@@ -114,14 +114,16 @@ abstract class ActionControlObservable<T> {
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
   /// Returns [ActionSubscription] for manual cancellation.
-  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true});
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+      {bool current: true});
 
   /// Subscribes callback to next action change.
   /// If [until] is 'null' [action] will be called just one time, otherwise until test predicate is hit.
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
   /// Returns [ActionSubscription] for manual cancellation.
-  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true});
+  ActionSubscription<T> once(ValueCallback<T> action,
+      {Predicate<T> until, bool current: true});
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
@@ -141,20 +143,26 @@ class ActionControlSub<T> implements ActionControlObservable<T> {
   @override
   T get value => _parent.value;
 
-  ActionControlListenable<T> get listenable => ActionControlListenable<T>(_parent);
+  ActionControlListenable<T> get listenable =>
+      ActionControlListenable<T>(_parent);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) => _parent.subscribe(action, current: current);
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+          {bool current: true}) =>
+      _parent.subscribe(action, current: current);
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) => _parent.once(action, current: current);
+  ActionSubscription<T> once(ValueCallback<T> action,
+          {Predicate<T> until, bool current: true}) =>
+      _parent.once(action, current: current);
 
   @override
   int get hashCode => super.hashCode;
 
   @override
   bool operator ==(other) {
-    return other is ActionControlObservable && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value ||
+        other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -204,7 +212,8 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
   @override
   bool operator ==(other) {
-    return other is ActionControlObservable && other.value == value || other == value;
+    return other is ActionControlObservable && other.value == value ||
+        other == value;
   }
 
   /// Checks if given object is same as this one.
@@ -217,20 +226,26 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  static ActionControl<T> broadcast<T>([T value]) => _ActionControlBroadcast<T>._(value);
+  static ActionControl<T> broadcast<T>([T value]) =>
+      _ActionControlBroadcast<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  static ActionControl<T> provider<T>({@required dynamic key, bool single: true, T defaultValue}) {
-    ActionControl control = single ? ActionControl<T>._(defaultValue) : _ActionControlBroadcast<T>._(defaultValue);
+  static ActionControl<T> provider<T>(
+      {@required dynamic key, bool single: true, T defaultValue}) {
+    ActionControl control = single
+        ? ActionControl<T>._(defaultValue)
+        : _ActionControlBroadcast<T>._(defaultValue);
 
-    control._globalSub = BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
+    control._globalSub =
+        BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
 
     return control;
   }
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) {
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+      {bool current: true}) {
     _sub = ActionSubscription<T>()
       .._parent = this
       .._action = action;
@@ -243,7 +258,8 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) {
+  ActionSubscription<T> once(ValueCallback<T> action,
+      {Predicate<T> until, bool current: true}) {
     final sub = ActionSubscription<T>()
       .._parent = this
       .._action = action
@@ -316,7 +332,8 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   _ActionControlBroadcast._([T value]) : super._(value);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action, {bool current: true}) {
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+      {bool current: true}) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
 
@@ -330,7 +347,8 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action, {Predicate<T> until, bool current: true}) {
+  ActionSubscription<T> once(ValueCallback<T> action,
+      {Predicate<T> until, bool current: true}) {
     final sub = super.once(action, until: until, current: current);
     _sub = null; // just clear unused sub reference
 
@@ -489,7 +507,8 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   final _subs = List<ActionSubscription>();
 
   /// Maps values from controls to List.
-  List _mapValues() => widget.controls.map((item) => item.value).toList(growable: false);
+  List _mapValues() =>
+      widget.controls.map((item) => item.value).toList(growable: false);
 
   @override
   void initState() {

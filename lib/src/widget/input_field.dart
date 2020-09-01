@@ -35,6 +35,8 @@ class InputControl extends ControlModel with StateControl {
   /// Warning text to display when Field isn't valid.
   String _error;
 
+  String get error => _error;
+
   /// Current text of Field.
   String _text;
 
