@@ -39,23 +39,13 @@ class AppStateSetup {
   MapEntry<dynamic, WidgetBuilder> get builderEntry => MapEntry(key, builder);
 
   /// Returns case:transition entry.
-  MapEntry<dynamic, CrossTransition> get transitionEntry =>
-      MapEntry(key, transition);
+  MapEntry<dynamic, CrossTransition> get transitionEntry => MapEntry(key, transition);
 
   /// Builds case:builder map for given states.
-  static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) =>
-      items
-          .asMap()
-          .map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
+  static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) => items.asMap().map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
 
   /// Builds case:transition map for given states.
-  static Map<dynamic, CrossTransition> fillTransitions(
-          List<AppStateSetup> items) =>
-      items
-          .where((item) => item.transition != null)
-          .toList()
-          .asMap()
-          .map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
+  static Map<dynamic, CrossTransition> fillTransitions(List<AppStateSetup> items) => items.where((item) => item.transition != null).toList().asMap().map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
 }
 
 /// Representation of App State handled by [ControlRoot].
@@ -78,8 +68,7 @@ class AppState {
 
   const AppState();
 
-  AppStateSetup build(WidgetBuilder builder, {CrossTransition transition}) =>
-      AppStateSetup(
+  AppStateSetup build(WidgetBuilder builder, {CrossTransition transition}) => AppStateSetup(
         this, //TODO: this or key ???
         builder,
         transition,
@@ -162,8 +151,7 @@ class ControlScope {
       if (currentState is StateNotifier) {
         (currentState as StateNotifier).notifyState(args);
       } else {
-        printDebug(
-            'Found State is not StateNotifier, Trying to call setState directly..');
+        printDebug('Found State is not StateNotifier, Trying to call setState directly..');
         // ignore: invalid_use_of_protected_member
         appKey.currentState.setState(() {});
       }
@@ -213,8 +201,7 @@ class ControlScope {
   /// Changes [AppState] to [AppState.onboarding]
   ///
   /// Checks [setAppState] for more info.
-  bool setOnboardingState({dynamic args, bool clearNavigator: true}) =>
-      setAppState(
+  bool setOnboardingState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.onboarding,
         args: args,
         clearNavigator: clearNavigator,
@@ -232,8 +219,7 @@ class ControlScope {
   /// Changes [AppState] to [AppState.background]
   ///
   /// Checks [setAppState] for more info.
-  bool setBackgroundState({dynamic args, bool clearNavigator: true}) =>
-      setAppState(
+  bool setBackgroundState({dynamic args, bool clearNavigator: true}) => setAppState(
         AppState.background,
         args: args,
         clearNavigator: clearNavigator,
@@ -259,8 +245,7 @@ class ControlRootSetup {
   BuildContext context;
 
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
-  ObjectKey get _localKey => ObjectKey(
-      localization.locale.hashCode ^ state.hashCode ^ style.data.hashCode);
+  ObjectKey get _localKey => ObjectKey(localization.locale.hashCode ^ state.hashCode ^ style.data.hashCode);
 
   /// Setup for actual [ControlRoot] and [ControlScope].
   /// [key] - [_appKey] - [ControlScope.appKey].
@@ -365,6 +350,8 @@ class ControlRoot extends StatefulWidget {
   /// Builder provides [Key] and [home] widget.
   final AppWidgetBuilder app;
 
+  final ValueCallback<ControlRootSetup> onSetupChanged;
+
   /// Root [Widget] of whole app.
   /// Initializes [Control] and handles localization and theme changes.
   /// Notifies about [AppState] changes and animates Widget swapping.
@@ -394,6 +381,7 @@ class ControlRoot extends StatefulWidget {
     this.states,
     @required this.app,
     this.initAsync,
+    this.onSetupChanged,
   }) : super(key: _rootKey);
 
   @override
@@ -440,8 +428,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
           color: Theme.of(context).canvasColor,
           child: Center(
             child: CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
             ),
           ),
         ),
@@ -466,6 +453,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _setup.style = _theme.initializer(context)..setDefaultTheme();
 
     _themeSub = ControlTheme.subscribeChanges((value) {
+      _notifySetupChanged();
       setState(() {
         _setup.style = value;
       });
@@ -473,6 +461,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
       if (args.changed) {
+        _notifySetupChanged();
         setState(() {});
       }
     });
@@ -487,6 +476,10 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     }
 
     setState(() {});
+  }
+
+  void _notifySetupChanged() {
+    widget.onSetupChanged?.call(_setup);
   }
 
   void _initControl() async {
@@ -508,6 +501,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     if (initialized) {
       await Control.factory().onReady();
+      _notifySetupChanged();
       setState(() {});
     }
   }
