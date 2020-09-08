@@ -810,7 +810,7 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 mixin LocalizationProvider {
   /// Shortcut for delegate of default [BaseLocalization].
   static BaseLocalizationDelegate get delegate =>
-      Control.localization().delegate;
+      Control.localization.delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
@@ -821,7 +821,7 @@ mixin LocalizationProvider {
 
   ///Instance of default [BaseLocalization]
   @protected
-  BaseLocalization get localization => Control.localization();
+  BaseLocalization get localization => Control.localization;
 
   ///[BaseLocalization.localize]
   @protected

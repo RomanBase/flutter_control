@@ -66,13 +66,13 @@ class MainPage extends ControlWidget with RouteControl {
                 children: <Widget>[
                   RaisedButton(
                     onPressed: () =>
-                        Control.broadcaster().broadcast(Locale, Locale('en')),
+                        Control.broadcaster.broadcast(Locale, Locale('en')),
                     child: Text(
                         LocalizationProvider.of(context).localize('button_en')),
                   ),
                   RaisedButton(
                     onPressed: () =>
-                        Control.broadcaster().broadcast(Locale, Locale('es')),
+                        Control.broadcaster.broadcast(Locale, Locale('es')),
                     child: Text(
                         LocalizationProvider.of(context).localize('button_es')),
                   ),

@@ -51,7 +51,7 @@ class ControlArgs implements Disposable {
   /// Adds [value] to data store under given [key].
   /// [ControlFactory.keyOf] is used to determine store key.
   void add<T>({dynamic key, @required dynamic value}) =>
-      _args[Control.factory().keyOf<T>(key: key, value: value)] = value;
+      _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
 
   /// Clears original data and stores items from [args].
   void swap(ControlArgs args) {

@@ -67,7 +67,7 @@ class CrossPage extends SingleControlWidget<CrossControl> {
           child: Text('notify state'),
         ),
         RaisedButton(
-          onPressed: () => Control.root().setOnboardingState(),
+          onPressed: () => Control.scope.setOnboardingState(),
           child: Text('reload app'),
         ),
       ],

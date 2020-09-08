@@ -1,9 +1,9 @@
 import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final factory = Control.factory();
+final factory = Control.factory;
 
-final broadcast = Control.broadcaster();
+final broadcast = Control.broadcaster;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,10 +30,10 @@ void main() async {
     test('init', () {
       expect(Control.isInitialized, factory.isInitialized);
 
-      expect(Control.factory(), isNotNull);
-      expect(Control.localization(), isNotNull);
-      expect(Control.broadcaster(), isNotNull);
-      expect(Control.injector(), isNotNull);
+      expect(Control.factory, isNotNull);
+      expect(Control.localization, isNotNull);
+      expect(Control.broadcaster, isNotNull);
+      expect(Control.injector, isNotNull);
 
       expect(Control.debug, isFalse);
       expect(Control.debug, factory.debug);
@@ -41,7 +41,7 @@ void main() async {
       expect(Control.isInitialized, isTrue);
       expect(Control.isInitialized, factory.isInitialized);
 
-      Control.factory().debug = true;
+      Control.factory.debug = true;
       expect(Control.debug, isTrue);
     });
   });

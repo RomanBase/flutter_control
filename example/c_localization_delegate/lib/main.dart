@@ -30,11 +30,11 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: "Localization - Flutter Control",
           locale: value,
-          supportedLocales: Control.localization().delegate.supportedLocales(),
+          supportedLocales: Control.localization.delegate.supportedLocales(),
           localizationsDelegates: [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
-            Control.localization().delegate,
+            Control.localization.delegate,
           ],
           home: MainPage(),
         );

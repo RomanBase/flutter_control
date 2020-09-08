@@ -38,7 +38,7 @@ class LoginControl extends BaseControl with RouteControlProvider {
     loading.progress();
 
     firebase.login(username.value, password.value).then((value) {
-      Control.root().setMainState(args: value);
+      Control.scope.setMainState(args: value);
     }).catchError((err) {
       message.setValue(err.message);
       loading.done();

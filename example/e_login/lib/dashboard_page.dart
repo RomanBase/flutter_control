@@ -28,7 +28,7 @@ class DashboardPage extends ControlWidget with RouteControl, ThemeProvider {
             RaisedButton(
               onPressed: () {
                 firebase.logout();
-                Control.root().setAuthState();
+                Control.scope.setAuthState();
               },
               child: Text('logout'),
             ),

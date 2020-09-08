@@ -173,7 +173,7 @@ class ControlTheme {
   void invalidate([BuildContext context]) {
     _data = null;
     _device = null;
-    _context = context ?? Control.root()?.context;
+    _context = context ?? Control.scope?.context;
 
     assert(_context != null);
   }

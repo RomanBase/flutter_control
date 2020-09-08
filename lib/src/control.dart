@@ -22,31 +22,31 @@ class Control {
   /// Checks if [ControlFactory] is initialized.
   ///
   /// Factory can be initialized via [Control.initControl] or [ControlFactory.initialize].
-  static get isInitialized => factory().isInitialized;
+  static get isInitialized => factory.isInitialized;
 
   /// Checks if current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
   /// This value is also provided to [BaseLocalization] during [Control.initControl] and to various other classes.
-  static get debug => factory().debug;
+  static get debug => factory.debug;
 
   /// Returns instance of [ControlFactory].
-  static ControlFactory factory() => ControlFactory._instance;
+  static ControlFactory get factory => ControlFactory._instance;
 
   /// Returns default instance of [ControlBroadcast] - this instance is stored in [ControlFactory].
   /// Use [BroadcastProvider] for base broadcast operations.
-  static ControlBroadcast broadcaster() => factory()._broadcast;
+  static ControlBroadcast get broadcaster => factory._broadcast;
 
   /// Returns default instance of [Injector] - this instance is stored in [ControlFactory].
   /// Injector is set via [Control.initControl] or [ControlFactory.setInjector].
-  static Injector injector() => factory()._injector;
+  static Injector get injector => factory._injector;
 
   /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
   /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
-  static BaseLocalization localization() => Control.get<BaseLocalization>();
+  static BaseLocalization get localization => Control.get<BaseLocalization>();
 
   /// Returns scope of [ControlRoot].
   /// This scope provides access to root of Widget Tree and to [ControlRootState].
   /// But only if [ControlRoot] Widget is used.
-  static ControlScope root() => ControlScope();
+  static ControlScope get scope => ControlScope();
 
   /////
   /////
@@ -132,14 +132,14 @@ class Control {
   ///
   /// nullable
   static T get<T>({dynamic key, dynamic args, bool withInjector: true}) =>
-      factory().get<T>(key: key, args: args, withInjector: withInjector);
+      factory.get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Returns [key] of stored [value].
   static dynamic set<T>({dynamic key, @required dynamic value}) =>
-      factory().set<T>(key: key, value: value);
+      factory.set<T>(key: key, value: value);
 
   /// Returns new object of requested [Type] via initializer in [ControlFactory].
   /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
@@ -152,7 +152,7 @@ class Control {
   /// [Control] provides static call for this function via [Control.init].
   ///
   /// nullable
-  static T init<T>([dynamic args]) => factory().init(args);
+  static T init<T>([dynamic args]) => factory.init(args);
 
   /// Injects and initializes given [item] with [args].
 
@@ -160,7 +160,7 @@ class Control {
   ///
   /// [Control] provides static call for this function via [Control.inject].
   static void inject<T>(dynamic item, {dynamic args}) =>
-      factory().inject(item, args: args, withInjector: true, withArgs: true);
+      factory.inject(item, args: args, withInjector: true, withArgs: true);
 
   /// Executes sequence of functions to retrieve expected object.
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] / [ControlFactory.init] is executed.
@@ -168,7 +168,7 @@ class Control {
   /// nullable
   static T resolve<T>(dynamic source,
           {dynamic key, dynamic args, T defaultValue}) =>
-      factory()
+      factory
           .resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
@@ -178,7 +178,7 @@ class Control {
   ///
   /// Returns number of removed items.
   static int remove<T>({dynamic key, bool dispose: false}) =>
-      factory().remove<T>(key: key, dispose: dispose);
+      factory.remove<T>(key: key, dispose: dispose);
 }
 
 /// Provider of [ControlBroadcast].
@@ -469,7 +469,7 @@ class ControlFactory with Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= Control.root()?.context;
+      args ??= Control.scope?.context; //TODO: remove in 1.1
 
       final item = initializer(args);
 

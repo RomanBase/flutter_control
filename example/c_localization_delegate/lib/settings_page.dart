@@ -27,12 +27,12 @@ class SettingsPage extends ControlWidget {
                 children: <Widget>[
                   RaisedButton(
                     onPressed: () =>
-                        Control.broadcaster().broadcast(Locale, Locale('en')),
+                        Control.broadcaster.broadcast(Locale, Locale('en')),
                     child: Text(localize('button_en')),
                   ),
                   RaisedButton(
                     onPressed: () =>
-                        Control.broadcaster().broadcast(Locale, Locale('es')),
+                        Control.broadcaster.broadcast(Locale, Locale('es')),
                     child: Text(localize('button_es')),
                   ),
                 ],

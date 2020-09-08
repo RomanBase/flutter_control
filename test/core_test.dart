@@ -4,24 +4,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('release', () {
-    Control.factory().debug = false;
+    Control.factory.debug = false;
 
     expect(kDebugMode && Control.debug, isFalse);
     printDebug('this will not print');
   });
 
   test('debug', () {
-    Control.factory().debug = true;
+    Control.factory.debug = true;
 
     expect(kDebugMode && Control.debug, isTrue);
     printDebug('debug print');
   });
 
   test('object', () {
-    Control.factory().debug = true;
+    Control.factory.debug = true;
 
     expect(kDebugMode && Control.debug, isTrue);
-    printDebug(Control.factory());
+    printDebug(Control.factory);
   });
 
   test('typedefs', () {

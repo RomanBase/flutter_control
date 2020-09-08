@@ -9,7 +9,7 @@ class AccountControl extends BaseControl
     loading.progress();
     await fire.signOut();
 
-    Control.root().setInitState();
+    Control.scope.setInitState();
 
     backToRoot();
   }

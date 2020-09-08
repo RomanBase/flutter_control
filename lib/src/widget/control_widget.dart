@@ -174,7 +174,7 @@ abstract class ControlWidget extends CoreWidget
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
   BuildContext getContext({bool root: false}) =>
-      root ? Control.root()?.context ?? context : context;
+      root ? Control.scope?.context ?? context : context;
 
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
@@ -277,7 +277,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   /// [root] - closest or first.
   @protected
   NavigatorState getNavigator({bool root: false}) {
-    if (root && !Control.root().isInitialized) {
+    if (root && !Control.scope.isInitialized) {
       return Navigator.of(context, rootNavigator: true);
     }
 

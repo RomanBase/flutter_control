@@ -283,7 +283,7 @@ class ControlRootSetup {
   ThemeData get theme => style.data;
 
   /// Reference to [BaseLocalization] to provide actual localization settings.
-  BaseLocalization get localization => Control.localization();
+  BaseLocalization get localization => Control.localization;
 
   /// Current app locale that can be passed to [WidgetsApp.locale].
   Locale get locale => localization.currentLocale;
@@ -521,7 +521,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     );
 
     if (initialized) {
-      await Control.factory().onReady();
+      await Control.factory.onReady();
       _notifyState(() {}, true);
     }
   }

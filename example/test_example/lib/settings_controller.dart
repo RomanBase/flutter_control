@@ -33,6 +33,6 @@ class SettingsController extends BaseControl
   }
 
   void unloadApp() {
-    Control.root().setOnboardingState();
+    Control.scope.setOnboardingState();
   }
 }

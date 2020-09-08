@@ -31,7 +31,7 @@ abstract class InitLoaderControl extends BaseControl {
       block = DelayBlock(delay);
     }
 
-    await Control.factory().onReady();
+    await Control.factory.onReady();
 
     final result = await load();
 
@@ -50,7 +50,7 @@ abstract class InitLoaderControl extends BaseControl {
   Future<dynamic> load();
 
   void notifyControl(AppState state, [dynamic args]) {
-    Control.root().setAppState(state, args: args);
+    Control.scope.setAppState(state, args: args);
   }
 
   @override
