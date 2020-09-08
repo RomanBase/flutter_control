@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Experimental version of unified [ControlWidgetBuilder].
-/// Currently supports [ActionControl], [FieldControl], [Listenable], [Stream] and [Future].
-/// It's pretty dummy now, just builds specific Builder based on [Type] of [control].
-class ControlBuilder<T> extends StatelessWidget {
+/// Currently supports [ActionControl], [FieldControl], [Listenable]
+//TODO: support [Stream] and [Future] via [FieldControl].
+class ControlBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
   final dynamic control;
 
@@ -24,52 +24,93 @@ class ControlBuilder<T> extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    if (control is ActionControlObservable<T>) {
-      return ActionBuilder<T>(
-        control: control,
-        builder: builder,
-      );
+  _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
+}
+
+class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
+  Disposable _sub;
+
+  T _value;
+
+  dynamic get control => widget.control;
+
+  T _mapValue() {
+    dynamic data;
+
+    if (control is ActionControlObservable) {
+      data = control.value;
+    } else if (control is FieldControlStream) {
+      data = control.value;
+    } else if (control is ValueListenable) {
+      data = control.value;
+    } else {
+      data = control;
     }
+
+    return data as T;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _initSub();
+  }
+
+  void _initSub() {
+    if (control is ActionControlObservable) {
+      _sub = control.subscribe(
+        (value) => _notifyState(),
+        current: false,
+      );
+    } else if (control is FieldControlStream) {
+      _sub = control.subscribe(
+        (value) => _notifyState(),
+        current: false,
+      );
+    } else if (control is Listenable) {
+      control.addListener(_notifyState);
+    }
+
+    _value = _mapValue();
+  }
+
+  @override
+  void didUpdateWidget(ControlBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (control != oldWidget.control) {
+      _disableSub();
+      _initSub();
+      _notifyState();
+    }
+  }
+
+  void _notifyState() {
+    setState(() {
+      _value = _mapValue();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _value);
+  }
+
+  void _disableSub() {
+    _sub?.dispose();
+    _sub = null;
 
     if (control is Listenable) {
-      return NotifierBuilder<T>(
-        control: control,
-        builder: builder,
-      );
+      control.removeListener(_notifyState);
     }
+  }
 
-    if (control is FieldControlStream<T>) {
-      return FieldBuilder<T>(
-        control: control,
-        builder: builder,
-        noData: noData,
-        nullOk: nullOk,
-      );
-    }
+  @override
+  void dispose() {
+    super.dispose();
 
-    if (control is Stream) {
-      return FieldBuilder<T>(
-        control: FieldControl.of(
-            control), //TODO: close stream ? Field builder can't close Stream automatically.
-        builder: builder,
-        noData: noData,
-        nullOk: nullOk,
-      );
-    }
-
-    if (control is Future) {
-      return FieldBuilder<T>(
-        control: FieldControl()
-          ..onFuture(
-              control), //TODO: close stream ? Field builder can't close Stream automatically.
-        builder: builder,
-        noData: noData,
-        nullOk: nullOk,
-      );
-    }
-
-    return builder(context, control);
+    _disableSub();
   }
 }
 
@@ -165,8 +206,10 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void didUpdateWidget(ControlBuilderGroup oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    //TODO: check just controls and re-sub only changes
 
     _disposeSubs();
     _initSubs();
