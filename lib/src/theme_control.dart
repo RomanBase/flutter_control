@@ -35,7 +35,6 @@ class AssetPath {
 
 /// Wraps [ThemeData] and [Device] to provide more settings and custom properties that are more app design specific.
 /// [ControlTheme] is build during [ControlRoot] initialization.
-///
 class ControlTheme {
   static const root = 0;
   static const scope = 1;
@@ -130,6 +129,10 @@ class ControlTheme {
 
   Color get backgroundColor => data.backgroundColor;
 
+  Color get errorColor => data.errorColor;
+
+  Color get activeColor => data.toggleableActiveColor;
+
   ////////////////////////////////////////////////////////////////////////////////
 
   Size get toolbarAreaSize =>
@@ -152,10 +155,10 @@ class ControlTheme {
 
   ThemeData get data => _data ?? (_data = Theme.of(_context));
 
-  AssetPath get asset => _asset ?? (_asset = AssetPath());
+  AssetPath get assets => _asset ?? (_asset = AssetPath());
 
   @protected
-  set asset(AssetPath value) => _asset = value;
+  set assets(AssetPath value) => _asset = value;
 
   @protected
   set data(ThemeData value) => _data = value;
@@ -309,7 +312,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   ///
   /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
-  AssetPath get asset => theme.asset;
+  AssetPath get asset => theme.assets;
 
   /// Instance of [Device].
   /// Wrapper of [MediaQuery].
