@@ -144,6 +144,9 @@ class ControlScope {
   /// Subscribe to listen about [BuildContext] changes.
   ActionControlObservable get rootContextSub => _context.sub;
 
+  /// Returns current [ControlRootSetup] of [ControlRoot].
+  ControlRootSetup get setup => _rootKey.currentState?._setup;
+
   /// Notifies state of [ControlRoot].
   /// To change [AppState] use [setAppState].
   bool notifyControlState([ControlArgs args]) {
@@ -365,7 +368,7 @@ class ControlRoot extends StatefulWidget {
   /// Builder provides [Key] and [home] widget.
   final AppWidgetBuilder app;
 
-  final ValueCallback<ControlRootSetup> onSetupChanged;
+  final Future Function(ControlRootSetup setup) onSetupChanged;
 
   /// Root [Widget] of whole app.
   /// Initializes [Control] and handles localization and theme changes.
@@ -469,16 +472,14 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _setup.style = _theme.initializer(context)..setDefaultTheme();
 
     _themeSub = ControlTheme.subscribeChanges((value) {
-      _notifySetupChanged();
-      setState(() {
+      _notifyState(() {
         _setup.style = value;
-      });
+      }, true);
     });
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
       if (args.changed) {
-        _notifySetupChanged();
-        setState(() {});
+        _notifyState(() {}, true);
       }
     });
 
@@ -487,15 +488,19 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
   @override
   void notifyState([state]) {
-    if (state is ControlArgs) {
-      _args.combine(state);
-    }
-
-    setState(() {});
+    _notifyState(() {
+      if (state is ControlArgs) {
+        _args.combine(state);
+      }
+    }, state != null);
   }
 
-  void _notifySetupChanged() {
-    widget.onSetupChanged?.call(_setup);
+  void _notifyState(VoidCallback state, [bool changed = false]) async {
+    if (changed && widget.onSetupChanged != null) {
+      await widget.onSetupChanged.call(_setup);
+    }
+
+    setState(state);
   }
 
   void _initControl() async {
@@ -517,8 +522,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     if (initialized) {
       await Control.factory().onReady();
-      _notifySetupChanged();
-      setState(() {});
+      _notifyState(() {}, true);
     }
   }
 
