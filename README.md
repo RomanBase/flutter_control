@@ -1,8 +1,7 @@
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
 
-<p align="center">
-[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)]
-</p>
+[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
+
 
 ---
 
