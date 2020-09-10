@@ -1,6 +1,8 @@
-[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
-
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
+
+<p align="center">
+[![Structure](https://api.cirrus-ci.com/github/RomanBase/flutter_control.svg)](https://cirrus-ci.com/github/RomanBase/flutter_control)
+</p>
 
 ---
 
@@ -29,6 +31,8 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
   Factory is one and only Singleton in this Library.\
   Core objects of Flutter Control are stored in Factory's Storage by default (`Control.initControl`) and are accessible by their `Type` or via Providers.
+  
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
   
 ```dart
     Control.initControl(
@@ -117,6 +121,8 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   `ActionControlSub` provides read-only version of [ActionControl].\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
 
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
+
 ```dart
     final counter = ActionControl.broadcast<int>(0);
 
@@ -184,6 +190,8 @@ Structure below shows how data and events flows between UI and Models. `ControlW
   Every subscription is bound to it's `key` and `Type` so notification to Listeners arrives only for expected data.\
   With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of App to the another, even to Widgets and their States.
   Also custom broadcaster can be created to separate events from global/default stream.
+
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/broadcaster.png)
 
 ```dart
   BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
