@@ -112,15 +112,13 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
    - `StateControl` to control State and notify Widget about changes.
    - `TickerComponent` passes `Ticker` to Model and enables to control animations outside of Widget.
 
----
+![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
 - `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
   Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\
   On the Widget side is `ActionBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
   `ActionControlSub` provides read-only version of [ActionControl].\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
 ```dart
     final counter = ActionControl.broadcast<int>(0);
@@ -150,7 +148,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
 
 ---
 
-Structure below shows how data and events flows between UI and Models. `ControlWidget` can use multiple `ControlModel`s - for example one for Business Logic and one for UI/animation logic part.
+Structure below shows how data and events flows between UI and Controls. `ControlWidget` can use multiple `ControlModel`s with multiple Models, Streams and Observables..
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/architecture_flow.png)
 
 ---
