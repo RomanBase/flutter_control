@@ -168,8 +168,8 @@ class Control {
   /// nullable
   static T resolve<T>(dynamic source,
           {dynamic key, dynamic args, T defaultValue}) =>
-      factory
-          .resolve<T>(source, key: key, args: args, defaultValue: defaultValue);
+      factory.resolve<T>(source,
+          key: key, args: args, defaultValue: defaultValue);
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
   /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.

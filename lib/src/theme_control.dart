@@ -240,8 +240,10 @@ class ThemeConfig<T extends ControlTheme> {
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
+  Initializer get _defaultBuilder => (context) => ControlTheme(context);
+
   Initializer<T> get initializer =>
-      (context) => builder(context)..config = this;
+      (context) => (builder ?? _defaultBuilder)(context)..config = this;
 
   String get preferredThemeName => Control.get<BasePrefs>()
       .get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
@@ -286,6 +288,17 @@ class ThemeConfig<T extends ControlTheme> {
 
   void resetPreferred() =>
       Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
+
+  U getPreferredKey<U>([dynamic enums]) {
+    final dynamic key =
+        Control.get<BasePrefs>().get(ThemeConfig.preference_key);
+
+    if (enums != null) {
+      return Parse.toEnum(key, enums);
+    }
+
+    return key;
+  }
 
   ThemeConfig copyWith({
     dynamic theme,

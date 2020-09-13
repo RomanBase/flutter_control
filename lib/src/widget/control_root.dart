@@ -534,14 +534,16 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _setup.state = _args.get<AppState>();
     _setup.args = _args;
 
-    return Container(
-      key: _setup._localKey,
-      child: widget.app(
-        _setup,
-        Builder(builder: (context) {
+    printDebug('BUILD CONTROL');
+
+    return widget.app(
+      _setup,
+      Builder(
+        builder: (context) {
           _context.value = context;
 
           return CaseWidget(
+            key: _setup._localKey,
             activeCase: _setup.state,
             builders: _states,
             transitionIn: widget.transition,
@@ -552,7 +554,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
               color: Theme.of(context).canvasColor,
             ),
           );
-        }),
+        },
       ),
     );
   }

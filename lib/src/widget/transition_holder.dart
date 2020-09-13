@@ -48,9 +48,7 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   void onTickerInitialized(TickerProvider ticker) {
     animation = AnimationController(
         vsync: ticker, duration: Duration(milliseconds: 300));
-    animation.addListener(() {
-      notifyState();
-    });
+    animation.addListener(notifyState);
   }
 
   @override
@@ -118,11 +116,17 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  void softDispose() {
+    super.softDispose();
 
+    animation?.removeListener(notifyState);
     animation?.dispose();
     animation = null;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
 

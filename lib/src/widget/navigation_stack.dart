@@ -434,7 +434,7 @@ class NavigatorStackControl extends BaseControl with StateControl {
   void dispose() {
     super.dispose();
 
-    _items?.clear();
+    _items = null;
     _pageIndex.dispose();
   }
 }
