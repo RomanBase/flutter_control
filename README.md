@@ -8,6 +8,10 @@
 Flutter Control is complex library to maintain App and State management.\
 Library merges multiple functionality under one hood. This approach helps to tidily bound separated logic into complex solution.
 
+```dart
+import 'package:flutter_control/core.dart';
+```
+
  - **App State Management** - Managing application state, localization, theme and other global App changes.
  - **Widget State Management** - UI / Logic separation. Controlling State and UI updates.
  - **Dependency Injection** - Factory, Singleton, Lazy initialization and Service Locator.
