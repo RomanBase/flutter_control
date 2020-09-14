@@ -164,10 +164,13 @@ void main() async {
     });
 
     test('value', () {
-      final sub1 = broadcast.subscribe('sub', (value) => expect(value.toString(), '1'));
+      final sub1 =
+          broadcast.subscribe('sub', (value) => expect(value.toString(), '1'));
       final sub2 = broadcast.subscribe<int>('sub', (value) => expect(value, 1));
-      final sub3 = broadcast.subscribe(String, (value) => expect(value.toString(), '2'));
-      final sub4 = broadcast.subscribe<String>(String, (value) => expect(value, '2'));
+      final sub3 =
+          broadcast.subscribe(String, (value) => expect(value.toString(), '2'));
+      final sub4 =
+          broadcast.subscribe<String>(String, (value) => expect(value, '2'));
 
       expect(sub1.isValidForBroadcast('sub', 'string'), isTrue);
 
