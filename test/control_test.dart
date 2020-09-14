@@ -22,12 +22,17 @@ void main() async {
     injector: BaseInjector(),
   );
 
-  test('Set up', () async {
-    expect(isInitialized, isTrue);
-  });
-
   group('Control', () {
+    test('set up', () async {
+      expect(isInitialized, isTrue);
+
+      final reInit = Control.initControl();
+
+      expect(reInit, isFalse);
+    });
+
     test('init', () {
+      expect(Control.isInitialized, isTrue);
       expect(Control.isInitialized, factory.isInitialized);
 
       expect(Control.factory, isNotNull);
@@ -37,9 +42,6 @@ void main() async {
 
       expect(Control.debug, isFalse);
       expect(Control.debug, factory.debug);
-
-      expect(Control.isInitialized, isTrue);
-      expect(Control.isInitialized, factory.isInitialized);
 
       Control.factory.debug = true;
       expect(Control.debug, isTrue);
@@ -162,13 +164,10 @@ void main() async {
     });
 
     test('value', () {
-      final sub1 =
-          broadcast.subscribe('sub', (value) => expect(value.toString(), '1'));
+      final sub1 = broadcast.subscribe('sub', (value) => expect(value.toString(), '1'));
       final sub2 = broadcast.subscribe<int>('sub', (value) => expect(value, 1));
-      final sub3 =
-          broadcast.subscribe(String, (value) => expect(value.toString(), '2'));
-      final sub4 =
-          broadcast.subscribe<String>(String, (value) => expect(value, '2'));
+      final sub3 = broadcast.subscribe(String, (value) => expect(value.toString(), '2'));
+      final sub4 = broadcast.subscribe<String>(String, (value) => expect(value, '2'));
 
       expect(sub1.isValidForBroadcast('sub', 'string'), isTrue);
 
