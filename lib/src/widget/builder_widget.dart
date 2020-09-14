@@ -94,6 +94,10 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
+    if (_value == null) {
+      return widget.noData?.call(context) ?? Container();
+    }
+
     return widget.builder(context, _value);
   }
 
