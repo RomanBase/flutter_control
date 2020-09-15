@@ -246,6 +246,8 @@ class ControlScope {
 /// Setup for actual [ControlRoot] and [ControlScope].
 /// Passed to [AppWidgetBuilder].
 class ControlRootSetup {
+  final session = UnitId.randomId();
+
   /// App key for [WidgetsApp] Widget. This key is same as [ControlScope.appKey].
   Key key;
 
@@ -262,8 +264,10 @@ class ControlRootSetup {
   BuildContext context;
 
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
-  ObjectKey get _localKey => ObjectKey(
-      localization.locale.hashCode ^ state.hashCode ^ style.data.hashCode);
+  ObjectKey get _localKey => ObjectKey(session.hashCode ^
+      localization.locale.hashCode ^
+      state.hashCode ^
+      style.data.hashCode);
 
   /// Setup for actual [ControlRoot] and [ControlScope].
   /// [key] - [_appKey] - [ControlScope.appKey].
@@ -536,27 +540,21 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
     printDebug('BUILD CONTROL');
 
-    return widget.app(
-      _setup,
-      Builder(
-        builder: (context) {
-          _context.value = context;
-
-          return Container(
-            key: _setup._localKey,
-            child: CaseWidget(
-              activeCase: _setup.state,
-              builders: _states,
-              transitionIn: widget.transition,
-              transitions: _transitions,
-              args: _args,
-              soft: false,
-              placeholder: (_) => Container(
-                color: Theme.of(context).canvasColor,
-              ),
-            ),
-          );
-        },
+    return Container(
+      key: _setup._localKey,
+      child: widget.app(
+        _setup,
+        CaseWidget(
+          activeCase: _setup.state,
+          builders: _states,
+          transitionIn: widget.transition,
+          transitions: _transitions,
+          args: _args,
+          soft: false,
+          placeholder: (_) => Container(
+            color: Theme.of(context).canvasColor,
+          ),
+        ),
       ),
     );
   }
