@@ -544,17 +544,21 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
       key: _setup._localKey,
       child: widget.app(
         _setup,
-        CaseWidget(
-          activeCase: _setup.state,
-          builders: _states,
-          transitionIn: widget.transition,
-          transitions: _transitions,
-          args: _args,
-          soft: false,
-          placeholder: (_) => Container(
-            color: Theme.of(context).canvasColor,
-          ),
-        ),
+        Builder(builder: (context) {
+          _context.value = context;
+
+          return CaseWidget(
+            activeCase: _setup.state,
+            builders: _states,
+            transitionIn: widget.transition,
+            transitions: _transitions,
+            args: _args,
+            soft: false,
+            placeholder: (_) => Container(
+              color: Theme.of(context).canvasColor,
+            ),
+          );
+        }),
       ),
     );
   }
