@@ -11,8 +11,10 @@ class ControlBuilder<T> extends StatefulWidget {
   /// Widget builder.
   final ControlWidgetBuilder<T> builder;
 
+  /// Widget builder for non value.
   final WidgetBuilder noData;
 
+  /// Checks if 'null' value of [control] is valid for [builder].
   final bool nullOk;
 
   const ControlBuilder({
@@ -94,7 +96,7 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
 
   @override
   Widget build(BuildContext context) {
-    if (_value == null) {
+    if (_value == null && !widget.nullOk) {
       return widget.noData?.call(context) ?? Container();
     }
 
