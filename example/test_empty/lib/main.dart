@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
+import 'package:testempty/empty_control.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         key: setup.key,
         title: 'Empty',
         theme: setup.theme,
-        home: home,
+        home: EmptyControl(),
       ),
       initAsync: () async => await Future.delayed(Duration(seconds: 3)),
     );
@@ -83,6 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            StatusWidget(ActionControl.broadcast(_counter)),
           ],
         ),
       ),
@@ -91,6 +93,17 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class StatusWidget extends ControllableWidget {
+  StatusWidget(control) : super(control);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Current status: $value',
     );
   }
 }

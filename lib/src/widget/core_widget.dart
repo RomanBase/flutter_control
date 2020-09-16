@@ -465,3 +465,42 @@ mixin OnLayout on CoreWidget {
 
   void onLayout();
 }
+
+/// Debug printer of [CoreWidget] lifecycle.
+mixin CoreDebugPrinter on CoreWidget {
+  @override
+  void init(Map args) {
+    printDebug('CORE $this: init --- $args');
+    super.init(args);
+  }
+
+  @override
+  void onInit(Map args) {
+    printDebug('CORE $this: on init --- $args');
+    super.onInit(args);
+  }
+
+  @override
+  void onUpdate(CoreWidget oldWidget) {
+    printDebug('CORE $this: on update --- $oldWidget');
+    super.onUpdate(oldWidget);
+  }
+
+  @override
+  void onStateUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
+    printDebug('CORE $this: on state update --- $oldWidget | $state');
+    super.onStateUpdate(oldWidget, state);
+  }
+
+  @override
+  void onDependencyChanged() {
+    printDebug('CORE $this: dependency changed');
+    super.onDependencyChanged();
+  }
+
+  @override
+  void dispose() {
+    printDebug('CORE $this: dispose');
+    super.dispose();
+  }
+}

@@ -48,14 +48,12 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
               onPressed: controller.unloadApp,
               child: Text('unload'),
             ),
-            StableWidget(
-              builder: (context) => Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Text(
-                  localize('localization_info'),
-                  textAlign: TextAlign.center,
-                  style: font.bodyText1.copyWith(color: theme.primaryColor),
-                ),
+            Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Text(
+                localize('localization_info'),
+                textAlign: TextAlign.center,
+                style: font.bodyText1.copyWith(color: theme.primaryColor),
               ),
             ),
           ],

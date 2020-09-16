@@ -1,6 +1,10 @@
 import 'package:flutter_control/core.dart';
 
 class SwapPage extends StatefulWidget {
+  final greenControl = SwapControl(Colors.green);
+
+  final redControl = SwapControl(Colors.red);
+
   @override
   _SwapPageState createState() => _SwapPageState();
 }
@@ -8,9 +12,17 @@ class SwapPage extends StatefulWidget {
 class _SwapPageState extends State<SwapPage> {
   bool swap = false;
 
-  final green = SwapItem(SwapControl(Colors.green), Colors.white);
+  SwapItem green;
 
-  final red = SwapItem(SwapControl(Colors.red), Colors.black);
+  SwapItem red;
+
+  @override
+  void initState() {
+    super.initState();
+
+    green = SwapItem(widget.greenControl, Colors.white);
+    red = SwapItem(widget.redControl, Colors.black);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +53,6 @@ class _SwapPageState extends State<SwapPage> {
                 swap = !swap;
               });
             },
-            child: Text('swap'),
           ),
         ],
       ),

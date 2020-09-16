@@ -11,10 +11,6 @@ abstract class ControllableWidget<T> extends CoreWidget {
     this.control, {
     Key key,
   })  : assert(control != null),
-        assert(control is ActionControl ||
-            control is FieldControl ||
-            control is Listenable ||
-            control is List),
         super(key: key);
 
   @override
