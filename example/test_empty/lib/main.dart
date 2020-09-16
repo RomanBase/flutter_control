@@ -21,12 +21,13 @@ class MyApp extends StatelessWidget {
       ),
       states: [
         AppState.main.build((context) => MyHomePage(title: 'Example')),
+        AppState.onboarding.build((context) => EmptyControl()),
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,
         title: 'Empty',
         theme: setup.theme,
-        home: EmptyControl(),
+        home: home,
       ),
       initAsync: () async => await Future.delayed(Duration(seconds: 3)),
     );
@@ -97,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class StatusWidget extends ControllableWidget {
+class StatusWidget extends ControllableWidget with CoreWidgetDebugPrinter {
   StatusWidget(control) : super(control);
 
   @override

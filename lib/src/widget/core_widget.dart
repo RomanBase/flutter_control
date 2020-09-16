@@ -467,7 +467,7 @@ mixin OnLayout on CoreWidget {
 }
 
 /// Debug printer of [CoreWidget] lifecycle.
-mixin CoreDebugPrinter on CoreWidget {
+mixin CoreWidgetDebugPrinter on CoreWidget {
   @override
   void init(Map args) {
     printDebug('CORE $this: init --- $args');
