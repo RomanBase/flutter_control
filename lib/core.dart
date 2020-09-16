@@ -30,6 +30,7 @@ export './src/widget/builder_widget.dart';
 export './src/widget/case_widget.dart';
 export './src/widget/control_root.dart';
 export './src/widget/control_widget.dart';
+export './src/widget/controllable_widget.dart';
 export './src/widget/core_widget.dart';
 export './src/widget/input_field.dart';
 export './src/widget/loader_widget.dart';

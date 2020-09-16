@@ -122,13 +122,13 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
 /// Whenever one of [controls] notifies about change, Widget is rebuild.
 /// Supports [ActionControl], [FieldControl], [StateControl], [ValueListenable] and [Listenable].
 ///
-/// Check single control Widget check specified versions:
+/// Check single control Widget for specified version:
 ///   - [ActionBuilder] for single [ActionControlObservable].
 ///   - [FieldBuilder] for single [FieldControlStream].
 ///   - [NotifierBuilder] for single [Listenable].
 class ControlBuilderGroup extends StatefulWidget {
   /// List of Controls that will notify this Widget about changes.
-  final List<dynamic> controls;
+  final List controls;
 
   /// Widget builder.
   /// Builder passes [value] as List of values from given [controls]. If object don't have value (eg. [Listenable]), actual object is returned.

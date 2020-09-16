@@ -201,6 +201,7 @@ abstract class CoreWidget extends StatefulWidget
   ///
   /// Widget with State must be initialized before executing this function - check [isInitialized].
   /// It's safe to register objects in/after [onInit] function.
+  @protected
   void register(Disposable object) {
     assert(isInitialized);
 
