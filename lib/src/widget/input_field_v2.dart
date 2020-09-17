@@ -16,8 +16,19 @@ class InputControlV2 extends TextEditingController with Disposable, StateControl
 
   String _error;
 
+  String get error => _error;
+
   set error(String value) {
     _error = value;
+    notifyState();
+  }
+
+  bool _obscure = false;
+
+  bool get obscure => _obscure;
+
+  set obscure(bool value) {
+    _obscure = value;
     notifyState();
   }
 
@@ -145,6 +156,21 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
   final InputDecoration decoration;
   final InputBuilder builder;
 
+  static InputBuilder standard({
+    TextInputType keyboardType: TextInputType.text,
+    TextInputAction action: TextInputAction.next,
+  }) =>
+      (context, scope, decoration) => TextField(
+            controller: scope,
+            onChanged: control.change,
+            onSubmitted: control.submit,
+            focusNode: control.focus,
+            decoration: decoration,
+            keyboardType: TextInputType.text,
+            textInputAction: action,
+            obscureText: scope.obscure,
+          );
+
   InputFieldV2({
     Key key,
     @required InputControlV2 control,
@@ -152,7 +178,7 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
     this.hint,
     this.decoration,
     this.color,
-    @required this.builder,
+    this.builder,
   }) : super(
           key: key,
           control: control,
@@ -182,7 +208,7 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
       errorText: (!control.isValid) ? control._error : null,
     );
 
-    return builder(
+    return (builder ?? standard())(
       context,
       control,
       _decoration,
