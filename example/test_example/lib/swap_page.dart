@@ -53,6 +53,7 @@ class _SwapPageState extends State<SwapPage> {
                 swap = !swap;
               });
             },
+            child: Text('swap'),
           ),
         ],
       ),

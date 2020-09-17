@@ -2,8 +2,7 @@ import 'package:flutter_control/core.dart';
 
 import 'cards_page.dart';
 
-class CardsController extends BaseControl
-    with RouteControlProvider, LocalizationProvider {
+class CardsController extends BaseControl with RouteControlProvider, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
   final input = InputControl();
@@ -21,14 +20,11 @@ class CardsController extends BaseControl
   void onInit(Map args) {
     super.onInit(args);
 
-    BroadcastProvider.subscribe<CardModel>(
-        'remove_card', (card) => removeCard(card));
+    BroadcastProvider.subscribe<CardModel>('remove_card', (card) => removeCard(card));
   }
 
   void addCard() {
-    String title = input.isEmpty
-        ? '${localize('card_title')} $_counter${localizePlural('number', _counter)}'
-        : input.value;
+    String title = input.isEmpty ? '${localize('card_title')} $_counter${localizePlural('number', _counter)}' : input.text;
 
     newCard(title);
 
@@ -51,8 +47,7 @@ class CardsController extends BaseControl
 
   void removeCard(CardModel item) => cards.remove(item);
 
-  openCard(CardModel item) =>
-      routeOf<DetailPage>().openRoute(args: {'card': item});
+  openCard(CardModel item) => routeOf<DetailPage>().openRoute(args: {'card': item});
 
   @override
   void dispose() {
@@ -66,8 +61,7 @@ class CardsController extends BaseControl
   }
 }
 
-class DetailController extends BaseControl
-    with RouteControlProvider, LocalizationProvider {
+class DetailController extends BaseControl with RouteControlProvider, LocalizationProvider {
   CardModel _model;
 
   ListControl<CardItemModel> get items => _model.items;
@@ -84,8 +78,7 @@ class DetailController extends BaseControl
 
     _model ??= args.getArg<CardModel>();
 
-    _model.countLabel
-        .streamTo(title, converter: (input) => '${_model.title} - $input');
+    _model.countLabel.streamTo(title, converter: (input) => '${_model.title} - $input');
   }
 
   void addItem() => newItem('${localize('item_title')} ${items.length}');

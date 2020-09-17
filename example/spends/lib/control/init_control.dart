@@ -21,8 +21,8 @@ class InitControl extends InitLoaderControl with FireProvider {
     super.onInit(args);
 
     if (Control.debug) {
-      username.value = 'test@test.test';
-      password.value = '12345678';
+      username.text = 'test@test.test';
+      password.text = '12345678';
     }
   }
 
@@ -39,7 +39,7 @@ class InitControl extends InitLoaderControl with FireProvider {
   void signIn() async {
     loading.progress();
 
-    await fire.signIn(username.value, password.value).then((user) {
+    await fire.signIn(username.text, password.text).then((user) {
       loading.done();
     }).catchError((err) {
       loading.error();
@@ -49,9 +49,7 @@ class InitControl extends InitLoaderControl with FireProvider {
   void signUp() async {
     loading.progress();
 
-    await fire
-        .signUp(username.value, password.value, nickname.value)
-        .then((user) {
+    await fire.signUp(username.text, password.text, nickname.text).then((user) {
       loading.done();
     }).catchError((err) {
       loading.error();
@@ -61,7 +59,7 @@ class InitControl extends InitLoaderControl with FireProvider {
   void resetPass() async {
     loading.progress();
 
-    await fire.requestPasswordReset(username.value).then((_) {
+    await fire.requestPasswordReset(username.text).then((_) {
       loading.done(msg: SignMode.sign_in);
     }).catchError((err) {
       loading.error();

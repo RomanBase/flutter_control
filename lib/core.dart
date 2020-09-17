@@ -32,6 +32,7 @@ export './src/widget/control_root.dart';
 export './src/widget/control_widget.dart';
 export './src/widget/controllable_widget.dart';
 export './src/widget/core_widget.dart';
+export './src/widget/input_field_v1.dart';
 export './src/widget/input_field.dart';
 export './src/widget/loader_widget.dart';
 export './src/widget/navigation_stack.dart';
@@ -49,8 +50,7 @@ typedef ValueCallback<T> = void Function(T value);
 typedef ValueConverter<T> = T Function(dynamic value);
 typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
 
-typedef ControlWidgetBuilder<T> = Widget Function(
-    BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
 void printDebug(Object object) {

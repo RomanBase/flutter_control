@@ -27,7 +27,7 @@ class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  InputField(
+                  InputFieldV1(
                     control: control.title,
                     textInputAction: TextInputAction.next,
                     decoration: RoundInputDecoration(color: theme.lightGray),
@@ -56,7 +56,7 @@ class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
                   SizedBox(
                     height: theme.paddingMid,
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.value,
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.next,
@@ -66,7 +66,7 @@ class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
                   SizedBox(
                     height: theme.paddingMid,
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.note,
                     textInputAction: TextInputAction.done,
                     minLines: 2,

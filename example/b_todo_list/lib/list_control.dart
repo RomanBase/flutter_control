@@ -22,8 +22,7 @@ class TodoListControl extends BaseControl {
 
   void addItem(String title) => list.add(TodoItemModel(title));
 
-  bool updateItem(TodoItemModel model, String title) =>
-      list.replace(TodoItemModel(title, model.isDone), (item) => item == model);
+  bool updateItem(TodoItemModel model, String title) => list.replace(TodoItemModel(title, model.isDone), (item) => item == model);
 
   bool removeItem(TodoItemModel model) => list.remove(model);
 
@@ -69,20 +68,20 @@ class ItemDialogControl extends BaseControl {
     model = args.getArg<TodoItemModel>();
 
     if (model != null) {
-      title.value = model.title;
+      title.text = model.title;
     }
   }
 
   bool submit() {
     if (!title.validate()) {
-      title.setError('invalid title length');
+      title.error = 'invalid title length';
       return false;
     }
 
     if (editMode) {
-      control.updateItem(model, title.value);
+      control.updateItem(model, title.text);
     } else {
-      control.addItem(title.value);
+      control.addItem(title.text);
     }
 
     return true;

@@ -5,8 +5,7 @@ import 'registration_page.dart';
 
 class LoginControl extends BaseControl with RouteControlProvider {
   final loading = LoadingControl();
-  final username =
-      InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
+  final username = InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final password = InputControl(regex: '.{8,}');
 
   final message = StringControl();
@@ -25,11 +24,11 @@ class LoginControl extends BaseControl with RouteControlProvider {
 
     if (!username.validateChain()) {
       if (!username.isValid) {
-        username.setError('invalid e-mail address');
+        username.error = 'invalid e-mail address';
       }
 
       if (!password.isValid) {
-        password.setError('at least 8 letters');
+        password.error = 'at least 8 letters';
       }
 
       return;
@@ -37,7 +36,7 @@ class LoginControl extends BaseControl with RouteControlProvider {
 
     loading.progress();
 
-    firebase.login(username.value, password.value).then((value) {
+    firebase.login(username.text, password.text).then((value) {
       Control.scope.setMainState(args: value);
     }).catchError((err) {
       message.setValue(err.message);
@@ -56,8 +55,7 @@ class LoginControl extends BaseControl with RouteControlProvider {
   }
 }
 
-class LoginPage extends SingleControlWidget<LoginControl>
-    with RouteControl, ThemeProvider {
+class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, ThemeProvider {
   @override
   LoginControl initControl() => LoginControl();
 
@@ -78,7 +76,7 @@ class LoginPage extends SingleControlWidget<LoginControl>
                   style: font.headline3,
                 ),
               ),
-              InputField(
+              InputFieldV1(
                 control: control.username,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -86,7 +84,7 @@ class LoginPage extends SingleControlWidget<LoginControl>
               ),
               Stack(
                 children: <Widget>[
-                  InputField(
+                  InputFieldV1(
                     control: control.password,
                     textInputAction: TextInputAction.done,
                     hint: 'passowrd',
@@ -96,8 +94,7 @@ class LoginPage extends SingleControlWidget<LoginControl>
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       icon: Icon(Icons.visibility),
-                      onPressed: () => control.password
-                          .setObscure(!control.password.isObscured),
+                      onPressed: () => control.password.obscure = !control.password.obscure,
                     ),
                   ),
                 ],
@@ -126,11 +123,7 @@ class LoginPage extends SingleControlWidget<LoginControl>
               FlatButton(
                 onPressed: () {
                   control.username.unfocusChain();
-                  ControlRoute.build(
-                          identifier: '/registration',
-                          builder: (_) => RegistrationPage())
-                      .navigator(this)
-                      .openRoute();
+                  ControlRoute.build(identifier: '/registration', builder: (_) => RegistrationPage()).navigator(this).openRoute();
                 },
                 child: Text(
                   'Don\'t have account? Sign Up!',

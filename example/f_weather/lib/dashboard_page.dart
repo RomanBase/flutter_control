@@ -23,17 +23,16 @@ class _UIControl extends ControlModel with TickerComponent {
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    inputAnim = new AnimationController(
-        vsync: ticker, duration: Duration(milliseconds: 300));
+    inputAnim = new AnimationController(vsync: ticker, duration: Duration(milliseconds: 300));
   }
 
-  void showInput() => control.city.focus(true);
+  void showInput() => control.city.setFocus(true);
 
-  void hideInput() => control.city.focus(false);
+  void hideInput() => control.city.setFocus(false);
 
   Future<bool> popScope() async {
-    if (control.city.hasFocus) {
-      control.city.focus(false);
+    if (control.city.focus.hasFocus) {
+      control.city.focus.unfocus();
       return false;
     }
 
@@ -74,15 +73,7 @@ class DashboardPage extends ControlWidget with TickerControl {
                   return TweenAnimationBuilder(
                     duration: Duration(milliseconds: 500),
                     curve: Curves.ease,
-                    tween: ColorTween(
-                        begin: Colors.white,
-                        end: temperature.isAvailable
-                            ? Color.lerp(
-                                Color(0xFF0000FF),
-                                Colors.white,
-                                (temperature.temperatureC / 30.0)
-                                    .clamp(0.0, 1.0))
-                            : Colors.white),
+                    tween: ColorTween(begin: Colors.white, end: temperature.isAvailable ? Color.lerp(Color(0xFF0000FF), Colors.white, (temperature.temperatureC / 30.0).clamp(0.0, 1.0)) : Colors.white),
                     builder: (context, value, child) => Image.asset(
                       AssetPath().image('bg'),
                       width: Device.of(context).width,
@@ -122,8 +113,7 @@ class DashboardPage extends ControlWidget with TickerControl {
               ),
             ),
             AnimatedBuilder(
-              animation: Tween<double>(begin: 0.0, end: 1.0).animate(
-                  CurvedAnimation(parent: ui.inputAnim, curve: Curves.ease)),
+              animation: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: ui.inputAnim, curve: Curves.ease)),
               builder: (context, child) => input(),
             ),
           ],
@@ -143,8 +133,7 @@ class DashboardPage extends ControlWidget with TickerControl {
             child: GestureDetector(
               onTap: ui.hideInput,
               child: BackdropFilter(
-                filter: ImageFilter.blur(
-                    sigmaX: 12.0 * progress, sigmaY: 12.0 * progress),
+                filter: ImageFilter.blur(sigmaX: 12.0 * progress, sigmaY: 12.0 * progress),
                 child: Container(
                   color: Colors.white10,
                 ),
@@ -161,7 +150,7 @@ class DashboardPage extends ControlWidget with TickerControl {
             child: Row(
               children: <Widget>[
                 Expanded(
-                  child: InputField(
+                  child: InputFieldV1(
                     control: control.city,
                     cursorColor: Colors.white,
                     textAlign: TextAlign.center,
@@ -190,10 +179,7 @@ class DashboardPage extends ControlWidget with TickerControl {
         children: <Widget>[
           Text(
             control.loading.message ?? 'unknown error',
-            style: Theme.of(context)
-                .textTheme
-                .bodyText1
-                .copyWith(color: Colors.red),
+            style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.red),
           ),
           RaisedButton(
             onPressed: ui.showInput,
@@ -230,10 +216,7 @@ class WeatherInfo extends StatelessWidget {
             children: <Widget>[
               Text(
                 '${model.temperature.toInt()}°${model.unitSign}',
-                style: Theme.of(context)
-                    .textTheme
-                    .headline5
-                    .copyWith(color: Colors.white),
+                style: Theme.of(context).textTheme.headline5.copyWith(color: Colors.white),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -245,10 +228,7 @@ class WeatherInfo extends StatelessWidget {
                   ),
                   Text(
                     '${model.low.toInt()}°',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyText1
-                        .copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
                   ),
                   SizedBox(
                     width: 16.0,
@@ -259,10 +239,7 @@ class WeatherInfo extends StatelessWidget {
                   ),
                   Text(
                     '${model.high.toInt()}°',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyText2
-                        .copyWith(color: Colors.white),
+                    style: Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.white),
                   ),
                 ],
               ),
@@ -272,10 +249,7 @@ class WeatherInfo extends StatelessWidget {
 
         return Text(
           'What\'s the weather ?',
-          style: Theme.of(context)
-              .textTheme
-              .bodyText1
-              .copyWith(color: Colors.white),
+          style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
         );
       },
     );
@@ -314,10 +288,7 @@ class LocationInfo extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: Text(
                           model.place ?? 'search',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headline4
-                              .copyWith(color: Colors.white),
+                          style: Theme.of(context).textTheme.headline4.copyWith(color: Colors.white),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -343,13 +314,8 @@ class LocationInfo extends StatelessWidget {
                 children: <Widget>[
                   Center(
                     child: Text(
-                      model.isAvailable
-                          ? 'lat: ${model.lat}, lng: ${model.lng}'
-                          : 'check weather at your location ?',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyText1
-                          .copyWith(color: Colors.white),
+                      model.isAvailable ? 'lat: ${model.lat}, lng: ${model.lng}' : 'check weather at your location ?',
+                      style: Theme.of(context).textTheme.bodyText1.copyWith(color: Colors.white),
                     ),
                   ),
                   Align(

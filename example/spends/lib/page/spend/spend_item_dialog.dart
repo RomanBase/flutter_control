@@ -27,7 +27,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  InputField(
+                  InputFieldV1(
                     control: control.title,
                     textInputAction: TextInputAction.next,
                     decoration: RoundInputDecoration(color: theme.lightGray),
@@ -71,7 +71,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl>
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: <Widget>[
                                 Expanded(
-                                  child: InputField(
+                                  child: InputFieldV1(
                                     control: control.value,
                                     keyboardType: TextInputType.number,
                                     textInputAction: TextInputAction.next,
@@ -108,7 +108,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl>
                       );
                     },
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.note,
                     textInputAction: TextInputAction.done,
                     minLines: 2,

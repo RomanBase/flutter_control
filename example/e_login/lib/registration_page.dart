@@ -5,8 +5,7 @@ import 'firebase_control.dart';
 
 class RegistrationControl extends BaseControl with RouteControlProvider {
   final loading = LoadingControl();
-  final username =
-      InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
+  final username = InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final nickname = InputControl(regex: '.{3,}');
   final password = InputControl(regex: '.{8,}');
 
@@ -26,15 +25,15 @@ class RegistrationControl extends BaseControl with RouteControlProvider {
 
     if (!username.validateChain()) {
       if (!username.isValid) {
-        username.setError('invalid e-mail address');
+        username.error = 'invalid e-mail address';
       }
 
       if (!nickname.isValid) {
-        nickname.setError('at least 3 letters');
+        nickname.error = 'at least 3 letters';
       }
 
       if (!password.isValid) {
-        password.setError('at least 8 letters');
+        password.error = 'at least 8 letters';
       }
 
       return;
@@ -42,9 +41,7 @@ class RegistrationControl extends BaseControl with RouteControlProvider {
 
     loading.progress();
 
-    firebase
-        .register(username.value, password.value, nickname.value)
-        .then((value) {
+    firebase.register(username.text, password.text, nickname.text).then((value) {
       routeOf<DashboardPage>().openRoot(args: value);
     }).catchError((err) {
       message.setValue(err.message);
@@ -64,8 +61,7 @@ class RegistrationControl extends BaseControl with RouteControlProvider {
   }
 }
 
-class RegistrationPage extends SingleControlWidget<RegistrationControl>
-    with RouteControl, ThemeProvider {
+class RegistrationPage extends SingleControlWidget<RegistrationControl> with RouteControl, ThemeProvider {
   @override
   RegistrationControl initControl() => RegistrationControl();
 
@@ -88,7 +84,7 @@ class RegistrationPage extends SingleControlWidget<RegistrationControl>
                       style: font.headline5,
                     ),
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.username,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
@@ -97,7 +93,7 @@ class RegistrationPage extends SingleControlWidget<RegistrationControl>
                   SizedBox(
                     height: 16.0,
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.nickname,
                     keyboardType: TextInputType.text,
                     textInputAction: TextInputAction.next,
@@ -106,7 +102,7 @@ class RegistrationPage extends SingleControlWidget<RegistrationControl>
                   SizedBox(
                     height: 16.0,
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.password,
                     textInputAction: TextInputAction.done,
                     hint: 'passowrd',

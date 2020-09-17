@@ -30,8 +30,7 @@ class LocationModel extends ControlModel with StateControl {
   }
 
   Future<void> requestCurrentGps() async {
-    final position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    final position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
     setPlace(position.latitude, position.longitude, '-');
   }
@@ -140,16 +139,15 @@ class DashboardControl extends BaseControl with WeatherProvider {
       return;
     }
 
-    String value = city.value;
+    String value = city.text;
 
     city.clear();
-    city.focus(false);
+    city.setFocus(false);
 
     loading.progress();
 
     weather.getWeatherByCity(value).then((weather) {
-      location.setPlace(
-          weather.coord.lat, weather.coord.lon, weather.nameWithCountry);
+      location.setPlace(weather.coord.lat, weather.coord.lon, weather.nameWithCountry);
 
       temperature.setTemperatures(
         temperature: weather.data.temp,
@@ -180,8 +178,7 @@ class DashboardControl extends BaseControl with WeatherProvider {
     await location.requestCurrentGps();
 
     weather.getWeatherByGps(location.lat, location.lng).then((weather) {
-      location.setPlace(
-          weather.coord.lat, weather.coord.lon, weather.nameWithCountry);
+      location.setPlace(weather.coord.lat, weather.coord.lon, weather.nameWithCountry);
 
       temperature.setTemperatures(
         temperature: weather.data.temp,

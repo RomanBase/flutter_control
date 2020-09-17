@@ -25,7 +25,7 @@ class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  InputField(
+                  InputFieldV1(
                     control: control.title,
                     textInputAction: TextInputAction.next,
                     decoration: RoundInputDecoration(color: theme.lightGray),
@@ -34,7 +34,7 @@ class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl>
                   SizedBox(
                     height: theme.paddingMid,
                   ),
-                  InputField(
+                  InputFieldV1(
                     control: control.note,
                     textInputAction: TextInputAction.done,
                     minLines: 2,

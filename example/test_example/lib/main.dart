@@ -29,8 +29,7 @@ class MyApp extends StatelessWidget {
         'cards': CardsController(),
       },
       initializers: {
-        DetailController: (args) =>
-            DetailController(Parse.getArg<CardModel>(args)),
+        DetailController: (args) => DetailController(Parse.getArg<CardModel>(args)),
         CrossControl: (args) => CrossControl(),
       },
       injector: Injector.of({
@@ -41,7 +40,7 @@ class MyApp extends StatelessWidget {
       }),
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()).path(''),
+        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
       theme: ThemeConfig<MyTheme>(
         builder: (context) => MyTheme(context),
@@ -88,9 +87,7 @@ class MyTheme extends ControlTheme {
         ThemeData: (_) => ThemeData(
               primaryColor: Colors.deepOrange,
             ),
-        Brightness.light: (_) =>
-            ThemeData.light().copyWith(primaryColor: Colors.green),
-        Brightness.dark: (_) =>
-            ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
+        Brightness.light: (_) => ThemeData.light().copyWith(primaryColor: Colors.green),
+        Brightness.dark: (_) => ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
       };
 }

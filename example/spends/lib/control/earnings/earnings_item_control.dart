@@ -19,8 +19,8 @@ class EarningsItemControl extends BaseControl with RouteControlProvider {
   bool get editMode => model != null;
 
   EarningsItem get item => EarningsItem(
-        title: title.value,
-        note: note.value,
+        title: title.text,
+        note: note.text,
         value: Parse.toDouble(value.value),
         type: type.value,
       );
@@ -32,9 +32,9 @@ class EarningsItemControl extends BaseControl with RouteControlProvider {
     model = args.getArg<EarningsItemModel>();
 
     if (model != null) {
-      title.value = model.item.title;
-      value.value = model.item.value.toInt().toString();
-      note.value = model.item.note;
+      title.text = model.item.title;
+      value.text = model.item.value.toInt().toString();
+      note.text = model.item.note;
       type.value = model.item.type;
     }
   }

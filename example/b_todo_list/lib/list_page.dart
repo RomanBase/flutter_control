@@ -115,7 +115,7 @@ class ItemDialog extends SingleControlWidget<ItemDialogControl> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             GestureDetector(
-              onTap: () => control.title.focus(false),
+              onTap: () => control.title.setFocus(false),
               child: Container(
                 margin: const EdgeInsets.all(32.0),
                 padding: const EdgeInsets.all(16.0),
@@ -131,7 +131,7 @@ class ItemDialog extends SingleControlWidget<ItemDialogControl> {
                       height: 1,
                       color: Colors.black12,
                     ),
-                    InputField(
+                    InputFieldV1(
                       control: control.title,
                       autofocus: true,
                       textAlign: TextAlign.center,

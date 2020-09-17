@@ -234,7 +234,7 @@ class InitPage extends ControlWidget
                 SizedBox(
                   height: 256.0,
                 ),
-                InputField(
+                InputFieldV1(
                   control: control.username,
                   decoration: RoundInputDecoration(),
                   textInputAction: TextInputAction.next,
@@ -244,7 +244,7 @@ class InitPage extends ControlWidget
                 _fieldSignState(
                   topPadding: theme.paddingMid,
                   states: [SignMode.sign_up],
-                  child: InputField(
+                  child: InputFieldV1(
                     control: control.nickname,
                     decoration: RoundInputDecoration(),
                     textInputAction: TextInputAction.next,
@@ -255,7 +255,7 @@ class InitPage extends ControlWidget
                 _fieldSignState(
                   topPadding: theme.paddingMid,
                   states: [SignMode.sign_in, SignMode.sign_up],
-                  child: InputField(
+                  child: InputFieldV1(
                     control: control.password,
                     obscureText: true,
                     decoration: RoundInputDecoration(),

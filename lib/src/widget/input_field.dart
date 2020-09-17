@@ -1,180 +1,95 @@
-import 'package:flutter/gestures.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_control/core.dart';
 
-/// Extends and adds functionality to standard [FocusNode]
-class FocusController extends FocusNode {
-  BuildContext _context;
-
-  void setContext(BuildContext context) {
-    _context = context;
-  }
-
-  void focus() {
-    if (_context != null) {
-      FocusScope.of(_context).requestFocus(this);
-    }
-  }
-}
-
-/// Controller of [InputField].
-/// Can chain multiple Controllers for submissions.
-class InputControl extends ControlModel with StateControl {
-  @override
-  bool get preferSoftDispose => true;
-
-  /// Regex to check value validity.
+/// Still experimental control for [TextField] builder..
+class InputControl extends TextEditingController with Disposable {
   final String regex;
 
-  /// Standard TextEditingController to provide default text.
-  TextEditingController _editController;
+  FocusNode _focus;
 
-  /// Controls focus of InputField.
-  FocusController _focusController;
+  FocusNode get focus => _focus ?? (_focus = FocusNode());
 
-  /// Warning text to display when Field isn't valid.
+  bool get isFocusable => focus.context != null;
+
+  bool _isValid = true;
+
+  bool get isValid => _isValid;
+
   String _error;
 
   String get error => _error;
 
-  /// Current text of Field.
-  String _text;
+  set error(String value) {
+    _error = value;
+    notifyListeners();
+  }
 
-  /// Text obscure for passwords etc.
   bool _obscure = false;
 
-  /// returns Current text.
-  /// Non null
-  String get value => _text ?? '';
+  bool get obscure => _obscure;
 
-  set value(String value) => setText(value);
+  set obscure(bool value) {
+    _obscure = value;
+    notifyListeners();
+  }
 
-  /// Validity of text - regex based.
-  bool _isValid = true;
+  InputControl _next;
 
-  /// returns Current validity - regex based.
-  /// Validity is checked right after text submit.
-  bool get isValid => _isValid;
+  VoidCallback _onDone;
 
-  /// returns true if String [value] is empty.
-  bool get isEmpty => value.isEmpty;
+  VoidCallback _onFocusChanged;
 
-  /// returns true if Field is focused.
-  bool get hasFocus => _focusController?.hasFocus ?? false;
-
-  bool get isObscured => _obscure;
+  ValueCallback<String> _onChanged;
 
   bool get isNextChained => _next != null;
 
   bool get isDoneMounted => _onDone != null;
 
-  /// Next InputController.
-  InputControl _next;
-
-  /// Callback when user submit text.
-  VoidCallback _onDone;
-
-  /// Helps easily add/remove callback at FocusController.
-  VoidCallback _onFocusChanged;
-
-  /// Callback when user changes text.
-  ValueCallback<String> _onChanged;
-
-  /// Default constructor
-  InputControl({String text, this.regex}) {
-    _text = text;
-  }
-
-  /// Initializes [TextEditingController] and [FocusController].
-  /// Can be called multiple times to prevent early disposed controllers.
-  void _initControllers() {
-    if (_editController == null) {
-      _editController = TextEditingController(text: value);
-    }
-
-    if (_focusController == null) {
-      _focusController = FocusController();
-      _focusController.addListener(() {
-        if (hasFocus) {
-          setError(null);
-        }
-      });
-    }
-  }
-
   @override
-  void onStateInitialized() => _initControllers();
-
-  /// Sets text and notify InputField State to change Widget.
-  void setText(String text) {
-    _text = text;
-    notifyState();
+  set text(String newText) {
+    value = value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText == null ? -1 : newText.length),
+      composing: TextRange.empty,
+    );
   }
 
-  /// Sets text and notify InputField State to change Widget.
-  void setError(String text, [bool valid]) {
-    _error = text;
+  bool get isEmpty => text == null;
 
-    if (valid != null) {
-      _isValid = valid;
-    }
-
-    notifyState();
+  InputControl({String text, this.regex}) {
+    value = text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
-  /// Sets text obscure to show/hide passwords etc.
-  void setObscure(bool obscure) {
-    if (_obscure == obscure) {
-      return;
-    }
-
-    _obscure = obscure;
-    notifyState();
+  InputControl next(InputControl control) {
+    _next = control;
+    return control;
   }
 
-  /// Sets next Controller into chain.
-  InputControl next(InputControl controller) {
-    return _next = controller;
-  }
-
-  /// Sets callback for input submit.
   InputControl done(VoidCallback onDone) {
     _onDone = onDone;
-
     return this;
   }
 
-  /// Sets callback for text changes.
   InputControl changed(ValueCallback<String> onChanged) {
     _onChanged = onChanged;
-
     return this;
   }
 
-  /// Sets text to controller and notify text changed listener.
-  void _changeText(String text) {
-    _text = text;
-
-    if (_onChanged != null) {
-      _onChanged(text);
-    }
-  }
-
-  /// Submit text and unfocus controlled InputField and focus next one (if is chained).
-  /// [done] callback is called as well.
-  void submit() {
+  void submit(String text) {
     validate();
 
-    if (_next != null) {
-      _next.focus(true);
-    }
+    _next?.setFocus(true);
 
     if (_onDone != null) {
       _onDone();
     }
   }
 
-  /// [done] callback is called for first or for [all] chained inputs.
+  void change(String text) {
+    if (_onChanged != null) {
+      _onChanged(text);
+    }
+  }
+
   void chainSubmit({bool all: false}) {
     if (_onDone != null) {
       _onDone();
@@ -187,39 +102,27 @@ class InputControl extends ControlModel with StateControl {
     _next?.chainSubmit();
   }
 
-  /// Change focus of InputField.
-  void focus(bool requestFocus) {
-    if (_focusController == null) {
-      printDebug('no focus controller found');
-      return;
-    }
-
+  void setFocus(bool requestFocus) {
     if (requestFocus) {
-      _focusController.focus();
+      if (isFocusable) {
+        FocusScope.of(focus.context).requestFocus(focus);
+      }
     } else {
-      _focusController.unfocus();
+      focus.unfocus();
     }
   }
 
-  /// Sets on focus changed listener.
-  /// Only one listener is active at time.
-  /// Set null to remove listener.
   void onFocusChanged(ValueCallback<bool> listener) {
-    _initControllers();
-
     if (_onFocusChanged != null) {
-      _focusController.removeListener(_onFocusChanged);
+      focus.removeListener(_onFocusChanged);
       _onFocusChanged = null;
     }
 
     if (listener != null) {
-      _focusController.addListener(_onFocusChanged = () => listener(hasFocus));
+      focus.addListener(_onFocusChanged = () => listener(focus.hasFocus));
     }
   }
 
-  /// Validate text with given regex.
-  /// This method isn't called continuously.
-  /// Typically just after submit.
   bool validate() {
     if (regex == null) {
       return _isValid = true;
@@ -228,9 +131,6 @@ class InputControl extends ControlModel with StateControl {
     return _isValid = RegExp(regex).hasMatch(value ?? '');
   }
 
-  /// Validate text with given regex thru all chained inputs.
-  /// This method isn't called continuously.
-  /// Typically after whole form submission.
   bool validateChain({bool unfocus: true}) {
     if (_next == null) {
       return validate();
@@ -240,296 +140,86 @@ class InputControl extends ControlModel with StateControl {
       unfocusChain();
     }
 
-    final isNextValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
+    final isChainValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
 
-    return validate() && isNextValid;
+    return validate() && isChainValid;
   }
 
-  /// Unfocus field thru all chained inputs.
   void unfocusChain() {
-    focus(false);
+    setFocus(false);
     _next?.unfocusChain();
-  }
-
-  /// Clears text and notifies [TextField]
-  void clear() => setText(null);
-
-  //TODO: WTF 2 ?
-  @override
-  void notifyState([state]) {
-    if (value != null) {
-      _initControllers();
-
-      _editController.text = value;
-      _editController.selection = TextSelection.collapsed(offset: value.length);
-    }
-
-    super.notifyState(state);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _editController?.dispose();
-    _focusController?.dispose();
-
-    _editController = null;
-    _focusController = null;
   }
 }
 
-/// More powerful [TextField] with [InputControl] and default [InputDecoration]
-///
-/// [InputControl.next]
-/// [InputControl.done]
-/// [InputControl.changed]
-class InputField extends StateboundWidget<InputControl> with ThemeProvider {
-  /// Controller of the [TextField]
-  /// Sets initial text, focus, error etc.
-  final InputControl control;
-
-  /// Text that suggests what sort of input the field accepts.
-  ///
-  /// Displayed on top of the input [child] (i.e., at the same location on the
-  /// screen where text may be entered in the input [child]) when the input
-  /// [isEmpty] and either (a) [labelText] is null or (b) the input has the focus.
-  final String hint;
-
-  /// Text that describes the input field.
-  ///
-  /// When the input field is empty and unfocused, the label is displayed on
-  /// top of the input field (i.e., at the same location on the screen where
-  /// text may be entered in the input field). When the input field receives
-  /// focus (or if the field is non-empty), the label moves above (i.e.,
-  /// vertically adjacent to) the input field.
+/// Still experimental [TextField] builder..
+class InputField extends ControllableWidget<InputControl> {
   final String label;
-
-  /// The style to use for the text being edited.
-  ///
-  /// This text style is also used as the base style for the [decoration].
-  ///
-  /// If null, defaults to the `subhead` text style from the current [Theme].
-  final TextStyle style;
-
-  /// The decoration to show around the text field.
-  ///
-  /// By default, draws a horizontal line under the text field but can be
-  /// configured to show an icon, label, hint text, and error text.
-  ///
-  /// Specify null to remove the decoration entirely (including the
-  /// extra padding introduced by the decoration to save space for the labels).
+  final String hint;
+  final Color color;
   final InputDecoration decoration;
+  final InputBuilder builder;
 
-  /// {@macro flutter.widgets.editableText.keyboardType}
-  final TextInputType keyboardType;
-
-  /// The type of action button to use for the keyboard.
-  ///
-  /// Defaults to [TextInputAction.newline] if [keyboardType] is
-  /// [TextInputType.multiline] and [TextInputAction.done] otherwise.
-  final TextInputAction textInputAction;
-
-  /// {@macro flutter.widgets.editableText.textCapitalization}
-  final TextCapitalization textCapitalization;
-
-  /// {@macro flutter.widgets.editableText.strutStyle}
-  final StrutStyle strutStyle;
-
-  /// {@macro flutter.widgets.editableText.textAlign}
-  final TextAlign textAlign;
-
-  /// {@macro flutter.widgets.editableText.textDirection}
-  final TextDirection textDirection;
-
-  /// {@macro flutter.widgets.editableText.autofocus}
-  final bool autofocus;
-
-  /// {@macro flutter.widgets.editableText.obscureText}
-  final bool obscureText;
-
-  /// {@macro flutter.widgets.editableText.autocorrect}
-  final bool autocorrect;
-
-  /// {@macro flutter.widgets.editableText.maxLines}
-  final int maxLines;
-
-  /// {@macro flutter.widgets.editableText.minLines}
-  final int minLines;
-
-  /// {@macro flutter.widgets.editableText.expands}
-  final bool expands;
-
-  /// {@macro flutter.widgets.text_field.maxLength}
-  final int maxLength;
-
-  /// {@macro flutter.widgets.text_field.maxLengthEnforced}
-  final bool maxLengthEnforced;
-
-  /// {@macro flutter.widgets.editableText.inputFormatters}
-  final List<TextInputFormatter> inputFormatters;
-
-  /// If false the text field is "disabled": it ignores taps and its
-  /// [decoration] is rendered in grey.
-  ///
-  /// If non-null this property overrides the [decoration]'s
-  /// [Decoration.enabled] property.
-  final bool enabled;
-
-  /// {@macro flutter.widgets.editableText.cursorWidth}
-  final double cursorWidth;
-
-  /// {@macro flutter.widgets.editableText.cursorRadius}
-  final Radius cursorRadius;
-
-  /// The color to use when painting the cursor.
-  ///
-  /// Defaults to the theme's `cursorColor` when null.
-  final Color cursorColor;
-
-  /// The appearance of the keyboard.
-  ///
-  /// This setting is only honored on iOS devices.
-  ///
-  /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
-  final Brightness keyboardAppearance;
-
-  /// {@macro flutter.widgets.editableText.scrollPadding}
-  final EdgeInsets scrollPadding;
-
-  /// {@macro flutter.widgets.editableText.enableInteractiveSelection}
-  final bool enableInteractiveSelection;
-
-  /// {@macro flutter.widgets.scrollable.dragStartBehavior}
-  final DragStartBehavior dragStartBehavior;
-
-  /// {@macro flutter.widgets.edtiableText.scrollPhysics}
-  final ScrollPhysics scrollPhysics;
-
-  final bool readOnly;
-
-  final ToolbarOptions toolbarOptions;
-
-  final bool showCursor;
-
-  final VoidCallback onTap;
-
-  final InputCounterWidgetBuilder buildCounter;
-
-  final ScrollController scrollController;
+  static InputBuilder standard({
+    TextInputType keyboardType: TextInputType.text,
+    TextInputAction action: TextInputAction.next,
+    TextStyle style,
+  }) =>
+      (context, scope, decoration) => TextField(
+            controller: scope,
+            onChanged: scope.change,
+            onSubmitted: scope.submit,
+            focusNode: scope.focus,
+            decoration: decoration,
+            keyboardType: TextInputType.text,
+            textInputAction: action,
+            obscureText: scope.obscure,
+            style: style ?? Theme.of(context).primaryTextTheme,
+          );
 
   InputField({
     Key key,
-    @required this.control,
+    @required InputControl control,
     this.label,
     this.hint,
     this.decoration,
-    this.keyboardType,
-    this.textInputAction,
-    this.textCapitalization: TextCapitalization.none,
-    this.style,
-    this.strutStyle,
-    this.textAlign: TextAlign.start,
-    this.textDirection,
-    this.readOnly: false,
-    this.toolbarOptions,
-    this.showCursor,
-    this.autofocus: false,
-    this.obscureText: false,
-    this.autocorrect: true,
-    this.maxLines: 1,
-    this.minLines,
-    this.expands: false,
-    this.maxLength,
-    this.maxLengthEnforced: true,
-    this.inputFormatters,
-    this.enabled,
-    this.cursorWidth: 2.0,
-    this.cursorRadius,
-    this.cursorColor,
-    this.keyboardAppearance,
-    this.scrollPadding: const EdgeInsets.all(20.0),
-    this.dragStartBehavior: DragStartBehavior.start,
-    this.enableInteractiveSelection: true,
-    this.onTap,
-    this.buildCounter,
-    this.scrollController,
-    this.scrollPhysics,
-  }) : super(key: key, control: control);
+    this.color,
+    this.builder,
+  }) : super(
+          control,
+          key: key,
+        );
 
   @override
   void onInit(Map args) {
     super.onInit(args);
-
-    control._initControllers();
-
-    control._obscure = obscureText;
-    control._focusController.setContext(context);
-  }
-
-  @override
-  void onUpdate(CoreWidget oldWidget) {
-    super.onUpdate(oldWidget);
-
-    control._initControllers();
-
-    control._obscure = obscureText;
-    control._focusController.setContext(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final cursor = cursorColor ?? theme.data.cursorColor;
+    final theme = Theme.of(context);
+    final cursor = color ?? theme.cursorColor;
 
-    return TextField(
-      onChanged: control._changeText,
-      onSubmitted: (text) => control.submit(),
-      controller: control._editController,
-      focusNode: control._focusController,
-      decoration: (decoration ??
-              InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-                labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-                hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-              ))
-          .copyWith(
-        labelText: label,
-        hintText: hint,
-        errorText: (!control.isValid) ? control._error : null,
-      ),
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      style: style ?? font.bodyText1.copyWith(color: cursor),
-      strutStyle: strutStyle,
-      textAlign: textAlign,
-      textDirection: textDirection,
-      toolbarOptions: toolbarOptions,
-      showCursor: showCursor,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      obscureText: control._obscure,
-      autocorrect: autocorrect,
-      maxLines: maxLines,
-      minLines: minLines,
-      expands: expands,
-      maxLength: maxLength,
-      maxLengthEnforced: maxLengthEnforced,
-      inputFormatters: inputFormatters,
-      enabled: enabled,
-      cursorWidth: cursorWidth,
-      cursorRadius: cursorRadius,
-      cursorColor: cursor,
-      keyboardAppearance: keyboardAppearance,
-      scrollPadding: scrollPadding,
-      dragStartBehavior: dragStartBehavior,
-      enableInteractiveSelection: enableInteractiveSelection,
-      onTap: onTap,
-      buildCounter: buildCounter,
-      scrollController: scrollController,
-      scrollPhysics: scrollPhysics,
+    final _decoration = (decoration ??
+            InputDecoration(
+              border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+              labelStyle: theme.textTheme.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+              hintStyle: theme.textTheme.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+            ))
+        .copyWith(
+      labelText: label,
+      hintText: hint,
+      errorText: (!control.isValid) ? control._error : null,
+    );
+
+    return (builder ?? standard())(
+      context,
+      control,
+      _decoration,
     );
   }
 }
+
+typedef Widget InputBuilder(BuildContext context, InputControl scope, InputDecoration decoration);

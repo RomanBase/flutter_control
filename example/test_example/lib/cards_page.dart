@@ -41,7 +41,7 @@ class CardsPage extends SingleControlWidget<CardsController>
             color: Colors.grey,
             padding: EdgeInsets.symmetric(
                 horizontal: theme.padding, vertical: theme.paddingHalf),
-            child: InputField(
+            child: InputFieldV1(
               control: control.input,
             ),
           ),

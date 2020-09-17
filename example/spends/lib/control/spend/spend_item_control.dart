@@ -16,13 +16,12 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
   List<SpendItem> get groups => Control.get<SpendControl>().groups;
 
   SpendItem get item => SpendItem(
-        title: title.value,
-        note: note.value,
+        title: title.text,
+        note: note.text,
         value: Parse.toDouble(value.value),
         type: type.value,
         groupId: group.value != 'none' ? group.value : null,
-        items:
-            type.value == SpendType.group ? (model?.item?.items ?? []) : null,
+        items: type.value == SpendType.group ? (model?.item?.items ?? []) : null,
       );
 
   SpendControl get spendControl => Control.get<SpendControl>();
@@ -41,9 +40,9 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
     groupControl = args.getArg<SpendGroupControl>();
 
     if (model != null) {
-      title.value = model.item.title;
-      note.value = model.item.note;
-      value.value = model.item.value.toInt().toString();
+      title.text = model.item.title;
+      note.text = model.item.note;
+      value.text = model.item.value.toInt().toString();
       type.value = model.item.type;
     }
 
