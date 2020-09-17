@@ -164,17 +164,21 @@ class InputField extends ControllableWidget<InputControl> {
     TextInputAction action: TextInputAction.next,
     TextStyle style,
   }) =>
-      (context, scope, decoration) => TextField(
-            controller: scope,
-            onChanged: scope.change,
-            onSubmitted: scope.submit,
-            focusNode: scope.focus,
-            decoration: decoration,
-            keyboardType: TextInputType.text,
-            textInputAction: action,
-            obscureText: scope.obscure,
-            style: style ?? Theme.of(context).primaryTextTheme,
-          );
+      (context, scope, decoration) {
+        final theme = Theme.of(context);
+
+        return TextField(
+          controller: scope,
+          onChanged: scope.change,
+          onSubmitted: scope.submit,
+          focusNode: scope.focus,
+          decoration: decoration,
+          keyboardType: TextInputType.text,
+          textInputAction: action,
+          obscureText: scope.obscure,
+          style: style ?? theme.textTheme.bodyText1.copyWith(color: decoration?.border?.borderSide?.color ?? theme.cursorColor),
+        );
+      };
 
   InputField({
     Key key,
