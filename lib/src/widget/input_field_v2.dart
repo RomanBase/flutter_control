@@ -1,8 +1,9 @@
 import 'package:flutter_control/core.dart';
 
 /// Still experimental control for [TextField] builder..
-class InputControlV2 extends TextEditingController
-    with Disposable, StateControl {
+class InputControlV2 extends TextEditingController with Disposable, StateControl {
+  final String regex;
+
   FocusNode _focus;
 
   FocusNode get focus => _focus ?? (_focus = FocusNode());
@@ -28,20 +29,20 @@ class InputControlV2 extends TextEditingController
 
   ValueCallback<String> _onChanged;
 
-  final String regex;
+  bool get isNextChained => _next != null;
+
+  bool get isDoneMounted => _onDone != null;
 
   set text(String newText) {
     value = value.copyWith(
       text: newText,
-      selection: TextSelection.collapsed(
-          offset: newText == null ? -1 : newText.length),
+      selection: TextSelection.collapsed(offset: newText == null ? -1 : newText.length),
       composing: TextRange.empty,
     );
   }
 
   InputControlV2({String text, this.regex}) {
-    value =
-        text == null ? TextEditingValue.empty : TextEditingValue(text: text);
+    value = text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
   InputControlV2 next(InputControlV2 control) {
@@ -125,8 +126,7 @@ class InputControlV2 extends TextEditingController
       unfocusChain();
     }
 
-    final isChainValid = _next.validateChain(
-        unfocus: unfocus); // validate from end to check all fields
+    final isChainValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isChainValid;
   }
@@ -141,6 +141,8 @@ class InputControlV2 extends TextEditingController
 class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
   final String label;
   final String hint;
+  final Color color;
+  final InputDecoration decoration;
   final InputBuilder builder;
 
   InputFieldV2({
@@ -148,6 +150,8 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
     @required InputControlV2 control,
     this.label,
     this.hint,
+    this.decoration,
+    this.color,
     @required this.builder,
   }) : super(
           key: key,
@@ -161,18 +165,18 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
 
   @override
   Widget build(BuildContext context) {
-    final cursor = theme.data.cursorColor;
+    final cursor = color ?? theme.data.cursorColor;
 
-    final decoration = InputDecoration(
-      border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-      enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-      focusedBorder:
-          UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-      disabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-      labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-      hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+    final _decoration = (decoration ??
+            InputDecoration(
+              border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+              labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+              hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+            ))
+        .copyWith(
       labelText: label,
       hintText: hint,
       errorText: (!control.isValid) ? control._error : null,
@@ -181,10 +185,9 @@ class InputFieldV2 extends StateboundWidget<InputControlV2> with ThemeProvider {
     return builder(
       context,
       control,
-      decoration,
+      _decoration,
     );
   }
 }
 
-typedef Widget InputBuilder(
-    BuildContext context, InputControlV2 scope, InputDecoration decoration);
+typedef Widget InputBuilder(BuildContext context, InputControlV2 scope, InputDecoration decoration);
