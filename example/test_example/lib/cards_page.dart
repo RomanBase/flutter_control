@@ -3,7 +3,8 @@ import 'package:flutter_control/core.dart';
 import 'cards_controller.dart';
 import 'settings_page.dart';
 
-class CardsPage extends SingleControlWidget<CardsController> with RouteControl, ThemeProvider {
+class CardsPage extends SingleControlWidget<CardsController>
+    with RouteControl, ThemeProvider {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +28,8 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl, 
               builder: (context, items) {
                 return ListView.builder(
                   itemCount: control.cards.length,
-                  itemBuilder: (context, index) => CardWidget(control.cards[index]),
+                  itemBuilder: (context, index) =>
+                      CardWidget(control.cards[index]),
                 );
               },
               noData: (context) => Center(
@@ -37,7 +39,8 @@ class CardsPage extends SingleControlWidget<CardsController> with RouteControl, 
           ),
           Container(
             color: Colors.grey,
-            padding: EdgeInsets.symmetric(horizontal: theme.padding, vertical: theme.paddingHalf),
+            padding: EdgeInsets.symmetric(
+                horizontal: theme.padding, vertical: theme.paddingHalf),
             child: InputField(
               control: control.input,
             ),
@@ -64,7 +67,8 @@ class CardWidget extends ControlWidget with ThemeProvider {
       decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(offset: Offset(2.0, 2.0), blurRadius: 6.0, color: Colors.black45),
+          BoxShadow(
+              offset: Offset(2.0, 2.0), blurRadius: 6.0, color: Colors.black45),
         ],
       ),
       child: FlatButton(
@@ -87,7 +91,8 @@ class CardWidget extends ControlWidget with ThemeProvider {
             ),
             FieldBuilder<double>(
               control: item.progress,
-              builder: (context, progress) => LinearProgressIndicator(value: progress),
+              builder: (context, progress) =>
+                  LinearProgressIndicator(value: progress),
             ),
           ],
         ),
@@ -96,7 +101,8 @@ class CardWidget extends ControlWidget with ThemeProvider {
   }
 }
 
-class DetailPage extends SingleControlWidget<DetailController> with RouteControl {
+class DetailPage extends SingleControlWidget<DetailController>
+    with RouteControl {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,7 +152,8 @@ class ItemWidget extends StatelessWidget {
         children: <Widget>[
           FieldBuilder<bool>(
             control: item.done,
-            builder: (context, done) => Checkbox(value: done, onChanged: item.changeState),
+            builder: (context, done) =>
+                Checkbox(value: done, onChanged: item.changeState),
           ),
           Text(item.title),
         ],

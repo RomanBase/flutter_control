@@ -5,7 +5,8 @@ import 'firebase_control.dart';
 
 class RegistrationControl extends BaseControl with RouteControlProvider {
   final loading = LoadingControl();
-  final username = InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
+  final username =
+      InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final nickname = InputControl(regex: '.{3,}');
   final password = InputControl(regex: '.{8,}');
 
@@ -41,7 +42,9 @@ class RegistrationControl extends BaseControl with RouteControlProvider {
 
     loading.progress();
 
-    firebase.register(username.text, password.text, nickname.text).then((value) {
+    firebase
+        .register(username.text, password.text, nickname.text)
+        .then((value) {
       routeOf<DashboardPage>().openRoot(args: value);
     }).catchError((err) {
       message.setValue(err.message);
@@ -61,7 +64,8 @@ class RegistrationControl extends BaseControl with RouteControlProvider {
   }
 }
 
-class RegistrationPage extends SingleControlWidget<RegistrationControl> with RouteControl, ThemeProvider {
+class RegistrationPage extends SingleControlWidget<RegistrationControl>
+    with RouteControl, ThemeProvider {
   @override
   RegistrationControl initControl() => RegistrationControl();
 

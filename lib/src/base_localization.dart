@@ -189,6 +189,10 @@ class BaseLocalization with PrefsProvider {
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
   ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
 
+  /// Checks if this localization is main and will broadcast [LocalizationArgs] changes with [BaseLocalization] key.
+  /// Only one localization should be main !
+  bool main = false;
+
   /// Json/Map based localization.
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
@@ -370,7 +374,7 @@ class BaseLocalization with PrefsProvider {
         prefs.set(preference_key, locale);
       }
 
-      BroadcastProvider.broadcast(BaseLocalization, args);
+      _broadcastArgs(args);
     }
 
     return args;
@@ -395,9 +399,15 @@ class BaseLocalization with PrefsProvider {
       source: 'runtime',
     );
 
-    BroadcastProvider.broadcast(BaseLocalization, args);
+    _broadcastArgs(args);
 
     return args;
+  }
+
+  void _broadcastArgs(LocalizationArgs args) {
+    if (main) {
+      BroadcastProvider.broadcast(BaseLocalization, args);
+    }
   }
 
   /// Returns [true] if localization file is available and is possible to load it.

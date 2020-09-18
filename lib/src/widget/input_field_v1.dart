@@ -201,12 +201,18 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
       focusNode: control.focus,
       decoration: (decoration ??
               InputDecoration(
-                border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-                disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-                labelStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-                hintStyle: font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                border:
+                    UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+                focusedBorder:
+                    UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+                disabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+                labelStyle:
+                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                hintStyle:
+                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
               ))
           .copyWith(
         labelText: label,

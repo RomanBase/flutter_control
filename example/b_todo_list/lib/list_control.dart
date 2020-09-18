@@ -22,7 +22,8 @@ class TodoListControl extends BaseControl {
 
   void addItem(String title) => list.add(TodoItemModel(title));
 
-  bool updateItem(TodoItemModel model, String title) => list.replace(TodoItemModel(title, model.isDone), (item) => item == model);
+  bool updateItem(TodoItemModel model, String title) =>
+      list.replace(TodoItemModel(title, model.isDone), (item) => item == model);
 
   bool removeItem(TodoItemModel model) => list.remove(model);
 

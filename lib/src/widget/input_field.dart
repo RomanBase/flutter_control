@@ -48,7 +48,8 @@ class InputControl extends TextEditingController with Disposable {
   set text(String newText) {
     value = value.copyWith(
       text: newText,
-      selection: TextSelection.collapsed(offset: newText == null ? -1 : newText.length),
+      selection: TextSelection.collapsed(
+          offset: newText == null ? -1 : newText.length),
       composing: TextRange.empty,
     );
   }
@@ -56,7 +57,8 @@ class InputControl extends TextEditingController with Disposable {
   bool get isEmpty => text == null;
 
   InputControl({String text, this.regex}) {
-    value = text == null ? TextEditingValue.empty : TextEditingValue(text: text);
+    value =
+        text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
   InputControl next(InputControl control) {
@@ -140,7 +142,8 @@ class InputControl extends TextEditingController with Disposable {
       unfocusChain();
     }
 
-    final isChainValid = _next.validateChain(unfocus: unfocus); // validate from end to check all fields
+    final isChainValid = _next.validateChain(
+        unfocus: unfocus); // validate from end to check all fields
 
     return validate() && isChainValid;
   }
@@ -176,7 +179,10 @@ class InputField extends ControllableWidget<InputControl> {
           keyboardType: TextInputType.text,
           textInputAction: action,
           obscureText: scope.obscure,
-          style: style ?? theme.textTheme.bodyText1.copyWith(color: decoration?.border?.borderSide?.color ?? theme.cursorColor),
+          style: style ??
+              theme.textTheme.bodyText1.copyWith(
+                  color: decoration?.border?.borderSide?.color ??
+                      theme.cursorColor),
         );
       };
 
@@ -205,12 +211,18 @@ class InputField extends ControllableWidget<InputControl> {
 
     final _decoration = (decoration ??
             InputDecoration(
-              border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-              disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-              labelStyle: theme.textTheme.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
-              hintStyle: theme.textTheme.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+              border:
+                  UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+              focusedBorder:
+                  UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              disabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+              labelStyle: theme.textTheme.bodyText1
+                  .copyWith(color: cursor.withOpacity(0.5)),
+              hintStyle: theme.textTheme.bodyText1
+                  .copyWith(color: cursor.withOpacity(0.5)),
             ))
         .copyWith(
       labelText: label,
@@ -226,4 +238,5 @@ class InputField extends ControllableWidget<InputControl> {
   }
 }
 
-typedef Widget InputBuilder(BuildContext context, InputControl scope, InputDecoration decoration);
+typedef Widget InputBuilder(
+    BuildContext context, InputControl scope, InputDecoration decoration);

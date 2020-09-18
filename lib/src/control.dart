@@ -90,7 +90,9 @@ class Control {
     final loc = BaseLocalization(
       localization.fallbackLocale,
       localization.toAssets(),
-    )..debug = debug;
+    )
+      ..debug = debug
+      ..main = true;
 
     entries[BasePrefs] = prefs;
     entries[RouteStore] = RouteStore(routes);

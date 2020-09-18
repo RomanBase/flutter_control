@@ -5,7 +5,8 @@ import 'registration_page.dart';
 
 class LoginControl extends BaseControl with RouteControlProvider {
   final loading = LoadingControl();
-  final username = InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
+  final username =
+      InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final password = InputControl(regex: '.{8,}');
 
   final message = StringControl();
@@ -55,7 +56,8 @@ class LoginControl extends BaseControl with RouteControlProvider {
   }
 }
 
-class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, ThemeProvider {
+class LoginPage extends SingleControlWidget<LoginControl>
+    with RouteControl, ThemeProvider {
   @override
   LoginControl initControl() => LoginControl();
 
@@ -94,7 +96,8 @@ class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, The
                     alignment: Alignment.centerRight,
                     child: IconButton(
                       icon: Icon(Icons.visibility),
-                      onPressed: () => control.password.obscure = !control.password.obscure,
+                      onPressed: () =>
+                          control.password.obscure = !control.password.obscure,
                     ),
                   ),
                 ],
@@ -123,7 +126,11 @@ class LoginPage extends SingleControlWidget<LoginControl> with RouteControl, The
               FlatButton(
                 onPressed: () {
                   control.username.unfocusChain();
-                  ControlRoute.build(identifier: '/registration', builder: (_) => RegistrationPage()).navigator(this).openRoute();
+                  ControlRoute.build(
+                          identifier: '/registration',
+                          builder: (_) => RegistrationPage())
+                      .navigator(this)
+                      .openRoute();
                 },
                 child: Text(
                   'Don\'t have account? Sign Up!',
