@@ -134,7 +134,7 @@ class LocalizationArgs {
 }
 
 /// Json/Map based localization.
-class BaseLocalization with PrefsProvider {
+class BaseLocalization extends Disposable with PrefsProvider {
   /// Key of shared preference where preferred locale is stored.
   static const String preference_key = 'control_locale';
 
@@ -198,6 +198,13 @@ class BaseLocalization with PrefsProvider {
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   /// [assets] - defines locales and asset path to files with localization data.
   BaseLocalization(this.defaultLocale, this.assets);
+
+  /// Creates new localization object with active [locale] as [defaultLocale].
+  factory BaseLocalization.current(List<LocalizationAsset> assets) {
+    assert(Control.isInitialized);
+
+    return BaseLocalization(Control.localization.locale, assets);
+  }
 
   /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
   /// Every localization change is broadcasted with result of data load.
@@ -316,12 +323,17 @@ class BaseLocalization with PrefsProvider {
   /// [getSystemLocale] is used to get preferred locale.
   /// Returns result of localization change [LocalizationArgs].
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> changeToSystemLocale() async {
+  Future<LocalizationArgs> changeToSystemLocale(
+      {bool resetPreferred: false}) async {
     loading = true;
 
     final locale = getSystemLocale();
 
     if (locale != null) {
+      if (resetPreferred) {
+        resetPreferredLocale();
+      }
+
       return await changeLocale(locale, preferred: false);
     }
 
@@ -371,7 +383,12 @@ class BaseLocalization with PrefsProvider {
     if (args.isActive) {
       _locale = locale;
       if (preferred) {
-        prefs.set(preference_key, locale);
+        if (main) {
+          prefs.set(preference_key, locale);
+        } else {
+          printDebug(
+              'Only \'main\' localization can change preferred locale !!!');
+        }
       }
 
       _broadcastArgs(args);
@@ -380,11 +397,11 @@ class BaseLocalization with PrefsProvider {
     return args;
   }
 
-  /// Changes manually localization data, but only for current app session.
+  /// Changes manually localization data, but only for current app session and active [locale].
   ///
   /// Returns result of localization change [LocalizationArgs].
-  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> changeLocaleData(Map<String, dynamic> data,
+  /// Result of localization change is also broadcast to global object stream with [BaseLocalization] key.
+  Future<LocalizationArgs> setLocalizationData(Map<String, dynamic> data,
       {String locale}) async {
     data.forEach((key, value) => _data[key] = value);
 
@@ -750,7 +767,7 @@ class BaseLocalization with PrefsProvider {
 
   /// Updates value in current localization set.
   /// This update is only runtime and isn't stored to localization file.
-  void update(String key, dynamic value) => _data[key] = value;
+  void set(String key, dynamic value) => _data[key] = value;
 
   /// Checks if given [key] can be localized.
   bool contains(String key) => _data.containsKey(key);
@@ -766,10 +783,21 @@ class BaseLocalization with PrefsProvider {
     return false;
   }
 
+  /// Clears loaded data.
+  void clear() {
+    _locale = null;
+    _data.clear();
+  }
+
   /// Delegate of [BaseLocalization] to use this localization as [LocalizationsDelegate].
   ///
   /// Use [LocalizationProvider.of(context)] to find delegate in current widget scope.
   BaseLocalizationDelegate get delegate => BaseLocalizationDelegate(this);
+
+  @override
+  void dispose() {
+    clear();
+  }
 }
 
 /// Delegate of [BaseLocalization] to use with [LocalizationsDelegate].
