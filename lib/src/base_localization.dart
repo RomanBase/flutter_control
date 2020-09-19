@@ -31,7 +31,7 @@ class LocalizationConfig {
   String get fallbackLocale => defaultLocale ?? locales.keys.first;
 
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
-  /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalizationAsset.build] for easier setup.
+  /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalizationAsset.map] for easier setup.
   /// [initLocale] - Automatically loads system or preferred locale.
   /// [loadDefaultLocale] - Loads [defaultLocale] before preferred locale.
   /// [handleSystemLocale] - Listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
@@ -47,8 +47,8 @@ class LocalizationConfig {
   List<LocalizationAsset> toAssets() {
     final localizationAssets = List<LocalizationAsset>();
 
-    locales.forEach((key, value) => localizationAssets
-        .add(LocalizationAsset(key.replaceAll('-', '_'), value)));
+    locales.forEach((key, value) => localizationAssets.add(
+        LocalizationAsset(LocalizationAsset.normalizeLocaleKey(key), value)));
 
     return localizationAssets;
   }
@@ -80,6 +80,7 @@ class LocalizationAsset {
   /// Parses [locale] string to [Locale].
   /// en - will be parse to [Locale('en')]
   /// en_US - will be parsed to [Locale('en', 'US')]
+  /// en_US_419 - will be parsed to [Locale('en', 'US_419')]
   Locale toLocale() {
     if (locale.contains("_")) {
       final parts = locale.split("_");
@@ -98,15 +99,35 @@ class LocalizationAsset {
     return Locale(locale);
   }
 
-  /// Builds a map of {locale, path} by providing asset [path] and list of [locales].
+  /// Normalize localization identifier.
+  /// en -> en
+  /// en-US -> en_US
+  /// en-US-419 -> en_US_419
+  static String normalizeLocaleKey(String locale) =>
+      locale.replaceAll('-', '_');
+
+  /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
-  static Map<String, String> build(
+  static Map<String, String> map(
       {AssetPath path: const AssetPath(), List<String> locales}) {
     final map = Map<String, String>();
 
-    locales.forEach((locale) => map[locale] = path.localization(locale));
+    locales.forEach((locale) =>
+        map[normalizeLocaleKey(locale)] = path.localization(locale));
 
     return map;
+  }
+
+  /// Builds a List of [LocalizationAsset] by providing asset [path] and list of [locales].
+  /// Default asset path is ./assets/localization/{locale}.json
+  static List<LocalizationAsset> list(
+      {AssetPath path: const AssetPath(), List<String> locales}) {
+    final localizationAssets = List<LocalizationAsset>();
+
+    locales.forEach((locale) => localizationAssets.add(LocalizationAsset(
+        normalizeLocaleKey(locale), path.localization(locale))));
+
+    return localizationAssets;
   }
 }
 

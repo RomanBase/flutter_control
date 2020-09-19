@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       debug: true,
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.build(
+        locales: LocalizationAsset.map(
           // References to assets/localization/en.json
           locales: [
             'en',

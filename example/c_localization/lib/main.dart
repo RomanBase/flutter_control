@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
       debug: true,
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.build(
+        locales: LocalizationAsset.map(
           locales: [
             'en',
             'es',
