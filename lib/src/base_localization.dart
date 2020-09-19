@@ -155,7 +155,9 @@ class LocalizationArgs {
 }
 
 /// Json/Map based localization.
-class BaseLocalization extends Disposable with PrefsProvider {
+class BaseLocalization extends ChangeNotifier
+    with PrefsProvider
+    implements Disposable {
   /// Key of shared preference where preferred locale is stored.
   static const String preference_key = 'control_locale';
 
@@ -412,6 +414,8 @@ class BaseLocalization extends Disposable with PrefsProvider {
 
     if (args.isActive) {
       _locale = locale;
+      notifyListeners();
+
       if (preferred) {
         if (main) {
           prefs.set(preference_key, locale);
@@ -427,30 +431,7 @@ class BaseLocalization extends Disposable with PrefsProvider {
     return args;
   }
 
-  /// Changes manually localization data, but only for current app session and active [locale].
-  ///
-  /// Returns result of localization change [LocalizationArgs].
-  /// Result of localization change is also broadcast to global object stream with [BaseLocalization] key.
-  Future<LocalizationArgs> setLocalizationData(Map<String, dynamic> data,
-      {String locale}) async {
-    data.forEach((key, value) => _data[key] = value);
-
-    if (locale != null) {
-      _locale = locale;
-    }
-
-    final args = LocalizationArgs(
-      locale: _locale,
-      isActive: true,
-      changed: true,
-      source: 'runtime',
-    );
-
-    _broadcastArgs(args);
-
-    return args;
-  }
-
+  /// Broadcast localization changes.
   void _broadcastArgs(LocalizationArgs args) {
     if (main) {
       BroadcastProvider.broadcast(BaseLocalization, args);
@@ -799,6 +780,12 @@ class BaseLocalization extends Disposable with PrefsProvider {
   /// This update is only runtime and isn't stored to localization file.
   void set(String key, dynamic value) => _data[key] = value;
 
+  /// Updates data in current localization set.
+  /// This update is only runtime and isn't stored to localization file.
+  void setData(Map<String, dynamic> data) async {
+    data.forEach((key, value) => _data[key] = value);
+  }
+
   /// Checks if given [key] can be localized.
   bool contains(String key) => _data.containsKey(key);
 
@@ -826,6 +813,8 @@ class BaseLocalization extends Disposable with PrefsProvider {
 
   @override
   void dispose() {
+    super.dispose();
+
     clear();
   }
 }
