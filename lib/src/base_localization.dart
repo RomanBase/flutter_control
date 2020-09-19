@@ -179,6 +179,14 @@ class BaseLocalization extends Disposable with PrefsProvider {
   /// Returns currently loaded locale.
   Locale get currentLocale => getLocale(locale);
 
+  /// Returns best possible country code based on [currentLocale] and [deviceLocale].
+  String get currentCountry =>
+      currentLocale?.countryCode ??
+      deviceLocales
+          .firstWhere((element) => locale.startsWith(element.languageCode),
+              orElse: () => deviceLocale)
+          .countryCode;
+
   /// Current locale key.
   String _locale;
 
@@ -262,6 +270,7 @@ class BaseLocalization extends Disposable with PrefsProvider {
 
     if (handleSystemLocale) {
       WidgetsBinding.instance.window.onLocaleChanged = () {
+        //TODO: Q: only when preferred locale is not set ??
         if (!isSystemLocaleActive()) {
           changeToSystemLocale();
         }
