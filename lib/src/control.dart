@@ -108,7 +108,9 @@ class Control {
           localization.initLocale
               ? loc.init(
                   loadDefaultLocale: localization.loadDefaultLocale,
-                  handleSystemLocale: localization.handleSystemLocale)
+                  handleSystemLocale: localization.handleSystemLocale,
+                  stableLocale: localization.stableLocale,
+                )
               : null,
           initAsync?.call(),
         ]);

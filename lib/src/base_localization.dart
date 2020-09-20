@@ -15,6 +15,9 @@ class LocalizationConfig {
   /// Default locale key. If not provided, first locale from [locales] is used.
   final String defaultLocale;
 
+  /// Locale key of non-translatable data.
+  final String stableLocale;
+
   /// Map of locales - key: path.
   final Map<String, String> locales;
 
@@ -28,7 +31,8 @@ class LocalizationConfig {
   final bool handleSystemLocale;
 
   /// Returns default of first locale key.
-  String get fallbackLocale => defaultLocale ?? locales.keys.first;
+  String get fallbackLocale =>
+      defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : 'en');
 
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
   /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalizationAsset.map] for easier setup.
@@ -37,6 +41,7 @@ class LocalizationConfig {
   /// [handleSystemLocale] - Listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
   const LocalizationConfig({
     this.defaultLocale,
+    this.stableLocale,
     @required this.locales,
     this.initLocale: true,
     this.loadDefaultLocale: true,
@@ -230,11 +235,11 @@ class BaseLocalization extends ChangeNotifier
   /// [assets] - defines locales and asset path to files with localization data.
   BaseLocalization(this.defaultLocale, this.assets);
 
-  /// Creates new localization object with active [locale] as [defaultLocale].
+  /// Creates new localization object based on main [Control.localization].
   factory BaseLocalization.current(List<LocalizationAsset> assets) {
     assert(Control.isInitialized);
 
-    return BaseLocalization(Control.localization.locale, assets);
+    return BaseLocalization(Control.localization.defaultLocale, assets);
   }
 
   /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
@@ -253,12 +258,18 @@ class BaseLocalization extends ChangeNotifier
   /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
   /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
   Future<LocalizationArgs> init(
-      {bool loadDefaultLocale: true, bool handleSystemLocale: true}) async {
+      {bool loadDefaultLocale: true,
+      bool handleSystemLocale: true,
+      String stableLocale}) async {
     loading = true;
 
     await prefs.mount();
 
     LocalizationArgs args;
+
+    if (stableLocale != null) {
+      args = await loadLocalizationData(stableLocale);
+    }
 
     if (loadDefaultLocale) {
       args = await loadDefaultLocalization();
@@ -340,7 +351,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [resetPreferred] - to reset preferred locale stored in shared preferences.
   /// Returns result of localization change [LocalizationArgs].
-  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  /// Result of localization change is also broadcast to global object stream with [BaseLocalization] key.
   Future<LocalizationArgs> loadDefaultLocalization(
       {bool resetPreferred: false}) {
     if (resetPreferred) {
@@ -385,6 +396,38 @@ class BaseLocalization extends ChangeNotifier
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
   Future<LocalizationArgs> changeLocale(String locale,
       {bool preferred: true}) async {
+    final args = await loadLocalizationData(locale);
+
+    if (args.isActive) {
+      _locale = locale;
+      notifyListeners();
+
+      if (preferred) {
+        if (main) {
+          prefs.set(preference_key, locale);
+        } else {
+          printDebug(
+              'Only \'main\' localization can change preferred locale !!!');
+        }
+      }
+
+      _broadcastArgs(args);
+    }
+
+    return args;
+  }
+
+  /// Broadcast localization changes.
+  void _broadcastArgs(LocalizationArgs args) {
+    if (main) {
+      BroadcastProvider.broadcast(BaseLocalization, args);
+    }
+  }
+
+  /// Loads localization data of [locale] key.
+  /// Can be used to load non-translatable data.
+  /// Returns result of localization change [LocalizationArgs].
+  Future<LocalizationArgs> loadLocalizationData(String locale) async {
     loading = true;
 
     if (locale == null || !isLocalizationAvailable(locale)) {
@@ -412,30 +455,51 @@ class BaseLocalization extends ChangeNotifier
 
     loading = false;
 
-    if (args.isActive) {
-      _locale = locale;
-      notifyListeners();
-
-      if (preferred) {
-        if (main) {
-          prefs.set(preference_key, locale);
-        } else {
-          printDebug(
-              'Only \'main\' localization can change preferred locale !!!');
-        }
-      }
-
-      _broadcastArgs(args);
-    }
-
     return args;
   }
 
-  /// Broadcast localization changes.
-  void _broadcastArgs(LocalizationArgs args) {
-    if (main) {
-      BroadcastProvider.broadcast(BaseLocalization, args);
+  /// Loads localization from asset file for given [locale] and [path].
+  Future<LocalizationArgs> _loadAssetLocalization(
+      String locale, String path) async {
+    if (path == null) {
+      return LocalizationArgs(
+        locale: locale,
+        isActive: false,
+        changed: false,
+        source: 'asset',
+      );
     }
+
+    try {
+      final json = await rootBundle.loadString(path, cache: false);
+      final data = jsonDecode(json);
+
+      if (data != null) {
+        data.forEach((key, value) => _data[key] = value);
+
+        print('localization changed to: $path');
+
+        final args = LocalizationArgs(
+          locale: locale,
+          isActive: true,
+          changed: true,
+          source: 'asset',
+        );
+
+        return args;
+      }
+    } catch (ex) {
+      printDebug(ex.toString());
+    }
+
+    print('localization failed to change: $path');
+
+    return LocalizationArgs(
+      locale: locale,
+      isActive: false,
+      changed: false,
+      source: 'asset',
+    );
   }
 
   /// Returns [true] if localization file is available and is possible to load it.
@@ -498,50 +562,6 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// Returns [Locale] for given [locale] or null if localization asset is not available.
   Locale getLocale(String locale) => getAsset(locale)?.toLocale();
-
-  /// Loads localization from asset file for given [locale] and [path].
-  Future<LocalizationArgs> _loadAssetLocalization(
-      String locale, String path) async {
-    if (path == null) {
-      return LocalizationArgs(
-        locale: locale,
-        isActive: false,
-        changed: false,
-        source: 'asset',
-      );
-    }
-
-    try {
-      final json = await rootBundle.loadString(path, cache: false);
-      final data = jsonDecode(json);
-
-      if (data != null) {
-        data.forEach((key, value) => _data[key] = value);
-
-        print('localization changed to: $path');
-
-        final args = LocalizationArgs(
-          locale: locale,
-          isActive: true,
-          changed: true,
-          source: 'asset',
-        );
-
-        return args;
-      }
-    } catch (ex) {
-      printDebug(ex.toString());
-    }
-
-    print('localization failed to change: $path');
-
-    return LocalizationArgs(
-      locale: locale,
-      isActive: false,
-      changed: false,
-      source: 'asset',
-    );
-  }
 
   /// Tries to localize text by given [key].
   ///
