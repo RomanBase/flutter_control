@@ -61,12 +61,12 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
 
   void _initSub() {
     if (control is ActionControlObservable) {
-      _sub = control.subscribe(
+      _sub = control.initSubscribe(
         (value) => _notifyState(),
         current: false,
       );
     } else if (control is FieldControlStream) {
-      _sub = control.subscribe(
+      _sub = control.initSubscribe(
         (value) => _notifyState(),
         current: false,
       );
