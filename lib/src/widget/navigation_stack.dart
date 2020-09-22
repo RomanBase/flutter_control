@@ -101,8 +101,8 @@ class NavigatorControl extends BaseControl {
   }
 
   @override
-  void subscribe(object) {
-    super.subscribe(object);
+  void initSubscribe(object) {
+    super.initSubscribe(object);
 
     if (object is _StackNavigator) {
       _navigator = object;
@@ -248,7 +248,7 @@ class _NavigatorStackState extends State<NavigatorStack>
   void initState() {
     super.initState();
 
-    widget.control.subscribe(this);
+    widget.control.initSubscribe(this);
 
     _updateNavigator();
   }
@@ -491,7 +491,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
       _items = widget.items;
     }
 
-    control.subscribe(this);
+    control.initSubscribe(this);
 
     _updateIndex();
     _initControl();
