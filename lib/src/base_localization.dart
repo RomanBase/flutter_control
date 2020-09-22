@@ -157,6 +157,11 @@ class LocalizationArgs {
     this.isActive,
     this.changed,
   });
+
+  @override
+  String toString() {
+    return 'Locale $locale: from $source is active: ${isActive.toString().toUpperCase()} and locale was changed: ${changed.toString().toUpperCase()}';
+  }
 }
 
 /// Json/Map based localization.
@@ -233,7 +238,9 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   /// [assets] - defines locales and asset path to files with localization data.
-  BaseLocalization(this.defaultLocale, this.assets);
+  BaseLocalization(this.defaultLocale, this.assets)
+      : assert(defaultLocale != null),
+        assert(assets != null);
 
   /// Creates new localization object based on main [Control.localization].
   factory BaseLocalization.current(List<LocalizationAsset> assets) {
@@ -261,6 +268,15 @@ class BaseLocalization extends ChangeNotifier
       {bool loadDefaultLocale: true,
       bool handleSystemLocale: true,
       String stableLocale}) async {
+    if (!hasValidAsset) {
+      return LocalizationArgs(
+        locale: null,
+        isActive: false,
+        changed: false,
+        source: 'invalid',
+      );
+    }
+
     loading = true;
 
     await prefs.mount();
@@ -275,7 +291,7 @@ class BaseLocalization extends ChangeNotifier
       args = await loadDefaultLocalization();
     }
 
-    if (!isSystemLocaleActive()) {
+    if (!isSystemLocaleActive(nullOk: false)) {
       args = await changeToSystemLocale();
     }
 
@@ -290,7 +306,13 @@ class BaseLocalization extends ChangeNotifier
       };
     }
 
-    return args;
+    return args ??
+        LocalizationArgs(
+          locale: null,
+          isActive: false,
+          changed: false,
+          source: 'invalid',
+        );
   }
 
   /// Looks for best suited asset locale to device supported locale.
@@ -316,7 +338,7 @@ class BaseLocalization extends ChangeNotifier
   String getSystemLocale() {
     return prefs.get(preference_key) ??
         getAvailableAssetLocaleForDevice() ??
-        deviceLocale?.toString();
+        defaultLocale;
   }
 
   /// Checks if preferred locale is loaded.

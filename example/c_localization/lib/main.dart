@@ -20,6 +20,10 @@ class MyApp extends StatelessWidget {
           ],
         ),
       ),
+      entries: {
+        'side_test': SideLocalizationTest(),
+        'empty_test': EmptyLocalizationTest(),
+      },
       routes: [
         ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
       ],
@@ -34,5 +38,52 @@ class MyApp extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+class SideLocalizationTest implements Initializable {
+  final localization = BaseLocalization(
+      'en',
+      LocalizationAsset.list(
+        locales: [
+          'en',
+          'es',
+        ],
+      ));
+
+  @override
+  void init(Map args) {
+    _loadLocalization();
+  }
+
+  void _loadLocalization() async {
+    await Control.factory.onReady();
+
+    final loadResult = await localization.init(
+      loadDefaultLocale: false,
+      handleSystemLocale: false,
+    );
+
+    printDebug(loadResult);
+  }
+}
+
+class EmptyLocalizationTest implements Initializable {
+  final localization = BaseLocalization('en', []);
+
+  @override
+  void init(Map args) {
+    _loadLocalization();
+  }
+
+  void _loadLocalization() async {
+    await Control.factory.onReady();
+
+    final loadResult = await localization.init(
+      loadDefaultLocale: true,
+      handleSystemLocale: true,
+    );
+
+    printDebug(loadResult);
   }
 }
