@@ -130,6 +130,42 @@ abstract class ActionControlObservable<T> {
   bool equal(other);
 }
 
+mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T> {
+  /// Actual control to subscribe.
+  final _parent = ActionControl.broadcast<T>();
+
+  @override
+  T get value => _parent.value;
+
+  set value(T value) => _parent.value = value;
+
+  @override
+  ActionControlListenable<T> get listenable =>
+      ActionControlListenable<T>(_parent);
+
+  @override
+  ActionSubscription<T> subscribe(ValueCallback<T> action,
+          {bool current: true}) =>
+      _parent.subscribe(action, current: current);
+
+  @override
+  ActionSubscription<T> once(ValueCallback<T> action,
+          {Predicate<T> until, bool current: true}) =>
+      _parent.once(action, current: current);
+
+  @override
+  bool equal(other) => identityHashCode(this) == identityHashCode(other);
+
+  void notify() => _parent.notify();
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _parent.dispose();
+  }
+}
+
 /// @{macro action-control}
 ///
 /// [ActionControl.sub]
@@ -165,8 +201,7 @@ class ActionControlSub<T> implements ActionControlObservable<T> {
         other == value;
   }
 
-  /// Checks if given object is same as this one.
-  /// Returns true if objects are same.
+  @override
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
 }
 
@@ -216,8 +251,7 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
         other == value;
   }
 
-  /// Checks if given object is same as this one.
-  /// Returns true if objects are same.
+  @override
   bool equal(other) => identityHashCode(this) == identityHashCode(other);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
