@@ -189,9 +189,11 @@ class BaseLocalization extends ChangeNotifier
   /// Returns best possible country code based on [currentLocale] and [deviceLocale].
   String get currentCountry =>
       currentLocale?.countryCode ??
-      deviceLocales
-          .firstWhere((element) => locale.startsWith(element.languageCode),
-              orElse: () => deviceLocale)
+      (locale == null
+              ? deviceLocale
+              : deviceLocales.firstWhere(
+                  (element) => locale.startsWith(element.languageCode),
+                  orElse: () => deviceLocale))
           .countryCode;
 
   /// Current locale key.
