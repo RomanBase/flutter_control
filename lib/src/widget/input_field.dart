@@ -162,6 +162,7 @@ class InputControl extends TextEditingController with Disposable {
     error = null;
     _onDone = null;
     _onChanged = null;
+    _next = null;
     _isValid = validity;
   }
 }
