@@ -76,7 +76,11 @@ class InputControl extends TextEditingController with Disposable {
     return this;
   }
 
-  void submit(String text) {
+  void submit([String text]) {
+    if (text != null) {
+      this.text = text;
+    }
+
     validate();
 
     _next?.setFocus(true);
@@ -130,7 +134,7 @@ class InputControl extends TextEditingController with Disposable {
       return _isValid = true;
     }
 
-    return _isValid = RegExp(regex).hasMatch(value ?? '');
+    return _isValid = RegExp(regex).hasMatch(text);
   }
 
   bool validateChain({bool unfocus: true}) {
@@ -151,6 +155,15 @@ class InputControl extends TextEditingController with Disposable {
   void unfocusChain() {
     setFocus(false);
     _next?.unfocusChain();
+  }
+
+  void clean({bool validity: true}) {
+    text = null;
+    error = null;
+    _onDone = null;
+    _onChanged = null;
+    _next = null;
+    _isValid = validity;
   }
 }
 
