@@ -205,7 +205,7 @@ abstract class CoreWidget extends StatefulWidget
   void register(Disposable object) {
     assert(isInitialized);
 
-    holder.state.registerToDispose(object);
+    holder.state.register(object);
   }
 
   @override
@@ -230,7 +230,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   List<Disposable> _objects;
 
   /// Registers object to dispose with this State.
-  void registerToDispose(Disposable object) {
+  void register(Disposable object) {
     if (_objects == null) {
       _objects = List<Disposable>();
     }
@@ -502,5 +502,74 @@ mixin CoreWidgetDebugPrinter on CoreWidget {
   void dispose() {
     printDebug('CORE $this: dispose');
     super.dispose();
+  }
+}
+
+/// Experimental version of internal Widget subs
+mixin CoreWidgetSubscriber on CoreWidget {
+  @protected
+  Disposable subscribeToAction<T>(
+    ActionControl<T> action,
+    ValueCallback<T> callback, {
+    bool current: true,
+  }) {
+    assert(isInitialized);
+
+    Disposable disposable;
+    register(disposable = action.subscribe(callback, current: current));
+
+    return disposable;
+  }
+
+  @protected
+  Disposable subscribeToField<T>(
+    FieldControl<T> field,
+    void onData(T event), {
+    Function onError,
+    void onDone(),
+    bool cancelOnError: false,
+    bool current: true,
+  }) {
+    assert(isInitialized);
+
+    Disposable disposable;
+    register(disposable = field.subscribe(onData,
+        onError: onError,
+        onDone: onDone,
+        cancelOnError: cancelOnError,
+        current: current));
+
+    return disposable;
+  }
+
+  @protected
+  Disposable subscribeToNotifier<T>(
+      Listenable listenable, ValueCallback<T> callback) {
+    assert(isInitialized);
+
+    final voidCallback = () => callback.call(listenable is ValueListenable
+        ? listenable.value as T
+        : listenable as T);
+    listenable.addListener(voidCallback);
+
+    Disposable disposable;
+    register(disposable = DisposableClient(parent: listenable)
+      ..onDispose = () => listenable.removeListener(voidCallback));
+
+    return disposable;
+  }
+
+  @protected
+  Disposable subscribeToBroadcast<T>(
+    dynamic key,
+    ValueCallback<T> callback, {
+    bool current: true,
+  }) {
+    assert(isInitialized);
+
+    final action = ActionControl.provider<T>(key: key, single: true);
+    register(action);
+
+    return subscribeToAction<T>(action, callback);
   }
 }
