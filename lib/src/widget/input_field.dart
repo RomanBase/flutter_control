@@ -1,14 +1,17 @@
 import 'package:flutter_control/core.dart';
 
 /// Still experimental control for [TextField] builder..
-class InputControl extends TextEditingController with Disposable {
+class InputControl extends TextEditingController with DisposeHandler {
   final String regex;
 
   FocusNode _focus;
 
-  FocusNode get focus => _focus ?? (_focus = FocusNode());
+  FocusNode get focus =>
+      _focus ?? (_focus = FocusNode()..addListener(_notifyFocus));
 
   bool get isFocusable => focus.context != null;
+
+  bool get hasFocus => _focus?.hasFocus ?? false;
 
   bool _isValid = true;
 
@@ -125,7 +128,13 @@ class InputControl extends TextEditingController with Disposable {
     }
 
     if (listener != null) {
-      focus.addListener(_onFocusChanged = () => listener(focus.hasFocus));
+      focus.addListener(_onFocusChanged = () => listener(hasFocus));
+    }
+  }
+
+  void _notifyFocus() {
+    if (hasFocus) {
+      error = null;
     }
   }
 
@@ -164,6 +173,19 @@ class InputControl extends TextEditingController with Disposable {
     _onChanged = null;
     _next = null;
     _isValid = validity;
+  }
+
+  @override
+  void softDispose() {
+    super.softDispose();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _focus?.removeListener(_notifyFocus);
+    _focus = null;
   }
 }
 

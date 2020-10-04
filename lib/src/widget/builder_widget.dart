@@ -137,13 +137,18 @@ class ControlBuilderGroup extends StatefulWidget {
   /// Value order is same as [controls] order.
   final ControlWidgetBuilder<List> builder;
 
+  /// Checks if pass [controls] to [builder] instead of 'values'.
+  final bool passControls;
+
   /// Builds Widget every time when data in [controls] are changed.
   /// [controls] - List of objects that will notifies Widget to rebuild. Supports [ActionControl], [FieldControl], [StateControl], [ValueListenable] and [Listenable].
   /// [builder] - Widget builder, passes [value] as List of values from given [controls].
+  /// [passControls] - Passes [controls] to [builder] instead of 'values'.
   const ControlBuilderGroup({
     Key key,
     @required this.controls,
     @required this.builder,
+    this.passControls: false,
   }) : super(key: key);
 
   @override
@@ -168,6 +173,10 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
 
   /// Maps values from Controls to List.
   List _mapValues() {
+    if (widget.passControls) {
+      return widget.controls;
+    }
+
     final data = List();
 
     widget.controls.forEach((control) {

@@ -4,7 +4,7 @@ import 'dashboard_page.dart';
 import 'firebase_control.dart';
 
 class RegistrationControl extends BaseControl with RouteControlProvider {
-  final loading = LoadingControl();
+  final loading = LoadingControl(LoadingStatus.done);
   final username =
       InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final nickname = InputControl(regex: '.{3,}');

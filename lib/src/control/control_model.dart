@@ -29,11 +29,9 @@ class ControlModel with DisposeHandler implements Initializable {
   @override
   void init(Map args) {}
 
-  //TODO: revisit || renamed to free 'subscribe' keyword.
-  /// Used to subscribe interface/handler/notifier etc.
+  /// Used to register interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  /// Will be revisited - unused from v1.1.
-  void initSubscribe(dynamic object) {}
+  void register(dynamic object) {}
 
   @override
   void dispose() {
@@ -184,8 +182,8 @@ mixin RouteControlProvider on ControlModel {
   /// Subscribes [RouteNavigator] for later user.
   @override
   @mustCallSuper
-  void initSubscribe(dynamic object) {
-    super.initSubscribe(object);
+  void register(dynamic object) {
+    super.register(object);
 
     if (object is RouteNavigator) {
       _navigator = object;

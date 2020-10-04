@@ -4,7 +4,7 @@ import 'firebase_control.dart';
 import 'registration_page.dart';
 
 class LoginControl extends BaseControl with RouteControlProvider {
-  final loading = LoadingControl();
+  final loading = LoadingControl(LoadingStatus.done);
   final username =
       InputControl(regex: '.{1,}@.{1,}\..{1,}'); // lame email check :)
   final password = InputControl(regex: '.{8,}');

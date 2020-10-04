@@ -137,7 +137,7 @@ abstract class ControlWidget extends CoreWidget
     controls.remove(null);
     controls.forEach((control) {
       control.init(holder.args);
-      control.initSubscribe(this);
+      control.register(this);
 
       if (this is TickerProvider && control is TickerComponent) {
         control.provideTicker(this as TickerProvider);
