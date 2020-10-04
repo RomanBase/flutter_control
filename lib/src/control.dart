@@ -214,15 +214,16 @@ class BroadcastProvider {
   /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
   ///
   /// Returns number of notified subs.
-  static void broadcast(dynamic key, dynamic value, {bool store: false}) =>
-      ControlFactory._instance._broadcast.broadcast(key, value, store: store);
+  static void broadcast<T>({dynamic key, dynamic value, bool store: false}) =>
+      ControlFactory._instance._broadcast
+          .broadcast<T>(key: key, value: value, store: store);
 
   /// Sends event to global event stream.
   /// Subs with same [key] will be notified.
   ///
   /// Returns number of notified subs.
-  static void broadcastEvent(dynamic key) =>
-      ControlFactory._instance._broadcast.broadcastEvent(key);
+  static void broadcastEvent<T>({dynamic key}) =>
+      ControlFactory._instance._broadcast.broadcastEvent<T>(key: key);
 }
 
 /// Main singleton class.

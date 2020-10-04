@@ -103,7 +103,7 @@ class DetailController extends BaseControl
   }
 
   void deleteSelf() {
-    BroadcastProvider.broadcast('remove_card', _model);
+    BroadcastProvider.broadcast(key: 'remove_card', value: _model);
     close();
   }
 

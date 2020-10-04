@@ -444,7 +444,7 @@ class BaseLocalization extends ChangeNotifier
   /// Broadcast localization changes.
   void _broadcastArgs(LocalizationArgs args) {
     if (main) {
-      BroadcastProvider.broadcast(BaseLocalization, args);
+      BroadcastProvider.broadcast<BaseLocalization>(value: args);
     }
   }
 

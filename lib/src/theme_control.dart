@@ -213,7 +213,7 @@ class ControlTheme {
   ControlTheme pushTheme(ThemeData theme) {
     if (theme != data) {
       data = theme;
-      BroadcastProvider.broadcast(ControlTheme, this);
+      BroadcastProvider.broadcast<ControlTheme>(value: this);
     }
 
     return this;

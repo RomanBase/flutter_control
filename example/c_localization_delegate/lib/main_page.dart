@@ -65,14 +65,14 @@ class MainPage extends ControlWidget with RouteControl {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: () =>
-                        Control.broadcaster.broadcast(Locale, Locale('en')),
+                    onPressed: () => Control.broadcaster
+                        .broadcast<Locale>(value: Locale('en')),
                     child: Text(
                         LocalizationProvider.of(context).localize('button_en')),
                   ),
                   RaisedButton(
-                    onPressed: () =>
-                        Control.broadcaster.broadcast(Locale, Locale('es')),
+                    onPressed: () => Control.broadcaster
+                        .broadcast<Locale>(value: Locale('es')),
                     child: Text(
                         LocalizationProvider.of(context).localize('button_es')),
                   ),

@@ -29,11 +29,15 @@ class ControlBroadcast implements Disposable {
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  BroadcastSubscription<T> subscribe<T>(dynamic key, ValueChanged<T> onData,
-      {bool current: true}) {
+  BroadcastSubscription<T> subscribe<T>(
+    dynamic key,
+    ValueChanged<T> onData, {
+    bool current: true,
+    bool nullOk: true,
+  }) {
     assert(onData != null);
 
-    final sub = BroadcastSubscription<T>._(key)
+    final sub = BroadcastSubscription<T>._(key, nullOk: nullOk)
       .._parent = this
       .._onData = onData;
 
@@ -48,6 +52,22 @@ class ControlBroadcast implements Disposable {
     return sub;
   }
 
+  /// Subscribe to global object stream for given [Type]. This [Type] is used as broadcast [key].
+  /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
+  /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
+  BroadcastSubscription<T> subscribeOf<T>(
+    ValueChanged<T> onData, {
+    bool current: true,
+    bool nullOk: true,
+  }) {
+    assert(onData != null);
+    assert(T != dynamic);
+
+    return subscribe<T>(T, onData, current: current, nullOk: nullOk);
+  }
+
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
   ///
@@ -56,10 +76,14 @@ class ControlBroadcast implements Disposable {
     return subscribe(key, (_) => callback(), current: false);
   }
 
-  /// Cancels subscriptions to global object/event stream.
-  void cancelSubscription(BroadcastSubscription sub) {
-    sub.pause();
-    _subscriptions.remove(sub);
+  /// Subscribe to global event stream for given [Type]. This [Type] is used as broadcast [key].
+  /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
+  BroadcastSubscription subscribeEventOf<T>(VoidCallback callback) {
+    assert(T != dynamic);
+
+    return subscribeEvent(T, callback);
   }
 
   /// Sends [value] to global object stream.
@@ -67,7 +91,12 @@ class ControlBroadcast implements Disposable {
   /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
   ///
   /// Returns number of notified subs.
-  int broadcast(dynamic key, dynamic value, {bool store: false}) {
+  int broadcast<T>({
+    dynamic key,
+    @required dynamic value,
+    bool store: false,
+  }) {
+    key = Control.factory.keyOf<T>(key: key, value: value);
     int count = 0;
 
     if (store) {
@@ -88,7 +117,13 @@ class ControlBroadcast implements Disposable {
   /// Subs with same [key] will be notified.
   ///
   /// Returns number of notified subs.
-  int broadcastEvent(dynamic key) => broadcast(key, null);
+  int broadcastEvent<T>({dynamic key}) => broadcast<T>(key: key, value: null);
+
+  /// Cancels subscriptions to global object/event stream.
+  void cancelSubscription(BroadcastSubscription sub) {
+    sub.pause();
+    _subscriptions.remove(sub);
+  }
 
   /// Clears all subs and stored data.
   void clear() {
@@ -109,6 +144,9 @@ class BroadcastSubscription<T> implements Disposable {
   /// Key of sub.
   final dynamic key;
 
+  /// Checks if 'null' is valid for broadcast.
+  final bool nullOk;
+
   /// Parent of this sub.
   ControlBroadcast _parent;
 
@@ -123,12 +161,12 @@ class BroadcastSubscription<T> implements Disposable {
 
   /// Default constructor.
   /// Only [ControlBroadcast] can initialize sub.
-  BroadcastSubscription._(this.key);
+  BroadcastSubscription._(this.key, {this.nullOk: true});
 
   /// Checks if [key] and [value] is eligible for this subscription.
   bool isValidForBroadcast(dynamic key, dynamic value) =>
       _active &&
-      (value == null || value is T) &&
+      ((value == null && nullOk) || value is T) &&
       (key == null || key == this.key);
 
   /// Pauses this subscription and [ControlBroadcast.broadcast] will skip this sub during next event.
