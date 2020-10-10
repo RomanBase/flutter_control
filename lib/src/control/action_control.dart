@@ -455,10 +455,7 @@ class ActionBuilder<T> extends StatefulWidget {
 
 /// State of [ActionBuilder].
 /// Subscribes to provided Action.
-class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
-  /// Current value.
-  T _value;
-
+class _ActionBuilderState<T> extends ValueState<ActionBuilder<T>, T> {
   /// Active sub to [ActionControl].
   ActionSubscription _sub;
 
@@ -466,19 +463,12 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
   void initState() {
     super.initState();
 
-    _value = widget.control.value;
+    value = widget.control.value;
     _initSub();
   }
 
   void _initSub() {
-    _sub = widget.control.subscribe(
-      (value) {
-        setState(() {
-          _value = value;
-        });
-      },
-      current: false,
-    );
+    _sub = widget.control.subscribe(notifyValue, current: false);
   }
 
   @override
@@ -490,15 +480,13 @@ class _ActionBuilderState<T> extends State<ActionBuilder<T>> {
       _initSub();
     }
 
-    if (_value != widget.control.value) {
-      setState(() {
-        _value = widget.control.value;
-      });
+    if (value != widget.control.value) {
+      notifyValue(widget.control.value);
     }
   }
 
   @override
-  Widget build(BuildContext context) => widget.build(context, _value);
+  Widget build(BuildContext context) => widget.build(context, value);
 
   @override
   void dispose() {
@@ -533,10 +521,7 @@ class ActionBuilderGroup extends StatefulWidget {
 
 /// State of [ActionBuilderGroup].
 /// Subscribes to all provided Actions.
-class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
-  /// Current values.
-  List _values;
-
+class _ActionBuilderGroupState extends ValueState<ActionBuilderGroup, List> {
   /// All active subs.
   final _subs = List<ActionSubscription>();
 
@@ -548,15 +533,13 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
   void initState() {
     super.initState();
 
-    _values = _mapValues();
+    value = _mapValues();
     _initSubs();
   }
 
   void _initSubs() {
     widget.controls.forEach((control) => _subs.add(control.subscribe(
-          (data) => setState(() {
-            _values = _mapValues();
-          }),
+          (data) => notifyValue(_mapValues()),
           current: false,
         )));
   }
@@ -572,27 +555,23 @@ class _ActionBuilderGroupState extends State<ActionBuilderGroup> {
       _initSubs();
     }
 
-    List initial = _values;
+    List initial = value;
     List current = _mapValues();
 
     if (initial.length == current.length) {
       for (int i = 0; i < initial.length; i++) {
         if (initial[i] != current[i]) {
-          setState(() {
-            _values = current;
-          });
+          notifyValue(current);
           break;
         }
       }
     } else {
-      setState(() {
-        _values = current;
-      });
+      notifyValue(current);
     }
   }
 
   @override
-  Widget build(BuildContext context) => widget.build(context, _values);
+  Widget build(BuildContext context) => widget.build(context, value);
 
   @override
   void dispose() {

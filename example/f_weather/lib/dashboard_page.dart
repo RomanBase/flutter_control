@@ -12,7 +12,9 @@ class _UIControl extends ControlModel with TickerComponent {
   void init(Map args) {
     super.init(args);
 
-    control.city.onFocusChanged((focused) {
+    control.city.focus.addListener(() {
+      final focused = control.city.hasFocus;
+
       if (focused) {
         inputAnim?.forward();
       } else {
