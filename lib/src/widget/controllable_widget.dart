@@ -5,7 +5,7 @@ import 'package:flutter_control/core.dart';
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
-  dynamic get value => (holder.state as _ControlableState)?._value;
+  dynamic get value => (holder.state as _ControllableState)?._value;
 
   ControllableWidget(
     this.control, {
@@ -14,14 +14,14 @@ abstract class ControllableWidget<T> extends CoreWidget {
         super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ControlableState<T>();
+  State<StatefulWidget> createState() => _ControllableState<T>();
 
   Widget build(BuildContext context);
 }
 
 /// State of [ControllableWidget].
 /// Simply wraps [ControlBuilder] or [ControlBuilderGroup] based on [ControllableWidget.control].
-class _ControlableState<T> extends CoreState<ControllableWidget<T>> {
+class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
   dynamic _value;
 
   @override

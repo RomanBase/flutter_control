@@ -36,6 +36,8 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
 
   dynamic get control => widget.control;
 
+  bool get isDirty => (context as Element)?.dirty ?? false;
+
   T _mapValue() {
     dynamic data;
 
@@ -89,9 +91,13 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
   }
 
   void _notifyState() {
-    setState(() {
+    if (isDirty) {
       _value = _mapValue();
-    });
+    } else {
+      setState(() {
+        _value = _mapValue();
+      });
+    }
   }
 
   @override
@@ -163,6 +169,8 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   /// All active subs.
   final _subs = List<Disposable>();
 
+  bool get isDirty => (context as Element)?.dirty ?? false;
+
   @override
   void initState() {
     super.initState();
@@ -215,9 +223,13 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
 
   /// Notifies State and maps Control values.
   void _notifyState() {
-    setState(() {
+    if (isDirty) {
       _values = _mapValues();
-    });
+    } else {
+      setState(() {
+        _values = _mapValues();
+      });
+    }
   }
 
   @override
