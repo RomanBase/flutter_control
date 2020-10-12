@@ -85,12 +85,10 @@ class MyTheme extends ControlTheme {
   MyTheme(BuildContext context) : super(context);
 
   static Map<dynamic, Initializer<ThemeData>> get themes => {
-        ThemeData: (_) => ThemeData(
-              primaryColor: Colors.deepOrange,
-            ),
         Brightness.light: (_) =>
             ThemeData.light().copyWith(primaryColor: Colors.green),
         Brightness.dark: (_) =>
-            ThemeData.dark().copyWith(primaryColor: Colors.lightGreenAccent),
+            ThemeData.dark().copyWith(primaryColor: Colors.deepPurple),
+        ThemeData: (_) => ThemeData(primaryColor: Colors.deepOrange),
       };
 }

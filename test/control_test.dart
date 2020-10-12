@@ -183,11 +183,11 @@ void main() async {
       expect(sub4.isValidForBroadcast(String, 'string'), isTrue);
       expect(sub4.isValidForBroadcast(String, 100), isFalse);
 
-      final count1 = broadcast.broadcast('sub', '1');
-      final count2 = broadcast.broadcast('sub', 1);
+      final count1 = broadcast.broadcast(key: 'sub', value: '1');
+      final count2 = broadcast.broadcast(key: 'sub', value: 1);
 
-      final count3 = broadcast.broadcast(String, '2');
-      final count4 = broadcast.broadcast(String, 2);
+      final count3 = broadcast.broadcast(key: String, value: '2');
+      final count4 = broadcast.broadcast(key: String, value: 2);
 
       expect(count1, 1);
       expect(count2, 2);
@@ -207,8 +207,8 @@ void main() async {
       expect(sub2.isValidForBroadcast(String, null), isTrue);
       expect(sub2.isValidForBroadcast('sub', null), isFalse);
 
-      final count1 = broadcast.broadcastEvent('sub');
-      final count2 = broadcast.broadcastEvent(String);
+      final count1 = broadcast.broadcastEvent(key: 'sub');
+      final count2 = broadcast.broadcastEvent(key: String);
 
       expect(count1, 1);
       expect(count2, 1);
@@ -216,7 +216,7 @@ void main() async {
       sub2.cancel();
       sub3.cancel();
 
-      final count3 = broadcast.broadcastEvent(String);
+      final count3 = broadcast.broadcastEvent(key: String);
 
       expect(count3, 0);
       expect(sub3.isActive, isFalse);

@@ -50,9 +50,9 @@ class InputControl extends TextEditingController with DisposeHandler {
   @override
   set text(String newText) {
     value = value.copyWith(
-      text: newText,
-      selection: TextSelection.collapsed(
-          offset: newText == null ? -1 : newText.length),
+      text: newText ?? '',
+      selection:
+          TextSelection.collapsed(offset: newText == null ? 0 : newText.length),
       composing: TextRange.empty,
     );
   }
