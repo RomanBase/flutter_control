@@ -336,12 +336,6 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
     }
   }
 
-  /// Copy last value from given controller and sets it to its own stream.
-  void copyValueFrom(FieldControl<T> controller) => setValue(controller.value);
-
-  /// Copy last value to given controller.
-  void copyValueTo(FieldControl<T> controller) => controller.setValue(value);
-
   /// Returns [Sink] with custom [ValueConverter].
   Sink sinkConverter(ValueConverter<T> converter) =>
       FieldSinkConverter(this, converter);
@@ -386,7 +380,9 @@ class FieldControl<T> implements FieldControlStream<T>, Disposable {
             final result = converter(data);
 
             if (result is Future) {
-              result.then((value) => setValue(value));
+              result.then((value) => setValue(value)).catchError((err) {
+                printDebug(err);
+              });
             } else {
               setValue(result);
             }

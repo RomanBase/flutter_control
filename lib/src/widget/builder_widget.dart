@@ -29,12 +29,12 @@ class ControlBuilder<T> extends StatefulWidget {
   _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
+class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
   Disposable _sub;
 
-  T _value;
-
   dynamic get control => widget.control;
+
+  bool get isDirty => (context as Element)?.dirty ?? false;
 
   T _mapValue() {
     dynamic data;
@@ -74,8 +74,10 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
       control.addListener(_notifyState);
     }
 
-    _value = _mapValue();
+    value = _mapValue();
   }
+
+  _notifyState() => notifyValue(_mapValue());
 
   @override
   void didUpdateWidget(ControlBuilder<T> oldWidget) {
@@ -88,19 +90,13 @@ class _ControlBuilderState<T> extends State<ControlBuilder<T>> {
     }
   }
 
-  void _notifyState() {
-    setState(() {
-      _value = _mapValue();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_value == null && !widget.nullOk) {
+    if (value == null && !widget.nullOk) {
       return widget.noData?.call(context) ?? Container();
     }
 
-    return widget.builder(context, _value);
+    return widget.builder(context, value);
   }
 
   void _disableSub() {
@@ -156,18 +152,17 @@ class ControlBuilderGroup extends StatefulWidget {
 }
 
 /// State of [ControlBuilderGroup].
-class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
-  /// Current values.
-  List _values;
-
+class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   /// All active subs.
   final _subs = List<Disposable>();
+
+  bool get isDirty => (context as Element)?.dirty ?? false;
 
   @override
   void initState() {
     super.initState();
 
-    _values = _mapValues();
+    value = _mapValues();
     _initSubs();
   }
 
@@ -214,11 +209,7 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
   }
 
   /// Notifies State and maps Control values.
-  void _notifyState() {
-    setState(() {
-      _values = _mapValues();
-    });
-  }
+  void _notifyState() => notifyValue(_mapValues());
 
   @override
   void didUpdateWidget(ControlBuilderGroup oldWidget) {
@@ -229,27 +220,23 @@ class _ControlBuilderGroupState extends State<ControlBuilderGroup> {
     _disposeSubs();
     _initSubs();
 
-    List initial = _values;
+    List initial = value;
     List current = _mapValues();
 
     if (initial.length == current.length) {
       for (int i = 0; i < initial.length; i++) {
         if (initial[i] != current[i]) {
-          setState(() {
-            _values = current;
-          });
+          notifyValue(current);
           break;
         }
       }
     } else {
-      setState(() {
-        _values = current;
-      });
+      notifyValue(current);
     }
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(context, _values);
+  Widget build(BuildContext context) => widget.builder(context, value);
 
   /// Disposes all Subscriptions and Listeners.
   void _disposeSubs() {

@@ -226,6 +226,9 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   /// Checks if State is initialized and dependencies are set.
   bool get isInitialized => _stateInitialized;
 
+  /// Checks if [Element] is 'dirty' and needs rebuild.
+  bool get isDirty => (context as Element)?.dirty ?? true;
+
   /// Objects to dispose with State.
   List<Disposable> _objects;
 
@@ -247,6 +250,14 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
     super.initState();
 
     widget._notifyHolder(this);
+  }
+
+  void notifyState() {
+    if (isDirty) {
+      // TODO: no need to set state.. set state next frame ?
+    } else {
+      setState(() {});
+    }
   }
 
   @override
@@ -283,6 +294,23 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     _objects?.forEach((element) => element.dispose());
     _objects = null;
+  }
+}
+
+abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
+  /// Checks if [Element] is 'dirty' and needs rebuild.
+  bool get isDirty => (context as Element)?.dirty ?? true;
+
+  U value;
+
+  void notifyValue(U value) {
+    if (isDirty) {
+      this.value = value;
+    } else {
+      setState(() {
+        this.value = value;
+      });
+    }
   }
 }
 
