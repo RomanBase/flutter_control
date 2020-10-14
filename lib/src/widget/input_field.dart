@@ -116,11 +116,23 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
 
     validate();
-
-    _next?.setFocus(true);
+    focusNext();
 
     if (_onDone != null) {
       _onDone();
+    }
+  }
+
+  /// Sets focus to next possible [Widget] in chain.
+  void focusNext() {
+    if (_next == null) {
+      return;
+    }
+
+    if (_next.focusable) {
+      _next.setFocus(true);
+    } else {
+      _next.focusNext();
     }
   }
 

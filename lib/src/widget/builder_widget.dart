@@ -37,6 +37,10 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
   bool get isDirty => (context as Element)?.dirty ?? false;
 
   T _mapValue() {
+    if (T != dynamic && control is T) {
+      return control;
+    }
+
     dynamic data;
 
     if (control is ActionControlObservable) {

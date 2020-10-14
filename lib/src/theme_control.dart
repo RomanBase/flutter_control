@@ -300,6 +300,8 @@ class ThemeConfig<T extends ControlTheme> {
     return key;
   }
 
+  bool isPreferred(dynamic key) => preferredThemeName == Parse.name(key);
+
   ThemeConfig copyWith({
     dynamic theme,
   }) =>
