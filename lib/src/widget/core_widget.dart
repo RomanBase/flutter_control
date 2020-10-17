@@ -466,6 +466,38 @@ mixin TickerControl on CoreWidget implements TickerProvider {
   }
 }
 
+/// Extended version of [TickerControl] with inside animations.
+mixin TickerAnimControl on CoreWidget implements TickerProvider {
+  final _anim = _AnimControl();
+
+  final _ticker = _TickerProvider();
+
+  TickerProvider get ticker => this;
+
+  Map<dynamic, AnimationController> get anim => _anim.controllers;
+
+  Map<dynamic, Duration> get animations;
+
+  @override
+  Ticker createTicker(TickerCallback onTick) => _ticker.createTicker(onTick);
+
+  @override
+  void onInit(Map args) {
+    _ticker._muteTicker(!TickerMode.of(context));
+    _anim.initControllers(this, animations);
+
+    super.onInit(args);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _anim.dispose();
+    _ticker.dispose();
+  }
+}
+
 class _WidgetTicker extends Ticker {
   _TickerProvider _creator;
 
@@ -480,6 +512,27 @@ class _WidgetTicker extends Ticker {
     _creator = null;
 
     super.dispose();
+  }
+}
+
+class _AnimControl extends ControlModel {
+  final controllers = Map<dynamic, AnimationController>();
+
+  operator [](dynamic key) => controllers[key];
+
+  void initControllers(
+      TickerProvider ticker, Map<dynamic, Duration> durations) {
+    durations.forEach((key, value) {
+      controllers[key] = AnimationController(vsync: ticker, duration: value);
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    controllers.forEach((key, value) => value.dispose());
+    controllers.clear();
   }
 }
 
@@ -572,7 +625,9 @@ mixin CoreWidgetSubscriber on CoreWidget {
 
   @protected
   Disposable subscribeToNotifier<T>(
-      Listenable listenable, ValueCallback<T> callback) {
+    Listenable listenable,
+    ValueCallback<T> callback,
+  ) {
     assert(isInitialized);
 
     final voidCallback = () => callback.call(listenable is ValueListenable
