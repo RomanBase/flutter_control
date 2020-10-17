@@ -467,16 +467,16 @@ mixin TickerControl on CoreWidget implements TickerProvider {
 }
 
 /// Extended version of [TickerControl] with inside animations.
-mixin TickerAnimControl on CoreWidget implements TickerProvider {
-  final _anim = _AnimControl();
+mixin TickerAnimControl<T> on CoreWidget implements TickerProvider {
+  final _anim = _AnimControl<T>();
 
   final _ticker = _TickerProvider();
 
   TickerProvider get ticker => this;
 
-  Map<dynamic, AnimationController> get anim => _anim.controllers;
+  Map<T, AnimationController> get anim => _anim.controllers;
 
-  Map<dynamic, Duration> get animations;
+  Map<T, Duration> get animations;
 
   @override
   Ticker createTicker(TickerCallback onTick) => _ticker.createTicker(onTick);
@@ -515,13 +515,12 @@ class _WidgetTicker extends Ticker {
   }
 }
 
-class _AnimControl extends ControlModel {
-  final controllers = Map<dynamic, AnimationController>();
+class _AnimControl<T> extends ControlModel {
+  final controllers = Map<T, AnimationController>();
 
   operator [](dynamic key) => controllers[key];
 
-  void initControllers(
-      TickerProvider ticker, Map<dynamic, Duration> durations) {
+  void initControllers(TickerProvider ticker, Map<T, Duration> durations) {
     durations.forEach((key, value) {
       controllers[key] = AnimationController(vsync: ticker, duration: value);
     });
