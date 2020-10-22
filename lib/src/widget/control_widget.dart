@@ -335,12 +335,12 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       String identifier,
       bool Function(Route<dynamic>) predicate}) {
     if (route != null) {
-      getNavigator().popUntil((item) => item == route || route.isFirst);
+      getNavigator().popUntil((item) => item == route || item.isFirst);
     }
 
     if (identifier != null) {
-      getNavigator().popUntil(
-          (item) => item.settings.name == identifier || route.isFirst);
+      getNavigator()
+          .popUntil((item) => item.settings.name == identifier || item.isFirst);
     }
 
     if (predicate != null) {
