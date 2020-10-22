@@ -80,6 +80,10 @@ class RouteHandler {
   /// Do not open multiple routes from one handler !
   bool get isHandled => _result != null;
 
+  /// Route name. This identifier is typically stored in [RouteStore].
+  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
+  String get identifier => routeProvider.identifier;
+
   /// Builds [Widget] and pushes [Route] to [Navigator].
   ///
   /// [navigator] - Implementation of [RouteNavigator] - typically [ControlWidget] with [RouteControl] mixin.
@@ -205,6 +209,14 @@ class ControlRoute {
     assert(T != dynamic || identifier != null);
 
     return Control.get<RouteStore>()?.getRoute<T>(identifier);
+  }
+
+  /// Returns identifier of Route stored in [RouteStore].
+  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
+  static String identifierOf<T>([dynamic identifier]) {
+    assert(T != dynamic || identifier != null);
+
+    return Control.get<RouteStore>()?.getRoute<T>(identifier)?.identifier;
   }
 
   /// Route name. This identifier is typically stored in [RouteStore].

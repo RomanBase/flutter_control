@@ -329,16 +329,18 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
         useRootNavigator: false);
   }
 
+  @override
   void backTo(
       {Route route,
       String identifier,
       bool Function(Route<dynamic>) predicate}) {
     if (route != null) {
-      getNavigator().popUntil((item) => item == route);
+      getNavigator().popUntil((item) => item == route || route.isFirst);
     }
 
     if (identifier != null) {
-      getNavigator().popUntil((item) => item.settings.name == identifier);
+      getNavigator().popUntil(
+          (item) => item.settings.name == identifier || route.isFirst);
     }
 
     if (predicate != null) {
