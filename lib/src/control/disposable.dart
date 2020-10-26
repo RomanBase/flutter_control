@@ -45,6 +45,14 @@ mixin DisposeHandler implements Disposable {
   void dispose() {
     softDispose();
   }
+
+  static void disposeOf(dynamic object, dynamic parent) {
+    if (object is DisposeHandler) {
+      object.requestDispose(parent);
+    } else if (object is Disposable) {
+      object.dispose();
+    }
+  }
 }
 
 /// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and [ControlModel].

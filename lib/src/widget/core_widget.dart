@@ -535,6 +535,21 @@ class _AnimControl<T> extends ControlModel {
   }
 }
 
+mixin ControlArgsComponent on CoreWidget {
+  Map<dynamic, Initializer> get initArgs;
+
+  Map get arg => holder.args;
+
+  @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    initArgs?.forEach((key, value) {
+      setArg(key: key, value: value(args));
+    });
+  }
+}
+
 mixin OnLayout on CoreWidget {
   @override
   void onInit(Map args) {
