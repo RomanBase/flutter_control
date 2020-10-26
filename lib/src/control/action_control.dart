@@ -139,6 +139,14 @@ mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T> {
 
   set value(T value) => _parent.value = value;
 
+  void setValue(T value, {bool notify: true, bool forceNotify: false}) {
+    _parent.setValue(value, notifyListeners: notify && !forceNotify);
+
+    if (forceNotify) {
+      _parent.notify();
+    }
+  }
+
   @override
   ActionControlListenable<T> get listenable =>
       ActionControlListenable<T>(_parent);
