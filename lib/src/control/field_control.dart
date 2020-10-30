@@ -1067,6 +1067,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
     WidgetBuilder error,
     WidgetBuilder outdated,
     WidgetBuilder unknown,
+    WidgetBuilder general,
     CrossTransition transition,
     Map<LoadingStatus, CrossTransition> transitions,
   }) : super(
@@ -1081,15 +1082,17 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
               builders: {
                 LoadingStatus.initial: initial,
                 LoadingStatus.progress: progress ??
+                    general ??
                     (context) => Center(child: CircularProgressIndicator()),
                 LoadingStatus.done: done,
                 LoadingStatus.error: error ??
+                    general ??
                     (context) =>
                         Center(child: Text(control.message ?? 'error')),
                 LoadingStatus.outdated: outdated,
                 LoadingStatus.unknown: unknown,
               },
-              placeholder: (_) => Container(),
+              placeholder: (_) => general ?? Container(),
               transitionIn: CrossTransition(
                 builder: CrossTransitions.fadeOutFadeIn(
                     backgroundColor: Colors.transparent),

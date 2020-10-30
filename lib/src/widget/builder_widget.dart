@@ -19,8 +19,8 @@ class ControlBuilder<T> extends StatefulWidget {
 
   const ControlBuilder({
     Key key,
-    this.control,
-    this.builder,
+    @required this.control,
+    @required this.builder,
     this.noData,
     this.nullOk: false,
   }) : super(key: key);
