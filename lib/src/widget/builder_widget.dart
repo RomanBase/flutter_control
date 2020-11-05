@@ -34,8 +34,6 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
 
   dynamic get control => widget.control;
 
-  bool get isDirty => (context as Element)?.dirty ?? false;
-
   T _mapValue() {
     if (T != dynamic && control is T) {
       return control;
@@ -159,8 +157,6 @@ class ControlBuilderGroup extends StatefulWidget {
 class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   /// All active subs.
   final _subs = List<Disposable>();
-
-  bool get isDirty => (context as Element)?.dirty ?? false;
 
   @override
   void initState() {

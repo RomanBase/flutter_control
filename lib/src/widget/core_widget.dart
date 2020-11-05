@@ -298,9 +298,10 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 }
 
 abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
-  /// Checks if [Element] is 'dirty' and needs rebuild.
-  bool get isDirty => (context as Element)?.dirty ?? true;
+  /// Checks if [Element] is 'mounted' or 'dirty' and marked for rebuild.
+  bool get isDirty => !mounted || ((context as Element)?.dirty ?? true);
 
+  /// Current value of state.
   U value;
 
   void notifyValue(U value) {
