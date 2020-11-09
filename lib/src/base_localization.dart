@@ -420,6 +420,10 @@ class BaseLocalization extends ChangeNotifier
   /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
   Future<LocalizationArgs> changeLocale(String locale,
       {bool preferred: true}) async {
+    if (debug && locale == 'debug') {
+      return _setDebugLocale();
+    }
+
     final args = await loadLocalizationData(locale);
 
     if (args.isActive) {
@@ -437,6 +441,22 @@ class BaseLocalization extends ChangeNotifier
 
       _broadcastArgs(args);
     }
+
+    return args;
+  }
+
+  LocalizationArgs _setDebugLocale() {
+    _locale = '#';
+
+    final args = LocalizationArgs(
+      locale: '#',
+      isActive: true,
+      changed: true,
+      source: 'debug',
+    );
+
+    notifyListeners();
+    _broadcastArgs(args);
 
     return args;
   }
