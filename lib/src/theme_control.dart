@@ -294,7 +294,7 @@ class ThemeConfig<T extends ControlTheme> {
         Control.get<BasePrefs>().get(ThemeConfig.preference_key);
 
     if (enums != null) {
-      return Parse.toEnum(key, enums);
+      return Parse.toEnum<U>(key, enums);
     }
 
     return key;
