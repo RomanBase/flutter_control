@@ -446,6 +446,7 @@ class BaseLocalization extends ChangeNotifier
   }
 
   LocalizationArgs _setDebugLocale() {
+    clear();
     _locale = '#';
 
     final args = LocalizationArgs(
