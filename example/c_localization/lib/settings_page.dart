@@ -36,6 +36,14 @@ class SettingsPage extends ControlWidget {
                 ],
               ),
             ),
+            ControlBuilder(
+              control: Control.localization,
+              builder: (context, value) =>
+                  Text('${Control.localization.currentCountry}'),
+            ),
+            Text('Device locales:'),
+            ...Control.localization.deviceLocales
+                .map((e) => Text(e.toString())),
           ],
         ),
       ),
