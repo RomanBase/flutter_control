@@ -654,4 +654,6 @@ extension IterableExtension on Iterable {
 
     return list;
   }
+
+  Map toKeyMap() => Parse.toKeyMap(this, (key, value) => value.runtimeType);
 }

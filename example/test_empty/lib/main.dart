@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 import 'package:testempty/empty_controllable.dart';
+import 'package:testempty/empty_list.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       initState: AppState.onboarding,
       states: [
         AppState.main.build((context) => MyHomePage(title: 'Example')),
-        AppState.onboarding.build((context) => EmptyControllableWidget()),
+        AppState.onboarding.build((context) => EmptyList()),
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,

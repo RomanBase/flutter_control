@@ -158,6 +158,10 @@ abstract class CoreWidget extends StatefulWidget
     }
   }
 
+  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
+  BuildContext getContext({bool root: false}) =>
+      root ? Control.scope?.context ?? context : context;
+
   /// Returns raw internal arg store.
   /// Typically not used directly.
   /// Check:
@@ -238,11 +242,21 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
       _objects = List<Disposable>();
     }
 
+    if (object is ReferenceCounter) {
+      object.addReference(this);
+    }
+
     _objects.add(object);
   }
 
   /// Unregisters object to dispose from this State.
-  void unregisterFromDispose(Disposable object) => _objects?.remove(object);
+  void unregister(Disposable object) {
+    _objects?.remove(object);
+
+    if (object is ReferenceCounter) {
+      object.removeReference(this);
+    }
+  }
 
   @override
   @mustCallSuper
@@ -292,8 +306,17 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
     _stateInitialized = false;
     widget.holder.dispose();
 
-    _objects?.forEach((element) => element.dispose());
+    _objects?.forEach((element) {
+      if (element is DisposeHandler) {
+        element.requestDispose(this);
+      } else {
+        element.dispose();
+      }
+    });
+
     _objects = null;
+
+    widget.dispose();
   }
 }
 
@@ -536,18 +559,35 @@ class _AnimControl<T> extends ControlModel {
   }
 }
 
-mixin ControlArgsComponent on CoreWidget {
-  Map<dynamic, Initializer> get initArgs;
+mixin ControlsComponent on CoreWidget {
+  Initializer get initComponents;
 
-  Map get arg => holder.args;
+  Map get component => holder.args;
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
-    initArgs?.forEach((key, value) {
-      setArg(key: key, value: value(args));
+    dynamic components = initComponents?.call(args);
+
+    if (!(components is Map)) {
+      components =
+          Parse.toKeyMap(components, (key, value) => value.runtimeType);
+    }
+
+    components.forEach((key, control) {
+      setArg(key: key, value: control);
+
+      if (control is Disposable) {
+        register(control);
+      }
+
+      if (control is TickerComponent && this is TickerProvider) {
+        control.provideTicker(this as TickerProvider);
+      }
     });
+
+    holder.findControls().forEach((control) => control.init(holder.args));
   }
 }
 

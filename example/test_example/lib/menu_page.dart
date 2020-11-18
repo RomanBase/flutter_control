@@ -60,8 +60,10 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
           ): (context) => Container(),
         },
       ),
-      bottomNavigationBar: control.isMenuValid
-          ? BottomNavigationBar(
+      bottomNavigationBar: ActionBuilder<int>(
+          control: control.pageIndex,
+          builder: (context, snapshot) {
+            return BottomNavigationBar(
               onTap: control.setPageIndex,
               type: BottomNavigationBarType.fixed,
               currentIndex: control.currentPageIndex,
@@ -72,11 +74,11 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
                       item.icon,
                       color: item.selected ? Colors.red : Colors.black,
                     ),
-                    title: Text(item.title),
+                    label: item.title,
                   )
               ],
-            )
-          : null,
+            );
+          }),
     );
   }
 }
