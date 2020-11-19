@@ -575,19 +575,21 @@ mixin ControlsComponent on CoreWidget {
           Parse.toKeyMap(components, (key, value) => value.runtimeType);
     }
 
-    components.forEach((key, control) {
-      setArg(key: key, value: control);
+    holder.argStore.set(components);
 
+    components.forEach((key, control) {
       if (control is Disposable) {
         register(control);
+      }
+
+      if (control is Initializable) {
+        control.init(holder.args);
       }
 
       if (control is TickerComponent && this is TickerProvider) {
         control.provideTicker(this as TickerProvider);
       }
     });
-
-    holder.findControls().forEach((control) => control.init(holder.args));
   }
 }
 
