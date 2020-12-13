@@ -8,6 +8,8 @@ abstract class BaseControlWidget extends CoreWidget {
 
   @override
   State<StatefulWidget> createState() => BaseControlState();
+
+  BaseControlWidget({Key key}) : super(key: key);
 }
 
 class BaseControlState extends CoreState<BaseControlWidget> {
