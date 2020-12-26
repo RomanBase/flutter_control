@@ -42,6 +42,8 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   /// Returns current [animation] progress.
   double get transitionProgress => animation?.value ?? 0.0;
 
+  bool get running => animation?.isAnimating ?? false;
+
   TransitionControl({this.autoRun: false});
 
   @override
@@ -295,7 +297,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: backgroundColor ?? Theme.of(context).backgroundColor,
+          color: backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(
@@ -324,7 +326,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: backgroundColor ?? Theme.of(context).backgroundColor,
+          color: backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(
@@ -353,7 +355,7 @@ class CrossTransitions {
         );
 
         return Container(
-          color: backgroundColor ?? Theme.of(context).backgroundColor,
+          color: backgroundColor,
           child: Stack(
             children: <Widget>[
               FadeTransition(

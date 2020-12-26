@@ -15,15 +15,10 @@ class CaseWidget<T> extends StatefulWidget {
   final WidgetBuilder placeholder;
 
   /// Default transition from one widget to another. By default [CrossTransitions.fadeCross] is used.
-  final CrossTransition transitionIn;
+  final CrossTransition transition;
 
-  final CrossTransition transitionOut; // This can never happen !?
-
-  /// Specific [CrossTransition] for every case. If case is not included, then default [transitionIn] is used.
+  /// Specific [CrossTransition] for every case. If case is not included, then default [transition] is used.
   final Map<T, CrossTransition> transitions;
-
-  /// Defines if active [Widget] can be rebuild even if case is not changed. [True] by default.
-  final bool soft;
 
   /// Resolves what to show by [activeCase].
   /// Every [Widget] has custom case [T] key and is build only if case is active.
@@ -36,10 +31,8 @@ class CaseWidget<T> extends StatefulWidget {
     @required this.builders,
     this.args,
     this.placeholder,
-    this.transitionIn,
-    this.transitionOut,
+    this.transition,
     this.transitions,
-    this.soft: true,
   }) : super(key: key);
 
   @override
@@ -51,7 +44,7 @@ class CaseWidget<T> extends StatefulWidget {
       return transitions[activeCase];
     }
 
-    return transitionIn;
+    return transition;
   }
 }
 
@@ -59,7 +52,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   /// Control for [TransitionHolder].
   /// Handles transition progress and animations.
   final control = TransitionControl()
-    ..autoCrossIn() // cross automatically
+    ..autoCrossIn(from: 1.0) // cross automatically
     ..progress = 1.0; // start at first case
 
   /// Previous initializer / already builder Widget.
@@ -90,15 +83,12 @@ class _CaseWidgetState extends State<CaseWidget> {
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
         control.progress = 0.0;
+        control.autoCrossIn(from: 0.0);
         _updateInitializer();
       });
-    } else {
+    } else if (!control.running) {
       setState(() {
         control.progress = 1.0; //ensure to stay on current case
-
-        if (widget.soft) {
-          _updateCurrentInitializer();
-        }
       });
     }
   }
@@ -145,7 +135,6 @@ class _CaseWidgetState extends State<CaseWidget> {
       firstWidget: oldInitializer,
       secondWidget: currentInitializer,
       transitionIn: widget.activeTransitionIn,
-      transitionOut: widget.transitionOut,
     );
   }
 

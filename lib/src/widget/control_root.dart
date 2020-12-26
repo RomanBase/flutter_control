@@ -550,10 +550,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
           return CaseWidget(
             activeCase: _setup.state,
             builders: _states,
-            transitionIn: widget.transition,
+            transition: widget.transition,
             transitions: _transitions,
             args: _args,
-            soft: false,
             placeholder: (_) => Container(
               color: Theme.of(context).canvasColor,
             ),

@@ -1093,7 +1093,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus> {
                 LoadingStatus.unknown: unknown,
               },
               placeholder: general ?? (context) => Container(),
-              transitionIn: CrossTransition(
+              transition: CrossTransition(
                 builder: CrossTransitions.fadeOutFadeIn(
                     backgroundColor: Colors.transparent),
               ),
