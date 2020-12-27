@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter_control/core.dart';
 
 class SwapPage extends StatefulWidget {
-  final greenControl = SwapControl(Colors.green)..count = 1;
+  final greenControl = SwapControl(Colors.green);
 
-  final redControl = SwapControl(Colors.red)..count = -1;
+  final redControl = SwapControl(Colors.red);
 
   @override
   _SwapPageState createState() => _SwapPageState();
@@ -58,13 +58,13 @@ class _SwapPageState extends State<SwapPage> {
             child: Text('swap'),
           ),
           CaseWidget(
-            activeCase: widget.greenControl.count % 2,
+            activeCase: widget.greenControl.count % 2 == 0,
             builders: {
-              0: (_) => Container(
+              true: (_) => Container(
                     height: 24.0,
                     color: Colors.red,
                   ),
-              1: (_) => Container(
+              false: (_) => Container(
                     height: 24.0,
                     color: Colors.green,
                   ),

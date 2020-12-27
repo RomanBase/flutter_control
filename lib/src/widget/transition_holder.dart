@@ -21,56 +21,48 @@ class CrossTransition {
 }
 
 /// Handles transition progress and animation.
-class TransitionControl extends BaseModel with StateControl, TickerComponent {
+class TransitionControl extends BaseModel
+    with TickerComponent, ActionComponent<double> {
   /// Enables auto run - animation is played automatically when Widget is build.
-  /// Can't be null.
-  bool autoRun;
+  bool autoRun = false;
 
-  //TODO: make it private ? Prevent using this controller outside of class.
   /// Animation Controller created when [TickerComponent] provides [vsync].
-  AnimationController animation;
+  AnimationController _animation;
 
-  /// Checks if [animation] is ready.
-  bool get isInitialized => animation != null;
+  /// Checks if [_animation] is ready.
+  bool get isInitialized => _animation != null;
 
   /// Callback of [autoRun] action.
   VoidCallback _autoCross;
 
   /// Sets next animation value.
-  double progress;
+  double initialProgress = 0.0;
 
-  /// Returns current [animation] progress.
-  double get transitionProgress => animation?.value ?? 0.0;
+  /// Returns current [_animation] progress.
+  double get transitionProgress => _animation?.value ?? 0.0;
 
-  bool get running => animation?.isAnimating ?? false;
+  bool get running => _animation?.isAnimating ?? false;
 
-  TransitionControl({this.autoRun: false});
+  AnimationStatus get status => _animation?.status;
+
+  TransitionControl();
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    animation = AnimationController(
+    _animation = AnimationController(
         vsync: ticker, duration: Duration(milliseconds: 300));
-    animation.addListener(notifyState);
-  }
-
-  @override
-  void onStateInitialized() {
-    super.onStateInitialized();
-
-    if (autoRun) {
-      _autoCrossRun();
-    }
+    _animation.addListener(_notifyState);
   }
 
   /// Changes duration of [forward] and [reverse] animation.
   /// 300ms is used if duration is not set.
-  /// Animation value is set to current [progress].
+  /// Animation value is set to current [initialProgress].
   void setDurations({Duration forward, Duration reverse}) {
     assert(isInitialized);
 
-    animation.duration = forward ?? Duration(milliseconds: 300);
-    animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
-    animation.value = progress ?? 0.0;
+    _animation.duration = forward ?? Duration(milliseconds: 300);
+    _animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
+    _animation.value = initialProgress ?? 0.0;
   }
 
   /// Plays cross in transition: 0.0 -> 1.0. From first widget to second.
@@ -78,7 +70,7 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   TickerFuture crossIn({double from}) {
     assert(isInitialized);
 
-    return animation.forward(from: from);
+    return _animation.forward(from: from);
   }
 
   /// Plays cross out transition: 1.0 -> 0.0. From second widget to first.
@@ -86,7 +78,7 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
   TickerFuture crossOut({double from}) {
     assert(isInitialized);
 
-    return animation.reverse(from: from);
+    return _animation.reverse(from: from);
   }
 
   /// Plays [autoRun] cross animation.
@@ -98,7 +90,7 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
       return;
     }
 
-    if (animation.value < 1.0) {
+    if (_animation.value < 1.0) {
       crossIn();
     } else {
       crossOut();
@@ -117,13 +109,21 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
     _autoCross = () => crossOut(from: from);
   }
 
+  void addStatusListener(AnimationStatusListener listener) =>
+      _animation.addStatusListener(listener);
+
+  void removeStatusListener(AnimationStatusListener listener) =>
+      _animation.removeStatusListener(listener);
+
+  void _notifyState() => setValue(_animation.value);
+
   @override
   void softDispose() {
     super.softDispose();
 
-    animation?.removeListener(notifyState);
-    animation?.dispose();
-    animation = null;
+    _animation?.removeListener(_notifyState);
+    _animation?.dispose();
+    _animation = null;
   }
 
   @override
@@ -135,7 +135,7 @@ class TransitionControl extends BaseModel with StateControl, TickerComponent {
 /// Handles transition between two Widgets.
 /// This transition is controlled by [TransitionControl] and can be played both ways.
 /// Only one [Widget] is used at given time, second [Widget] is disposed when animation ends.
-class TransitionHolder extends StateboundWidget<TransitionControl>
+class TransitionHolder extends ControllableWidget<TransitionControl>
     with SingleTickerControl {
   /// Arg key for first widget. Actual [Key] is stored in [ControlArgHolder].
   static const _firstKey = 'first_key';
@@ -162,11 +162,8 @@ class TransitionHolder extends StateboundWidget<TransitionControl>
   /// [CrossTransitions.fadeCross] is used by default.
   final CrossTransition transitionOut;
 
-  /// Callback when transition is finished.
-  final VoidCallback onFinished;
-
   /// Returns current animation controller.
-  Animation get animation => control.animation;
+  Animation get animation => control._animation;
 
   /// Returns transition for [TransitionControl.crossIn].
   CrossTransitionBuilder get transitionInBuilder =>
@@ -203,8 +200,7 @@ class TransitionHolder extends StateboundWidget<TransitionControl>
     this.args,
     this.transitionIn,
     this.transitionOut,
-    this.onFinished,
-  }) : super(key: key, control: control);
+  }) : super(control, key: key);
 
   @override
   void onInit(Map args) {
@@ -214,6 +210,10 @@ class TransitionHolder extends StateboundWidget<TransitionControl>
 
     if (!control.isInitialized) {
       _updateDuration();
+    }
+
+    if (control.autoRun) {
+      control._autoCrossRun();
     }
   }
 
@@ -248,15 +248,11 @@ class TransitionHolder extends StateboundWidget<TransitionControl>
   @override
   Widget build(BuildContext context) {
     if (animation.status == AnimationStatus.dismissed) {
-      if (onFinished != null) onFinished();
-
       secondWidget.clear();
       return _firstWidget;
     }
 
     if (animation.status == AnimationStatus.completed) {
-      if (onFinished != null) onFinished();
-
       firstWidget.clear();
       return _secondWidget;
     }

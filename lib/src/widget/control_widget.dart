@@ -141,10 +141,6 @@ abstract class ControlWidget extends CoreWidget
       control.init(holder.args);
       control.register(this);
 
-      if (this is TickerProvider && control is TickerComponent) {
-        control.provideTicker(this as TickerProvider);
-      }
-
       if (control is StateControl) {
         state._subscribeStateNotifier(control as StateControl);
       }

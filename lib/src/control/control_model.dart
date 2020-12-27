@@ -115,6 +115,15 @@ mixin TickerComponent on ControlModel {
   /// Checks if [TickerProvider] is set.
   bool get isTickerAvailable => _ticker != null;
 
+  @override
+  void register(dynamic object) {
+    super.register(object);
+
+    if (object is TickerProvider) {
+      provideTicker(object);
+    }
+  }
+
   /// Sets vsync. Called by framework during [State] initialization when used with [CoreWidget] and [TickerControl].
   void provideTicker(TickerProvider ticker) {
     _ticker = ticker;

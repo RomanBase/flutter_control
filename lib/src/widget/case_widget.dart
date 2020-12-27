@@ -53,7 +53,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   /// Handles transition progress and animations.
   final control = TransitionControl()
     ..autoCrossIn(from: 1.0) // cross automatically
-    ..progress = 1.0; // start at first case
+    ..initialProgress = 1.0; // start at first case
 
   /// Previous initializer / already builder Widget.
   /// Widget that's going to be hide.
@@ -82,13 +82,13 @@ class _CaseWidgetState extends State<CaseWidget> {
 
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
-        control.progress = 0.0;
+        control.initialProgress = 0.0;
         control.autoCrossIn(from: 0.0);
         _updateInitializer();
       });
     } else if (!control.running) {
       setState(() {
-        control.progress = 1.0; //ensure to stay on current case
+        control.initialProgress = 1.0; //ensure to stay on current case
       });
     }
   }

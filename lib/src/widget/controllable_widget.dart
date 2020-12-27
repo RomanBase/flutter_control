@@ -14,6 +14,15 @@ abstract class ControllableWidget<T> extends CoreWidget {
         super(key: key);
 
   @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    if (control is ControlModel) {
+      (control as ControlModel).register(this);
+    }
+  }
+
+  @override
   State<StatefulWidget> createState() => _ControllableState<T>();
 
   Widget build(BuildContext context);
