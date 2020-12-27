@@ -145,6 +145,7 @@ mixin TickerComponent on ControlModel {
 
 /// Mixin to control [State] of [StateboundWidget] or [ControlWidget].
 /// Also usable with [NotifierBuilder].
+@deprecated
 mixin StateControl on Disposable implements StateNotifier, Listenable {
   /// Notifier and state holder.
   final _notifier = BaseNotifier();

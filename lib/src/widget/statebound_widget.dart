@@ -4,6 +4,7 @@ import 'package:flutter_control/core.dart';
 /// Extended [CoreWidget] what subscribes to just one [Listenable] or [StateControl] - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].
 /// And state of this Widget is controlled from outside by [StateControl.notifyState] or by [ChangeNotifier.notifyListeners].
 /// Whenever state of [ControlState]/[ChangeNotifier] is changed, this Widget is rebuild.
+@deprecated
 abstract class StateboundWidget<T extends Listenable> extends CoreWidget
     with LocalizationProvider {
   /// Current [StateControl] that notifies Widget about changes.
