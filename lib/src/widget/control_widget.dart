@@ -266,6 +266,11 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
   /// Returns [RouteControl] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
+  ///
+  /// Typically not used directly, but via navigator or route ancestors.
+  ///
+  /// Check [findNavigator] for direct [Route] navigation.
+  /// Check [findRouteOf] for direct [RouteHandler] access.
   static RouteControl findAncestor(BuildContext context) {
     final state = context.findAncestorStateOfType<ControlState>();
     final widget = state?.widget;
@@ -280,6 +285,10 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
 
     return findAncestor(state.context);
   }
+
+  /// Returns [RouteNavigator] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
+  static RouteNavigator findNavigator(BuildContext context) =>
+      findAncestor(context);
 
   /// Returns [RouteHandler] for given Route of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
   ///
