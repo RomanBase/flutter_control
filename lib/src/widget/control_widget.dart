@@ -265,6 +265,29 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
+  /// Returns [RouteControl] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
+  static RouteControl findAncestor(BuildContext context) {
+    final state = context.findAncestorStateOfType<ControlState>();
+    final widget = state?.widget;
+
+    if (widget == null) {
+      return null;
+    }
+
+    if (widget is RouteControl) {
+      return widget;
+    }
+
+    return findAncestor(state.context);
+  }
+
+  /// Returns [RouteHandler] for given Route of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
+  ///
+  /// {@macro route-store-get}
+  static RouteHandler findRouteOf<T>(BuildContext context,
+          [dynamic identifier]) =>
+      findAncestor(context)?.routeOf<T>(identifier);
+
   /// Returns currently active [Route].
   /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
   /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.

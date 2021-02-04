@@ -3,7 +3,8 @@ import 'package:flutter_control/core.dart';
 import 'main.dart';
 import 'settings_controller.dart';
 
-class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
+class SettingsPage extends ControlWidget
+    with ThemeProvider<MyTheme>, RouteControl {
   SettingsController get controller => controls[0];
 
   @override
@@ -56,9 +57,21 @@ class SettingsPage extends ControlWidget with ThemeProvider<MyTheme> {
                 style: font.bodyText1.copyWith(color: theme.primaryColor),
               ),
             ),
+            SettingsNavButton(),
           ],
         ),
       ),
+    );
+  }
+}
+
+class SettingsNavButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return RaisedButton(
+      onPressed: () =>
+          RouteControl.findRouteOf<SettingsPage>(context).openRoute(root: true),
+      child: Text('open settings'),
     );
   }
 }
