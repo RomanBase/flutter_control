@@ -74,9 +74,12 @@ class NumberPage extends SingleControlWidget<NumberControl> with RouteControl {
             SizedBox(
               height: 16.0,
             ),
-            Text(
-              getArg<int>(defaultValue: -1).toString(),
-              style: Theme.of(context).textTheme.headline4,
+            Hero(
+              tag: 'hero_number',
+              child: Text(
+                getArg<int>(defaultValue: -1).toString(),
+                style: Theme.of(context).textTheme.headline4,
+              ),
             ),
             SizedBox(
               height: 32.0,

@@ -237,11 +237,17 @@ class _NavigatorStackState extends State<NavigatorStack>
 
   NavigatorState get navigator => _navigatorKey?.currentState;
 
+  HeroController _heroController;
+
   @override
   void initState() {
     super.initState();
 
     widget.control.register(this);
+
+    _heroController = HeroController(
+        createRectTween: (begin, end) =>
+            MaterialRectArcTween(begin: begin, end: end));
 
     _updateNavigator();
   }
@@ -262,6 +268,7 @@ class _NavigatorStackState extends State<NavigatorStack>
   Widget build(BuildContext context) {
     final navigator = Navigator(
       key: _navigatorKey,
+      observers: [_heroController],
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
             builder: (context) =>
