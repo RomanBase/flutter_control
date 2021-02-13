@@ -5,7 +5,7 @@ class CurveRange extends Curve {
   final double begin;
   final double end;
 
-  CurveRange({
+  const CurveRange({
     @required this.curve,
     this.begin: 0.0,
     this.end: 1.0,
