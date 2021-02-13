@@ -16,7 +16,8 @@ class MyApp extends StatelessWidget {
         NavigatorStackControl: NavigatorStackControl(),
       },
       routes: [
-        ControlRoute.build<NumberPage>(builder: (_) => NumberPage()),
+        ControlRoute.build<NumberPage>(builder: (_) => NumberPage())
+            .viaCupertinoRoute(),
         ControlRoute.build<NumberPage>(builder: (_) => NumberPage())
             .path('/scale')
             .viaTransition(

@@ -49,8 +49,6 @@ class MenuItem {
 
 /// Helper interface to notify [State]
 abstract class _StackNavigator {
-  BuildContext get navigatorContext;
-
   /// Navigate back withing [NavigatorStack]
   /// Returns [true] if navigation is handled by Controller.
   bool navigateBack();
@@ -235,11 +233,6 @@ class NavigatorStack extends StatefulWidget {
 
 class _NavigatorStackState extends State<NavigatorStack>
     implements _StackNavigator {
-  BuildContext _navigatorContext;
-
-  @override
-  BuildContext get navigatorContext => _navigatorContext;
-
   GlobalKey<NavigatorState> _navigatorKey;
 
   NavigatorState get navigator => _navigatorKey?.currentState;
@@ -270,10 +263,9 @@ class _NavigatorStackState extends State<NavigatorStack>
     final navigator = Navigator(
       key: _navigatorKey,
       onGenerateRoute: (routeSettings) {
-        return _InstantRoute(builder: (context) {
-          _navigatorContext = context;
-          return widget.initializer.getWidget(context) ?? Container();
-        });
+        return MaterialPageRoute(
+            builder: (context) =>
+                widget.initializer.getWidget(context) ?? Container());
       },
     );
 
