@@ -85,11 +85,20 @@ class CrossControlPage extends SingleControlWidget<CrossControl> {
   Widget build(BuildContext context) {
     return Container(
       color: color,
-      child: Center(
-        child: RaisedButton(
-          onPressed: () => control.cross.value = next,
-          child: Text('cross to $next'),
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          RaisedButton(
+            onPressed: () => control.cross.value = next,
+            child: Text(
+              'cross to $next',
+              textAlign: TextAlign.center,
+            ),
+          ),
+          Text(UnitId.nextId()),
+        ],
       ),
     );
   }

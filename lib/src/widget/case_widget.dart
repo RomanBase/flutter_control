@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Showing only one widget by active case.
@@ -89,6 +90,11 @@ class _CaseWidgetState extends State<CaseWidget> {
     } else if (!control.running) {
       setState(() {
         control.initialProgress = 1.0; //ensure to stay on current case
+
+        // Hot Reload workaround
+        if (kDebugMode) {
+          _updateCurrentInitializer();
+        }
       });
     }
   }
