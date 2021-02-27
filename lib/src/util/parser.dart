@@ -46,8 +46,13 @@ class Parse {
     return input;
   }
 
+  /// Tries to parse [value] int [DateTime]
+  ///
+  /// [num] - milliseconds or seconds - [isSec] `true`
+  /// [String] - ISO formatted date and time.
+  /// Timestamp or any other object with `toDate` method.
   static DateTime toDate(dynamic value, {bool inSec: false}) {
-    if (value is int) {
+    if (value is num) {
       return DateTime.fromMillisecondsSinceEpoch(inSec ? value * 1000 : value);
     }
 
@@ -55,7 +60,11 @@ class Parse {
       return DateTime.tryParse(value);
     }
 
-    return null;
+    try {
+      return value.toDate();
+    } on NoSuchMethodError {
+      return null;
+    }
   }
 
   /// Tries to parse value into [String].

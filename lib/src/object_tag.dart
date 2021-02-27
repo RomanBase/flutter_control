@@ -1,11 +1,7 @@
-
-
 import 'package:flutter_control/core.dart';
 
 extension ObjectTagExt on Object {
-
   ObjectTag get tag => ObjectTag.of(hashCode);
-
 }
 
 class ObjectTag {
@@ -13,7 +9,8 @@ class ObjectTag {
 
   const ObjectTag._(this.value);
 
-  factory ObjectTag.of(Object object) => object is ObjectTag ? object : ObjectTag._(object ?? UnitId.nextId());
+  factory ObjectTag.of(Object object) =>
+      object is ObjectTag ? object : ObjectTag._(object ?? UnitId.nextId());
 
   factory ObjectTag.next() => ObjectTag._(UnitId.nextId());
 
@@ -33,7 +30,8 @@ class ObjectTag {
     return ObjectTag._(object ?? UnitId.nextId());
   }
 
-  ObjectTag variant(Object variant) => ObjectTag._(value.hashCode ^ variant.hashCode);
+  ObjectTag variant(Object variant) =>
+      ObjectTag._(value.hashCode ^ variant.hashCode);
 
   @override
   bool operator ==(Object other) {
