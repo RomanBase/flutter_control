@@ -691,7 +691,11 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Return true if there is no item.
   @override
-  bool get isEmpty => value != null && value.isEmpty;
+  bool get isEmpty => value == null || value.isEmpty;
+
+  /// Return true if there is one or more items.
+  @override
+  bool get isNotEmpty => value != null && value.isNotEmpty;
 
   bool nullable = false;
 
