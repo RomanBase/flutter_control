@@ -553,6 +553,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
             transition: widget.transition,
             transitions: _transitions,
             args: _args,
+            softDebug: false,
             placeholder: (_) => Container(
               color: Theme.of(context).canvasColor,
             ),

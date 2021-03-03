@@ -21,6 +21,9 @@ class CaseWidget<T> extends StatefulWidget {
   /// Specific [CrossTransition] for every case. If case is not included, then default [transition] is used.
   final Map<T, CrossTransition> transitions;
 
+  //TODO: proper hot reload
+  final softDebug;
+
   /// Resolves what to show by [activeCase].
   /// Every [Widget] has custom case [T] key and is build only if case is active.
   /// Only one [Widget] is shown at given time.
@@ -34,6 +37,7 @@ class CaseWidget<T> extends StatefulWidget {
     this.placeholder,
     this.transition,
     this.transitions,
+    this.softDebug: true,
   }) : super(key: key);
 
   @override
@@ -92,7 +96,7 @@ class _CaseWidgetState extends State<CaseWidget> {
         control.initialProgress = 1.0; //ensure to stay on current case
 
         // Hot Reload workaround
-        if (kDebugMode) {
+        if (kDebugMode && widget.softDebug) {
           _updateCurrentInitializer();
         }
       });
