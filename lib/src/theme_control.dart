@@ -143,17 +143,17 @@ class ControlTheme {
 
   ////////////////////////////////////////////////////////////////////////////////
 
-  BuildContext _context;
-  Device _device;
-  ThemeData _data;
-  AssetPath _asset;
+  BuildContext? _context;
+  Device? _device;
+  ThemeData? _data;
+  AssetPath? _asset;
 
   @protected
-  BuildContext get context => _context;
+  BuildContext? get context => _context;
 
-  Device get device => _device ?? (_device = Device.of(_context));
+  Device get device => _device ?? (_device = Device.of(_context!));
 
-  ThemeData get data => _data ?? (_data = Theme.of(_context));
+  ThemeData get data => _data ?? (_data = Theme.of(_context!));
 
   AssetPath get assets => _asset ?? (_asset = AssetPath());
 
@@ -166,11 +166,11 @@ class ControlTheme {
   @protected
   set device(Device value) => _device = value;
 
-  ThemeConfig config;
+  late ThemeConfig config;
 
   ControlTheme(this._context);
 
-  void invalidate([BuildContext context]) {
+  void invalidate([BuildContext? context]) {
     _data = null;
     _device = null;
     _context = context ?? Control.scope?.context;
@@ -179,15 +179,15 @@ class ControlTheme {
   }
 
   static BroadcastSubscription<ControlTheme> subscribeChanges(
-      ValueCallback<ControlTheme> callback) {
+      ValueCallback<ControlTheme?> callback) {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }
 
-  Future<void> resetPreferredTheme({bool loadSystemTheme: false}) async {
+  void resetPreferredTheme({bool loadSystemTheme: false}) {
     config.resetPreferred();
 
     if (loadSystemTheme) {
-      return setSystemTheme();
+      setSystemTheme();
     }
   }
 
@@ -236,7 +236,7 @@ typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(
 class ThemeConfig<T extends ControlTheme> {
   static const preference_key = 'control_theme';
 
-  final Initializer<T> builder;
+  final Initializer<T>? builder;
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
@@ -245,17 +245,17 @@ class ThemeConfig<T extends ControlTheme> {
   Initializer<T> get initializer =>
       (context) => (builder ?? _defaultBuilder)(context)..config = this;
 
-  String get preferredThemeName => Control.get<BasePrefs>()
+  String? get preferredThemeName => Control.get<BasePrefs>()!
       .get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
 
   static Brightness get platformBrightness =>
-      SchedulerBinding.instance.window.platformBrightness;
+      SchedulerBinding.instance!.window.platformBrightness;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({
     this.builder,
     this.initTheme,
-    @required this.themes,
+    required this.themes,
   }) : assert(themes != null);
 
   bool contains(dynamic key) {
@@ -273,7 +273,7 @@ class ThemeConfig<T extends ControlTheme> {
         .firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
 
     if (themes.containsKey(key)) {
-      return themes[key](control);
+      return themes[key]!(control);
     }
 
     return themes.values.first(control);
@@ -283,15 +283,15 @@ class ThemeConfig<T extends ControlTheme> {
 
   ThemeData getSystemTheme(T control) => getTheme(preferredThemeName, control);
 
-  void setAsPreferred() => Control.get<BasePrefs>()
+  void setAsPreferred() => Control.get<BasePrefs>()!
       .set(ThemeConfig.preference_key, Parse.name(initTheme));
 
   void resetPreferred() =>
-      Control.get<BasePrefs>().set(ThemeConfig.preference_key, null);
+      Control.get<BasePrefs>()!.set(ThemeConfig.preference_key, null);
 
-  U getPreferredKey<U>([dynamic enums]) {
+  U? getPreferredKey<U>([dynamic enums]) {
     final dynamic key =
-        Control.get<BasePrefs>().get(ThemeConfig.preference_key);
+        Control.get<BasePrefs>()!.get(ThemeConfig.preference_key);
 
     if (enums != null) {
       return Parse.toEnum<U>(key, enums);
@@ -308,47 +308,47 @@ class ThemeConfig<T extends ControlTheme> {
       ThemeConfig(
         builder: this.builder,
         initTheme: theme ?? this.initTheme,
-        themes: this.themes,
+        themes: this.themes as Map<dynamic, ThemeData Function(ControlTheme)>,
       );
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>([BuildContext context]) =>
-      Control.init<ControlTheme>(context);
+  static T? of<T extends ControlTheme?>([BuildContext? context]) =>
+      Control.init<ControlTheme>(context) as T?;
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T theme = of<T>();
+  final T? theme = of<T>();
 
   /// Instance of [AssetPath].
   ///
   /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
-  AssetPath get asset => theme.assets;
+  AssetPath get asset => theme!.assets;
 
   /// Instance of [Device].
   /// Wrapper of [MediaQuery].
   @protected
-  Device get device => theme.device;
+  Device get device => theme!.device;
 
   /// Instance of nearest [ThemeData].
   @protected
-  ThemeData get themeData => theme.data;
+  ThemeData get themeData => theme!.data;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get font => theme.font;
+  TextTheme get font => theme!.font;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontPrimary => theme.fontPrimary;
+  TextTheme get fontPrimary => theme!.fontPrimary;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontAccent => theme.fontAccent;
+  TextTheme get fontAccent => theme!.fontAccent;
 
   /// Origin of [ControlTheme].
   /// [ControlTheme.scope] initializes with nearest [ThemeData].
@@ -359,7 +359,7 @@ mixin ThemeProvider<T extends ControlTheme> {
 
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
-  void invalidateTheme([BuildContext context]) {
+  void invalidateTheme([BuildContext? context]) {
     theme?.invalidate(
         context != null && themeScope == ControlTheme.scope ? context : null);
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
@@ -37,11 +38,11 @@ class Control {
 
   /// Returns default instance of [Injector] - this instance is stored in [ControlFactory].
   /// Injector is set via [Control.initControl] or [ControlFactory.setInjector].
-  static Injector get injector => factory._injector;
+  static Injector? get injector => factory._injector;
 
   /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
   /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
-  static BaseLocalization get localization => Control.get<BaseLocalization>();
+  static BaseLocalization? get localization => Control.get<BaseLocalization>();
 
   /// Returns scope of [ControlRoot].
   /// This scope provides access to root of Widget Tree and to [ControlRootState].
@@ -63,13 +64,13 @@ class Control {
   /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
-    bool debug,
-    LocalizationConfig localization,
-    Map entries,
-    Map<Type, Initializer> initializers,
-    Injector injector,
-    List<ControlRoute> routes,
-    Future Function() initAsync,
+    bool? debug,
+    LocalizationConfig? localization,
+    Map? entries,
+    Map<Type, Initializer>? initializers,
+    Injector? injector,
+    List<ControlRoute>? routes,
+    Future Function()? initAsync,
   }) {
     if (isInitialized) {
       return false;
@@ -105,7 +106,7 @@ class Control {
       initAsync: () async {
         await prefs.init();
         await FutureBlock.wait([
-          localization.initLocale
+          localization!.initLocale
               ? loc.init(
                   loadDefaultLocale: localization.loadDefaultLocale,
                   handleSystemLocale: localization.handleSystemLocale,
@@ -135,14 +136,14 @@ class Control {
   /// [Control] provides static call for this function via [Control.get].
   ///
   /// nullable
-  static T get<T>({dynamic key, dynamic args, bool withInjector: true}) =>
+  static T? get<T>({dynamic key, dynamic args, bool withInjector: true}) =>
       factory.get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Returns [key] of stored [value].
-  static dynamic set<T>({dynamic key, @required dynamic value}) =>
+  static dynamic set<T>({dynamic key, required dynamic value}) =>
       factory.set<T>(key: key, value: value);
 
   /// Returns new object of requested [Type] via initializer in [ControlFactory].
@@ -156,7 +157,7 @@ class Control {
   /// [Control] provides static call for this function via [Control.init].
   ///
   /// nullable
-  static T init<T>([dynamic args]) => factory.init(args);
+  static T? init<T>([dynamic args]) => factory.init(args);
 
   /// Injects and initializes given [item] with [args].
 
@@ -170,8 +171,8 @@ class Control {
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] / [ControlFactory.init] is executed.
   /// Returns object from [source] or via [ControlFactory] or [defaultValue].
   /// nullable
-  static T resolve<T>(dynamic source,
-          {dynamic key, dynamic args, T defaultValue}) =>
+  static T? resolve<T>(dynamic source,
+          {dynamic key, dynamic args, T? defaultValue}) =>
       factory.resolve<T>(source,
           key: key, args: args, defaultValue: defaultValue);
 
@@ -198,7 +199,7 @@ class BroadcastProvider {
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription<T> subscribe<T>(
-          dynamic key, ValueChanged<T> onData) =>
+          dynamic key, ValueChanged<T?> onData) =>
       ControlFactory._instance._broadcast.subscribe(key, onData);
 
   /// Subscribe to global event stream for given [key].
@@ -257,7 +258,7 @@ class ControlFactory with Disposable {
   final _broadcast = ControlBroadcast();
 
   /// Custom item initialization.
-  Injector _injector;
+  Injector? _injector;
 
   /// Factory initialize state.
   bool _initialized = false;
@@ -273,7 +274,7 @@ class ControlFactory with Disposable {
 
   /// Completer for factory initialization.
   /// Use [onReady] to listen this completer.
-  Completer _completer = Completer();
+  Completer? _completer = Completer();
 
   /// Initializes Factory and given objects.
   ///
@@ -284,10 +285,10 @@ class ControlFactory with Disposable {
   ///
   /// Factory can be initialized just once - until [ControlFactory.clear] is executed.
   bool initialize(
-      {Map entries,
-      Map<Type, Initializer> initializers,
-      Injector injector,
-      Future Function() initAsync}) {
+      {Map? entries,
+      Map<Type, Initializer>? initializers,
+      Injector? injector,
+      Future Function()? initAsync}) {
     if (_initialized) {
       return false;
     }
@@ -328,19 +329,19 @@ class ControlFactory with Disposable {
   }
 
   /// Handle [async] load from [initialize] and then finishes init [Completer].
-  Future<void> _initializeAsync(Future Function() initAsync) async {
+  Future<void> _initializeAsync(Future Function()? initAsync) async {
     if (initAsync != null) {
       await initAsync();
     }
 
-    _completer.complete();
+    _completer!.complete();
     _completer = null;
   }
 
   /// Completes when Factory is initialized including [async] load (localization, prefs, etc.).
   ///
   /// Returns [Future] of init [Completer].
-  Future<void> onReady() async => _completer?.future;
+  Future<void>? onReady() async => _completer?.future;
 
   /// Resolve [key] for given args.
   ///
@@ -360,7 +361,7 @@ class ControlFactory with Disposable {
 
   /// Sets [Injector] for this Factory.
   /// Set null to remove current Injector.
-  void setInjector(Injector injector) {
+  void setInjector(Injector? injector) {
     _injector = injector;
 
     if (injector == null && _items.containsKey(Injector)) {
@@ -389,7 +390,7 @@ class ControlFactory with Disposable {
   /// Returns [key] of stored [value].
   ///
   /// [Control] provides static call for this function via [Control.set].
-  dynamic set<T>({dynamic key, @required dynamic value}) {
+  dynamic set<T>({dynamic key, required dynamic value}) {
     key = keyOf<T>(key: key, value: value);
 
     assert(key != null);
@@ -417,14 +418,14 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.get].
   ///
   /// nullable
-  T get<T>({dynamic key, dynamic args, bool withInjector: false}) {
+  T? get<T>({dynamic key, dynamic args, bool withInjector: false}) {
     final useExactKey = key != null;
     key = keyOf<T>(key: key);
 
     assert(key != null);
 
     if (_items.containsKey(key)) {
-      final item = _items[key] as T;
+      final item = _items[key] as T?;
 
       if (item != null) {
         inject(item, args: args, withInjector: withInjector);
@@ -433,7 +434,7 @@ class ControlFactory with Disposable {
     }
 
     if (!useExactKey) {
-      T item;
+      T? item;
 
       if (T != dynamic) {
         item =
@@ -470,7 +471,7 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.init].
   ///
   /// nullable
-  T init<T>([dynamic args]) {
+  T? init<T>([dynamic args]) {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
@@ -496,7 +497,7 @@ class ControlFactory with Disposable {
   void inject<T>(dynamic item,
       {dynamic args, bool withInjector: true, bool withArgs: true}) {
     if (withInjector && _injector != null) {
-      _injector.inject<T>(item, args);
+      _injector!.inject<T?>(item, args);
     }
 
     if (withArgs && item is Initializable && args != null) {
@@ -511,7 +512,7 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.inject].
   ///
   /// nullable
-  T resolve<T>(dynamic source, {dynamic key, dynamic args, T defaultValue}) {
+  T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
 
     if (item != null) {
@@ -527,15 +528,15 @@ class ControlFactory with Disposable {
   /// [ControlFactory.init] uses this method to retrieve [Initializer].
   ///
   /// nullable
-  Initializer<T> findInitializer<T>() {
+  Initializer<T>? findInitializer<T>() {
     if (_initializers.containsKey(T)) {
-      return _initializers[T];
+      return _initializers[T] as T Function(dynamic)?;
     } else if (T != dynamic) {
       final key = _initializers.keys
-          .firstWhere((item) => item is T, orElse: () => null);
+          .firstWhereOrNull((item) => item is T);
 
       if (key != null) {
-        return _initializers[key];
+        return _initializers[key] as T Function(dynamic)?;
       }
     }
 
@@ -587,7 +588,7 @@ class ControlFactory with Disposable {
   /// Set [dispose] to dispose removed object/s.
   ///
   /// Basically calls [ControlFactory.remove] and [ControlFactory.set].
-  void swap<T>({dynamic key, @required dynamic value, bool dispose: false}) {
+  void swap<T>({dynamic key, required dynamic value, bool dispose: false}) {
     key = keyOf<T>(key: key, value: value);
 
     remove<T>(key: key, dispose: dispose);
@@ -622,8 +623,7 @@ class ControlFactory with Disposable {
       if (_items.values.firstWhere((item) => item.runtimeType == value,
                   orElse: () => null) !=
               null ||
-          _initializers.keys.firstWhere((item) => item.runtimeType == value,
-                  orElse: () => null) !=
+          _initializers.keys.firstWhereOrNull((item) => item.runtimeType == value) !=
               null) {
         return true;
       }

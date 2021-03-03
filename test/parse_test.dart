@@ -84,7 +84,7 @@ void main() {
 
     test('list entry', () {
       final parse1 = Parse.toList<int>(list,
-          entryConverter: (index, value) => Parse.toInteger(index) + value);
+          entryConverter: (index, value) => Parse.toInteger(index) + value as int);
       final parse2 = Parse.toList<int>(map,
           entryConverter: (index, value) =>
               Parse.toInteger(index) + Parse.toInteger(value));
@@ -137,7 +137,7 @@ void main() {
 
     test('map entry', () {
       final parse1 = Parse.toMap<int>(list,
-          entryConverter: (index, value) => Parse.toInteger(index) + value);
+          entryConverter: (index, value) => Parse.toInteger(index) + value as int);
       final parse2 = Parse.toMap<int>(map,
           entryConverter: (index, value) =>
               Parse.toInteger(index) + Parse.toInteger(value));

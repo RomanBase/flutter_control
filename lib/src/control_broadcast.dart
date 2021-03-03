@@ -6,7 +6,7 @@ import 'package:flutter_control/core.dart';
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
 class ControlBroadcast implements Disposable {
   /// List of active subs.
-  final _subscriptions = List<BroadcastSubscription>();
+  final _subscriptions = <BroadcastSubscription>[];
 
   /// Last available value for subs.
   final _store = Map();
@@ -16,9 +16,9 @@ class ControlBroadcast implements Disposable {
 
   /// Returns stored object by give - exact [key].
   /// Object can be stored during [broadcast].
-  T getStore<T>(dynamic key) {
+  T? getStore<T>(dynamic key) {
     if (_store.containsKey(key)) {
-      return _store[key] as T;
+      return _store[key] as T?;
     }
 
     return null;
@@ -31,7 +31,7 @@ class ControlBroadcast implements Disposable {
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription<T> subscribe<T>(
     dynamic key,
-    ValueChanged<T> onData, {
+    ValueChanged<T?> onData, {
     bool current: true,
     bool nullOk: true,
   }) {
@@ -58,7 +58,7 @@ class ControlBroadcast implements Disposable {
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription<T> subscribeOf<T>(
-    ValueChanged<T> onData, {
+    ValueChanged<T?> onData, {
     bool current: true,
     bool nullOk: true,
   }) {
@@ -93,7 +93,7 @@ class ControlBroadcast implements Disposable {
   /// Returns number of notified subs.
   int broadcast<T>({
     dynamic key,
-    @required dynamic value,
+    required dynamic value,
     bool store: false,
   }) {
     key = Control.factory.keyOf<T>(key: key, value: value);
@@ -148,10 +148,10 @@ class BroadcastSubscription<T> implements Disposable {
   final bool nullOk;
 
   /// Parent of this sub.
-  ControlBroadcast _parent;
+  ControlBroadcast? _parent;
 
   /// Callback from sub.
-  ValueChanged<T> _onData;
+  late ValueChanged<T?> _onData;
 
   /// Only active sub is valid for broadcast.
   bool _active = true;
@@ -176,14 +176,14 @@ class BroadcastSubscription<T> implements Disposable {
   void resume() => _active = true;
 
   /// Notifies callback.
-  void _notify(dynamic value) => _onData(value as T);
+  void _notify(dynamic value) => _onData(value as T?);
 
   /// Cancels subscription to global stream in [ControlFactory].
   /// After cancel there is no way to resume this sub.
   void cancel() {
     _active = false;
     if (_parent != null) {
-      _parent.cancelSubscription(this);
+      _parent!.cancelSubscription(this);
       _parent = null;
     }
   }

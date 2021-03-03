@@ -7,19 +7,19 @@ class CaseWidget<T> extends StatefulWidget {
   final T activeCase;
 
   /// Set of [Widget] builders. Every builder is stored under case [T] key.
-  final Map<T, WidgetBuilder> builders;
+  final Map<T, WidgetBuilder?>? builders;
 
   /// Arguments to pass to [Widget] during initialization.
   final dynamic args;
 
   /// Placeholder if [activeCase] is null or not found in [builders].
-  final WidgetBuilder placeholder;
+  final WidgetBuilder? placeholder;
 
   /// Default transition from one widget to another. By default [CrossTransitions.fadeCross] is used.
-  final CrossTransition transition;
+  final CrossTransition? transition;
 
   /// Specific [CrossTransition] for every case. If case is not included, then default [transition] is used.
-  final Map<T, CrossTransition> transitions;
+  final Map<T, CrossTransition?>? transitions;
 
   //TODO: proper hot reload
   final softDebug;
@@ -30,9 +30,9 @@ class CaseWidget<T> extends StatefulWidget {
   ///
   /// When case is changed [CrossTransition] animation is played between current and next Widget.
   const CaseWidget({
-    Key key,
-    @required this.activeCase,
-    @required this.builders,
+    Key? key,
+    required this.activeCase,
+    required this.builders,
     this.args,
     this.placeholder,
     this.transition,
@@ -44,9 +44,9 @@ class CaseWidget<T> extends StatefulWidget {
   _CaseWidgetState createState() => _CaseWidgetState();
 
   /// Returns transition for [activeCase].
-  CrossTransition get activeTransitionIn {
-    if (transitions != null && transitions.containsKey(activeCase)) {
-      return transitions[activeCase];
+  CrossTransition? get activeTransitionIn {
+    if (transitions != null && transitions!.containsKey(activeCase)) {
+      return transitions![activeCase];
     }
 
     return transition;
@@ -62,20 +62,20 @@ class _CaseWidgetState extends State<CaseWidget> {
 
   /// Previous initializer / already builder Widget.
   /// Widget that's going to be hide.
-  WidgetInitializer oldInitializer;
+  WidgetInitializer? oldInitializer;
 
   /// Currently active initializer / next Widget to build.
   /// Widget that's going to be shown.
-  WidgetInitializer currentInitializer;
+  WidgetInitializer? currentInitializer;
 
   /// Filtered builders of [CaseWidget.builders]. Null builders are filtered out..
-  Map builders;
+  late Map builders;
 
   @override
   void initState() {
     super.initState();
 
-    builders = widget.builders.fill();
+    builders = widget.builders!.fill();
     _updateInitializer();
   }
 
@@ -83,7 +83,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   void didUpdateWidget(CaseWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    builders = widget.builders.fill();
+    builders = widget.builders!.fill();
 
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
@@ -116,11 +116,11 @@ class _CaseWidgetState extends State<CaseWidget> {
       currentInitializer = WidgetInitializer.of(_placeholder());
     }
 
-    currentInitializer.key = GlobalKey();
+    currentInitializer!.key = GlobalKey();
 
     if (oldInitializer == null) {
       oldInitializer = WidgetInitializer.of(_placeholder());
-      oldInitializer.key = GlobalKey();
+      oldInitializer!.key = GlobalKey();
     }
   }
 
@@ -130,10 +130,10 @@ class _CaseWidgetState extends State<CaseWidget> {
         widget.activeCase != null &&
         builders.containsKey(widget.activeCase)) {
       final builder = builders[widget.activeCase];
-      final origin = currentInitializer;
+      final origin = currentInitializer!;
 
       currentInitializer = WidgetInitializer.of(builder);
-      currentInitializer.key = origin.key;
+      currentInitializer!.key = origin.key;
     }
   }
 
@@ -152,7 +152,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   /// If no placeholder is provided and [Control.debug] is active than error placeholder is shown. Empty [Container] is build otherwise.
   WidgetBuilder _placeholder() {
     if (widget.placeholder != null) {
-      return widget.placeholder;
+      return widget.placeholder!;
     }
 
     if (widget.activeCase != null && Control.debug) {

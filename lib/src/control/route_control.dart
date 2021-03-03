@@ -38,9 +38,9 @@ abstract class RouteNavigator {
   /// Goes back in navigation stack until [Route] found.
   /// {@endtemplate}
   void backTo(
-      {Route route,
-      String identifier,
-      bool Function(Route<dynamic>) predicate});
+      {Route? route,
+      String? identifier,
+      bool Function(Route<dynamic>)? predicate});
 
   /// {@template route-close}
   /// Pops [Route] from navigation stack.
@@ -58,23 +58,23 @@ abstract class RouteNavigator {
 /// Do not open multiple routes from one handler !
 class RouteHandler {
   /// Implementation of navigator.
-  final RouteNavigator navigator;
+  final RouteNavigator? navigator;
 
   /// Implementation of provider.
   final ControlRoute routeProvider;
 
   /// Future of navigation result.
-  Future<dynamic> _result;
+  Future<dynamic>? _result;
 
   /// Future of navigation result.
   /// This future is finished when Route is closed.
-  Future<dynamic> get result => _result;
+  Future<dynamic>? get result => _result;
 
   /// Current route.
-  Route _route;
+  Route? _route;
 
   /// Actual [Route] build.
-  Route get route => _route;
+  Route? get route => _route;
 
   /// Checks if this handler did his job.
   /// Do not open multiple routes from one handler !
@@ -82,7 +82,7 @@ class RouteHandler {
 
   /// Route name. This identifier is typically stored in [RouteStore].
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
-  String get identifier => routeProvider.identifier;
+  String? get identifier => routeProvider.identifier;
 
   /// Builds [Widget] and pushes [Route] to [Navigator].
   ///
@@ -121,11 +121,11 @@ class RouteHandler {
       RouteHandler(navigator, routeProvider.named(identifier));
 
   /// @{macro route-open}
-  Future<dynamic> openRoute(
+  Future<dynamic>? openRoute(
       {bool root: false, bool replacement: false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");
 
-    _result = navigator.openRoute(
+    _result = navigator!.openRoute(
       _route = routeProvider.init(args: args),
       root: root,
       replacement: replacement,
@@ -135,10 +135,10 @@ class RouteHandler {
   }
 
   /// {@macro route-root}
-  Future<dynamic> openRoot({dynamic args}) {
+  Future<dynamic>? openRoot({dynamic args}) {
     printDebug("open root: ${routeProvider.identifier} from $navigator");
 
-    _result = navigator.openRoot(_route = routeProvider.init(args: args));
+    _result = navigator!.openRoot(_route = routeProvider.init(args: args));
 
     return _result;
   }
@@ -148,8 +148,8 @@ class RouteHandler {
     printDebug("open dialog: ${routeProvider.identifier} from $navigator");
 
     _route = null;
-    return _result = navigator.openDialog(
-      WidgetInitializer.of(routeProvider._builder).wrap(args: args),
+    return _result = navigator!.openDialog(
+      WidgetInitializer.of(routeProvider._builder!).wrap(args: args),
       root: root,
       type: type,
     );
@@ -174,7 +174,7 @@ class ControlRoute {
   static ControlRoute build<T>({
     dynamic identifier,
     dynamic settings,
-    @required WidgetBuilder builder,
+    required WidgetBuilder builder,
   }) {
     assert(T != dynamic || identifier != null);
 
@@ -190,7 +190,7 @@ class ControlRoute {
   /// Check [RouteControl.build] for classic [WidgetBuilder] version.
   static ControlRoute route<T>({
     dynamic identifier,
-    @required Route route,
+    required Route route,
   }) =>
       ControlRoute._()
         ..identifier = RouteStore.routeIdentifier(identifier)
@@ -205,7 +205,7 @@ class ControlRoute {
   ///
   /// Using [Type] as route identifier is recommended.
   /// @{endtemplate}
-  static ControlRoute of<T>([dynamic identifier]) {
+  static ControlRoute? of<T>([dynamic identifier]) {
     assert(T != dynamic || identifier != null);
 
     return Control.get<RouteStore>()?.getRoute<T>(identifier);
@@ -213,7 +213,7 @@ class ControlRoute {
 
   /// Returns identifier of Route stored in [RouteStore].
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
-  static String identifierOf<T>([dynamic identifier]) {
+  static String? identifierOf<T>([dynamic identifier]) {
     assert(T != dynamic || identifier != null);
 
     return Control.get<RouteStore>()?.getRoute<T>(identifier)?.identifier;
@@ -221,17 +221,17 @@ class ControlRoute {
 
   /// Route name. This identifier is typically stored in [RouteStore].
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
-  String identifier;
+  String? identifier;
 
   /// Additional route settings.
   /// By default is set to [Platform] - currently switching between [MaterialPageRoute] and [CupertinoPageRoute].
   dynamic settings = Platform;
 
   /// Required Widget builder.
-  WidgetBuilder _builder;
+  WidgetBuilder? _builder;
 
   /// Custom Route builder.
-  RouteWidgetBuilder _routeBuilder;
+  RouteWidgetBuilder? _routeBuilder;
 
   /// Default private constructor.
   /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
@@ -243,7 +243,7 @@ class ControlRoute {
     final routeSettings = RouteSettings(name: identifier, arguments: settings);
 
     if (_routeBuilder != null) {
-      return _routeBuilder(builder, routeSettings);
+      return _routeBuilder!(builder, routeSettings);
     }
 
     if (settings == Platform) {
@@ -262,7 +262,7 @@ class ControlRoute {
   /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
   /// Given [args] are passed to Widget.
   Route init({dynamic args}) {
-    final initializer = WidgetInitializer.of(_builder);
+    final initializer = WidgetInitializer.of(_builder!);
 
     final route = _buildRoute(initializer.wrap(args: args));
 
@@ -320,7 +320,7 @@ class ControlRoute {
   ControlRoute _copyWith(
           {dynamic identifier,
           dynamic settings,
-          RouteWidgetBuilder routeBuilder}) =>
+          RouteWidgetBuilder? routeBuilder}) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
         ..settings = settings ?? this.settings
@@ -328,7 +328,7 @@ class ControlRoute {
         .._routeBuilder = routeBuilder ?? this._routeBuilder;
 
   /// Initializes [RouteHandler] with given [navigator] and this Route provider.
-  RouteHandler navigator(RouteNavigator navigator) =>
+  RouteHandler navigator(RouteNavigator? navigator) =>
       RouteHandler(navigator, this);
 
   /// Registers this Route to [RouteStore].
@@ -348,17 +348,17 @@ class ControlRouteTransition extends PageRoute {
 
   /// Simple [PageRoute] with custom [transition].
   ControlRouteTransition({
-    @required this.builder,
-    @required this.transition,
+    required this.builder,
+    required this.transition,
     this.duration: const Duration(milliseconds: 300),
-    RouteSettings settings,
+    RouteSettings? settings,
   }) : super(settings: settings);
 
   @override
-  Color get barrierColor => null;
+  Color? get barrierColor => null;
 
   @override
-  String get barrierLabel => null;
+  String? get barrierLabel => null;
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,
@@ -387,14 +387,14 @@ class RouteStore {
   /// Map based Route Store.
   /// Key: [RouteStore.routeIdentifier].
   /// Value: [RouteControl].
-  final _routes = Map<String, ControlRoute>();
+  final _routes = Map<String?, ControlRoute>();
 
   /// Stores Routes with their Identifiers.
   ///
   /// Typically not used directly, but via framework:
   ///   - fill: [Control.initControl] or [ControlRoute] routes property.
   ///   - retrieve route: [ControlRoute.of].
-  RouteStore([List<ControlRoute> routes]) {
+  RouteStore([List<ControlRoute>? routes]) {
     if (routes != null) {
       addRoutes(routes);
     }
@@ -407,7 +407,7 @@ class RouteStore {
 
   /// Creates [ControlRoute] from given [builder] and adds it to [RouteStore].
   /// Returns store key.
-  String addRawRoute<T>({dynamic identifier, @required Route route}) {
+  String? addRawRoute<T>({dynamic identifier, required Route route}) {
     return addRoute<T>(ControlRoute.route<T>(
       identifier: identifier,
       route: route,
@@ -416,7 +416,7 @@ class RouteStore {
 
   /// Creates [ControlRoute] from given [builder] and adds it to [RouteStore].
   /// Returns store key.
-  String addBuilder<T>({dynamic identifier, @required WidgetBuilder builder}) {
+  String? addBuilder<T>({dynamic identifier, required WidgetBuilder builder}) {
     return addRoute<T>(ControlRoute.build<T>(
       identifier: identifier,
       builder: builder,
@@ -425,7 +425,7 @@ class RouteStore {
 
   /// Adds given [route] to [RouteStore].
   /// Returns store key.
-  String addRoute<T>(ControlRoute route) {
+  String? addRoute<T>(ControlRoute route) {
     final identifier = route.identifier ?? routeIdentifier<T>();
 
     assert(() {
@@ -444,7 +444,7 @@ class RouteStore {
   /// Returns [ControlRoute] of given [Type] or [identifier] - check [RouteStore.routeIdentifier] for more info about Store keys.
   ///
   /// Using [Type] as route key is recommended.
-  ControlRoute getRoute<T>([dynamic identifier]) {
+  ControlRoute? getRoute<T>([dynamic identifier]) {
     identifier = routeIdentifier<T>(identifier);
 
     if (_routes.containsKey(identifier)) {
@@ -458,7 +458,7 @@ class RouteStore {
   /// Currently usable just for debug purposes.
   /// Returns parts of path in [List].
   List<String> decompose(String identifier) {
-    final list = List<String>();
+    final list = <String>[];
 
     final items = identifier.split('/');
 
@@ -482,12 +482,12 @@ class RouteStore {
   /// This method is mainly used by framework to determine identifier of [ControlRoute] stored in [RouteStore].
   ///
   /// Returned identifier is formatted as path -> '/name'.
-  static String routeIdentifier<T>([dynamic value]) {
+  static String? routeIdentifier<T>([dynamic value]) {
     if (value == null && T != dynamic) {
       value = T;
     }
 
-    String id;
+    String? id;
 
     if (value is String) {
       id = value;
@@ -505,11 +505,11 @@ class RouteStore {
   }
 
   /// Alters given [identifier] with [path].
-  static String routePathIdentifier<T>({dynamic identifier, String path}) {
+  static String routePathIdentifier<T>({dynamic identifier, required String path}) {
     if (!path.startsWith('/')) {
       path = '/$path';
     }
 
-    return routeIdentifier(identifier) + path;
+    return routeIdentifier(identifier)! + path;
   }
 }

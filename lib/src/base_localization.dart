@@ -1,25 +1,26 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
 typedef LocalizationExtractor = String Function(
     Map map, String locale, String defaultLocale);
-typedef LocalizationParser = dynamic Function(dynamic data, String locale);
+typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 /// Map of supported locales, default locale and loading rules.
 ///
 /// Config is passed to [Control.initControl] to init [BaseLocalization].
 class LocalizationConfig {
   /// Default locale key. If not provided, first locale from [locales] is used.
-  final String defaultLocale;
+  final String? defaultLocale;
 
   /// Locale key of non-translatable data.
-  final String stableLocale;
+  final String? stableLocale;
 
   /// Map of locales - key: path.
-  final Map<String, String> locales;
+  final Map<String, String?> locales;
 
   /// Check to init locale - [BaseLocalization.init].
   final bool initLocale;
@@ -42,7 +43,7 @@ class LocalizationConfig {
   const LocalizationConfig({
     this.defaultLocale,
     this.stableLocale,
-    @required this.locales,
+    required this.locales,
     this.initLocale: true,
     this.loadDefaultLocale: true,
     this.handleSystemLocale: true,
@@ -50,7 +51,7 @@ class LocalizationConfig {
 
   /// Converts Map of [locales] to List of [LocalizationAsset]s.
   List<LocalizationAsset> toAssets() {
-    final localizationAssets = List<LocalizationAsset>();
+    final localizationAssets = <LocalizationAsset>[];
 
     locales.forEach((key, value) => localizationAssets.add(
         LocalizationAsset(LocalizationAsset.normalizeLocaleKey(key), value)));
@@ -67,7 +68,7 @@ class LocalizationAsset {
 
   /// Asset path to file with localization data (json).
   /// - /assets/localization/en.json or /assets/localization/en_US.json
-  final String assetPath;
+  final String? assetPath;
 
   /// Returns just first 2 signs of [locale] key.
   String get iso2Locale => locale.length > 2 ? locale.substring(0, 2) : locale;
@@ -114,7 +115,7 @@ class LocalizationAsset {
   /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static Map<String, String> map(
-      {AssetPath path: const AssetPath(), List<String> locales}) {
+      {AssetPath path: const AssetPath(), required List<String> locales}) {
     final map = Map<String, String>();
 
     locales.forEach((locale) =>
@@ -126,8 +127,8 @@ class LocalizationAsset {
   /// Builds a List of [LocalizationAsset] by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static List<LocalizationAsset> list(
-      {AssetPath path: const AssetPath(), List<String> locales}) {
-    final localizationAssets = List<LocalizationAsset>();
+      {AssetPath path: const AssetPath(), required List<String> locales}) {
+    final localizationAssets = <LocalizationAsset>[];
 
     locales.forEach((locale) => localizationAssets.add(LocalizationAsset(
         normalizeLocaleKey(locale), path.localization(locale))));
@@ -139,17 +140,17 @@ class LocalizationAsset {
 /// Defines result of localization change.
 class LocalizationArgs {
   /// Requested locale.
-  final String locale;
+  final String? locale;
 
   /// Source of locale to load from. Asset path, runtime, network or any other.
-  final String source;
+  final String? source;
 
   /// True if requested locale is loaded and set.
   /// Locale can be active even if not [changed].
-  final bool isActive;
+  final bool? isActive;
 
   /// True if locale [isActive] and is different then previous locale.
-  final bool changed;
+  final bool? changed;
 
   LocalizationArgs({
     this.locale,
@@ -180,29 +181,29 @@ class BaseLocalization extends ChangeNotifier
   final List<LocalizationAsset> assets;
 
   /// The system-reported default locale of the device.
-  Locale get deviceLocale => WidgetsBinding.instance.window.locale;
+  Locale get deviceLocale => WidgetsBinding.instance!.window.locale;
 
   /// The full system-reported supported locales of the device.
-  List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
+  List<Locale> get deviceLocales => WidgetsBinding.instance!.window.locales;
 
   /// Returns currently loaded locale.
-  String get locale => _locale;
+  String? get locale => _locale;
 
   /// Returns currently loaded locale.
-  Locale get currentLocale => getLocale(locale);
+  Locale? get currentLocale => getLocale(locale);
 
   /// Returns best possible country code based on [currentLocale] and [deviceLocale].
-  String get currentCountry =>
+  String? get currentCountry =>
       currentLocale?.countryCode ??
       (locale == null
               ? deviceLocale
               : deviceLocales.firstWhere(
-                  (element) => locale.startsWith(element.languageCode),
+                  (element) => locale!.startsWith(element.languageCode),
                   orElse: () => deviceLocale))
           .countryCode;
 
   /// Current locale key.
-  String _locale;
+  String? _locale;
 
   /// Current localization data.
   Map<String, dynamic> _data = Map();
@@ -219,14 +220,14 @@ class BaseLocalization extends ChangeNotifier
 
   /// Is [true] if any [LocalizationAsset] is valid.
   bool get hasValidAsset =>
-      assets.firstWhere((item) => item.isValid, orElse: () => null) != null;
+      assets.firstWhereOrNull((item) => item.isValid) != null;
 
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;
 
   /// Custom func for [extractLocalization].
   /// Default extractor is [Map] based: {'locale': 'value'}.
-  LocalizationExtractor _mapExtractor;
+  LocalizationExtractor? _mapExtractor;
 
   /// Custom param decorator.
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
@@ -248,7 +249,7 @@ class BaseLocalization extends ChangeNotifier
   factory BaseLocalization.current(List<LocalizationAsset> assets) {
     assert(Control.isInitialized);
 
-    return BaseLocalization(Control.localization.defaultLocale, assets);
+    return BaseLocalization(Control.localization!.defaultLocale, assets);
   }
 
   /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
@@ -256,7 +257,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [callback] to listen results of locale changes.
   static BroadcastSubscription<LocalizationArgs> subscribeChanges(
-      ValueCallback<LocalizationArgs> callback) {
+      ValueCallback<LocalizationArgs?> callback) {
     return BroadcastProvider.subscribe<LocalizationArgs>(
         BaseLocalization, callback);
   }
@@ -269,7 +270,7 @@ class BaseLocalization extends ChangeNotifier
   Future<LocalizationArgs> init(
       {bool loadDefaultLocale: true,
       bool handleSystemLocale: true,
-      String stableLocale}) async {
+      String? stableLocale}) async {
     if (!hasValidAsset) {
       return LocalizationArgs(
         locale: null,
@@ -283,7 +284,7 @@ class BaseLocalization extends ChangeNotifier
 
     await prefs.mount();
 
-    LocalizationArgs args;
+    LocalizationArgs? args;
 
     if (stableLocale != null) {
       args = await loadLocalizationData(stableLocale);
@@ -300,7 +301,7 @@ class BaseLocalization extends ChangeNotifier
     loading = false;
 
     if (handleSystemLocale) {
-      WidgetsBinding.instance.window.onLocaleChanged = () {
+      WidgetsBinding.instance!.window.onLocaleChanged = () {
         //TODO: Q: only when preferred locale is not set ??
         if (!isSystemLocaleActive()) {
           changeToSystemLocale();
@@ -320,7 +321,7 @@ class BaseLocalization extends ChangeNotifier
   /// Looks for best suited asset locale to device supported locale.
   ///
   /// Returns system locale or null if no locale found.
-  String getAvailableAssetLocaleForDevice() {
+  String? getAvailableAssetLocaleForDevice() {
     final locales = deviceLocales;
 
     if (locales != null && locales.isNotEmpty) {
@@ -426,7 +427,7 @@ class BaseLocalization extends ChangeNotifier
 
     final args = await loadLocalizationData(locale);
 
-    if (args.isActive) {
+    if (args.isActive!) {
       _locale = locale;
       notifyListeners();
 
@@ -505,7 +506,7 @@ class BaseLocalization extends ChangeNotifier
 
   /// Loads localization from asset file for given [locale] and [path].
   Future<LocalizationArgs> _loadAssetLocalization(
-      String locale, String path) async {
+      String locale, String? path) async {
     if (path == null) {
       return LocalizationArgs(
         locale: locale,
@@ -553,7 +554,7 @@ class BaseLocalization extends ChangeNotifier
 
   /// Checks if [a] and [b] is same or if this values points to same asset path.
   /// Comparing 'en' and 'en_US' can be true because they can point to same asset file.
-  bool isLocaleEqual(String a, String b) {
+  bool isLocaleEqual(String? a, String? b) {
     if (a == null || b == null) {
       return false;
     }
@@ -569,7 +570,7 @@ class BaseLocalization extends ChangeNotifier
   /// Locale of 'en' and 'en_US' can point to same asset file.
   ///
   /// Returns [LocalizationAsset] for given [locale] or null if localization asset is not available.
-  LocalizationAsset getAsset(String locale) {
+  LocalizationAsset? getAsset(String? locale) {
     if (locale == null) {
       return null;
     }
@@ -600,18 +601,18 @@ class BaseLocalization extends ChangeNotifier
   /// Locale of 'en' and 'en_US' can point to same asset file.
   ///
   /// Returns asset path for given [locale] or null if localization asset is not available.
-  String getAssetPath(String locale) => getAsset(locale)?.assetPath;
+  String? getAssetPath(String locale) => getAsset(locale)?.assetPath;
 
   /// Tries to find [Locale] is assets for given [locale].
   /// Locale of 'en' and 'en_US' can point to same asset file, so resulted [Locale] for 'en_US' can be [Locale('en')] if only 'en.json' file exists.
   ///
   /// Returns [Locale] for given [locale] or null if localization asset is not available.
-  Locale getLocale(String locale) => getAsset(locale)?.toLocale();
+  Locale? getLocale(String? locale) => getAsset(locale)?.toLocale();
 
   /// Tries to localize text by given [key].
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localize(String key) {
+  String? localize(String key) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
@@ -624,7 +625,7 @@ class BaseLocalization extends ChangeNotifier
   /// If given [key] is not found, then tries to localize one of [alterKeys].
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizeOr(String key, List<String> alterKeys) {
+  String? localizeOr(String key, List<String> alterKeys) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
@@ -657,7 +658,7 @@ class BaseLocalization extends ChangeNotifier
   /// Returns formatted string.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizeFormat(String key, Map<String, String> params) {
+  String? localizeFormat(String key, Map<String, String> params) {
     if (_data.containsKey(key)) {
       return Parse.format(_data[key], params, _paramDecorator);
     }
@@ -681,17 +682,17 @@ class BaseLocalization extends ChangeNotifier
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizePlural(String key, int plural, [Map<String, String> params]) {
+  String? localizePlural(String key, int plural, [Map<String, String>? params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final data = _data[key];
-        final nums = List<int>();
+        final nums = <int>[];
 
         data.forEach(
             (num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
         nums.sort();
 
-        String output;
+        String? output;
 
         for (final num in nums.reversed) {
           if (plural >= num) {
@@ -728,7 +729,7 @@ class BaseLocalization extends ChangeNotifier
   /// }
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizeGender(String key, String gender) {
+  String? localizeGender(String key, String gender) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         switch (gender) {
@@ -754,7 +755,7 @@ class BaseLocalization extends ChangeNotifier
   /// ]
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  List<String> localizeList(String key) {
+  List<String?> localizeList(String key) {
     if (_data.containsKey(key)) {
       final data = _data[key];
 
@@ -763,7 +764,7 @@ class BaseLocalization extends ChangeNotifier
       }
 
       if (data is Map) {
-        return data.values.cast<String>();
+        return data.values.cast<String>() as List<String?>;
       }
 
       return [_data[key]];
@@ -787,7 +788,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
   dynamic localizeDynamic(String key,
-      {LocalizationParser parser, dynamic defaultValue}) {
+      {LocalizationParser? parser, dynamic defaultValue}) {
     if (_data.containsKey(key)) {
       if (parser != null) {
         return parser(_data[key], locale);
@@ -807,13 +808,13 @@ class BaseLocalization extends ChangeNotifier
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(dynamic data,
-      {String locale, String defaultLocale}) {
+  String? extractLocalization(dynamic data,
+      {String? locale, String? defaultLocale}) {
     locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 
     if (_mapExtractor != null) {
-      return _mapExtractor(data, locale, defaultLocale);
+      return _mapExtractor!(data, locale!, defaultLocale);
     }
 
     if (data is Map) {
@@ -899,7 +900,7 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
   /// Active locale of [BaseLocalization].
   ///
   /// Returns [BaseLocalization.getLocale].
-  Locale get locale => localization.getLocale(localization.locale);
+  Locale? get locale => localization.getLocale(localization.locale);
 
   @override
   bool isSupported(Locale locale) =>
@@ -916,7 +917,7 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
   bool shouldReload(LocalizationsDelegate old) => false;
 
   List<Locale> supportedLocales() {
-    final list = List<Locale>();
+    final list = <Locale>[];
 
     localization.assets.forEach((asset) {
       list.add(asset.toLocale());
@@ -931,58 +932,58 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 /// Access to [BaseLocalizationDelegate] is handled via static functions.
 mixin LocalizationProvider {
   /// Shortcut for delegate of default [BaseLocalization].
-  static BaseLocalizationDelegate get delegate => Control.localization.delegate;
+  static BaseLocalizationDelegate get delegate => Control.localization!.delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
   /// Note: usable only with [LocalizationsDelegate]. If delegate is not specified use [Control.localization] instead.
-  static BaseLocalization of(BuildContext context) {
+  static BaseLocalization? of(BuildContext context) {
     return Localizations.of<BaseLocalization>(context, BaseLocalization);
   }
 
   ///Instance of default [BaseLocalization]
   @protected
-  BaseLocalization get localization => Control.localization;
+  BaseLocalization? get localization => Control.localization;
 
   ///[BaseLocalization.localize]
   @protected
-  String localize(String key) => localization.localize(key);
+  String? localize(String key) => localization!.localize(key);
 
   ///[BaseLocalization.localizeOr]
   @protected
-  String localizeOr(String key, List<String> alterKeys) =>
-      localization.localizeOr(key, alterKeys);
+  String? localizeOr(String key, List<String> alterKeys) =>
+      localization!.localizeOr(key, alterKeys);
 
   ///[BaseLocalization.localizeFormat]
   @protected
-  String localizeFormat(String key, Map<String, String> params) =>
-      localization.localizeFormat(key, params);
+  String? localizeFormat(String key, Map<String, String> params) =>
+      localization!.localizeFormat(key, params);
 
   ///[BaseLocalization.localizePlural]
   @protected
-  String localizePlural(String key, int plural, [Map<String, String> params]) =>
-      localization.localizePlural(key, plural, params);
+  String? localizePlural(String key, int plural, [Map<String, String>? params]) =>
+      localization!.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeGender]
   @protected
-  String localizeGender(String key, String gender) =>
-      localization.localizeGender(key, gender);
+  String? localizeGender(String key, String gender) =>
+      localization!.localizeGender(key, gender);
 
   ///[BaseLocalization.localizeList]
   @protected
-  List<String> localizeList(String key) => localization.localizeList(key);
+  List<String?> localizeList(String key) => localization!.localizeList(key);
 
   ///[BaseLocalization.localizeDynamic]
   @protected
   dynamic localizeDynamic(String key,
-          {LocalizationParser parser, dynamic defaultValue}) =>
-      localization.localizeDynamic(key,
+          {LocalizationParser? parser, dynamic defaultValue}) =>
+      localization!.localizeDynamic(key,
           parser: parser, defaultValue: defaultValue);
 
   ///[BaseLocalization.extractLocalization]
   @protected
-  String extractLocalization(dynamic data,
-          {String locale, String defaultLocale}) =>
-      localization.extractLocalization(data,
+  String? extractLocalization(dynamic data,
+          {String? locale, String? defaultLocale}) =>
+      localization!.extractLocalization(data,
           locale: locale, defaultLocale: defaultLocale);
 }

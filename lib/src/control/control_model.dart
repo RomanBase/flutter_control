@@ -106,11 +106,11 @@ class BaseModel extends ControlModel {
 /// Also Widget must use [TickerControl] or [SingleTickerControl] to enable vsync provider or pass [TickerProvider] from other place by calling [provideTicker].
 mixin TickerComponent on ControlModel {
   /// Active provider. In fact provider can be used from different [ControlModel].
-  TickerProvider _ticker;
+  TickerProvider? _ticker;
 
   /// Returns active [TickerProvider] provided by Widget or passed by other Control.
   @protected
-  TickerProvider get ticker => _ticker;
+  TickerProvider? get ticker => _ticker;
 
   /// Checks if [TickerProvider] is set.
   bool get isTickerAvailable => _ticker != null;
@@ -183,7 +183,7 @@ mixin StateControl on Disposable implements StateNotifier, Listenable {
 /// Also Widget must use [RouteControl] to enable navigator and [RouteHandler].
 mixin RouteControlProvider on ControlModel {
   /// Implementation of [RouteNavigator].
-  RouteNavigator _navigator;
+  RouteNavigator? _navigator;
 
   /// Checks if [RouteNavigator] is valid.
   bool get isNavigatorAvailable => _navigator != null;
@@ -201,7 +201,7 @@ mixin RouteControlProvider on ControlModel {
   }
 
   /// {@macro route-store-get}
-  RouteHandler routeOf<T>([dynamic identifier]) =>
+  RouteHandler? routeOf<T>([dynamic identifier]) =>
       ControlRoute.of<T>(identifier)?.navigator(_navigator);
 
   /// {@macro route-open}
@@ -210,7 +210,7 @@ mixin RouteControlProvider on ControlModel {
     bool root: false,
     bool replacement: false,
     dynamic args,
-    FutureOr<dynamic> result(dynamic value),
+    FutureOr<dynamic> result(dynamic value)?,
   }) {
     final handler = RouteHandler(_navigator, route);
 
@@ -218,7 +218,7 @@ mixin RouteControlProvider on ControlModel {
         handler.openRoute(root: root, replacement: replacement, args: args);
 
     if (result != null) {
-      future.then(result);
+      future!.then(result);
     }
 
     return handler;
@@ -228,14 +228,14 @@ mixin RouteControlProvider on ControlModel {
   RouteHandler openRoot(
     ControlRoute route, {
     dynamic args,
-    FutureOr<dynamic> result(dynamic value),
+    FutureOr<dynamic> result(dynamic value)?,
   }) {
     final handler = RouteHandler(_navigator, route);
 
     final future = handler.openRoot(args: args);
 
     if (result != null) {
-      future.then(result);
+      future!.then(result);
     }
 
     return handler;
@@ -253,13 +253,13 @@ mixin RouteControlProvider on ControlModel {
   }
 
   /// {@macro route-close}
-  bool close([dynamic result]) => _navigator?.close(result);
+  bool? close([dynamic result]) => _navigator?.close(result);
 
   /// {@macro route-back-to}
   void backTo({
-    Route route,
-    String identifier,
-    bool Function(Route<dynamic>) predicate,
+    Route? route,
+    String? identifier,
+    bool Function(Route<dynamic>)? predicate,
   }) =>
       _navigator?.backTo(
         route: route,

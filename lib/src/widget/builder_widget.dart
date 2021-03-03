@@ -12,15 +12,15 @@ class ControlBuilder<T> extends StatefulWidget {
   final ControlWidgetBuilder<T> builder;
 
   /// Widget builder for non value.
-  final WidgetBuilder noData;
+  final WidgetBuilder? noData;
 
   /// Checks if 'null' value of [control] is valid for [builder].
   final bool nullOk;
 
   const ControlBuilder({
-    Key key,
-    @required this.control,
-    @required this.builder,
+    Key? key,
+    required this.control,
+    required this.builder,
     this.noData,
     this.nullOk: false,
   }) : super(key: key);
@@ -29,12 +29,12 @@ class ControlBuilder<T> extends StatefulWidget {
   _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
-  Disposable _sub;
+class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
+  Disposable? _sub;
 
   dynamic get control => widget.control;
 
-  T _mapValue() {
+  T? _mapValue() {
     if (T != dynamic && control is T) {
       return control;
     }
@@ -51,7 +51,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
       data = control;
     }
 
-    return data as T;
+    return data as T?;
   }
 
   @override
@@ -82,7 +82,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
   _notifyState() => notifyValue(_mapValue());
 
   @override
-  void didUpdateWidget(ControlBuilder<T> oldWidget) {
+  void didUpdateWidget(ControlBuilder<T?> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (control != oldWidget.control) {
@@ -133,7 +133,7 @@ class ControlBuilderGroup extends StatefulWidget {
   /// Widget builder.
   /// Builder passes [value] as List of values from given [controls]. If object don't have value (eg. [Listenable]), actual object is returned.
   /// Value order is same as [controls] order.
-  final ControlWidgetBuilder<List> builder;
+  final ControlWidgetBuilder<List?> builder;
 
   /// Checks if pass [controls] to [builder] instead of 'values'.
   final bool passControls;
@@ -143,9 +143,9 @@ class ControlBuilderGroup extends StatefulWidget {
   /// [builder] - Widget builder, passes [value] as List of values from given [controls].
   /// [passControls] - Passes [controls] to [builder] instead of 'values'.
   const ControlBuilderGroup({
-    Key key,
-    @required this.controls,
-    @required this.builder,
+    Key? key,
+    required this.controls,
+    required this.builder,
     this.passControls: false,
   }) : super(key: key);
 
@@ -156,7 +156,7 @@ class ControlBuilderGroup extends StatefulWidget {
 /// State of [ControlBuilderGroup].
 class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   /// All active subs.
-  final _subs = List<Disposable>();
+  final _subs = <Disposable?>[];
 
   @override
   void initState() {
@@ -172,7 +172,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
       return widget.controls;
     }
 
-    final data = List();
+    final data = [];
 
     widget.controls.forEach((control) {
       if (control is ActionControlObservable) {
@@ -220,7 +220,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
     _disposeSubs();
     _initSubs();
 
-    List initial = value;
+    List initial = value!;
     List current = _mapValues();
 
     if (initial.length == current.length) {
@@ -240,7 +240,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
 
   /// Disposes all Subscriptions and Listeners.
   void _disposeSubs() {
-    _subs.forEach((item) => item.dispose());
+    _subs.forEach((item) => item!.dispose());
     _subs.clear();
 
     widget.controls.forEach((control) {

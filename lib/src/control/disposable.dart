@@ -61,7 +61,7 @@ mixin DisposeHandler implements Disposable {
 /// When there is 1 or more reference then [preferSoftDispose] is set.
 mixin ReferenceCounter on DisposeHandler {
   /// List of references.
-  final _references = new List<int>();
+  final _references = <int>[];
 
   int get referenceCount => _references.length;
 
@@ -113,13 +113,13 @@ class DisposableClientBase implements Disposable {
   final dynamic parent;
 
   /// Callback when token is finished and [finish] called.
-  VoidCallback onFinish;
+  VoidCallback? onFinish;
 
   /// Callback when token is canceled and [finish] called.
-  VoidCallback onCancel;
+  VoidCallback? onCancel;
 
   /// Callback when token is disposed and [finish] called.
-  VoidCallback onDispose;
+  VoidCallback? onDispose;
 
   /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
@@ -189,9 +189,9 @@ class DisposableToken extends DisposableClientBase {
   /// [onDispose] - Client event that is called when token is disposed.
   factory DisposableToken.client({
     dynamic parent,
-    VoidCallback onCancel,
-    VoidCallback onFinish,
-    VoidCallback onDispose,
+    VoidCallback? onCancel,
+    VoidCallback? onFinish,
+    VoidCallback? onDispose,
     dynamic data,
   }) =>
       DisposableToken(

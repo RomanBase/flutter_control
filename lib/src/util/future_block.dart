@@ -5,18 +5,18 @@ import 'package:flutter_control/core.dart';
 /// Works similarly to [Future.delayed(duration)], but completion callback can be postponed.
 /// Can be re-triggered multiple times - only last call will be handled.
 class FutureBlock {
-  Timer _timer;
-  VoidCallback _callback;
+  Timer? _timer;
+  VoidCallback? _callback;
 
   /// Returns true if last delay is in progress.
-  bool get isActive => _timer != null && _timer.isActive;
+  bool get isActive => _timer != null && _timer!.isActive;
 
   /// Default constructor.
   FutureBlock();
 
   /// Starts delay for given [duration]. Given callback can be postponed or canceled.
   /// Can be called multiple times - only last call will be handled.
-  void delayed(Duration duration, VoidCallback onDone) {
+  void delayed(Duration duration, VoidCallback? onDone) {
     cancel();
 
     if (onDone == null) {
@@ -44,7 +44,7 @@ class FutureBlock {
   /// Cancels current delay action.
   void cancel() {
     if (_timer != null) {
-      _timer.cancel();
+      _timer!.cancel();
       _timer = null;
     }
 
@@ -52,15 +52,14 @@ class FutureBlock {
   }
 
   /// Runs delayed [Future] with zero [Duration] so [action] will be performed next frame.
-  static Future nextFrame(VoidCallback action) =>
-      Future.delayed(const Duration(), action);
+  static Future nextFrame(VoidCallback action) => Future.delayed(const Duration(), action);
 
   /// Same as [Future.wait] but nullable.
-  static Future wait(Iterable<Future> futures) async {
-    futures = futures.where((item) => item != null);
+  static Future wait(Iterable<Future?> futures) async {
+    final futuresToWait = futures.where((item) => item != null).cast<Future>();
 
-    if (futures.length > 0) {
-      await Future.wait(futures);
+    if (futuresToWait.length > 0) {
+      await Future.wait(futuresToWait);
     }
   }
 }
@@ -71,10 +70,10 @@ class FutureBlock {
 /// If code runs too slowly, then finish is triggered immediately.
 class DelayBlock {
   /// Delay in milliseconds.
-  int _millis;
+  late int _millis;
 
   /// Timestamp of block start.
-  DateTime _start;
+  late DateTime _start;
 
   /// Default constructor
   /// [duration] of delay block.

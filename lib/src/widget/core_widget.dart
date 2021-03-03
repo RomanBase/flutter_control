@@ -9,13 +9,13 @@ class ControlArgHolder implements Disposable {
   bool _valid = true;
 
   /// Holds args when [State] disposes and [Widget] goes off screen.
-  ControlArgs _cache;
+  ControlArgs? _cache;
 
   /// Current [State] of [Widget].
-  CoreState _state;
+  CoreState? _state;
 
   /// Returns current [State] of [Widget].
-  CoreState get state => _state;
+  CoreState? get state => _state;
 
   /// Checks if [Widget] with current [State] is valid.
   bool get isValid => _valid;
@@ -35,7 +35,7 @@ class ControlArgHolder implements Disposable {
 
   /// Initializes holder with given [state].
   /// [args] are smoothly transferred between State and Cache based on current Widget lifecycle.
-  void init(CoreState state) {
+  void init(CoreState? state) {
     _state = state;
     _valid = true;
 
@@ -49,12 +49,12 @@ class ControlArgHolder implements Disposable {
   void set(dynamic args) => argStore.set(args);
 
   /// Returns object based on given [Type] and [key] from internal args - [ControlArgs].
-  T get<T>({dynamic key, T defaultValue}) =>
+  T? get<T>({dynamic key, T? defaultValue}) =>
       Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
 
   /// Returns all [ControlModel]s from internal args - [ControlArgs].
   /// If none found, empty List is returned.
-  List<ControlModel> findControls() => argStore.getAll<ControlModel>() ?? [];
+  List<ControlModel?> findControls() => argStore.getAll<ControlModel>() ?? [];
 
   /// Copy corresponding State and args from [oldHolder].
   void copy(ControlArgHolder oldHolder) {
@@ -92,13 +92,13 @@ abstract class CoreWidget extends StatefulWidget
   bool get isValid => holder.isValid;
 
   /// Returns [BuildContext] of current [State] if is available.
-  BuildContext get context => holder?.state?.context;
+  BuildContext? get context => holder.state?.context;
 
   /// Base Control Widget that handles [State] flow.
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   ///
   /// Check [ControlWidget] and [StateboundWidget].
-  CoreWidget({Key key, dynamic args}) : super(key: key) {
+  CoreWidget({Key? key, dynamic args}) : super(key: key) {
     holder.set(args);
   }
 
@@ -159,7 +159,7 @@ abstract class CoreWidget extends StatefulWidget
   }
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
-  BuildContext getContext({bool root: false}) =>
+  BuildContext? getContext({bool root: false}) =>
       root ? Control.scope?.context ?? context : context;
 
   /// Returns raw internal arg store.
@@ -185,14 +185,14 @@ abstract class CoreWidget extends StatefulWidget
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.set].
   /// Use [getArgStore] to get raw access to [ControlArgs].
-  void setArg<T>({dynamic key, @required dynamic value}) =>
+  void setArg<T>({dynamic key, required dynamic value}) =>
       holder.argStore.add<T>(key: key, value: value);
 
   /// Returns value by given [key] and [Type] from this Widget's internal arg store.
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.get].
   /// Use [getArgStore] to get raw access to [ControlArgs].
-  T getArg<T>({dynamic key, T defaultValue}) =>
+  T? getArg<T>({dynamic key, T? defaultValue}) =>
       holder.get<T>(key: key, defaultValue: defaultValue);
 
   /// Removes given [arg] from this Widget's internal arg store.
@@ -206,10 +206,10 @@ abstract class CoreWidget extends StatefulWidget
   /// Widget with State must be initialized before executing this function - check [isInitialized].
   /// It's safe to register objects in/after [onInit] function.
   @protected
-  void register(Disposable object) {
+  void register(Disposable? object) {
     assert(isInitialized);
 
-    holder.state.register(object);
+    holder.state!.register(object);
   }
 
   @protected
@@ -232,7 +232,7 @@ abstract class CoreWidget extends StatefulWidget
   }
 
   @protected
-  void notifyState() => holder.state.notifyState();
+  void notifyState() => holder.state!.notifyState();
 
   @override
   void dispose() {}
@@ -241,7 +241,7 @@ abstract class CoreWidget extends StatefulWidget
 /// [State] of [CoreWidget].
 abstract class CoreState<T extends CoreWidget> extends State<T> {
   /// Args used via [ControlArgHolder].
-  ControlArgs _args;
+  ControlArgs? _args;
 
   /// Args used via [ControlArgHolder].
   ControlArgs get args => _args ?? (_args = ControlArgs());
@@ -256,19 +256,19 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   bool get isDirty => (context as Element)?.dirty ?? true;
 
   /// Objects to dispose with State.
-  List<Disposable> _objects;
+  List<Disposable?>? _objects;
 
   /// Registers object to dispose with this State.
-  void register(Disposable object) {
+  void register(Disposable? object) {
     if (_objects == null) {
-      _objects = List<Disposable>();
+      _objects = <Disposable?>[];
     }
 
     if (object is ReferenceCounter) {
       object.addReference(this);
     }
 
-    _objects.add(object);
+    _objects!.add(object);
   }
 
   /// Unregisters object to dispose from this State.
@@ -302,7 +302,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     if (!_stateInitialized) {
       _stateInitialized = true;
-      widget.onInit(_args.data);
+      widget.onInit(_args!.data);
     }
 
     widget.onDependencyChanged();
@@ -332,7 +332,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
       if (element is DisposeHandler) {
         element.requestDispose(this);
       } else {
-        element.dispose();
+        element!.dispose();
       }
     });
 
@@ -347,7 +347,7 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
   bool get isDirty => !mounted || ((context as Element)?.dirty ?? true);
 
   /// Current value of state.
-  U value;
+  U? value;
 
   void notifyValue(U value) {
     if (isDirty) {
@@ -362,7 +362,7 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
 
 /// Mostly copy of [SingleTickerProviderStateMixin].
 class _SingleTickerProvider implements Disposable, TickerProvider {
-  Ticker _ticker;
+  Ticker? _ticker;
 
   @override
   Ticker createTicker(onTick) {
@@ -385,7 +385,7 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
     // event handler, and that thus TickerMode.of(context) would return true. We
     // can't actually check that here because if we're in initState then we're
     // not allowed to do inheritance checks yet.
-    return _ticker;
+    return _ticker!;
   }
 
   void _muteTicker(bool muted) => _ticker?.muted = muted;
@@ -393,7 +393,7 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
   @override
   void dispose() {
     assert(() {
-      if (_ticker == null || !_ticker.isActive) return true;
+      if (_ticker == null || !_ticker!.isActive) return true;
       throw FlutterError.fromParts(<DiagnosticsNode>[
         ErrorSummary('$this was disposed with an active Ticker.'),
         ErrorDescription(
@@ -403,7 +403,7 @@ class _SingleTickerProvider implements Disposable, TickerProvider {
         ErrorHint('Tickers used by AnimationControllers '
             'should be disposed by calling dispose() on the AnimationController itself. '
             'Otherwise, the ticker will leak.'),
-        _ticker.describeForError('The offending ticker was')
+        _ticker!.describeForError('The offending ticker was')
       ]);
     }());
 
@@ -423,7 +423,7 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
 
   @override
   void onInit(Map args) {
-    _ticker._muteTicker(!TickerMode.of(context));
+    _ticker._muteTicker(!TickerMode.of(context!));
 
     super.onInit(args);
   }
@@ -437,14 +437,14 @@ mixin SingleTickerControl on CoreWidget implements TickerProvider {
 
 /// Mostly copy of [TickerProviderStateMixin].
 class _TickerProvider implements Disposable, TickerProvider {
-  Set<Ticker> _tickers;
+  Set<Ticker>? _tickers;
 
   @override
   Ticker createTicker(TickerCallback onTick) {
     _tickers ??= <_WidgetTicker>{};
 
     final ticker = _WidgetTicker(onTick, this, debugLabel: 'created by $this');
-    _tickers.add(ticker);
+    _tickers!.add(ticker);
 
     return ticker;
   }
@@ -452,9 +452,9 @@ class _TickerProvider implements Disposable, TickerProvider {
   void _removeTicker(_WidgetTicker ticker) {
     assert(ticker.isMounted);
     assert(_tickers != null);
-    assert(_tickers.contains(ticker));
+    assert(_tickers!.contains(ticker));
 
-    _tickers.remove(ticker);
+    _tickers!.remove(ticker);
   }
 
   void _muteTicker(bool muted) =>
@@ -464,7 +464,7 @@ class _TickerProvider implements Disposable, TickerProvider {
   void dispose() {
     assert(() {
       if (_tickers != null) {
-        for (Ticker ticker in _tickers) {
+        for (Ticker ticker in _tickers!) {
           if (ticker.isActive) {
             throw FlutterError.fromParts(<DiagnosticsNode>[
               ErrorSummary('$this was disposed with an active Ticker.'),
@@ -499,7 +499,7 @@ mixin TickerControl on CoreWidget implements TickerProvider {
 
   @override
   void onInit(Map args) {
-    _ticker._muteTicker(!TickerMode.of(context));
+    _ticker._muteTicker(!TickerMode.of(context!));
 
     super.onInit(args);
   }
@@ -529,7 +529,7 @@ mixin TickerAnimControl<T> on CoreWidget implements TickerProvider {
 
   @override
   void onInit(Map args) {
-    _ticker._muteTicker(!TickerMode.of(context));
+    _ticker._muteTicker(!TickerMode.of(context!));
     _anim.initControllers(this, animations);
 
     super.onInit(args);
@@ -545,11 +545,11 @@ mixin TickerAnimControl<T> on CoreWidget implements TickerProvider {
 }
 
 class _WidgetTicker extends Ticker {
-  _TickerProvider _creator;
+  _TickerProvider? _creator;
 
   bool get isMounted => _creator != null;
 
-  _WidgetTicker(TickerCallback onTick, this._creator, {String debugLabel})
+  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel})
       : super(onTick, debugLabel: debugLabel);
 
   @override
@@ -620,7 +620,7 @@ mixin OnLayout on CoreWidget {
   void onInit(Map args) {
     super.onInit(args);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+    WidgetsBinding.instance!.addPostFrameCallback((_) => onLayout());
   }
 
   void onLayout();

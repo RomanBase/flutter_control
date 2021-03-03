@@ -5,22 +5,22 @@ version: 1.0.0+1
 homepage: https://github.com/romanbase/flutter_control
 
 environment:
-  sdk: ">=2.6.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  mockito: ^4.1.0
-  test_coverage: 0.4.3
-  pedantic: ^1.9.0
+  mockito: ^5.0.0
+  pedantic: ^1.11.0
 
 dependencies:
   flutter:
     sdk: flutter
 
   # https://pub.dartlang.org/packages/shared_preferences
-  shared_preferences: ^0.5.10
+  shared_preferences: ^2.0.3
+  collection: ^1.15.0-nullsafety.4
 
 flutter:
 

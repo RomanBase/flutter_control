@@ -5,10 +5,10 @@ import 'package:flutter_control/core.dart';
 /// Currently usable with [InputField], [InputFieldV1] and other [TextField]s...
 class InputControl extends TextEditingController with DisposeHandler {
   /// Regex to validate.
-  final String regex;
+  final String? regex;
 
   /// Focus notifier of [TextField].
-  FocusNode _focus;
+  FocusNode? _focus;
 
   /// Lazy focus notifier. Should be passed to [TextField].
   FocusNode get focus =>
@@ -27,13 +27,13 @@ class InputControl extends TextEditingController with DisposeHandler {
   bool get isValid => _isValid;
 
   /// Error text message.
-  String _error;
+  String? _error;
 
   /// Error text message.
-  String get error => _error;
+  String? get error => _error;
 
   /// Error text message.
-  set error(String value) {
+  set error(String? value) {
     _error = value;
     notifyListeners();
   }
@@ -51,13 +51,13 @@ class InputControl extends TextEditingController with DisposeHandler {
   }
 
   /// Next control in chain.
-  InputControl _next;
+  InputControl? _next;
 
   /// Callback of [submit].
-  VoidCallback _onDone;
+  VoidCallback? _onDone;
 
   /// Callback of [text] changes.
-  ValueCallback<String> _onChanged;
+  ValueCallback<String>? _onChanged;
 
   /// Checks if 'next' control is chained.
   bool get isNextChained => _next != null;
@@ -66,7 +66,7 @@ class InputControl extends TextEditingController with DisposeHandler {
   bool get isDoneMounted => _onDone != null;
 
   @override
-  set text(String newText) {
+  set text(String? newText) {
     newText ??= '';
 
     value = value.copyWith(
@@ -82,7 +82,7 @@ class InputControl extends TextEditingController with DisposeHandler {
   /// Checks if [text] is null or empty.
   bool get isNotEmpty => text != null && text.isNotEmpty;
 
-  InputControl({String text, this.regex}) {
+  InputControl({String? text, this.regex}) {
     value =
         text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
@@ -110,7 +110,7 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Submits [text] and [validate] input.
   /// Sets focus to next 'control' if chained.
-  void submit([String text]) {
+  void submit([String? text]) {
     if (text != null) {
       this.text = text;
     }
@@ -119,7 +119,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     focusNext();
 
     if (_onDone != null) {
-      _onDone();
+      _onDone!();
     }
   }
 
@@ -129,17 +129,17 @@ class InputControl extends TextEditingController with DisposeHandler {
       return;
     }
 
-    if (_next.focusable) {
-      _next.setFocus(true);
+    if (_next!.focusable) {
+      _next!.setFocus(true);
     } else {
-      _next.focusNext();
+      _next!.focusNext();
     }
   }
 
   /// Notifies [changed] event.
   void change(String text) {
     if (_onChanged != null) {
-      _onChanged(text);
+      _onChanged!(text);
     }
   }
 
@@ -149,7 +149,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     validate();
 
     if (_onDone != null) {
-      _onDone();
+      _onDone!();
 
       if (!all) {
         return;
@@ -166,7 +166,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
 
     if (requestFocus) {
-      FocusScope.of(focus.context).requestFocus(focus);
+      FocusScope.of(focus.context!).requestFocus(focus);
     } else {
       focus.unfocus();
     }
@@ -186,7 +186,7 @@ class InputControl extends TextEditingController with DisposeHandler {
       return _isValid = true;
     }
 
-    return _isValid = RegExp(regex).hasMatch(text);
+    return _isValid = RegExp(regex!).hasMatch(text);
   }
 
   /// Validates continuous chain. Typically called on first item in chain..
@@ -201,7 +201,7 @@ class InputControl extends TextEditingController with DisposeHandler {
       unfocusChain();
     }
 
-    final isChainValid = _next.validateChain(
+    final isChainValid = _next!.validateChain(
         unfocus: false); // validate from end to check all fields
 
     return validate() && isChainValid;
@@ -248,16 +248,16 @@ class InputControl extends TextEditingController with DisposeHandler {
 
 /// Still experimental [TextField] builder..
 class InputField extends ControllableWidget<InputControl> {
-  final String label;
-  final String hint;
-  final Color color;
-  final InputDecoration decoration;
-  final InputBuilder builder;
+  final String? label;
+  final String? hint;
+  final Color? color;
+  final InputDecoration? decoration;
+  final InputBuilder? builder;
 
   static InputBuilder standard({
     TextInputType keyboardType: TextInputType.text,
     TextInputAction action: TextInputAction.next,
-    TextStyle style,
+    TextStyle? style,
   }) =>
       (context, scope, decoration) {
         final theme = Theme.of(context);
@@ -272,15 +272,15 @@ class InputField extends ControllableWidget<InputControl> {
           textInputAction: action,
           obscureText: scope.obscure,
           style: style ??
-              theme.textTheme.bodyText1.copyWith(
+              theme.textTheme.bodyText1!.copyWith(
                   color: decoration?.border?.borderSide?.color ??
                       theme.cursorColor),
         );
       };
 
   InputField({
-    Key key,
-    @required InputControl control,
+    Key? key,
+    required InputControl control,
     this.label,
     this.hint,
     this.decoration,
@@ -311,9 +311,9 @@ class InputField extends ControllableWidget<InputControl> {
                   UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
               disabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-              labelStyle: theme.textTheme.bodyText1
+              labelStyle: theme.textTheme.bodyText1!
                   .copyWith(color: cursor.withOpacity(0.5)),
-              hintStyle: theme.textTheme.bodyText1
+              hintStyle: theme.textTheme.bodyText1!
                   .copyWith(color: cursor.withOpacity(0.5)),
             ))
         .copyWith(

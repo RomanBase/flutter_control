@@ -9,7 +9,7 @@ abstract class BaseControlWidget extends CoreWidget {
   @override
   State<StatefulWidget> createState() => BaseControlState();
 
-  BaseControlWidget({Key key}) : super(key: key);
+  BaseControlWidget({Key? key}) : super(key: key);
 }
 
 class BaseControlState extends CoreState<BaseControlWidget> {
@@ -21,16 +21,16 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 /// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
 ///
 /// {@macro control-widget}
-abstract class SingleControlWidget<T extends ControlModel>
+abstract class SingleControlWidget<T extends ControlModel?>
     extends ControlWidget {
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
-  T get control => hasControl ? controls[0] : null;
+  T? get control => hasControl ? controls![0] as T? : null;
 
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
-  SingleControlWidget({Key key, dynamic args}) : super(key: key, args: args);
+  SingleControlWidget({Key? key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel> initControls() {
+  List<ControlModel?> initControls() {
     final control = initControl();
 
     if (autoMountControls) {
@@ -57,7 +57,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
-  T initControl() => getControl<T>();
+  T? initControl() => getControl<T>();
 }
 
 /// {@template control-widget}
@@ -84,15 +84,15 @@ abstract class ControlWidget extends CoreWidget
   /// Widget's [State]
   /// It's available just after [ControlState] is initialized.
   @protected
-  ControlState get state => holder.state;
+  ControlState? get state => holder.state as ControlState<ControlWidget>?;
 
   /// List of [ControlModel]s initialized via [initControls].
   /// Set [autoMountControls] to automatically init all Models passed through [args].
   @protected
-  List<ControlModel> get controls => state?.controls;
+  List<ControlModel?>? get controls => state?.controls;
 
   /// Checks if [controls] is not empty.
-  bool get hasControl => controls != null && controls.isNotEmpty;
+  bool get hasControl => controls != null && controls!.isNotEmpty;
 
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
   /// By default set to 'false'.
@@ -102,7 +102,7 @@ abstract class ControlWidget extends CoreWidget
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
   ControlWidget({
-    Key key,
+    Key? key,
     dynamic args,
   }) : super(key: key, args: args);
 
@@ -117,7 +117,7 @@ abstract class ControlWidget extends CoreWidget
   ///
   /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls() =>
+  List<ControlModel?> initControls() =>
       autoMountControls ? holder.findControls() : [];
 
   @override
@@ -136,9 +136,9 @@ abstract class ControlWidget extends CoreWidget
       return;
     }
 
-    controls.remove(null);
-    controls.forEach((control) {
-      control.init(holder.args);
+    controls!.remove(null);
+    controls!.forEach((control) {
+      control!.init(holder.args);
       control.register(this);
 
       if (control is StateControl) {
@@ -156,7 +156,7 @@ abstract class ControlWidget extends CoreWidget
       return;
     }
 
-    controls.forEach((control) {
+    controls!.forEach((control) {
       if (control is StateControl) {
         (control as StateControl).onStateInitialized();
       }
@@ -171,13 +171,13 @@ abstract class ControlWidget extends CoreWidget
   void onStateChanged(dynamic state) {}
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
-  BuildContext getContext({bool root: false}) =>
+  BuildContext? getContext({bool root: false}) =>
       root ? Control.scope?.context ?? context : context;
 
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
   /// [args] - Arguments to pass to [ControlModel].
-  T getControl<T extends ControlModel>({dynamic key, dynamic args}) =>
+  T? getControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
       Control.resolve<T>(
           ControlArgs(controls).combineWith(holder.argStore).data,
           key: key,
@@ -186,7 +186,7 @@ abstract class ControlWidget extends CoreWidget
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected
-  Widget build(BuildContext context);
+  Widget? build(BuildContext context);
 
   /// Disposes and removes all [controls].
   /// Check [DisposeHandler] for different dispose strategies.
@@ -200,7 +200,7 @@ abstract class ControlWidget extends CoreWidget
 /// [State] of [ControlWidget]
 class ControlState<U extends ControlWidget> extends CoreState<U>
     implements StateNotifier {
-  List<ControlModel> controls;
+  List<ControlModel?>? controls;
 
   @override
   void initState() {
@@ -215,7 +215,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
 
     widget.holder.set(controls);
 
-    controls.forEach((control) {
+    controls!.forEach((control) {
       if (control is ReferenceCounter) {
         (control as ReferenceCounter).addReference(this);
       }
@@ -232,7 +232,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
   }
 
   @override
-  Widget build(BuildContext context) => widget.build(context);
+  Widget build(BuildContext context) => widget.build(context)!;
 
   /// Subscribes to [StateControl]
   void _subscribeStateNotifier(StateControl control) {
@@ -248,14 +248,14 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
     super.dispose();
 
     if (controls != null) {
-      controls.forEach((control) {
+      controls!.forEach((control) {
         if (control is StateControl) {
           (control as StateControl).removeListener(notifyState);
         }
 
-        control.requestDispose(this);
+        control!.requestDispose(this);
       });
-      controls.clear();
+      controls!.clear();
       controls = null;
     }
 
@@ -271,7 +271,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   ///
   /// Check [findNavigator] for direct [Route] navigation.
   /// Check [findRouteOf] for direct [RouteHandler] access.
-  static RouteControl findAncestor(BuildContext context) {
+  static RouteControl? findAncestor(BuildContext context) {
     final state = context.findAncestorStateOfType<ControlState>();
     final widget = state?.widget;
 
@@ -283,36 +283,36 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       return widget;
     }
 
-    return findAncestor(state.context);
+    return findAncestor(state!.context);
   }
 
   /// Returns [RouteNavigator] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
-  static RouteNavigator findNavigator(BuildContext context) =>
+  static RouteNavigator? findNavigator(BuildContext context) =>
       findAncestor(context);
 
   /// Returns [RouteHandler] for given Route of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
   ///
   /// {@macro route-store-get}
-  static RouteHandler findRouteOf<T>(BuildContext context,
+  static RouteHandler? findRouteOf<T>(BuildContext context,
           [dynamic identifier]) =>
       findAncestor(context)?.routeOf<T>(identifier);
 
   /// Returns currently active [Route].
   /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
   /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.
-  Route getActiveRoute() =>
-      getArg<Route>() ?? (context == null ? null : ModalRoute.of(context));
+  Route? getActiveRoute() =>
+      getArg<Route>() ?? (context == null ? null : ModalRoute.of(context!));
 
   /// Returns requested [Navigator].
   /// [root] - closest or first.
   @protected
   NavigatorState getNavigator({bool root: false}) {
     if (root && !Control.scope.isInitialized) {
-      return Navigator.of(context, rootNavigator: true);
+      return Navigator.of(context!, rootNavigator: true);
     }
 
-    return Navigator.of(getContext(root: root)) ??
-        Navigator.of(context, rootNavigator: root);
+    return Navigator.of(getContext(root: root)!) ??
+        Navigator.of(context!, rootNavigator: root);
   }
 
   @override
@@ -326,13 +326,13 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   }
 
   /// {@macro route-store-get}
-  RouteHandler routeOf<T>([dynamic identifier]) =>
+  RouteHandler? routeOf<T>([dynamic identifier]) =>
       ControlRoute.of<T>(identifier)?.navigator(this);
 
   /// Initializes and returns [Route] via [RouteStore] and [RouteControl].
   ///
   /// {@macro route-store-get}
-  Route initRouteOf<T>({dynamic identifier, dynamic args}) =>
+  Route? initRouteOf<T>({dynamic identifier, dynamic args}) =>
       ControlRoute.of<T>(identifier)?.init(args: args);
 
   @override
@@ -354,16 +354,16 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
   Future<dynamic> openDialog(WidgetBuilder builder,
       {bool root: true, dynamic type}) async {
     return showDialog(
-        context: getContext(root: root),
+        context: getContext(root: root)!,
         builder: (context) => builder(context),
         useRootNavigator: false);
   }
 
   @override
   void backTo(
-      {Route route,
-      String identifier,
-      bool Function(Route<dynamic>) predicate}) {
+      {Route? route,
+      String? identifier,
+      bool Function(Route<dynamic>)? predicate}) {
     if (route != null) {
       getNavigator().popUntil((item) => item == route || item.isFirst);
     }

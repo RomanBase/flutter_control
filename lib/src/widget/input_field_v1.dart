@@ -17,7 +17,7 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
   /// Displayed on top of the input [child] (i.e., at the same location on the
   /// screen where text may be entered in the input [child]) when the input
   /// [isEmpty] and either (a) [labelText] is null or (b) the input has the focus.
-  final String hint;
+  final String? hint;
 
   /// Text that describes the input field.
   ///
@@ -26,14 +26,14 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
   /// text may be entered in the input field). When the input field receives
   /// focus (or if the field is non-empty), the label moves above (i.e.,
   /// vertically adjacent to) the input field.
-  final String label;
+  final String? label;
 
   /// The style to use for the text being edited.
   ///
   /// This text style is also used as the base style for the [decoration].
   ///
   /// If null, defaults to the `subhead` text style from the current [Theme].
-  final TextStyle style;
+  final TextStyle? style;
 
   /// The decoration to show around the text field.
   ///
@@ -42,28 +42,28 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
   ///
   /// Specify null to remove the decoration entirely (including the
   /// extra padding introduced by the decoration to save space for the labels).
-  final InputDecoration decoration;
+  final InputDecoration? decoration;
 
   /// {@macro flutter.widgets.editableText.keyboardType}
-  final TextInputType keyboardType;
+  final TextInputType? keyboardType;
 
   /// The type of action button to use for the keyboard.
   ///
   /// Defaults to [TextInputAction.newline] if [keyboardType] is
   /// [TextInputType.multiline] and [TextInputAction.done] otherwise.
-  final TextInputAction textInputAction;
+  final TextInputAction? textInputAction;
 
   /// {@macro flutter.widgets.editableText.textCapitalization}
   final TextCapitalization textCapitalization;
 
   /// {@macro flutter.widgets.editableText.strutStyle}
-  final StrutStyle strutStyle;
+  final StrutStyle? strutStyle;
 
   /// {@macro flutter.widgets.editableText.textAlign}
   final TextAlign textAlign;
 
   /// {@macro flutter.widgets.editableText.textDirection}
-  final TextDirection textDirection;
+  final TextDirection? textDirection;
 
   /// {@macro flutter.widgets.editableText.autofocus}
   final bool autofocus;
@@ -78,44 +78,44 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
   final int maxLines;
 
   /// {@macro flutter.widgets.editableText.minLines}
-  final int minLines;
+  final int? minLines;
 
   /// {@macro flutter.widgets.editableText.expands}
   final bool expands;
 
   /// {@macro flutter.widgets.text_field.maxLength}
-  final int maxLength;
+  final int? maxLength;
 
   /// {@macro flutter.widgets.text_field.maxLengthEnforced}
   final bool maxLengthEnforced;
 
   /// {@macro flutter.widgets.editableText.inputFormatters}
-  final List<TextInputFormatter> inputFormatters;
+  final List<TextInputFormatter>? inputFormatters;
 
   /// If false the text field is "disabled": it ignores taps and its
   /// [decoration] is rendered in grey.
   ///
   /// If non-null this property overrides the [decoration]'s
   /// [Decoration.enabled] property.
-  final bool enabled;
+  final bool? enabled;
 
   /// {@macro flutter.widgets.editableText.cursorWidth}
   final double cursorWidth;
 
   /// {@macro flutter.widgets.editableText.cursorRadius}
-  final Radius cursorRadius;
+  final Radius? cursorRadius;
 
   /// The color to use when painting the cursor.
   ///
   /// Defaults to the theme's `cursorColor` when null.
-  final Color cursorColor;
+  final Color? cursorColor;
 
   /// The appearance of the keyboard.
   ///
   /// This setting is only honored on iOS devices.
   ///
   /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
-  final Brightness keyboardAppearance;
+  final Brightness? keyboardAppearance;
 
   /// {@macro flutter.widgets.editableText.scrollPadding}
   final EdgeInsets scrollPadding;
@@ -127,23 +127,23 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
   final DragStartBehavior dragStartBehavior;
 
   /// {@macro flutter.widgets.edtiableText.scrollPhysics}
-  final ScrollPhysics scrollPhysics;
+  final ScrollPhysics? scrollPhysics;
 
   final bool readOnly;
 
-  final ToolbarOptions toolbarOptions;
+  final ToolbarOptions? toolbarOptions;
 
-  final bool showCursor;
+  final bool? showCursor;
 
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
-  final InputCounterWidgetBuilder buildCounter;
+  final InputCounterWidgetBuilder? buildCounter;
 
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
 
   InputFieldV1({
-    Key key,
-    @required this.control,
+    Key? key,
+    required this.control,
     this.label,
     this.hint,
     this.decoration,
@@ -192,7 +192,7 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
 
   @override
   Widget build(BuildContext context) {
-    final cursor = cursorColor ?? theme.data.cursorColor;
+    final cursor = cursorColor ?? theme!.data.cursorColor;
 
     return TextField(
       onChanged: control.change,
@@ -210,9 +210,9 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
                 disabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: cursor.withOpacity(0.25))),
                 labelStyle:
-                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                    font.bodyText1!.copyWith(color: cursor.withOpacity(0.5)),
                 hintStyle:
-                    font.bodyText1.copyWith(color: cursor.withOpacity(0.5)),
+                    font.bodyText1!.copyWith(color: cursor.withOpacity(0.5)),
               ))
           .copyWith(
         labelText: label,
@@ -221,7 +221,7 @@ class InputFieldV1 extends ControllableWidget<InputControl> with ThemeProvider {
       ),
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      style: style ?? font.bodyText1.copyWith(color: cursor),
+      style: style ?? font.bodyText1!.copyWith(color: cursor),
       strutStyle: strutStyle,
       textAlign: textAlign,
       textDirection: textDirection,

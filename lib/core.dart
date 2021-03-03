@@ -38,11 +38,17 @@ export './src/widget/input_field_v1.dart';
 export './src/widget/loader_widget.dart';
 export './src/widget/navigation_stack.dart';
 export './src/widget/notifier_widget.dart';
-export './src/widget/statebound_widget.dart';
 export './src/widget/transition_holder.dart';
 export './src/widget/widget_provider.dart';
 
-enum LoadingStatus { initial, progress, done, error, outdated, unknown }
+enum LoadingStatus {
+  initial,
+  progress,
+  done,
+  error,
+  outdated,
+  unknown,
+}
 
 typedef Initializer<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);
@@ -50,8 +56,7 @@ typedef ValueCallback<T> = void Function(T value);
 typedef ValueConverter<T> = T Function(dynamic value);
 typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
 
-typedef ControlWidgetBuilder<T> = Widget Function(
-    BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
 void printDebug(Object object) {

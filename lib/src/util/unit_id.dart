@@ -109,7 +109,7 @@ class UnitId {
 
     int max = 0;
     for (int i = 1; i < digits; i++) {
-      max += pow(count, i);
+      max += pow(count, i) as int;
     }
 
     return max;

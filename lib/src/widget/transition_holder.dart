@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
 
 typedef CrossTransitionBuilder = Widget Function(BuildContext context,
-    Animation anim, Widget firstWidget, Widget secondWidget);
+    Animation? anim, Widget firstWidget, Widget secondWidget);
 
 /// Holds anim duration and transition builder.
 class CrossTransition {
@@ -16,7 +16,7 @@ class CrossTransition {
   /// [builder] - Builds Transition Widget based on input [Animation] and in/out Widgets.
   const CrossTransition({
     this.duration: const Duration(milliseconds: 300),
-    @required this.builder,
+    required this.builder,
   });
 }
 
@@ -27,13 +27,13 @@ class TransitionControl extends BaseModel
   bool autoRun = false;
 
   /// Animation Controller created when [TickerComponent] provides [vsync].
-  AnimationController _animation;
+  AnimationController? _animation;
 
   /// Checks if [_animation] is ready.
   bool get isInitialized => _animation != null;
 
   /// Callback of [autoRun] action.
-  VoidCallback _autoCross;
+  VoidCallback? _autoCross;
 
   /// Sets next animation value.
   double initialProgress = 0.0;
@@ -43,7 +43,7 @@ class TransitionControl extends BaseModel
 
   bool get running => _animation?.isAnimating ?? false;
 
-  AnimationStatus get status => _animation?.status;
+  AnimationStatus? get status => _animation?.status;
 
   TransitionControl();
 
@@ -51,34 +51,34 @@ class TransitionControl extends BaseModel
   void onTickerInitialized(TickerProvider ticker) {
     _animation = AnimationController(
         vsync: ticker, duration: Duration(milliseconds: 300));
-    _animation.addListener(_notifyState);
+    _animation!.addListener(_notifyState);
   }
 
   /// Changes duration of [forward] and [reverse] animation.
   /// 300ms is used if duration is not set.
   /// Animation value is set to current [initialProgress].
-  void setDurations({Duration forward, Duration reverse}) {
+  void setDurations({Duration? forward, Duration? reverse}) {
     assert(isInitialized);
 
-    _animation.duration = forward ?? Duration(milliseconds: 300);
-    _animation.reverseDuration = reverse ?? Duration(milliseconds: 300);
-    _animation.value = initialProgress ?? 0.0;
+    _animation!.duration = forward ?? Duration(milliseconds: 300);
+    _animation!.reverseDuration = reverse ?? Duration(milliseconds: 300);
+    _animation!.value = initialProgress ?? 0.0;
   }
 
   /// Plays cross in transition: 0.0 -> 1.0. From first widget to second.
   /// [AnimationController.forward].
-  TickerFuture crossIn({double from}) {
+  TickerFuture crossIn({double? from}) {
     assert(isInitialized);
 
-    return _animation.forward(from: from);
+    return _animation!.forward(from: from);
   }
 
   /// Plays cross out transition: 1.0 -> 0.0. From second widget to first.
   /// [AnimationController.forward].
-  TickerFuture crossOut({double from}) {
+  TickerFuture crossOut({double? from}) {
     assert(isInitialized);
 
-    return _animation.reverse(from: from);
+    return _animation!.reverse(from: from);
   }
 
   /// Plays [autoRun] cross animation.
@@ -86,11 +86,11 @@ class TransitionControl extends BaseModel
     assert(isInitialized);
 
     if (_autoCross != null) {
-      _autoCross();
+      _autoCross!();
       return;
     }
 
-    if (_animation.value < 1.0) {
+    if (_animation!.value < 1.0) {
       crossIn();
     } else {
       crossOut();
@@ -98,24 +98,24 @@ class TransitionControl extends BaseModel
   }
 
   /// Prepares control to play [crossIn] after [State] initialization.
-  void autoCrossIn({double from}) {
+  void autoCrossIn({double? from}) {
     autoRun = true;
     _autoCross = () => crossIn(from: from);
   }
 
   /// Prepares control to play [crossOut] after [State] initialization.
-  void autoCrossOut({double from}) {
+  void autoCrossOut({double? from}) {
     autoRun = true;
     _autoCross = () => crossOut(from: from);
   }
 
   void addStatusListener(AnimationStatusListener listener) =>
-      _animation.addStatusListener(listener);
+      _animation!.addStatusListener(listener);
 
   void removeStatusListener(AnimationStatusListener listener) =>
-      _animation.removeStatusListener(listener);
+      _animation!.removeStatusListener(listener);
 
-  void _notifyState() => setValue(_animation.value);
+  void _notifyState() => setValue(_animation!.value);
 
   @override
   void softDispose() {
@@ -148,22 +148,22 @@ class TransitionHolder extends ControllableWidget<TransitionControl>
 
   /// Builder of first Widget. By default this Widget is visible initially.
   /// Custom [WidgetInitializer.key] can help to prevent unnecessary rebuilds, when swapping initializers or moving in [WidgetTree]. Otherwise [UniqueKey] is generated.
-  final WidgetInitializer firstWidget;
+  final WidgetInitializer? firstWidget;
 
   /// Builder of second Widget. By default this Widget is hidden initially.
   /// Custom [WidgetInitializer.key] can help to prevent unnecessary rebuilds, when swapping initializers or moving in [WidgetTree]. Otherwise [UniqueKey] is generated.
-  final WidgetInitializer secondWidget;
+  final WidgetInitializer? secondWidget;
 
   /// Transition from [firstWidget] to [secondWidget].
   /// [CrossTransitions.fadeCross] is used by default.
-  final CrossTransition transitionIn;
+  final CrossTransition? transitionIn;
 
   /// Transition from [secondWidget] to [firstWidget].
   /// [CrossTransitions.fadeCross] is used by default.
-  final CrossTransition transitionOut;
+  final CrossTransition? transitionOut;
 
   /// Returns current animation controller.
-  Animation get animation => control._animation;
+  Animation? get animation => control._animation;
 
   /// Returns transition for [TransitionControl.crossIn].
   CrossTransitionBuilder get transitionInBuilder =>
@@ -176,13 +176,13 @@ class TransitionHolder extends ControllableWidget<TransitionControl>
   /// Keyed first Widget.
   Widget get _firstWidget => KeyedSubtree(
         key: getArg(key: _firstKey),
-        child: firstWidget.getWidget(context, args: args),
+        child: firstWidget!.getWidget(context!, args: args)!,
       );
 
   /// Keyed second Widget.
   Widget get _secondWidget => KeyedSubtree(
         key: getArg(key: _secondKey),
-        child: secondWidget.getWidget(context, args: args),
+        child: secondWidget!.getWidget(context!, args: args)!,
       );
 
   /// Handles transition between two Widgets and holds active [Widget], other Widget is disposed.
@@ -193,10 +193,10 @@ class TransitionHolder extends ControllableWidget<TransitionControl>
   /// [transitionIn] - Transition from first to second.
   /// [transitionOut] - Transition from second to first.
   TransitionHolder({
-    Key key,
-    @required TransitionControl control,
-    @required this.firstWidget,
-    @required this.secondWidget,
+    Key? key,
+    required TransitionControl control,
+    required this.firstWidget,
+    required this.secondWidget,
     this.args,
     this.transitionIn,
     this.transitionOut,
@@ -233,8 +233,8 @@ class TransitionHolder extends ControllableWidget<TransitionControl>
 
   /// Resets keys.
   void _updateKeys() {
-    setArg(key: _firstKey, value: firstWidget.key ?? GlobalKey());
-    setArg(key: _secondKey, value: secondWidget.key ?? GlobalKey());
+    setArg(key: _firstKey, value: firstWidget!.key ?? GlobalKey());
+    setArg(key: _secondKey, value: secondWidget!.key ?? GlobalKey());
   }
 
   /// Updates duration of transitions.
@@ -247,17 +247,17 @@ class TransitionHolder extends ControllableWidget<TransitionControl>
 
   @override
   Widget build(BuildContext context) {
-    if (animation.status == AnimationStatus.dismissed) {
-      secondWidget.clear();
+    if (animation!.status == AnimationStatus.dismissed) {
+      secondWidget!.clear();
       return _firstWidget;
     }
 
-    if (animation.status == AnimationStatus.completed) {
-      firstWidget.clear();
+    if (animation!.status == AnimationStatus.completed) {
+      firstWidget!.clear();
       return _secondWidget;
     }
 
-    if (animation.status == AnimationStatus.forward) {
+    if (animation!.status == AnimationStatus.forward) {
       return transitionInBuilder(
         context,
         animation,
@@ -280,10 +280,10 @@ class CrossTransitions {
 
   static get _progressReverse => Tween<double>(begin: 1.0, end: 0.0);
 
-  static CrossTransitionBuilder fade({Color backgroundColor}) =>
+  static CrossTransitionBuilder fade({Color? backgroundColor}) =>
       (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
-          parent: anim,
+          parent: anim as Animation<double>,
           curve: Curves.easeOut.to(0.65),
         );
 
@@ -309,10 +309,10 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder fadeOutFadeIn({Color backgroundColor}) =>
+  static CrossTransitionBuilder fadeOutFadeIn({Color? backgroundColor}) =>
       (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
-          parent: anim,
+          parent: anim as Animation<double>,
           curve: Curves.easeIn.to(0.35),
         );
 
@@ -338,10 +338,10 @@ class CrossTransitions {
         );
       };
 
-  static CrossTransitionBuilder fadeCross({Color backgroundColor}) =>
+  static CrossTransitionBuilder fadeCross({Color? backgroundColor}) =>
       (context, anim, firstWidget, secondWidget) {
         final outAnim = CurvedAnimation(
-          parent: anim,
+          parent: anim as Animation<double>,
           curve: Curves.easeOut,
         );
 

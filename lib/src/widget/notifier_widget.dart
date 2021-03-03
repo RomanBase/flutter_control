@@ -1,18 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T> {
-  T _value;
+class BaseNotifier<T> extends ChangeNotifier implements ValueListenable<T?> {
+  T? _value;
 
   @override
-  T get value => _value;
+  T? get value => _value;
 
-  set value(T newValue) {
+  set value(T? newValue) {
     _value = newValue;
     notifyListeners();
   }
 
-  BaseNotifier([T value]) {
+  BaseNotifier([T? value]) {
     _value = value;
   }
 }
@@ -23,15 +23,15 @@ class NotifierBuilder<T> extends StatefulWidget {
   final Listenable control;
 
   /// Widget builder.
-  final ControlWidgetBuilder<T> builder;
+  final ControlWidgetBuilder<T?> builder;
 
   /// Builds Widget every time when [Listenable] notifies data changes.
   /// [control] - required Listenable controller. [ChangeNotifier], [ValueNotifier], [BaseNotifier].
   /// [builder] - required Widget builder. Value is determined based on [control] type.
   const NotifierBuilder({
-    Key key,
-    @required this.control,
-    @required this.builder,
+    Key? key,
+    required this.control,
+    required this.builder,
   }) : super(key: key);
 
   @override

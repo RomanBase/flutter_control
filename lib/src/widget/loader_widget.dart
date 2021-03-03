@@ -2,13 +2,13 @@ import 'package:flutter_control/core.dart';
 
 abstract class InitLoaderControl extends BaseControl {
   final loading = LoadingControl(LoadingStatus.progress);
-  final Duration delay;
+  final Duration? delay;
 
   InitLoaderControl({this.delay});
 
   factory InitLoaderControl.of({
-    Future<dynamic> Function(InitLoaderControl) load,
-    Duration delay,
+    Future<dynamic> Function(InitLoaderControl)? load,
+    Duration? delay,
   }) =>
       _InitLoaderControlFunc(
         loadFunc: load,
@@ -25,10 +25,10 @@ abstract class InitLoaderControl extends BaseControl {
   void executeLoader() async {
     loading.progress();
 
-    DelayBlock block;
+    DelayBlock? block;
 
     if (delay != null) {
-      block = DelayBlock(delay);
+      block = DelayBlock(delay!);
     }
 
     await Control.factory.onReady();
@@ -49,7 +49,7 @@ abstract class InitLoaderControl extends BaseControl {
 
   Future<dynamic> load();
 
-  void notifyControl(AppState state, [dynamic args]) {
+  void notifyControl(AppState? state, [dynamic args]) {
     Control.scope.setAppState(state, args: args);
   }
 
@@ -62,11 +62,11 @@ abstract class InitLoaderControl extends BaseControl {
 }
 
 class _InitLoaderControlFunc extends InitLoaderControl {
-  final Future<dynamic> Function(InitLoaderControl) loadFunc;
+  final Future<dynamic> Function(InitLoaderControl)? loadFunc;
 
   _InitLoaderControlFunc({
     this.loadFunc,
-    Duration delay,
+    Duration? delay,
   }) : super(delay: delay);
 
   @override
@@ -74,7 +74,7 @@ class _InitLoaderControlFunc extends InitLoaderControl {
     dynamic result;
 
     if (loadFunc != null) {
-      result = await loadFunc(this);
+      result = await loadFunc!(this);
     }
 
     return result;
@@ -85,25 +85,25 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
   final WidgetBuilder builder;
 
   InitLoader({
-    T control,
-    @required this.builder,
+    T? control,
+    required this.builder,
   }) : super(args: control);
 
   factory InitLoader.of({
-    Future<dynamic> Function(InitLoaderControl) load,
-    Duration delay,
-    @required WidgetBuilder builder,
+    Future<dynamic> Function(InitLoaderControl)? load,
+    Duration? delay,
+    required WidgetBuilder builder,
   }) =>
       InitLoader(
         control: InitLoaderControl.of(
           load: load,
           delay: delay,
-        ),
+        ) as T?,
         builder: builder,
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget? build(BuildContext context) {
     return WidgetInitializer.of((context) => builder(context), control)
         .getWidget(context, args: holder.args);
   }

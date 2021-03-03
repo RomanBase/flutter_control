@@ -5,11 +5,11 @@ import 'package:flutter_control/core.dart';
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
-  dynamic get value => (holder.state as _ControllableState)?._value;
+  dynamic get value => (holder.state as _ControllableState?)?._value;
 
   ControllableWidget(
     this.control, {
-    Key key,
+    Key? key,
   })  : assert(control != null),
         super(key: key);
 
@@ -35,21 +35,21 @@ class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final _control = widget.control;
+    final T _control = widget.control;
 
     if (_control is List) {
       return ControlBuilderGroup(
         controls: _control,
         builder: (context, values) {
           _value = values;
-          return widget.build(context);
+          return widget.build(context!);
         },
       );
     } else {
       return ControlBuilder(
         control: _control,
         nullOk: true,
-        builder: (context, value) {
+        builder: (context, dynamic value) {
           _value = value;
           return widget.build(context);
         },

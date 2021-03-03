@@ -6,13 +6,13 @@ import 'package:flutter_control/core.dart';
 /// Subscription to [ActionControl]
 class ActionSubscription<T> implements Disposable {
   /// Creator of this sub.
-  ActionControl<T> _parent;
+  ActionControl<T>? _parent;
 
   /// Listeners callback.
-  ValueCallback<T> _action;
+  ValueCallback<T>? _action;
 
   /// Test when this subscription is ready to close.
-  Predicate<T> _until;
+  Predicate<T>? _until;
 
   /// Checks if subscription can be used next time.
   bool _keep = true;
@@ -66,15 +66,15 @@ class ActionSubscription<T> implements Disposable {
 
 /// [ValueListenable] version of [ActionControlObservable].
 /// Wraps [ActionControl] and provides [Listenable] api.
-class ActionControlListenable<T> implements ValueListenable<T>, Disposable {
+class ActionControlListenable<T> implements ValueListenable<T?>, Disposable {
   /// Actual control to subscribe.
   final ActionControl<T> _parent;
 
   /// Checks if parent [FieldControl.isActive] and any callback is registered.
-  final _callbacks = Map<VoidCallback, ActionSubscription>();
+  final _callbacks = Map<VoidCallback, ActionSubscription?>();
 
   @override
-  T get value => _parent.value;
+  T? get value => _parent.value;
 
   /// Wraps [ActionControl] to [Listenable] version.
   ActionControlListenable(this._parent);
@@ -96,7 +96,7 @@ class ActionControlListenable<T> implements ValueListenable<T>, Disposable {
 
   @override
   void dispose() {
-    _callbacks.forEach((key, value) => value.dispose());
+    _callbacks.forEach((key, value) => value!.dispose());
   }
 }
 
@@ -114,7 +114,7 @@ abstract class ActionControlObservable<T> {
   /// If [current] is 'true' and [value] isn't 'null', then given listener is notified immediately.
   /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
   /// Returns [ActionSubscription] for manual cancellation.
-  ActionSubscription<T> subscribe(ValueCallback<T> action,
+  ActionSubscription<T>? subscribe(ValueCallback<T> action,
       {bool current: true});
 
   /// Subscribes callback to next action change.
@@ -123,21 +123,21 @@ abstract class ActionControlObservable<T> {
   /// [ActionSubscription] is automatically closed during dispose phase of [ActionControl].
   /// Returns [ActionSubscription] for manual cancellation.
   ActionSubscription<T> once(ValueCallback<T> action,
-      {Predicate<T> until, bool current: true});
+      {Predicate<T>? until, bool current: true});
 
   /// Checks if given object is same as this one.
   /// Returns true if objects are same.
   bool equal(other);
 }
 
-mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T> {
+mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T?> {
   /// Actual control to subscribe.
   final _parent = ActionControl.broadcast<T>();
 
   @override
-  T get value => _parent.value;
+  T? get value => _parent.value;
 
-  set value(T value) => _parent.value = value;
+  set value(T? value) => _parent.value = value;
 
   void setValue(T value, {bool notify: true, bool forceNotify: false}) {
     _parent.setValue(value, notifyListeners: notify && !forceNotify);
@@ -152,13 +152,13 @@ mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T> {
       ActionControlListenable<T>(_parent);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action,
+  ActionSubscription<T?>? subscribe(ValueCallback<T?> action,
           {bool current: true}) =>
       _parent.subscribe(action, current: current);
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action,
-          {Predicate<T> until, bool current: true}) =>
+  ActionSubscription<T> once(ValueCallback<T?> action,
+          {Predicate<T>? until, bool current: true}) =>
       _parent.once(action, current: current);
 
   @override
@@ -177,7 +177,7 @@ mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T> {
 /// @{macro action-control}
 ///
 /// [ActionControl.sub]
-class ActionControlSub<T> implements ActionControlObservable<T> {
+class ActionControlSub<T> implements ActionControlObservable<T?> {
   /// Actual control to subscribe.
   final ActionControl<T> _parent;
 
@@ -185,19 +185,19 @@ class ActionControlSub<T> implements ActionControlObservable<T> {
   ActionControlSub(this._parent);
 
   @override
-  T get value => _parent.value;
+  T? get value => _parent.value;
 
   ActionControlListenable<T> get listenable =>
       ActionControlListenable<T>(_parent);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action,
+  ActionSubscription<T?>? subscribe(ValueCallback<T?> action,
           {bool current: true}) =>
       _parent.subscribe(action, current: current);
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action,
-          {Predicate<T> until, bool current: true}) =>
+  ActionSubscription<T> once(ValueCallback<T?> action,
+          {Predicate<T>? until, bool current: true}) =>
       _parent.once(action, current: current);
 
   @override
@@ -218,12 +218,12 @@ class ActionControlSub<T> implements ActionControlObservable<T> {
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
 /// [ActionControl.provider] - Subscription to [BroadcastProvider].
-class ActionControl<T> implements ActionControlObservable<T>, Disposable {
+class ActionControl<T> implements ActionControlObservable<T?>, Disposable {
   /// Current value.
-  T _value;
+  T? _value;
 
   @override
-  T get value => _value;
+  T? get value => _value;
 
   /// Sets [value] and notifies listeners.
   set value(value) => setValue(value);
@@ -235,18 +235,18 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
   bool get isEmpty => _value == null;
 
   /// Current subscription.
-  ActionSubscription<T> _sub;
+  ActionSubscription<T?>? _sub;
 
   /// Global subscription.
-  BroadcastSubscription<T> _globalSub;
+  BroadcastSubscription<T>? _globalSub;
 
   /// Returns [ActionControlSub] to provide read only version of [ActionControl].
-  ActionControlObservable<T> get sub => ActionControlSub<T>(this);
+  ActionControlObservable<T?> get sub => ActionControlSub<T>(this);
 
   ActionControlListenable<T> get listenable => ActionControlListenable<T>(this);
 
   ///Default constructor.
-  ActionControl._([T value]) {
+  ActionControl._([T? value]) {
     _value = value;
   }
 
@@ -264,17 +264,17 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
-  static ActionControl<T> single<T>([T value]) => ActionControl<T>._(value);
+  static ActionControl<T> single<T>([T? value]) => ActionControl<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  static ActionControl<T> broadcast<T>([T value]) =>
+  static ActionControl<T> broadcast<T>([T? value]) =>
       _ActionControlBroadcast<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  static ActionControl<T> provider<T>(
-      {@required dynamic key, bool single: true, T defaultValue}) {
+  static ActionControl<T?> provider<T>(
+      {required dynamic key, bool single: true, T? defaultValue}) {
     ActionControl control = single
         ? ActionControl<T>._(defaultValue)
         : _ActionControlBroadcast<T>._(defaultValue);
@@ -282,11 +282,11 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
     control._globalSub =
         BroadcastProvider.subscribe<T>(key, (data) => control.setValue(data));
 
-    return control;
+    return control as ActionControl<T?>;
   }
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action,
+  ActionSubscription<T?>? subscribe(ValueCallback<T?> action,
       {bool current: true}) {
     _sub = ActionSubscription<T>()
       .._parent = this
@@ -300,8 +300,8 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action,
-      {Predicate<T> until, bool current: true}) {
+  ActionSubscription<T> once(ValueCallback<T?> action,
+      {Predicate<T>? until, bool current: true}) {
     final sub = ActionSubscription<T>()
       .._parent = this
       .._action = action
@@ -319,7 +319,7 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
   }
 
   /// Sets new value and notifies listeners.
-  void setValue(T value, {bool notifyListeners: true}) {
+  void setValue(T? value, {bool notifyListeners: true}) {
     if (_value == value) {
       return;
     }
@@ -333,10 +333,10 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
   /// Notifies listeners with current value.
   void notify() {
-    if (_sub != null && _sub.isActive) {
-      _sub._action(value);
+    if (_sub != null && _sub!.isActive) {
+      _sub!._action!(value);
 
-      if (_sub._readyToClose(value)) {
+      if (_sub!._readyToClose(value)) {
         cancel();
       }
     }
@@ -344,9 +344,9 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
   /// Removes specified sub from listeners.
   /// If no sub is specified then removes all.
-  void cancel([ActionSubscription<T> subscription]) {
+  void cancel([ActionSubscription<T>? subscription]) {
     if (_sub != null) {
-      _sub._clear();
+      _sub!._clear();
       _sub = null;
     }
   }
@@ -356,7 +356,7 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
     cancel();
 
     if (_globalSub != null) {
-      _globalSub.dispose();
+      _globalSub!.dispose();
       _globalSub = null;
     }
   }
@@ -369,12 +369,12 @@ class ActionControl<T> implements ActionControlObservable<T>, Disposable {
 
 /// Broadcast version of [ActionControl]
 class _ActionControlBroadcast<T> extends ActionControl<T> {
-  final _list = List<ActionSubscription<T>>();
+  final List<ActionSubscription<T?>?> _list = <ActionSubscription<T>?>[];
 
-  _ActionControlBroadcast._([T value]) : super._(value);
+  _ActionControlBroadcast._([T? value]) : super._(value);
 
   @override
-  ActionSubscription<T> subscribe(ValueCallback<T> action,
+  ActionSubscription<T?>? subscribe(ValueCallback<T?> action,
       {bool current: true}) {
     final sub = super.subscribe(action);
     _sub = null; // just clear unused sub reference
@@ -389,9 +389,9 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   }
 
   @override
-  ActionSubscription<T> once(ValueCallback<T> action,
-      {Predicate<T> until, bool current: true}) {
-    final sub = super.once(action, until: until, current: current);
+  ActionSubscription<T> once(ValueCallback<T?> action,
+      {Predicate<T>? until, bool current: true}) {
+    final ActionSubscription<T> sub = super.once(action, until: until, current: current);
     _sub = null; // just clear unused sub reference
 
     if (sub.isActive) {
@@ -404,7 +404,7 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   @override
   void notify() {
     final onceList = _list.where((sub) {
-      sub._action(_value);
+      sub!._action!(_value);
 
       if (sub._readyToClose(value)) {
         sub._clear();
@@ -415,14 +415,14 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
     });
 
     if (onceList.isNotEmpty) {
-      _list.removeWhere((sub) => !sub.isValid);
+      _list.removeWhere((sub) => !sub!.isValid);
     }
   }
 
   @override
-  void cancel([ActionSubscription<T> subscription]) {
+  void cancel([ActionSubscription<T>? subscription]) {
     if (subscription == null) {
-      _list.forEach((sub) => sub._clear());
+      _list.forEach((sub) => sub!._clear());
       _list.clear();
     } else {
       subscription._clear();
@@ -450,9 +450,9 @@ class ActionBuilder<T> extends StatefulWidget {
   /// [control] - required Action controller. [ActionControl] or [ActionControlSub].
   /// [builder] - required Widget builder. Value is passed directly (including 'null' values).
   const ActionBuilder({
-    Key key,
-    @required this.control,
-    @required this.builder,
+    Key? key,
+    required this.control,
+    required this.builder,
   }) : super(key: key);
 
   @override
@@ -463,9 +463,9 @@ class ActionBuilder<T> extends StatefulWidget {
 
 /// State of [ActionBuilder].
 /// Subscribes to provided Action.
-class _ActionBuilderState<T> extends ValueState<ActionBuilder<T>, T> {
+class _ActionBuilderState<T> extends ValueState<ActionBuilder<T?>, T?> {
   /// Active sub to [ActionControl].
-  ActionSubscription _sub;
+  ActionSubscription? _sub;
 
   @override
   void initState() {
@@ -480,11 +480,11 @@ class _ActionBuilderState<T> extends ValueState<ActionBuilder<T>, T> {
   }
 
   @override
-  void didUpdateWidget(ActionBuilder<T> oldWidget) {
+  void didUpdateWidget(ActionBuilder<T?> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.control.equal(oldWidget.control)) {
-      _sub.cancel();
+      _sub!.cancel();
       _initSub();
     }
 
@@ -510,28 +510,28 @@ class _ActionBuilderState<T> extends ValueState<ActionBuilder<T>, T> {
 /// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [ActionControl] is changed.
 class ActionBuilderGroup extends StatefulWidget {
   final List<ActionControlObservable> controls;
-  final ControlWidgetBuilder<List> builder;
+  final ControlWidgetBuilder<List?> builder;
 
   /// Multiple action based Widget builder. Listening every [ActionControlObservable] about changes.
   /// [controls] - List of controls to subscribe about value changes. [ActionControl] and [ActionControlSub].
   /// [builder] - Values to builder are passed in same order as [controls] are. Also 'null' values are passed in.
   const ActionBuilderGroup({
-    Key key,
-    @required this.controls,
-    @required this.builder,
+    Key? key,
+    required this.controls,
+    required this.builder,
   }) : super(key: key);
 
   @override
   _ActionBuilderGroupState createState() => _ActionBuilderGroupState();
 
-  Widget build(BuildContext context, List values) => builder(context, values);
+  Widget build(BuildContext context, List? values) => builder(context, values);
 }
 
 /// State of [ActionBuilderGroup].
 /// Subscribes to all provided Actions.
 class _ActionBuilderGroupState extends ValueState<ActionBuilderGroup, List> {
   /// All active subs.
-  final _subs = List<ActionSubscription>();
+  final _subs = <ActionSubscription?>[];
 
   /// Maps values from controls to List.
   List _mapValues() =>
@@ -557,13 +557,13 @@ class _ActionBuilderGroupState extends ValueState<ActionBuilderGroup, List> {
     super.didUpdateWidget(oldWidget);
 
     if (widget.controls != oldWidget.controls) {
-      _subs.forEach((item) => item.dispose());
+      _subs.forEach((item) => item!.dispose());
       _subs.clear();
 
       _initSubs();
     }
 
-    List initial = value;
+    List initial = value!;
     List current = _mapValues();
 
     if (initial.length == current.length) {
@@ -585,7 +585,7 @@ class _ActionBuilderGroupState extends ValueState<ActionBuilderGroup, List> {
   void dispose() {
     super.dispose();
 
-    _subs.forEach((item) => item.dispose());
+    _subs.forEach((item) => item!.dispose());
     _subs.clear();
   }
 }

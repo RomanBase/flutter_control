@@ -5,19 +5,19 @@ import 'package:flutter_control/core.dart';
 typedef MenuCallback<T> = T Function(bool selected);
 
 class MenuItem {
-  final Object key;
-  final MenuCallback<dynamic> iconBuilder;
-  final MenuCallback<String> titleBuilder;
-  final Object data;
+  final Object? key;
+  final MenuCallback<dynamic>? iconBuilder;
+  final MenuCallback<String>? titleBuilder;
+  final Object? data;
   final bool selected;
-  final ValueGetter<bool> onSelected;
+  final ValueGetter<bool>? onSelected;
 
-  dynamic get icon => iconBuilder != null ? iconBuilder(selected) : null;
+  dynamic get icon => iconBuilder != null ? iconBuilder!(selected) : null;
 
-  String get title => titleBuilder != null ? titleBuilder(selected) : null;
+  String? get title => titleBuilder != null ? titleBuilder!(selected) : null;
 
   const MenuItem({
-    @required this.key,
+    required this.key,
     this.iconBuilder,
     this.titleBuilder,
     this.data,
@@ -26,9 +26,9 @@ class MenuItem {
   });
 
   MenuItem copyWith({
-    Object key,
-    Object data,
-    bool selected,
+    Object? key,
+    Object? data,
+    bool? selected,
   }) =>
       MenuItem(
         key: key ?? this.key,
@@ -65,10 +65,10 @@ abstract class _StackNavigator {
 class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
-  MenuItem menu;
+  MenuItem? menu;
 
   /// Implementation of StackNavigator.
-  _StackNavigator _navigator;
+  _StackNavigator? _navigator;
 
   /// Check if navigator is set during subscribe (State init) phase.
   bool get isNavigatorAvailable => _navigator != null;
@@ -76,20 +76,20 @@ class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Returns if this controller is selected.
   /// Mostly used in combination with [NavigatorStackControl]
-  bool get selected => menu.selected;
+  bool get selected => menu!.selected;
 
   /// Data for menu item.
   /// Sets selection for this controller.
   /// Mostly used in combination with [NavigatorStackControl]
   set selected(value) {
-    menu = menu.copyWith(selected: value);
+    menu = menu!.copyWith(selected: value);
     if (onSelectionChanged != null) {
-      onSelectionChanged(value);
+      onSelectionChanged!(value);
     }
   }
 
   /// Notifies about selection changes.
-  ValueCallback<bool> onSelectionChanged;
+  ValueCallback<bool>? onSelectionChanged;
 
   /// Default constructor
   NavigatorControl({this.menu}) {
@@ -114,7 +114,7 @@ class NavigatorControl extends BaseControl {
   @override
   int get hashCode => menu.hashCode;
 
-  bool navigateBack() => _navigator != null ? _navigator.navigateBack() : false;
+  bool navigateBack() => _navigator != null ? _navigator!.navigateBack() : false;
 
   void navigateToRoot() => _navigator?.navigateToRoot();
 
@@ -141,9 +141,9 @@ class NavigatorStack extends StatefulWidget {
 
   /// Default constructor
   const NavigatorStack._({
-    Key key,
-    @required this.control,
-    @required this.initializer,
+    Key? key,
+    required this.control,
+    required this.initializer,
     this.overrideNavigation: false,
   }) : super(key: key);
 
@@ -154,14 +154,14 @@ class NavigatorStack extends StatefulWidget {
   ///
   /// [NavigatorStack]
   static Widget single({
-    NavigatorControl control,
-    @required WidgetBuilder builder,
+    NavigatorControl? control,
+    required WidgetBuilder builder,
     bool overrideNavigation: false,
   }) {
     control ??= NavigatorControl();
 
     return NavigatorStack._(
-      key: ObjectKey(control.menu.key),
+      key: ObjectKey(control.menu!.key),
       control: control,
       initializer: WidgetInitializer.of(builder),
       overrideNavigation: overrideNavigation,
@@ -179,10 +179,10 @@ class NavigatorStack extends StatefulWidget {
   ///
   /// [NavigatorStack]
   static Widget group({
-    NavigatorStackControl control,
-    int initialIndex,
-    @required List<NavigatorStack> items,
-    StackGroupBuilder builder,
+    NavigatorStackControl? control,
+    int? initialIndex,
+    required List<NavigatorStack> items,
+    StackGroupBuilder? builder,
     bool overrideNavigation: true,
   }) {
     return NavigatorStackGroup(
@@ -205,18 +205,18 @@ class NavigatorStack extends StatefulWidget {
   ///
   /// [NavigatorStack]
   static Widget menu({
-    NavigatorStackControl control,
-    int initialIndex,
-    @required Map<MenuItem, WidgetBuilder> items,
-    StackGroupBuilder builder,
+    NavigatorStackControl? control,
+    int? initialIndex,
+    required Map<MenuItem, WidgetBuilder> items,
+    StackGroupBuilder? builder,
     bool overrideNavigation: true,
   }) {
-    final stack = List<NavigatorStack>();
+    final stack = <NavigatorStack>[];
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(menu: key),
           builder: value ?? (_) => Container(),
-        )));
+        ) as NavigatorStack));
 
     return NavigatorStack.group(
       control: control,
@@ -233,11 +233,11 @@ class NavigatorStack extends StatefulWidget {
 
 class _NavigatorStackState extends State<NavigatorStack>
     implements _StackNavigator {
-  GlobalKey<NavigatorState> _navigatorKey;
+  GlobalKey<NavigatorState>? _navigatorKey;
 
-  NavigatorState get navigator => _navigatorKey?.currentState;
+  NavigatorState? get navigator => _navigatorKey?.currentState;
 
-  HeroController _heroController;
+  HeroController? _heroController;
 
   @override
   void initState() {
@@ -268,7 +268,7 @@ class _NavigatorStackState extends State<NavigatorStack>
   Widget build(BuildContext context) {
     final navigator = Navigator(
       key: _navigatorKey,
-      observers: [_heroController],
+      observers: [_heroController!],
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
             builder: (context) =>
@@ -288,8 +288,8 @@ class _NavigatorStackState extends State<NavigatorStack>
 
   @override
   bool navigateBack() {
-    if (navigator != null && navigator.canPop()) {
-      navigator.pop();
+    if (navigator != null && navigator!.canPop()) {
+      navigator!.pop();
       return true;
     }
 
@@ -299,7 +299,7 @@ class _NavigatorStackState extends State<NavigatorStack>
   @override
   void navigateToRoot() {
     if (navigator != null) {
-      navigator.popUntil((route) => route.isFirst);
+      navigator!.popUntil((route) => route.isFirst);
     }
   }
 }
@@ -316,44 +316,44 @@ class _NavigatorStackState extends State<NavigatorStack>
 /// [NavigatorStack]
 class NavigatorStackControl extends BaseControl with StateControl {
   /// List of Controllers set in Widget construct phase.
-  List<NavigatorControl> _items;
+  List<NavigatorControl>? _items;
 
   /// List of Controllers set in Widget construct phase.
-  List<NavigatorControl> get items => _items;
+  List<NavigatorControl>? get items => _items;
 
   /// List of MenuItems set in Widget construct phase.
-  List<MenuItem> get menuItems => _items == null
+  List<MenuItem?> get menuItems => _items == null
       ? []
-      : _items.map((item) => item.menu).toList(growable: false);
+      : _items!.map((item) => item.menu).toList(growable: false);
 
   /// Returns current controller - based on [currentPageIndex].
-  NavigatorControl get currentControl => _items[currentPageIndex];
+  NavigatorControl get currentControl => _items![currentPageIndex!];
 
-  MenuItem get currentMenu => currentControl.menu;
+  MenuItem? get currentMenu => currentControl.menu;
 
-  bool get isMenuValid => _items != null && items.length > 0;
+  bool get isMenuValid => _items != null && items!.length > 0;
 
   /// Notifies about page changes.
   /// Can be used with [ActionBuilder] to rebuild menu or highlight active widget.
   ///
   /// Use [setPageIndex] to change Page.
-  final _pageIndex = ActionControl.broadcast<int>(0);
+  final _pageIndex = ActionControl.broadcast<int?>(0);
 
   /// Returns current page index.
   /// Use [setPageIndex] to change active controller.
   /// Use [pageIndex] to be notified about changes.
-  int get currentPageIndex => _pageIndex.value;
+  int? get currentPageIndex => _pageIndex.value;
 
   /// Subscription to listen about page index changes.
-  ActionControlObservable<int> get pageIndex => _pageIndex.sub;
+  ActionControlObservable<int?> get pageIndex => _pageIndex.sub;
 
   bool reloadOnReselect;
 
-  VoidCallback onPagesInitialized;
+  VoidCallback? onPagesInitialized;
 
-  int _initialIndex;
+  int? _initialIndex;
 
-  NavigatorStackControl({int initialPageIndex, this.reloadOnReselect: true}) {
+  NavigatorStackControl({int? initialPageIndex, this.reloadOnReselect: true}) {
     _initialIndex = initialPageIndex;
     _pageIndex.value = _initialIndex ?? 0;
   }
@@ -367,8 +367,8 @@ class NavigatorStackControl extends BaseControl with StateControl {
     }
 
     if (currentPageIndex == index) {
-      if (items[index].menu?.onSelected != null) {
-        if (items[index].menu.onSelected()) {
+      if (items![index].menu?.onSelected != null) {
+        if (items![index].menu!.onSelected!()) {
           return;
         }
       }
@@ -382,10 +382,10 @@ class NavigatorStackControl extends BaseControl with StateControl {
 
     currentControl.selected = false;
 
-    index = index.clamp(0, _items.length - 1);
+    index = index.clamp(0, _items!.length - 1);
 
-    if (items[index].menu?.onSelected != null) {
-      if (items[index].menu.onSelected()) {
+    if (items![index].menu?.onSelected != null) {
+      if (items![index].menu!.onSelected!()) {
         return;
       }
     }
@@ -394,10 +394,10 @@ class NavigatorStackControl extends BaseControl with StateControl {
     currentControl.selected = true;
   }
 
-  void setPageByItem(MenuItem item) => setPageIndex(menuItems.indexOf(item));
+  void setPageByItem(MenuItem? item) => setPageIndex(menuItems.indexOf(item));
 
   void setPageByKey(dynamic key) =>
-      setPageByItem(menuItems.firstWhere((item) => item.key == key,
+      setPageByItem(menuItems.firstWhere((item) => item!.key == key,
           orElse: () => MenuItem(key: null)));
 
   void setInitialPage() => setPageIndex(_initialIndex ?? 0);
@@ -439,17 +439,17 @@ class NavigatorStackControl extends BaseControl with StateControl {
 }
 
 typedef StackGroupBuilder = Widget Function(
-    BuildContext context, int index, List<NavigatorStack> items);
+    BuildContext context, int? index, List<NavigatorStack>? items);
 
 class StackGroupBuilders {
   static StackGroupBuilder get stack => (context, index, items) => IndexedStack(
         key: ObjectKey('page_stack'),
         index: index,
-        children: items,
+        children: items!,
       );
 
   static StackGroupBuilder get single =>
-      (context, index, items) => items[index];
+      (context, index, items) => items![index!];
 }
 
 /// [NavigatorStack]
@@ -458,13 +458,13 @@ class StackGroupBuilders {
 class NavigatorStackGroup extends StatefulWidget {
   final NavigatorStackControl control;
   final List<NavigatorStack> items;
-  final int initialIndex;
-  final StackGroupBuilder builder;
+  final int? initialIndex;
+  final StackGroupBuilder? builder;
   final bool overrideNavigation;
 
   NavigatorStackGroup({
-    @required this.control,
-    @required this.items,
+    required this.control,
+    required this.items,
     this.initialIndex,
     this.builder,
     this.overrideNavigation: true,
@@ -480,7 +480,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
     with SingleTickerProviderStateMixin {
   NavigatorStackControl get control => widget.control;
 
-  List<NavigatorStack> _items;
+  List<NavigatorStack>? _items;
 
   @override
   void initState() {
@@ -497,12 +497,12 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
   }
 
   void _initControl() {
-    control._items = _items.map((page) => page.control).toList(growable: false);
-    control.setPageIndex(control.currentPageIndex);
+    control._items = _items!.map((page) => page.control).toList(growable: false);
+    control.setPageIndex(control.currentPageIndex!);
     control.currentControl.selected = true;
 
     if (control.onPagesInitialized != null) {
-      control.onPagesInitialized();
+      control.onPagesInitialized!();
     }
   }
 
@@ -531,10 +531,10 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
         widget.items.map((page) => page.control.menu).toList(growable: false);
 
     final oldMenuHasKeys =
-        oldMenu.firstWhere((item) => item.key == null, orElse: () => null) ==
+        oldMenu.firstWhere((item) => item!.key == null, orElse: () => null) ==
             null;
     final newMenuHasKeys =
-        newMenu.firstWhere((item) => item.key == null, orElse: () => null) ==
+        newMenu.firstWhere((item) => item!.key == null, orElse: () => null) ==
             null;
 
     if (oldMenuHasKeys && newMenuHasKeys) {
@@ -564,7 +564,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
 
     printDebug('Stack navigation update');
 
-    final menu = List<NavigatorStack>.of(_items);
+    final menu = List<NavigatorStack>.of(_items!);
 
     menu.removeWhere((item) => !newMenu.contains(item.control.menu));
 
@@ -574,9 +574,9 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
       }
     });
 
-    _items.clear();
+    _items!.clear();
     newMenu.forEach((item) {
-      _items.add(menu.firstWhere((nav) => nav.control.menu == item));
+      _items!.add(menu.firstWhere((nav) => nav.control.menu == item));
     });
 
     _initControl();
@@ -586,7 +586,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
   Widget build(BuildContext context) {
     return ActionBuilder(
       control: widget.control.pageIndex,
-      builder: (context, index) {
+      builder: (context, dynamic index) {
         final stack = (widget.builder ?? StackGroupBuilders.stack)(
             context, index, _items);
 
@@ -606,13 +606,13 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
 class _InstantRoute extends PageRoute {
   final WidgetBuilder builder;
 
-  _InstantRoute({@required this.builder}) : super();
+  _InstantRoute({required this.builder}) : super();
 
   @override
-  Color get barrierColor => null;
+  Color? get barrierColor => null;
 
   @override
-  String get barrierLabel => null;
+  String? get barrierLabel => null;
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation,

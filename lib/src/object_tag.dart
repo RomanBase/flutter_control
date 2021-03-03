@@ -15,7 +15,7 @@ class ObjectTag {
   factory ObjectTag.next() => ObjectTag._(UnitId.nextId());
 
   factory ObjectTag.key(Key key) {
-    Object object;
+    Object? object;
 
     if (key != null) {
       if (key is ObjectKey) {

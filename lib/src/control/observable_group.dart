@@ -1,23 +1,23 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
-  final _items = List<DisposableToken>();
+class ObservableGroup implements ActionControlObservable<Iterable?>, Disposable {
+  final _items = <DisposableToken>[];
 
   final _control = ActionControl.broadcast<Iterable>();
 
   @override
-  Iterable get value => _control.value;
+  Iterable? get value => _control.value;
 
   int get length => _items.length;
 
   operator [](int index) => _getValue(_items[index]);
 
-  ObservableGroup([List observables]) {
+  ObservableGroup([List? observables]) {
     observables?.forEach((item) => join(item));
   }
 
-  dynamic _getValue(DisposableToken token) {
+  dynamic _getValue(DisposableToken? token) {
     if (token == null) {
       return null;
     }
@@ -46,7 +46,7 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
     final event = DisposableClient(parent: this);
 
     if (observer is ActionControlObservable) {
-      final sub = observer.subscribe((value) => _notifyControl());
+      final sub = observer.subscribe((value) => _notifyControl())!;
       event.onCancel = sub.dispose;
     } else if (observer is FieldControlStream) {
       // ignore: cancel_subscriptions
@@ -84,12 +84,12 @@ class ObservableGroup implements ActionControlObservable<Iterable>, Disposable {
   ActionControlListenable<Iterable> get listenable => _control.listenable;
 
   @override
-  ActionSubscription<Iterable> once(ValueCallback<Iterable> action,
-          {Predicate<List> until, bool current = true}) =>
-      _control.once(action, until: until, current: current);
+  ActionSubscription<Iterable> once(ValueCallback<Iterable?> action,
+          {Predicate<List>? until, bool current = true}) =>
+      _control.once(action, until: until as bool Function(Iterable<dynamic>)?, current: current);
 
   @override
-  ActionSubscription<Iterable> subscribe(ValueCallback<Iterable> action,
+  ActionSubscription<Iterable?>? subscribe(ValueCallback<Iterable?> action,
           {bool current = true}) =>
       _control.subscribe(action, current: current);
 

@@ -50,7 +50,7 @@ class ControlArgs implements Disposable {
 
   /// Adds [value] to data store under given [key].
   /// [ControlFactory.keyOf] is used to determine store key.
-  void add<T>({dynamic key, @required dynamic value}) =>
+  void add<T>({dynamic key, required dynamic value}) =>
       _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
 
   /// Clears original data and stores items from [args].
@@ -94,22 +94,22 @@ class ControlArgs implements Disposable {
   }
 
   /// Returns object of given [key] or [defaultValue].
-  T get<T>({dynamic key, T defaultValue}) =>
+  T? get<T>({dynamic key, T? defaultValue}) =>
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
   /// Returns all items for given [test].
-  List<T> getAll<T>({Predicate test}) {
+  List<T> getAll<T>({Predicate? test}) {
     if (test == null && T != dynamic) {
       test = (item) => item is T;
     }
 
-    final list = _args.values.where(test).toList();
+    final list = _args.values.where(test!).toList();
 
     if (T != dynamic) {
       return list.cast<T>();
     }
 
-    return list;
+    return list as List<T>;
   }
 
   /// Removes item by [Type] or [key].

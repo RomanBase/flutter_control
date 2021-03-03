@@ -75,7 +75,7 @@ void main() async {
       final itemByType = factory.get<ControlModel>();
       final itemByKey = factory.get(key: ControlModel);
       final itemBySKey = factory.get(key: 'key');
-      final itemByExactType = factory.get<BaseControl>();
+      final itemByExactType = factory.get<BaseControl>()!;
 
       expect(itemByType, isNotNull);
       expect(itemByKey, isNotNull);
@@ -87,13 +87,13 @@ void main() async {
       expect(itemByType == itemByKey, isTrue);
       expect(itemByType.runtimeType, BaseControl);
 
-      final itemInit = factory.init<_ArgModel>('init');
-      final itemGetInit = factory.get<_ArgModel>(args: 'init');
+      final itemInit = factory.init<_ArgModel>('init')!;
+      final itemGetInit = factory.get<_ArgModel>(args: 'init')!;
 
       expect(itemInit.value, 'init');
       expect(itemGetInit.value, 'init');
 
-      final itemInject = factory.get<_InjectModel>();
+      final itemInject = factory.get<_InjectModel>()!;
 
       expect(itemInject.initValue, isNotNull);
       expect(itemInject.itemValue, isNotNull);
@@ -104,7 +104,7 @@ void main() async {
 
       final item = factory.resolve<String>(data, defaultValue: 'def');
       final model = factory.resolve(data, key: ControlModel, args: 'init');
-      final argModel = factory.resolve<_ArgModel>(data, args: 'init');
+      final argModel = factory.resolve<_ArgModel>(data, args: 'init')!;
       final def = factory.resolve(data, key: 'none', defaultValue: 'def');
       final defStore = factory.get(key: 'none');
 
@@ -139,16 +139,16 @@ void main() async {
       final injector = factory.get<Injector>() as BaseInjector;
 
       injector.setInjector<_InjectModel>((item, args) {
-        item.data = _ArgModel();
+        item!.data = _ArgModel();
       });
 
-      injector.setInjector((item, args) {
+      injector.setInjector((dynamic item, args) {
         if (item is _InitModel) {
           item.data = args;
         }
       });
 
-      final item = factory.init<_InjectModel>();
+      final item = factory.init<_InjectModel>()!;
       final itemBase = _InitModel();
 
       injector.inject(itemBase, 'init');
@@ -241,7 +241,7 @@ class _InitModel extends BaseModel {
 }
 
 class _ArgModel<T> extends BaseModel {
-  T value;
+  T? value;
 
   @override
   void init(Map args) {
@@ -252,8 +252,8 @@ class _ArgModel<T> extends BaseModel {
 }
 
 class _InjectModel extends _InitModel {
-  BaseModel initValue;
-  BaseControl itemValue;
+  BaseModel? initValue;
+  BaseControl? itemValue;
 
   @override
   void init(Map args) {

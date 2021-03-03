@@ -48,7 +48,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.getControl<TestController>();
+      final controller = widget.getControl<TestController>()!;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.isValid, isTrue);
@@ -62,7 +62,7 @@ void main() {
       expect(controller, isNotNull);
 
       // ignore: invalid_use_of_protected_member
-      expect(widget.controls.length, 1);
+      expect(widget.controls!.length, 1);
       expect(controller.isInitialized, isTrue);
       expect(controller.value, isTrue);
     });
@@ -75,7 +75,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.control;
+      final controller = widget.control!;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
@@ -97,7 +97,7 @@ void main() {
       expect(widget.getArg(key: 'init'), isTrue);
 
       // ignore: invalid_use_of_protected_member
-      expect(widget.controls.length, 0);
+      expect(widget.controls!.length, 0);
     });
   });
 
@@ -157,7 +157,7 @@ class TestSingleWidget extends SingleControlWidget<TestController> {
 }
 
 class TestController extends BaseControl {
-  bool value;
+  bool? value;
 
   @override
   void onInit(Map args) {

@@ -1,21 +1,22 @@
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter_control/core.dart';
 
-typedef InitInjection<T> = void Function(T item, dynamic args);
+typedef InitInjection<T> = void Function(T? item, dynamic args);
 
 /// TODO: purpose
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
   static Injector of(Map<Type, InitInjection> injectors,
-          {InitInjection other}) =>
+          {InitInjection? other}) =>
       BaseInjector(injectors: injectors, other: other);
 }
 
 class BaseInjector implements Injector, Disposable {
   final _injectors = Map<Type, InitInjection>();
-  InitInjection _other;
+  InitInjection? _other;
 
-  BaseInjector({Map<Type, InitInjection> injectors, InitInjection other}) {
+  BaseInjector({Map<Type, InitInjection>? injectors, InitInjection? other}) {
     if (injectors != null) {
       _injectors.addAll(injectors);
     }
@@ -25,7 +26,7 @@ class BaseInjector implements Injector, Disposable {
 
   void setInjector<T>(InitInjection<T> inject) {
     if (T == dynamic) {
-      _other = inject;
+      _other = inject as void Function(dynamic, dynamic)?;
       return;
     }
 
@@ -49,7 +50,7 @@ class BaseInjector implements Injector, Disposable {
     }
   }
 
-  InitInjection findInjector<T>(Type type) {
+  InitInjection? findInjector<T>(Type type) {
     if (T != dynamic && _injectors.containsKey(T)) {
       return _injectors[T];
     }
@@ -60,7 +61,7 @@ class BaseInjector implements Injector, Disposable {
 
     if (T != dynamic) {
       final key = _injectors.keys
-          .firstWhere((item) => item.runtimeType is T, orElse: () => null);
+          .firstWhereOrNull((item) => item.runtimeType is T);
 
       if (key != null) {
         return _injectors[key];

@@ -8,7 +8,7 @@ void main() {
     test('value modification', () {
       final control = FieldControl<int>(1);
 
-      control.setValue(control.value + 1);
+      control.setValue(control.value! + 1);
 
       expect(control.value, 2);
     });
@@ -20,13 +20,13 @@ void main() {
       controller.subscribe((value) => expect(value, 2), current: false);
 
       sub1.cancel();
-      controller.setValue(controller.value + 1);
+      controller.setValue(controller.value! + 1);
     });
 
     test('value stream to control', () {
       final controller = FieldControl<int>(1);
-      final controllerSub = FieldControl<int>();
-      final controllerConvSub = FieldControl<String>();
+      final controllerSub = FieldControl<int?>();
+      final controllerConvSub = FieldControl<String?>();
 
       controller.streamTo(controllerSub);
       controller.streamTo(controllerConvSub,
@@ -39,7 +39,7 @@ void main() {
       controllerConvSub.subscribe((value) => expect(value, '2'),
           current: false);
 
-      controller.setValue(controller.value + 1);
+      controller.setValue(controller.value! + 1);
     });
 
     test('value sub to control', () {
@@ -58,7 +58,7 @@ void main() {
       expect(controllerSub.value, isNull);
       expect(controllerConvSub.value, isNull);
 
-      controller.setValue(controller.value + 1);
+      controller.setValue(controller.value! + 1);
     });
 
     test('value sink', () {
@@ -114,7 +114,7 @@ void main() {
     test('value modification', () {
       final controller = ActionControl.single<int>(1);
 
-      controller.setValue(controller.value + 1);
+      controller.setValue(controller.value! + 1);
 
       expect(controller.value, 2);
     });
@@ -126,15 +126,15 @@ void main() {
       sub.once((value) => expect(value, 1));
       sub.once((value) => expect(value, 2), current: false);
 
-      controller.setValue(sub.value + 1);
+      controller.setValue(sub.value! + 1);
     });
 
     test('cancel', () {
       final controller = ActionControl.broadcast<int>(null);
 
       final sub1 = controller.once((_) {});
-      final sub2 = controller.subscribe((_) {});
-      final sub3 = controller.subscribe((_) {});
+      final sub2 = controller.subscribe((_) {})!;
+      final sub3 = controller.subscribe((_) {})!;
 
       controller.setValue(1);
 
@@ -177,7 +177,7 @@ void main() {
       action.value = 'action_changed';
       expect(group[0], 'action_changed');
 
-      group.subscribe((value) => expect(value.length, 2));
+      group.subscribe((value) => expect(value!.length, 2));
     });
   });
 }

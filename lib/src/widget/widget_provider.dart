@@ -4,26 +4,23 @@ import 'package:flutter_control/core.dart';
 /// Abstract implementation of simple widget initializer and holder.
 abstract class WidgetInitializer implements Disposable {
   /// Current Widget.
-  Widget _widget;
+  Widget? _widget;
 
-  Widget get value => _widget;
+  Widget? get value => _widget;
 
   /// Init data.
   /// Send to Widget via [_args] with [ControlKey.initData] key.
-  Object data;
+  Object? data;
 
-  Key key;
+  Key? key;
 
   bool get isInitialized => _widget != null;
 
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder, [Object data]) =>
-      _WidgetInitBuilder(builder)..data = data;
+  factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) => _WidgetInitBuilder(builder)..data = data;
 
-  static WidgetInitializer control<T>(ControlWidgetBuilder<T> builder,
-          [Object data]) =>
-      _WidgetInitControlBuilder(builder)..data = data;
+  static WidgetInitializer control<T>(ControlWidgetBuilder<T?> builder, [Object? data]) => _WidgetInitControlBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -32,7 +29,7 @@ abstract class WidgetInitializer implements Disposable {
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) {
+  Widget? getWidget(BuildContext context, {forceInit: false, dynamic args}) {
     if (forceInit || _widget == null || !isValid()) {
       _widget = initWidget(context, args: args);
     }
@@ -51,8 +48,7 @@ abstract class WidgetInitializer implements Disposable {
   Map _buildArgs(dynamic args) => Parse.toArgs(args, data: data);
 
   /// Wraps initializer into [WidgetBuilder].
-  WidgetBuilder wrap({dynamic args}) =>
-      (context) => getWidget(context, args: args);
+  WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args)!;
 
   void clear() {
     _widget = null;
@@ -69,7 +65,7 @@ abstract class WidgetInitializer implements Disposable {
 /// Simple [WidgetBuilder] and holder.
 class _WidgetInitBuilder extends WidgetInitializer {
   /// Current builder.
-  final WidgetBuilder builder;
+  final WidgetBuilder? builder;
 
   /// Default constructor
   _WidgetInitBuilder(this.builder) {
@@ -77,8 +73,8 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 
   @override
-  Widget initWidget(BuildContext context, {dynamic args}) {
-    final widget = builder(context);
+  Widget initWidget(BuildContext? context, {dynamic args}) {
+    final widget = builder!(context!);
 
     if (widget is Initializable) {
       (widget as Initializable).init(_buildArgs(args));
@@ -89,7 +85,7 @@ class _WidgetInitBuilder extends WidgetInitializer {
 }
 
 class _WidgetInitControlBuilder<T> extends WidgetInitializer {
-  final ControlWidgetBuilder<T> builder;
+  final ControlWidgetBuilder<T?> builder;
 
   _WidgetInitControlBuilder(this.builder);
 
