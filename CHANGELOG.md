@@ -1,3 +1,5 @@
+## [2.0.0] - Nullsafety
+Migrate library to Dart 2.0 - Null Safety.
 ## [1.0.0] - Core
 Upgraded architecture and stable version.
 ## [0.15.3] - Vanilla.
