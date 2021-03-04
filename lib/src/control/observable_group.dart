@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup implements ActionControlObservable<Iterable?>, Disposable {
+class ObservableGroup
+    implements ActionControlObservable<Iterable?>, Disposable {
   final _items = <DisposableToken>[];
 
   final _control = ActionControl.broadcast<Iterable>();
@@ -86,7 +87,8 @@ class ObservableGroup implements ActionControlObservable<Iterable?>, Disposable 
   @override
   ActionSubscription<Iterable> once(ValueCallback<Iterable?> action,
           {Predicate<List>? until, bool current = true}) =>
-      _control.once(action, until: until as bool Function(Iterable<dynamic>)?, current: current);
+      _control.once(action,
+          until: until as bool Function(Iterable<dynamic>)?, current: current);
 
   @override
   ActionSubscription<Iterable?>? subscribe(ValueCallback<Iterable?> action,

@@ -182,7 +182,8 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
   void notify() => _control.notify();
 
   /// [ActionControlObservable.cancel]
-  void cancel([ActionSubscription? sub]) => _control.cancel(sub as ActionSubscription<T>?);
+  void cancel([ActionSubscription? sub]) =>
+      _control.cancel(sub as ActionSubscription<T>?);
 
   /// [ActionControlObservable.subscribe]
   ActionSubscription<T?>? subscribe(ValueCallback<T?> action,

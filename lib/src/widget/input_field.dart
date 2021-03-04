@@ -201,8 +201,8 @@ class InputControl extends TextEditingController with DisposeHandler {
       unfocusChain();
     }
 
-    final isChainValid = _next!.validateChain(
-        unfocus: false); // validate from end to check all fields
+    final isChainValid = _next!
+        .validateChain(unfocus: false); // validate from end to check all fields
 
     return validate() && isChainValid;
   }

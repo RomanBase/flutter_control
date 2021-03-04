@@ -55,7 +55,8 @@ class AppStateSetup {
           .where((item) => item.transition != null)
           .toList()
           .asMap()
-          .map<dynamic, CrossTransition?>((key, value) => value.transitionEntry);
+          .map<dynamic, CrossTransition?>(
+              (key, value) => value.transitionEntry);
 }
 
 /// Representation of App State handled by [ControlRoot].

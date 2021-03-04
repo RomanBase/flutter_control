@@ -130,7 +130,8 @@ abstract class ActionControlObservable<T> {
   bool equal(other);
 }
 
-mixin ActionComponent<T> on ControlModel implements ActionControlObservable<T?> {
+mixin ActionComponent<T> on ControlModel
+    implements ActionControlObservable<T?> {
   /// Actual control to subscribe.
   final _parent = ActionControl.broadcast<T>();
 
@@ -391,7 +392,8 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   @override
   ActionSubscription<T> once(ValueCallback<T?> action,
       {Predicate<T>? until, bool current: true}) {
-    final ActionSubscription<T> sub = super.once(action, until: until, current: current);
+    final ActionSubscription<T> sub =
+        super.once(action, until: until, current: current);
     _sub = null; // just clear unused sub reference
 
     if (sub.isActive) {

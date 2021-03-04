@@ -532,8 +532,7 @@ class ControlFactory with Disposable {
     if (_initializers.containsKey(T)) {
       return _initializers[T] as T Function(dynamic)?;
     } else if (T != dynamic) {
-      final key = _initializers.keys
-          .firstWhereOrNull((item) => item is T);
+      final key = _initializers.keys.firstWhereOrNull((item) => item is T);
 
       if (key != null) {
         return _initializers[key] as T Function(dynamic)?;
@@ -623,7 +622,8 @@ class ControlFactory with Disposable {
       if (_items.values.firstWhere((item) => item.runtimeType == value,
                   orElse: () => null) !=
               null ||
-          _initializers.keys.firstWhereOrNull((item) => item.runtimeType == value) !=
+          _initializers.keys
+                  .firstWhereOrNull((item) => item.runtimeType == value) !=
               null) {
         return true;
       }

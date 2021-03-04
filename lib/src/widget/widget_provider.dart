@@ -18,9 +18,12 @@ abstract class WidgetInitializer implements Disposable {
 
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) => _WidgetInitBuilder(builder)..data = data;
+  factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) =>
+      _WidgetInitBuilder(builder)..data = data;
 
-  static WidgetInitializer control<T>(ControlWidgetBuilder<T?> builder, [Object? data]) => _WidgetInitControlBuilder(builder)..data = data;
+  static WidgetInitializer control<T>(ControlWidgetBuilder<T?> builder,
+          [Object? data]) =>
+      _WidgetInitControlBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -48,7 +51,8 @@ abstract class WidgetInitializer implements Disposable {
   Map _buildArgs(dynamic args) => Parse.toArgs(args, data: data);
 
   /// Wraps initializer into [WidgetBuilder].
-  WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args)!;
+  WidgetBuilder wrap({dynamic args}) =>
+      (context) => getWidget(context, args: args)!;
 
   void clear() {
     _widget = null;

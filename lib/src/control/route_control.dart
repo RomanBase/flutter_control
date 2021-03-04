@@ -505,7 +505,8 @@ class RouteStore {
   }
 
   /// Alters given [identifier] with [path].
-  static String routePathIdentifier<T>({dynamic identifier, required String path}) {
+  static String routePathIdentifier<T>(
+      {dynamic identifier, required String path}) {
     if (!path.startsWith('/')) {
       path = '/$path';
     }

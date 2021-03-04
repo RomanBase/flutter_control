@@ -682,7 +682,8 @@ class BaseLocalization extends ChangeNotifier
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizePlural(String key, int plural, [Map<String, String>? params]) {
+  String? localizePlural(String key, int plural,
+      [Map<String, String>? params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final data = _data[key];
@@ -932,7 +933,8 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 /// Access to [BaseLocalizationDelegate] is handled via static functions.
 mixin LocalizationProvider {
   /// Shortcut for delegate of default [BaseLocalization].
-  static BaseLocalizationDelegate get delegate => Control.localization!.delegate;
+  static BaseLocalizationDelegate get delegate =>
+      Control.localization!.delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
@@ -961,7 +963,8 @@ mixin LocalizationProvider {
 
   ///[BaseLocalization.localizePlural]
   @protected
-  String? localizePlural(String key, int plural, [Map<String, String>? params]) =>
+  String? localizePlural(String key, int plural,
+          [Map<String, String>? params]) =>
       localization!.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeGender]
@@ -977,8 +980,8 @@ mixin LocalizationProvider {
   @protected
   dynamic localizeDynamic(String key,
           {LocalizationParser? parser, dynamic defaultValue}) =>
-      localization!.localizeDynamic(key,
-          parser: parser, defaultValue: defaultValue);
+      localization!
+          .localizeDynamic(key, parser: parser, defaultValue: defaultValue);
 
   ///[BaseLocalization.extractLocalization]
   @protected

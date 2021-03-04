@@ -114,7 +114,8 @@ class NavigatorControl extends BaseControl {
   @override
   int get hashCode => menu.hashCode;
 
-  bool navigateBack() => _navigator != null ? _navigator!.navigateBack() : false;
+  bool navigateBack() =>
+      _navigator != null ? _navigator!.navigateBack() : false;
 
   void navigateToRoot() => _navigator?.navigateToRoot();
 
@@ -497,7 +498,8 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
   }
 
   void _initControl() {
-    control._items = _items!.map((page) => page.control).toList(growable: false);
+    control._items =
+        _items!.map((page) => page.control).toList(growable: false);
     control.setPageIndex(control.currentPageIndex!);
     control.currentControl.selected = true;
 

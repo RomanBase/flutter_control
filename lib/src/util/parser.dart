@@ -53,7 +53,8 @@ class Parse {
   /// Timestamp or any other object with `toDate` method.
   static DateTime? toDate(dynamic value, {bool inSec: false}) {
     if (value is num) {
-      return DateTime.fromMillisecondsSinceEpoch(inSec ? value * 1000 as int : value as int);
+      return DateTime.fromMillisecondsSinceEpoch(
+          inSec ? value * 1000 as int : value as int);
     }
 
     if (value is String) {

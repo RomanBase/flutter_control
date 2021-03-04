@@ -52,7 +52,8 @@ class FutureBlock {
   }
 
   /// Runs delayed [Future] with zero [Duration] so [action] will be performed next frame.
-  static Future nextFrame(VoidCallback action) => Future.delayed(const Duration(), action);
+  static Future nextFrame(VoidCallback action) =>
+      Future.delayed(const Duration(), action);
 
   /// Same as [Future.wait] but nullable.
   static Future wait(Iterable<Future?> futures) async {
