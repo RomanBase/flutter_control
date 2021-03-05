@@ -475,8 +475,6 @@ class ControlFactory with Disposable {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
-      args ??= Control.scope?.context; //TODO: remove in 1.1
-
       final item = initializer(args);
 
       inject<T>(item, args: args);

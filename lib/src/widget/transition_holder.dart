@@ -62,7 +62,7 @@ class TransitionControl extends BaseModel
 
     _animation!.duration = forward ?? Duration(milliseconds: 300);
     _animation!.reverseDuration = reverse ?? Duration(milliseconds: 300);
-    _animation!.value = initialProgress ?? 0.0;
+    _animation!.value = initialProgress;
   }
 
   /// Plays cross in transition: 0.0 -> 1.0. From first widget to second.

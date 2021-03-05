@@ -54,7 +54,7 @@ class ControlArgHolder implements Disposable {
 
   /// Returns all [ControlModel]s from internal args - [ControlArgs].
   /// If none found, empty List is returned.
-  List<ControlModel?> findControls() => argStore.getAll<ControlModel>() ?? [];
+  List<ControlModel?> findControls() => argStore.getAll<ControlModel>();
 
   /// Copy corresponding State and args from [oldHolder].
   void copy(ControlArgHolder oldHolder) {
@@ -160,7 +160,7 @@ abstract class CoreWidget extends StatefulWidget
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
   BuildContext? getContext({bool root: false}) =>
-      root ? Control.scope?.context ?? context : context;
+      root ? Control.scope.context ?? context : context;
 
   /// Returns raw internal arg store.
   /// Typically not used directly.
@@ -253,7 +253,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   bool get isInitialized => _stateInitialized;
 
   /// Checks if [Element] is 'dirty' and needs rebuild.
-  bool get isDirty => (context as Element)?.dirty ?? true;
+  bool get isDirty => (context as Element).dirty;
 
   /// Objects to dispose with State.
   List<Disposable?>? _objects;
@@ -344,7 +344,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
 abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
   /// Checks if [Element] is 'mounted' or 'dirty' and marked for rebuild.
-  bool get isDirty => !mounted || ((context as Element)?.dirty ?? true);
+  bool get isDirty => !mounted || ((context as Element).dirty);
 
   /// Current value of state.
   U? value;
@@ -590,7 +590,7 @@ mixin ControlsComponent on CoreWidget {
   void onInit(Map args) {
     super.onInit(args);
 
-    dynamic components = initComponents?.call(args);
+    dynamic components = initComponents.call(args);
 
     if (!(components is Map)) {
       components =

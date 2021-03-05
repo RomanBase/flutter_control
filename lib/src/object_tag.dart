@@ -5,16 +5,16 @@ extension ObjectTagExt on Object {
 }
 
 class ObjectTag {
-  final Object value;
+  final Object? value;
 
   const ObjectTag._(this.value);
 
-  factory ObjectTag.of(Object object) =>
+  factory ObjectTag.of(Object? object) =>
       object is ObjectTag ? object : ObjectTag._(object ?? UnitId.nextId());
 
   factory ObjectTag.next() => ObjectTag._(UnitId.nextId());
 
-  factory ObjectTag.key(Key key) {
+  factory ObjectTag.key(Key? key) {
     Object? object;
 
     if (key != null) {

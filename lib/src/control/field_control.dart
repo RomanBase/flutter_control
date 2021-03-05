@@ -550,7 +550,7 @@ class FieldStreamBuilder<T> extends StreamBuilder<T> {
 
   @override
   Widget build(BuildContext context, AsyncSnapshot<T> currentSummary) {
-    return super.build(context, currentSummary) ?? Container();
+    return super.build(context, currentSummary);
   }
 }
 

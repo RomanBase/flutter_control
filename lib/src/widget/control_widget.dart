@@ -172,7 +172,7 @@ abstract class ControlWidget extends CoreWidget
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
   BuildContext? getContext({bool root: false}) =>
-      root ? Control.scope?.context ?? context : context;
+      root ? Control.scope.context ?? context : context;
 
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
@@ -211,7 +211,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
   }
 
   void initControls() {
-    controls = widget.initControls() ?? [];
+    controls = widget.initControls();
 
     widget.holder.set(controls);
 
@@ -311,8 +311,7 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       return Navigator.of(context!, rootNavigator: true);
     }
 
-    return Navigator.of(getContext(root: root)!) ??
-        Navigator.of(context!, rootNavigator: root);
+    return Navigator.of(getContext(root: root)!);
   }
 
   @override

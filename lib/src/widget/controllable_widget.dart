@@ -42,7 +42,7 @@ class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
         controls: _control,
         builder: (context, values) {
           _value = values;
-          return widget.build(context!);
+          return widget.build(context);
         },
       );
     } else {

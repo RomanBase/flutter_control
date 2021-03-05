@@ -273,8 +273,8 @@ class InputField extends ControllableWidget<InputControl> {
           obscureText: scope.obscure,
           style: style ??
               theme.textTheme.bodyText1!.copyWith(
-                  color: decoration?.border?.borderSide?.color ??
-                      theme.cursorColor),
+                  color: decoration.border?.borderSide.color ??
+                      theme.textSelectionTheme.cursorColor),
         );
       };
 
@@ -299,7 +299,8 @@ class InputField extends ControllableWidget<InputControl> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cursor = color ?? theme.cursorColor;
+    final cursor =
+        color ?? theme.textSelectionTheme.cursorColor ?? Colors.black;
 
     final _decoration = (decoration ??
             InputDecoration(
