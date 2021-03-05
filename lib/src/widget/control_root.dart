@@ -266,9 +266,9 @@ class ControlRootSetup {
 
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
   ObjectKey get _localKey => ObjectKey(session.hashCode ^
-      localization!.locale.hashCode ^
+      (localization?.locale.hashCode ?? 0xFF) ^
       state.hashCode ^
-      style!.data.hashCode);
+      (style?.data.hashCode ?? 0xFF));
 
   /// Setup for actual [ControlRoot] and [ControlScope].
   /// [key] - [_appKey] - [ControlScope.appKey].
@@ -305,7 +305,9 @@ class ControlRootSetup {
   /// Checks if [BaseLocalization] is ready and tries to localize given [localizationKey].
   /// [defaultValue] - Fallback if localization isn't ready or [localizationKey] is not found.
   String? title(String localizationKey, String defaultValue) {
-    if (localization!.isActive && localization!.contains(localizationKey)) {
+    if (localization != null &&
+        localization!.isActive &&
+        localization!.contains(localizationKey)) {
       return localization!.localize(localizationKey);
     }
 

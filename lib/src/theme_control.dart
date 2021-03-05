@@ -149,11 +149,11 @@ class ControlTheme {
   AssetPath? _asset;
 
   @protected
-  BuildContext? get context => _context;
+  BuildContext get context => _context ?? Control.scope.context!;
 
-  Device get device => _device ?? (_device = Device.of(_context!));
+  Device get device => _device ?? (_device = Device.of(context));
 
-  ThemeData get data => _data ?? (_data = Theme.of(_context!));
+  ThemeData get data => _data ?? (_data = Theme.of(context));
 
   AssetPath get assets => _asset ?? (_asset = AssetPath());
 
@@ -173,9 +173,7 @@ class ControlTheme {
   void invalidate([BuildContext? context]) {
     _data = null;
     _device = null;
-    _context = context ?? Control.scope.context;
-
-    assert(_context != null);
+    _context = context;
   }
 
   static BroadcastSubscription<ControlTheme> subscribeChanges(
@@ -256,7 +254,7 @@ class ThemeConfig<T extends ControlTheme> {
     this.builder,
     this.initTheme,
     required this.themes,
-  }) : assert(themes != null);
+  });
 
   bool contains(dynamic key) {
     key = Parse.name(key);
