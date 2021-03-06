@@ -1,9 +1,5 @@
 import 'package:flutter_control/core.dart';
 
-extension ObjectTagExt on Object {
-  ObjectTag get tag => ObjectTag.of(hashCode);
-}
-
 class ObjectTag {
   final Object? value;
 

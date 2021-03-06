@@ -622,6 +622,12 @@ class Parse {
         (value is String && value.isEmpty));
 }
 
+extension ObjectExtension on Object {
+  ObjectTag asTag() => ObjectTag.of(hashCode);
+
+  ControlArgs asArg() => ControlArgs(this);
+}
+
 extension MapExtension on Map {
   /// [Parse.getArgFromMap].
   T? getArg<T>(
