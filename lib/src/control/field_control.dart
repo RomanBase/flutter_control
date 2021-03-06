@@ -684,18 +684,28 @@ class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
 
 /// Extended version of [FieldControl] specified to [List].
 class ListControl<T> extends FieldControl<List<T>> {
+  /// [value] can't be `null`.
+  List<T> get _list => value!;
+
   /// Returns number of items in list.
-  int get length => value!.length;
+  int get length => _list.length;
 
   /// Return true if there is no item.
   @override
-  bool get isEmpty => value == null || value!.isEmpty;
+  bool get isEmpty => _list.isEmpty;
 
   /// Return true if there is one or more items.
   @override
-  bool get isNotEmpty => value != null && value!.isNotEmpty;
+  bool get isNotEmpty => _list.isNotEmpty;
 
-  bool nullable = false;
+  /// Returns the object at given index.
+  T? operator [](int index) => containsIndex(index) ? _list[index] : null;
+
+  /// [List.last]
+  T? get last => isNotEmpty ? _list.last : null;
+
+  /// [List.first]
+  T? get first => isNotEmpty ? _list.first : null;
 
   /// [FieldControl] of [List].
   ListControl([Iterable<T>? items]) {
@@ -707,14 +717,8 @@ class ListControl<T> extends FieldControl<List<T>> {
     super.setValue(list);
   }
 
-  /// Returns the object at given index.
-  T operator [](int index) => value![index];
-
-  /// [List.last]
-  T get last => value!.last;
-
-  /// [List.first]
-  T get first => value!.first;
+  /// Checks if [index] is within [value] bounds.
+  bool containsIndex(int index) => length > 0 && index > -1 && index < length;
 
   /// Filters data into given [controller].
   StreamSubscription filterTo(FieldControl controller,
@@ -743,19 +747,15 @@ class ListControl<T> extends FieldControl<List<T>> {
       return;
     }
 
-    if (nullable && isEmpty) {
-      _stream.add(null);
-    } else {
-      _stream.add(_value);
-    }
+    _stream.add(_value);
   }
 
   @override
   void setValue(Iterable<T>? items, {bool notifyListeners: true}) {
-    value!.clear();
+    _list.clear();
 
     if (items != null) {
-      value!.addAll(items);
+      _list.addAll(items);
     }
 
     if (notifyListeners) {
@@ -765,34 +765,34 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Adds item to List and notifies stream.
   void add(T item) {
-    value!.add(item);
+    _list.add(item);
 
     notify();
   }
 
   /// Adds all items to List and notifies stream.
   void addAll(Iterable<T> items) {
-    value!.addAll(items);
+    _list.addAll(items);
 
     notify();
   }
 
   /// Adds item to List at given index and notifies stream.
   void insert(int index, T item) {
-    value!.insert(index, item);
+    _list.insert(index, item);
 
     notify();
   }
 
   /// Replaces first item in List for given [test]
   bool replace(T item, Predicate<T> test, [bool notify = true]) {
-    final index = value!.indexWhere(test);
+    final index = _list.indexWhere(test);
 
     final replace = index >= 0;
 
     if (replace) {
-      value!.removeAt(index);
-      value!.insert(index, item);
+      _list.removeAt(index);
+      _list.insert(index, item);
 
       if (notify) {
         this.notify();
@@ -810,17 +810,19 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 
   /// Removes item from List and notifies stream.
-  bool remove(T item) {
-    final removed = value!.remove(item);
+  bool remove(T? item) {
+    final removed = _list.remove(item);
 
-    notify();
+    if (removed) {
+      notify();
+    }
 
     return removed;
   }
 
   /// Removes item from List at given index and notifies stream.
   T removeAt(int index) {
-    final T item = value!.removeAt(index);
+    final T item = _list.removeAt(index);
 
     notify();
 
@@ -829,20 +831,20 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// [Iterable.removeWhere].
   void removeWhere(Predicate<T> test) {
-    value!.removeWhere(test);
+    _list.removeWhere(test);
     notify();
   }
 
   /// Swaps position of items at given indexes
   void swap(int indexA, int indexB) {
-    T a = value![indexA];
-    T b = value![indexB];
+    T a = _list[indexA];
+    T b = _list[indexB];
 
-    value!.removeAt(indexA);
-    value!.insert(indexA, b);
+    _list.removeAt(indexA);
+    _list.insert(indexA, b);
 
-    value!.removeAt(indexB);
-    value!.insert(indexB, a);
+    _list.removeAt(indexB);
+    _list.insert(indexB, a);
 
     notify();
   }
@@ -850,7 +852,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// [Iterable.clear].
   void clear({bool disposeItems: false}) {
     if (disposeItems) {
-      value!.forEach((item) {
+      _list.forEach((item) {
         if (item is Disposable) {
           item.dispose();
         }
@@ -862,99 +864,110 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// [Iterable.sort].
   void sort([int compare(T a, T b)?]) {
-    value!.sort(compare);
+    _list.sort(compare);
     notify();
   }
 
   /// [Iterable.shuffle].
   void shuffle([Random? random]) {
-    value!.shuffle(random);
+    _list.shuffle(random);
     notify();
   }
 
   /// [Iterable.map].
-  Iterable<E> map<E>(E f(T item)) => value!.map(f);
+  Iterable<E> map<E>(E f(T item)) => _list.map(f);
 
   /// [Iterable.contains].
-  bool contains(Object object) => value!.contains(object);
+  bool contains(Object object) => _list.contains(object);
 
   /// [Iterable.forEach].
-  void forEach(void f(T item)) => value!.forEach(f);
+  void forEach(void f(T item)) => _list.forEach(f);
 
   /// [Iterable.reduce].
-  T reduce(T combine(T value, T element)) => value!.reduce(combine);
+  T reduce(T combine(T value, T element)) => _list.reduce(combine);
 
   /// [Iterable.fold].
   E fold<E>(E initialValue, E combine(E previousValue, T element)) =>
-      value!.fold(initialValue, combine);
+      _list.fold(initialValue, combine);
 
   /// [Iterable.every].
-  bool every(bool test(T element)) => value!.every(test);
+  bool every(bool test(T element)) => _list.every(test);
 
   /// [Iterable.join].
-  String join([String separator = ""]) => value!.join(separator);
+  String join([String separator = ""]) => _list.join(separator);
 
   /// [Iterable.any].
-  bool any(bool test(T element)) => value!.any(test);
+  bool any(bool test(T element)) => _list.any(test);
 
   /// [Iterable.toList].
-  List<T> toList({bool growable = true}) => value!.toList(growable: growable);
+  List<T> toList({bool growable = true}) => _list.toList(growable: growable);
 
   /// [Iterable.toSet].
-  Set<T> toSet() => value!.toSet();
+  Set<T> toSet() => _list.toSet();
 
   /// [Iterable.take].
-  Iterable<T> take(int count) => value!.take(count);
+  Iterable<T> take(int count) => _list.take(count);
 
   /// [Iterable.takeWhile].
-  Iterable<T> takeWhile(bool test(T value)) => value!.takeWhile(test);
+  Iterable<T> takeWhile(bool test(T value)) => _list.takeWhile(test);
 
   /// [Iterable.skip].
-  Iterable<T> skip(int count) => value!.skip(count);
+  Iterable<T> skip(int count) => _list.skip(count);
 
   /// [Iterable.skipWhile].
-  Iterable<T> skipWhile(bool test(T value)) => value!.skipWhile(test);
+  Iterable<T> skipWhile(bool test(T value)) => _list.skipWhile(test);
 
   /// [Iterable.firstWhere].
   /// If no element satisfies [test], then return null.
-  T firstWhere(Predicate<T> test) => value!.firstWhere(test);
+  T? firstWhere(Predicate<T> test) {
+    try {
+      return _list.firstWhere(test);
+    } on StateError {
+      return null;
+    }
+  }
 
   /// [Iterable.firstWhere].
   /// If no element satisfies [test], then return null.
-  T lastWhere(Predicate<T> test) => value!.lastWhere(test);
+  T? lastWhere(Predicate<T> test) {
+    try {
+      return _list.lastWhere(test);
+    } on StateError {
+      return null;
+    }
+  }
 
   /// [Iterable.where].
-  Iterable<T> where(Predicate<T> test) => value!.where(test);
+  Iterable<T> where(Predicate<T> test) => _list.where(test);
 
   /// [Iterable.indexWhere]
   int indexWhere(Predicate<T> test, [int start = 0]) =>
-      value!.indexWhere(test, start);
+      _list.indexWhere(test, start);
 
   /// [List.lastIndexWhere].
   int lastIndexWhere(bool test(T element), [int? start]) =>
-      value!.lastIndexWhere(test, start);
+      _list.lastIndexWhere(test, start);
 
   /// [Iterable.indexOf]
-  int indexOf(T object) => value!.indexOf(object);
+  int indexOf(T object) => _list.indexOf(object);
 
   /// [List.lastIndexOf].
-  int lastIndexOf(T element, [int? start]) =>
-      value!.lastIndexOf(element, start);
+  int lastIndexOf(T element, [int? start]) => _list.lastIndexOf(element, start);
 
   /// [List.sublist].
-  List<T> sublist(int start, [int? end]) => value!.sublist(start, end);
+  List<T> sublist(int start, [int? end]) => _list.sublist(start, end);
 
   /// [List.getRange].
-  Iterable<T> getRange(int start, int end) => value!.getRange(start, end);
+  Iterable<T> getRange(int start, int end) => _list.getRange(start, end);
 
   /// [List.asMap].
-  Map<int, T> asMap() => value!.asMap();
+  Map<int, T> asMap() => _list.asMap();
 
   @override
   void dispose() {
     super.dispose();
 
-    _value!.clear();
+    _list.clear();
   }
 }
 
