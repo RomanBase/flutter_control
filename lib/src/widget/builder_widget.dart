@@ -17,12 +17,15 @@ class ControlBuilder<T> extends StatefulWidget {
   /// Checks if 'null' value of [control] is valid for [builder].
   final bool nullOk;
 
+  final T Function(dynamic)? valueConverter;
+
   const ControlBuilder({
     Key? key,
     required this.control,
     required this.builder,
     this.noData,
     this.nullOk: false,
+    this.valueConverter,
   }) : super(key: key);
 
   @override
@@ -51,7 +54,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
       data = control;
     }
 
-    return data as T?;
+    return (widget.valueConverter?.call(data) ?? data) as T?;
   }
 
   @override
