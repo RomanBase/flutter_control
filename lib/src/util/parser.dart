@@ -173,8 +173,6 @@ class Parse {
   /// Parse input [value] to String and then to enum. Parsing is case insensitive.
   /// If enum of given name is not found, [defaultValue] or first value from [enums] is returned.
   static T toEnum<T>(dynamic value, List<T> enums, {T? defaultValue}) {
-    assert(enums != null);
-
     if (value == null) {
       return defaultValue ?? enums[0];
     }
@@ -537,6 +535,7 @@ class Parse {
 
       if (key is Type) {
         final item = map.values
+            .nullable()
             .firstWhere((item) => item.runtimeType == key, orElse: () => null);
 
         if (item != null) {
@@ -550,8 +549,9 @@ class Parse {
     }
 
     if (T != dynamic && predicate == null) {
-      final item =
-          map.values.firstWhere((item) => item is T, orElse: () => null);
+      final item = map.values
+          .nullable()
+          .firstWhere((item) => item is T, orElse: () => null);
 
       if (item != null) {
         return item;
@@ -571,15 +571,17 @@ class Parse {
     }
 
     if (predicate != null) {
-      final testItem = iterable.firstWhere(predicate, orElse: () => null);
+      final testItem =
+          iterable.nullable().firstWhere(predicate, orElse: () => null);
 
       if (testItem != null) {
         return testItem;
       }
     } else {
       if (T != dynamic) {
-        final typeItem =
-            iterable.firstWhere((item) => item is T, orElse: () => null);
+        final typeItem = iterable
+            .nullable()
+            .firstWhere((item) => item is T, orElse: () => null);
 
         if (typeItem != null) {
           return typeItem;
@@ -640,6 +642,8 @@ extension MapExtension on Map {
 }
 
 extension IterableExtension on Iterable {
+  Iterable<T?> nullable<T>() => cast<T?>();
+
   /// [Parse.getArgFromList].
   T? getArg<T>({bool Function(dynamic)? predicate, T? defaultValue}) =>
       Parse.getArgFromList<T>(this,

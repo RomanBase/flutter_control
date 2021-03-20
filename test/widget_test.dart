@@ -1,6 +1,8 @@
 import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'mock_widget.dart';
+
 void main() {
   group('Control Holder', () {
     test('args', () {
@@ -111,7 +113,7 @@ void main() {
 
       expect(initializer.isInitialized, isTrue);
 
-      final widget = initializer.getWidget(null) as TestWidget;
+      final widget = initializer.getWidget(MockBuildContext()) as TestWidget;
 
       expect(widget, isNotNull);
       // ignore: invalid_use_of_protected_member

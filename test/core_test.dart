@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'mock_widget.dart';
+
 void main() {
   test('release', () {
     Control.factory.debug = false;
@@ -35,7 +37,8 @@ void main() {
     Predicate<String> predicate = (value) => value.isNotEmpty;
 
     final initObject = initializer('args');
-    final initWidget = controlWidgetBuilder(null, 'args') as TestInitWidget;
+    final initWidget =
+        controlWidgetBuilder(MockBuildContext(), 'args') as TestInitWidget;
 
     valueCallback('value');
 
