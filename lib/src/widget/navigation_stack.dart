@@ -25,6 +25,21 @@ class MenuItem {
     this.onSelected,
   });
 
+  factory MenuItem.static({
+    required dynamic key,
+    dynamic icon,
+    String? title,
+    Object? data,
+    ValueGetter<bool>? onSelected,
+  }) =>
+      MenuItem(
+        key: key,
+        iconBuilder: icon == null ? null : (_) => icon,
+        titleBuilder: title == null ? null : (_) => title,
+        data: data,
+        onSelected: onSelected,
+      );
+
   MenuItem copyWith({
     Object? key,
     Object? data,
