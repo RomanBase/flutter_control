@@ -628,6 +628,8 @@ extension ObjectExtension on Object {
   ObjectTag asTag() => ObjectTag.of(hashCode);
 
   ControlArgs asArg() => ControlArgs(this);
+
+  T? getArg<T>({dynamic key, T? defaultValue}) => Parse.getArg<T>(this, key: key, defaultValue: defaultValue);
 }
 
 extension MapExtension on Map {
