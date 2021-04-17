@@ -31,7 +31,6 @@ class _SwapPageState extends State<SwapPage> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Row(
             children: <Widget>[
@@ -57,42 +56,40 @@ class _SwapPageState extends State<SwapPage> {
             },
             child: Text('swap'),
           ),
-          CaseWidget(
-            activeCase: widget.greenControl.count % 2 == 0,
+          CaseWidget<bool>(
+            activeCase: swap,
             builders: {
               true: (_) => Container(
-                    height: 24.0,
+                    key: ObjectKey('red'),
+                    height: 36.0,
                     color: Colors.red,
                   ),
               false: (_) => Container(
-                    height: 24.0,
+                    key: ObjectKey('green'),
+                    height: 36.0,
                     color: Colors.green,
                   ),
             },
-            placeholder: (_) => Container(
-              height: 24.0,
-              color: Colors.orange,
-            ),
-            transition: CrossTransition(
-                duration: Duration(seconds: 3),
-                builder: CrossTransitions.fadeOutFadeIn()),
+            transition:
+                CrossTransition.fadeOutFadeIn(duration: Duration(seconds: 3)),
           ),
           Expanded(
             child: ListView.builder(
-                itemCount: 100,
-                itemBuilder: (c, i) => CaseWidget(
-                      activeCase: Random().nextInt(4),
-                      builders: {
-                        0: (_) => CaseContainer(index: 0),
-                        1: (_) => CaseContainer(index: 1),
-                        2: (_) => CaseContainer(index: 2),
-                        i: (_) => CaseContainer(index: i),
-                      },
-                      placeholder: (_) => CaseContainer(
-                        index: -1,
-                        color: Colors.amber,
-                      ),
-                    )),
+              itemCount: 100,
+              itemBuilder: (c, i) => CaseWidget(
+                activeCase: Random().nextInt(4),
+                builders: {
+                  0: (_) => CaseContainer(index: 0, key: ObjectKey('0_$i')),
+                  1: (_) => CaseContainer(index: 1, key: ObjectKey('1_$i')),
+                  2: (_) => CaseContainer(index: 2, key: ObjectKey('2_$i')),
+                  i: (_) => CaseContainer(index: i, key: ObjectKey('x_$i')),
+                },
+                placeholder: (_) => CaseContainer(
+                  index: -1,
+                  color: Colors.amber,
+                ),
+              ),
+            ),
           ),
         ],
       ),

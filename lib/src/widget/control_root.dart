@@ -39,8 +39,8 @@ class AppStateSetup {
   MapEntry<dynamic, WidgetBuilder> get builderEntry => MapEntry(key, builder);
 
   /// Returns case:transition entry.
-  MapEntry<dynamic, CrossTransition?> get transitionEntry =>
-      MapEntry(key, transition);
+  MapEntry<dynamic, CrossTransition> get transitionEntry =>
+      MapEntry(key, transition!);
 
   /// Builds case:builder map for given states.
   static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) =>
@@ -49,14 +49,13 @@ class AppStateSetup {
           .map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
 
   /// Builds case:transition map for given states.
-  static Map<dynamic, CrossTransition?> fillTransitions(
+  static Map<dynamic, CrossTransition> fillTransitions(
           List<AppStateSetup> items) =>
       items
           .where((item) => item.transition != null)
           .toList()
           .asMap()
-          .map<dynamic, CrossTransition?>(
-              (key, value) => value.transitionEntry);
+          .map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
 }
 
 /// Representation of App State handled by [ControlRoot].
@@ -429,7 +428,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
   Map<dynamic, WidgetBuilder>? _states;
 
   /// [AppState] - case:transition Map of [ControlRoot.states].
-  Map<dynamic, CrossTransition?>? _transitions;
+  Map<dynamic, CrossTransition>? _transitions;
 
   /// Subscription to global broadcast of [BaseLocalization] events.
   BroadcastSubscription? _localeSub;
@@ -552,11 +551,9 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
 
           return CaseWidget(
             activeCase: _setup.state,
-            builders: _states,
+            builders: _states!,
             transition: widget.transition,
             transitions: _transitions,
-            args: _args,
-            softDebug: false,
             placeholder: (_) => Container(
               color: Theme.of(context).canvasColor,
             ),

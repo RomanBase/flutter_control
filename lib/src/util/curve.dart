@@ -1,12 +1,15 @@
 import 'package:flutter_control/core.dart';
 
-class CurveRange extends Curve {
+class IntervalCurve extends Curve {
   final Curve curve;
   final double begin;
   final double end;
 
-  const CurveRange({
-    required this.curve,
+  IntervalCurve get reversed =>
+      IntervalCurve(curve, begin: 1.0 - end, end: 1.0 - begin);
+
+  const IntervalCurve(
+    this.curve, {
     this.begin: 0.0,
     this.end: 1.0,
   });
@@ -29,16 +32,17 @@ class CurveRange extends Curve {
 }
 
 extension CurveEx on Curve {
-  double get _begin => this is CurveRange ? (this as CurveRange).begin : 0.0;
+  double get _begin =>
+      this is IntervalCurve ? (this as IntervalCurve).begin : 0.0;
 
-  double get _end => this is CurveRange ? (this as CurveRange).end : 1.0;
+  double get _end => this is IntervalCurve ? (this as IntervalCurve).end : 1.0;
 
-  Curve from(double begin) => inRange(begin, _end);
+  IntervalCurve from(double begin) => inRange(begin, _end);
 
-  Curve to(double end) => inRange(_begin, end);
+  IntervalCurve to(double end) => inRange(_begin, end);
 
-  Curve inRange(double begin, double end) => CurveRange(
-        curve: this,
+  IntervalCurve inRange(double begin, double end) => IntervalCurve(
+        this,
         begin: begin,
         end: end,
       );

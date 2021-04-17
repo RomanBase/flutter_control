@@ -1096,23 +1096,16 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
             return CaseWidget(
               activeCase: state,
               builders: {
-                LoadingStatus.initial: initial,
+                if (initial != null) LoadingStatus.initial: initial,
                 LoadingStatus.progress: progress ??
-                    general ??
                     (context) => Center(child: CircularProgressIndicator()),
-                LoadingStatus.done: done,
-                LoadingStatus.error: error ??
-                    general ??
-                    (context) =>
-                        Center(child: Text(control.message ?? 'error')),
-                LoadingStatus.outdated: outdated,
-                LoadingStatus.unknown: unknown,
+                if (done != null) LoadingStatus.done: done,
+                if (error != null) LoadingStatus.error: error,
+                if (outdated != null) LoadingStatus.outdated: outdated,
+                if (unknown != null) LoadingStatus.unknown: unknown,
               },
               placeholder: general ?? (context) => Container(),
-              transition: CrossTransition(
-                builder: CrossTransitions.fadeOutFadeIn(
-                    backgroundColor: Colors.transparent),
-              ),
+              transition: CrossTransition.fadeOutFadeIn(),
               transitions: transitions,
             );
           },

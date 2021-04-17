@@ -41,25 +41,18 @@ class CrossPage extends SingleControlWidget<CrossControl> {
     return Column(
       children: <Widget>[
         Expanded(
-          child: ActionBuilder<String>(
+          child: CaseWidget.builder(
             control: control.cross,
-            builder: (context, value) {
-              return CaseWidget(
-                activeCase: value,
-                args: control,
-                builders: {
-                  'blue': (_) => CrossControlPage('red', Colors.blue),
-                  'red': (_) => CrossControlPage('orange', Colors.red),
-                  'orange': (_) =>
-                      CrossControlPage('placeholder', Colors.orange),
-                },
-                placeholder: (_) => CrossControlPage('blue', Colors.black),
-                transition: CrossTransition(
-                  duration: Duration(seconds: 3),
-                  builder: CrossTransitions.fadeOutFadeIn(),
-                ),
-              );
+            builders: {
+              'blue': (_) => CrossControlPage('red', Colors.blue, control),
+              'red': (_) => CrossControlPage('orange', Colors.red, control),
+              'orange': (_) =>
+                  CrossControlPage('placeholder', Colors.orange, control),
             },
+            placeholder: (_) => CrossControlPage('blue', Colors.black, control),
+            transition: CrossTransition.fade(
+              duration: Duration(seconds: 3),
+            ),
           ),
         ),
         RaisedButton(
@@ -79,7 +72,8 @@ class CrossControlPage extends SingleControlWidget<CrossControl> {
   final String next;
   final Color color;
 
-  CrossControlPage(this.next, this.color) : super(key: ObjectKey(next));
+  CrossControlPage(this.next, this.color, dynamic args)
+      : super(key: ObjectKey(next), args: args);
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +85,10 @@ class CrossControlPage extends SingleControlWidget<CrossControl> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           RaisedButton(
-            onPressed: () => control.cross.value = next,
+            onPressed: () {
+              control.cross.value = next;
+            },
+            color: Theme.of(context).primaryColor,
             child: Text(
               'cross to $next',
               textAlign: TextAlign.center,

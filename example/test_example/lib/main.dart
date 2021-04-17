@@ -56,10 +56,7 @@ class MyApp extends StatelessWidget {
               color: Colors.orange,
             ),
           ),
-          transition: CrossTransition(
-            duration: Duration(seconds: 1),
-            builder: CrossTransitions.fadeCross(),
-          ),
+          transition: CrossTransition.fadeCross(duration: Duration(seconds: 2)),
         ),
         AppState.main.build((context) => MenuPage()),
       ],

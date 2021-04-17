@@ -629,7 +629,9 @@ extension ObjectExtension on Object {
 
   ControlArgs asArg() => ControlArgs(this);
 
-  T? getArg<T>({dynamic key, T? defaultValue}) => Parse.getArg<T>(this is ControlArgs ? (this as ControlArgs).data : this, key: key, defaultValue: defaultValue);
+  T? getArg<T>({dynamic key, T? defaultValue}) =>
+      Parse.getArg<T>(this is ControlArgs ? (this as ControlArgs).data : this,
+          key: key, defaultValue: defaultValue);
 }
 
 extension MapExtension on Map {
