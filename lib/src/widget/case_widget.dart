@@ -76,7 +76,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   void initState() {
     super.initState();
 
-    _updateInitializer();
+    _updateCurrentWidget();
   }
 
   @override
@@ -85,13 +85,12 @@ class _CaseWidgetState extends State<CaseWidget> {
 
     if (widget.activeCase != oldWidget.activeCase) {
       setState(() {
-        _updateInitializer();
+        _updateCurrentWidget();
       });
     }
   }
 
-  /// Swaps current / old initializer or builds placeholder if case is not found.
-  void _updateInitializer() {
+  void _updateCurrentWidget() {
     currentTransition = widget.activeTransition;
 
     if (widget.activeCase != null &&
