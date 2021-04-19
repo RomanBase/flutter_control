@@ -60,12 +60,10 @@ class _SwapPageState extends State<SwapPage> {
             activeCase: swap,
             builders: {
               true: (_) => Container(
-                    key: ObjectKey('red'),
                     height: 36.0,
                     color: Colors.red,
                   ),
               false: (_) => Container(
-                    key: ObjectKey('green'),
                     height: 36.0,
                     color: Colors.green,
                   ),

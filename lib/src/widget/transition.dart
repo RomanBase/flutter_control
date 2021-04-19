@@ -15,6 +15,9 @@ class CrossTransition {
   final AnimatedSwitcherTransitionBuilder transitionIn;
   final AnimatedSwitcherTransitionBuilder transitionOut;
 
+  AnimatedSwitcherTransitionBuilder get builder =>
+      (child, anim) => _builder(child, anim);
+
   /// [duration] - [Animation] length.
   /// [transition] - Builds Transition Widget based on input [Animation] and in/out Widgets.
   const CrossTransition({
@@ -31,9 +34,8 @@ class CrossTransition {
   })   : transitionIn = transition,
         transitionOut = transition;
 
-  Widget build(Widget child, Animation<double> animation) {
-    if (animation.status == AnimationStatus.forward ||
-        animation.status == AnimationStatus.completed) {
+  Widget _builder(Widget child, Animation<double> animation) {
+    if (animation.status == AnimationStatus.dismissed) {
       return transitionIn.call(child, animation);
     }
 
@@ -90,8 +92,8 @@ class CrossTransition {
   factory CrossTransition.slide({
     Duration? duration,
     Duration? reverseDuration,
-    Offset begin: const Offset(-1.0, 0.0),
-    Offset end: const Offset(1.0, 0.0),
+    Offset begin: const Offset(1.0, 0.0),
+    Offset end: const Offset(-1.0, 0.0),
     Curve curveIn: Curves.easeIn,
     Curve curveOut: Curves.easeOut,
   }) =>

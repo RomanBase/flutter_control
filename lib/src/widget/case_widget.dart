@@ -19,6 +19,8 @@ class CaseWidget<T> extends StatefulWidget {
   /// Specific [CrossTransition] for every case. If case is not included, then default [transition] is used.
   final Map<T, CrossTransition>? transitions;
 
+  final bool autoKey;
+
   /// Resolves what to show by [activeCase].
   /// Every [Widget] has custom case [T] key and is build only if case is active.
   /// Only one [Widget] is shown at given time.
@@ -31,6 +33,7 @@ class CaseWidget<T> extends StatefulWidget {
     this.placeholder,
     this.transition,
     this.transitions,
+    this.autoKey: true,
   }) : super(key: key);
 
   static Widget builder<T>({
@@ -40,6 +43,7 @@ class CaseWidget<T> extends StatefulWidget {
     WidgetBuilder? placeholder,
     CrossTransition? transition,
     Map<T, CrossTransition>? transitions,
+    bool autoKey: true,
   }) =>
       ControlBuilder<T>(
         key: key,
@@ -51,6 +55,7 @@ class CaseWidget<T> extends StatefulWidget {
           placeholder: placeholder,
           transition: transition,
           transitions: transitions,
+          autoKey: autoKey,
         ),
       );
 
@@ -99,6 +104,16 @@ class _CaseWidgetState extends State<CaseWidget> {
     } else {
       currentWidget = widget.placeholder?.call(context) ?? Container();
     }
+
+    if (widget.autoKey) {
+      currentWidget = KeyedSubtree(
+        key: currentWidget.key != null
+            ? ValueKey(currentWidget.key)
+            : ValueKey(ObjectTag.of(this)
+                .variant(widget.activeCase ?? UnitId.nextId())),
+        child: currentWidget,
+      );
+    }
   }
 
   @override
@@ -107,7 +122,7 @@ class _CaseWidgetState extends State<CaseWidget> {
       duration: currentTransition.duration,
       reverseDuration:
           currentTransition.reverseDuration ?? currentTransition.duration,
-      transitionBuilder: currentTransition.build,
+      transitionBuilder: currentTransition.builder,
       child: currentWidget,
     );
   }

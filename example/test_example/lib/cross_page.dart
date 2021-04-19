@@ -50,8 +50,9 @@ class CrossPage extends SingleControlWidget<CrossControl> {
                   CrossControlPage('placeholder', Colors.orange, control),
             },
             placeholder: (_) => CrossControlPage('blue', Colors.black, control),
-            transition: CrossTransition.fade(
+            transition: CrossTransition.slide(
               duration: Duration(seconds: 3),
+              end: Offset(0.0, 1.0),
             ),
           ),
         ),
