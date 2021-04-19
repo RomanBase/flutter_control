@@ -35,10 +35,10 @@ class CrossTransition {
         transitionOut = transition;
 
   Widget _builder(Widget child, Animation<double> animation) {
-
     printDebug('${animation.status} ${animation.value} -- $child');
 
-    if (animation.status == AnimationStatus.dismissed || animation.status == AnimationStatus.forward) {
+    if (animation.status == AnimationStatus.dismissed ||
+        animation.status == AnimationStatus.forward) {
       return transitionIn.call(child, animation);
     }
 
