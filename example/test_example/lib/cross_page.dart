@@ -46,13 +46,12 @@ class CrossPage extends SingleControlWidget<CrossControl> {
             builders: {
               'blue': (_) => CrossControlPage('red', Colors.blue, control),
               'red': (_) => CrossControlPage('orange', Colors.red, control),
-              'orange': (_) =>
-                  CrossControlPage('placeholder', Colors.orange, control),
+              'orange': (_) => CrossControlPage('placeholder', Colors.orange, control),
             },
             placeholder: (_) => CrossControlPage('blue', Colors.black, control),
             transition: CrossTransition.slide(
               duration: Duration(seconds: 3),
-              end: Offset(0.0, 1.0),
+              end: Offset(0.0, 1.5),
             ),
           ),
         ),
@@ -73,8 +72,7 @@ class CrossControlPage extends SingleControlWidget<CrossControl> {
   final String next;
   final Color color;
 
-  CrossControlPage(this.next, this.color, dynamic args)
-      : super(key: ObjectKey(next), args: args);
+  CrossControlPage(this.next, this.color, dynamic args) : super(args: args);
 
   @override
   Widget build(BuildContext context) {

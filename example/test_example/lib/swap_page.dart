@@ -68,12 +68,14 @@ class _SwapPageState extends State<SwapPage> {
                     color: Colors.green,
                   ),
             },
-            transition:
-                CrossTransition.fadeOutFadeIn(duration: Duration(seconds: 3)),
+            transition: CrossTransition.slide(
+              duration: Duration(seconds: 2),
+              reverseDuration: Duration(seconds: 1),
+            ),
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: 100,
+              itemCount: 0,
               itemBuilder: (c, i) => CaseWidget(
                 activeCase: Random().nextInt(4),
                 builders: {

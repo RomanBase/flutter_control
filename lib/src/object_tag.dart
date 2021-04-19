@@ -36,4 +36,9 @@ class ObjectTag {
 
   @override
   int get hashCode => value?.hashCode ?? super.hashCode;
+
+  @override
+  String toString() {
+    return 'tag: $hashCode';
+  }
 }
