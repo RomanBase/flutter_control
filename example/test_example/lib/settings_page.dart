@@ -49,6 +49,10 @@ class SettingsPage extends ControlWidget
               onPressed: controller.unloadApp,
               child: Text('unload'),
             ),
+            RaisedButton(
+              onPressed: controller.swapApp,
+              child: Text('swap state'),
+            ),
             Padding(
               padding: const EdgeInsets.all(32.0),
               child: Text(

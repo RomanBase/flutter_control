@@ -35,4 +35,12 @@ class SettingsController extends BaseControl
   void unloadApp() {
     Control.scope.setOnboardingState();
   }
+
+  void swapApp() {
+    if (Control.scope.setup.state == AppState.auth) {
+      Control.scope.setMainState();
+    } else {
+      Control.scope.setAuthState();
+    }
+  }
 }

@@ -59,6 +59,7 @@ class MyApp extends StatelessWidget {
           transition: CrossTransition.fadeCross(duration: Duration(seconds: 2)),
         ),
         AppState.main.build((context) => MenuPage()),
+        AppState.auth.build((context) => SettingsPage()),
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,

@@ -540,7 +540,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _setup.state = _args.get<AppState>();
     _setup.args = _args;
 
-    printDebug('BUILD CONTROL');
+    printDebug('BUILD CONTROL - ${_setup._localKey}');
 
     return Container(
       key: _setup._localKey,
@@ -550,6 +550,7 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
           _context.value = context;
 
           return CaseWidget(
+            key: ObjectKey(_setup.session),
             activeCase: _setup.state,
             builders: _states!,
             transition: widget.transition,

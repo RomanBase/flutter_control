@@ -1,4 +1,5 @@
 import 'package:flutter_control/core.dart';
+import 'package:flutter_control/core.dart';
 
 /// Stores data as arguments based on [key] - [value] pairs.
 class ControlArgs implements Disposable {
@@ -92,6 +93,8 @@ class ControlArgs implements Disposable {
 
     return true;
   }
+
+  bool containsKey(dynamic key) => _args.containsKey(key);
 
   /// Returns object of given [key] or [defaultValue].
   T? get<T>({dynamic key, T? defaultValue}) =>
