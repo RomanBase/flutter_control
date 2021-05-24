@@ -47,7 +47,7 @@ class LocalizationConfig {
     this.initLocale: true,
     this.loadDefaultLocale: true,
     this.handleSystemLocale: true,
-  }) : assert(locales != null);
+  });
 
   /// Converts Map of [locales] to List of [LocalizationAsset]s.
   List<LocalizationAsset> toAssets() {
@@ -74,7 +74,7 @@ class LocalizationAsset {
   String get iso2Locale => locale.length > 2 ? locale.substring(0, 2) : locale;
 
   /// Checks validity of [locale] and [assetPath]
-  bool get isValid => locale != null && assetPath != null;
+  bool get isValid => assetPath != null;
 
   /// [locale] - It's preferred to use iso2 (en) or unicode (en_US) standard.
   /// [assetPath] - Asset path to file with localization data (json).
@@ -241,9 +241,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   /// [assets] - defines locales and asset path to files with localization data.
-  BaseLocalization(this.defaultLocale, this.assets)
-      : assert(defaultLocale != null),
-        assert(assets != null);
+  BaseLocalization(this.defaultLocale, this.assets);
 
   /// Creates new localization object based on main [Control.localization].
   factory BaseLocalization.current(List<LocalizationAsset> assets) {
@@ -324,11 +322,9 @@ class BaseLocalization extends ChangeNotifier
   String? getAvailableAssetLocaleForDevice() {
     final locales = deviceLocales;
 
-    if (locales != null && locales.isNotEmpty) {
-      for (Locale loc in locales) {
-        if (isLocalizationAvailable(loc.toString())) {
-          return loc.toString();
-        }
+    for (Locale loc in locales) {
+      if (isLocalizationAvailable(loc.toString())) {
+        return loc.toString();
       }
     }
 
@@ -397,21 +393,11 @@ class BaseLocalization extends ChangeNotifier
 
     final locale = getSystemLocale();
 
-    if (locale != null) {
-      if (resetPreferred) {
-        resetPreferredLocale();
-      }
-
-      return await changeLocale(locale, preferred: false);
+    if (resetPreferred) {
+      resetPreferredLocale();
     }
 
-    loading = false;
-    return LocalizationArgs(
-      locale: locale,
-      isActive: false,
-      changed: false,
-      source: 'asset',
-    );
+    return await changeLocale(locale, preferred: false);
   }
 
   /// Changes localization data inside this object for given [locale].
@@ -476,7 +462,7 @@ class BaseLocalization extends ChangeNotifier
   Future<LocalizationArgs> loadLocalizationData(String locale) async {
     loading = true;
 
-    if (locale == null || !isLocalizationAvailable(locale)) {
+    if (!isLocalizationAvailable(locale)) {
       print('localization not available: $locale');
       loading = false;
       return LocalizationArgs(
@@ -721,7 +707,7 @@ class BaseLocalization extends ChangeNotifier
     return debug ? '$key[$plural]_$_locale' : '';
   }
 
-  /// Tries to localize text by given [key] and [gender].
+  /// Tries to localize text by given [key] and [value].
   ///
   /// child: {
   ///   "male": "boy",
@@ -730,23 +716,24 @@ class BaseLocalization extends ChangeNotifier
   /// }
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizeGender(String key, String gender) {
+  String? localizeValue(String key, String value) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
-        switch (gender) {
-          case 'male':
-            return _data[key]['male'] ?? _data[key]['other'];
-          case 'female':
-            return _data[key]['female'] ?? _data[key]['other'];
-          default:
-            return _data[key]['other'];
+        final map = _data[key] as Map;
+
+        if (map.containsKey(value)) {
+          return map[value];
+        }
+
+        if (map.containsKey('other')) {
+          return map['other'];
         }
       }
 
       return _data[key];
     }
 
-    return debug ? '$key[$gender]_$_locale' : '';
+    return debug ? '$key[$value]_$_locale' : '';
   }
 
   /// Tries to localize text by given [key].
@@ -967,10 +954,10 @@ mixin LocalizationProvider {
           [Map<String, String>? params]) =>
       localization!.localizePlural(key, plural, params);
 
-  ///[BaseLocalization.localizeGender]
+  ///[BaseLocalization.localizeValue]
   @protected
-  String? localizeGender(String key, String gender) =>
-      localization!.localizeGender(key, gender);
+  String? localizeValue(String key, String value) =>
+      localization!.localizeValue(key, value);
 
   ///[BaseLocalization.localizeList]
   @protected
