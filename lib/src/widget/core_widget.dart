@@ -450,9 +450,9 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 
   void _removeTicker(_WidgetTicker ticker) {
-    assert(ticker.isMounted);
-    assert(_tickers != null);
-    assert(_tickers!.contains(ticker));
+    if(_tickers == null){
+      return;
+    }
 
     _tickers!.remove(ticker);
   }
