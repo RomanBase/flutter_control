@@ -148,7 +148,7 @@ mixin TickerComponent on ControlModel {
 @deprecated
 mixin StateControl on Disposable implements StateNotifier, Listenable {
   /// Notifier and state holder.
-  final _notifier = BaseNotifier();
+  final _notifier = ValueNotifier(null);
 
   /// Returns state as [Listenable].
   /// Prevent to use directly, check [addListener], [removeListener] and [notifyState].
