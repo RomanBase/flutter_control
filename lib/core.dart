@@ -38,7 +38,6 @@ export 'src/widget/input_field.dart';
 export 'src/widget/input_field_v1.dart';
 export 'src/widget/loader_widget.dart';
 export 'src/widget/navigation_stack.dart';
-export 'src/widget/notifier_widget.dart';
 export 'src/widget/transition.dart';
 export 'src/widget/widget_provider.dart';
 

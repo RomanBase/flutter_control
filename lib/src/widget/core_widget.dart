@@ -450,7 +450,7 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 
   void _removeTicker(_WidgetTicker ticker) {
-    if(_tickers == null){
+    if (_tickers == null) {
       return;
     }
 
