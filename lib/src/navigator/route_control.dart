@@ -32,15 +32,17 @@ abstract class RouteNavigator {
   /// {@template route-back-root}
   /// Goes back in navigation stack until first [Route].
   /// {@endtemplate}
-  void backToRoot();
+  void backToRoot({Route? open});
 
   /// {@template route-back-to}
   /// Goes back in navigation stack until [Route] found.
   /// {@endtemplate}
-  void backTo(
-      {Route? route,
-      String? identifier,
-      bool Function(Route<dynamic>)? predicate});
+  void backTo<T>({
+    Route? route,
+    String? identifier,
+    bool Function(Route<dynamic>)? predicate,
+    Route? open,
+  });
 
   /// {@template route-close}
   /// Pops [Route] from navigation stack.

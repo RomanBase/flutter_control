@@ -265,13 +265,25 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
 
 /// Mixin class to enable navigation for [ControlWidget]
 mixin RouteControl on ControlWidget implements RouteNavigator {
+  ControlNavigator get navigator => ControlNavigator(context!);
+
+  @override
+  void init(Map args) {
+    super.init(args);
+
+    final route = getActiveRoute();
+    if (route != null) {
+      printDebug('${this.toString()} at route: ${route.settings.name}');
+    }
+  }
+
   /// Returns [RouteControl] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
   ///
   /// Typically not used directly, but via navigator or route ancestors.
   ///
   /// Check [findNavigator] for direct [Route] navigation.
   /// Check [findRouteOf] for direct [RouteHandler] access.
-  static RouteControl? findAncestor(BuildContext context) {
+  static RouteControl? _findAncestor(BuildContext context) {
     final state = context.findAncestorStateOfType<ControlState>();
     final widget = state?.widget;
 
@@ -283,46 +295,25 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
       return widget;
     }
 
-    return findAncestor(state!.context);
+    return _findAncestor(state!.context);
   }
 
   /// Returns [RouteNavigator] of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
   static RouteNavigator? findNavigator(BuildContext context) =>
-      findAncestor(context);
+      _findAncestor(context);
 
   /// Returns [RouteHandler] for given Route of closest [ControlState] that belongs to [ControlWidget] / [SingleControlWidget] / [BaseControlWidget] with [RouteControl] mixin.
   ///
   /// {@macro route-store-get}
   static RouteHandler? findRouteOf<T>(BuildContext context,
           [dynamic identifier]) =>
-      findAncestor(context)?.routeOf<T>(identifier);
+      _findAncestor(context)?.routeOf<T>(identifier);
 
   /// Returns currently active [Route].
   /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
   /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.
   Route? getActiveRoute() =>
       getArg<Route>() ?? (context == null ? null : ModalRoute.of(context!));
-
-  /// Returns requested [Navigator].
-  /// [root] - closest or first.
-  @protected
-  NavigatorState getNavigator({bool root: false}) {
-    if (root && !Control.scope.isInitialized) {
-      return Navigator.of(context!, rootNavigator: true);
-    }
-
-    return Navigator.of(getContext(root: root)!);
-  }
-
-  @override
-  void init(Map args) {
-    super.init(args);
-
-    final route = getActiveRoute();
-    if (route != null) {
-      printDebug('${this.toString()} at route: ${route.settings.name}');
-    }
-  }
 
   /// {@macro route-store-get}
   RouteHandler? routeOf<T>([dynamic identifier]) =>
@@ -336,51 +327,33 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
 
   @override
   Future<dynamic> openRoute(Route route,
-      {bool root: false, bool replacement: false}) {
-    if (replacement) {
-      return getNavigator().pushReplacement(route);
-    } else {
-      return getNavigator(root: root).push(route);
-    }
-  }
+          {bool root: false, bool replacement: false}) =>
+      navigator.openRoute(route, root: root, replacement: replacement);
 
   @override
-  Future<dynamic> openRoot(Route route) {
-    return getNavigator().pushAndRemoveUntil(route, (pop) => false);
-  }
+  Future<dynamic> openRoot(Route route) => navigator.openRoot(route);
 
   @override
   Future<dynamic> openDialog(WidgetBuilder builder,
-      {bool root: true, dynamic type}) async {
-    return showDialog(
-        context: getContext(root: root)!,
-        builder: (context) => builder(context),
-        useRootNavigator: false);
-  }
+          {bool root: true, dynamic type}) =>
+      navigator.openDialog(builder, root: root, type: type);
 
   @override
-  void backTo(
-      {Route? route,
-      String? identifier,
-      bool Function(Route<dynamic>)? predicate}) {
-    if (route != null) {
-      getNavigator().popUntil((item) => item == route || item.isFirst);
-    }
-
-    if (identifier != null) {
-      getNavigator()
-          .popUntil((item) => item.settings.name == identifier || item.isFirst);
-    }
-
-    if (predicate != null) {
-      getNavigator().popUntil(predicate);
-    }
-  }
+  void backTo<T>({
+    Route? route,
+    String? identifier,
+    bool Function(Route<dynamic>)? predicate,
+    Route? open,
+  }) =>
+      navigator.backTo<T>(
+        route: route,
+        identifier: identifier,
+        predicate: predicate,
+        open: open,
+      );
 
   @override
-  void backToRoot() {
-    getNavigator().popUntil((route) => route.isFirst);
-  }
+  void backToRoot({Route? open}) => navigator.backToRoot(open: open);
 
   @override
   bool close([dynamic result]) {
@@ -389,33 +362,11 @@ mixin RouteControl on ControlWidget implements RouteNavigator {
     if (route != null) {
       return closeRoute(route, result);
     } else {
-      final navigator = getNavigator();
-
-      if (navigator.canPop()) {
-        getNavigator().pop(result);
-        return true;
-      }
-
-      return false;
+      return navigator.close(result);
     }
   }
 
   @override
-  bool closeRoute(Route route, [dynamic result]) {
-    if (route.isCurrent) {
-      final navigator = getNavigator();
-
-      if (navigator.canPop()) {
-        getNavigator().pop(result);
-        return true;
-      }
-
-      return false;
-    } else {
-      // ignore: invalid_use_of_protected_member
-      route.didComplete(result);
-      getNavigator().removeRoute(route);
-      return true;
-    }
-  }
+  bool closeRoute(Route route, [dynamic result]) =>
+      navigator.closeRoute(route, result);
 }
