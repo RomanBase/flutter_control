@@ -737,3 +737,32 @@ mixin LazyControl on Disposable {
     Control.remove(key: factoryKey);
   }
 }
+
+mixin LateInit on Initializable {
+  bool? _ready;
+
+  bool get isInitReady => _ready ?? false;
+
+  @override
+  void init(Map args) {
+    super.init(args);
+
+    _onReady();
+  }
+
+  void _onReady() async {
+    if (_ready != null) {
+      return;
+    }
+
+    _ready = false;
+
+    await Control.factory.onReady();
+
+    _ready = true;
+
+    onLateInit();
+  }
+
+  void onLateInit();
+}
