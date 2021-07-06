@@ -99,9 +99,9 @@ void main() {
       final controllerSub = ListControl<int>();
       final controllerConvSub = ListControl<String>();
 
-      controller.filterTo(controllerSub, filter: (item) => item % 2 == 0);
+      controller.filterTo(controllerSub, filter: (item) => item! % 2 == 0);
       controller.filterTo(controllerConvSub,
-          filter: (item) => item % 2 == 0,
+          filter: (item) => item! % 2 == 0,
           converter: (value) =>
               Parse.toList(value, converter: (item) => item.toString()));
 

@@ -88,7 +88,7 @@ class ObservableGroup
   ActionSubscription<Iterable> once(ValueCallback<Iterable?> action,
           {Predicate<List>? until, bool current = true}) =>
       _control.once(action,
-          until: until as bool Function(Iterable<dynamic>)?, current: current);
+          until: until as bool Function(Iterable<dynamic>?)?, current: current);
 
   @override
   ActionSubscription<Iterable?>? subscribe(ValueCallback<Iterable?> action,
