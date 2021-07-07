@@ -518,9 +518,7 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
   final ValueConverter<T> converter;
 
   /// Initializes [Sink] with [target] Field and value [converter].
-  FieldSinkConverter(FieldControl<T> target, this.converter) : super(target) {
-    assert(converter != null);
-  }
+  FieldSinkConverter(FieldControl<T> target, this.converter) : super(target);
 
   @override
   void add(dynamic data) {
@@ -582,100 +580,6 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
 
               return Container();
             });
-}
-
-// TODO: remove in v1.1
-/// Will be removed in v1.1 - use [ControlBuilderGroup] instead.
-/// Subscribes to all given [controls] and notifies about changes. Build is called whenever value in one of [FieldControl] is changed.
-class FieldBuilderGroup extends StatefulWidget {
-  final List<FieldControlStream> controls;
-  final ControlWidgetBuilder<List?> builder;
-
-  /// Multiple Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
-  /// [controls] - List of controls to subscribe about value changes. [FieldControl] and [FieldControlSub].
-  /// [builder] - Values to builder are passed in same order as [controls] are. Also 'null' values are passed in.
-  const FieldBuilderGroup({
-    Key? key,
-    required this.controls,
-    required this.builder,
-  }) : super(key: key);
-
-  @override
-  _FieldBuilderGroupState createState() => _FieldBuilderGroupState();
-}
-
-/// State of [FieldBuilderGroup].
-/// Subscribes to all provided Streams.
-class _FieldBuilderGroupState extends State<FieldBuilderGroup> {
-  /// Current values.
-  List? _values;
-
-  /// All active subs.
-  final _subs = <FieldSubscription>[];
-
-  /// Maps values from controls to List.
-  List _mapValues() =>
-      widget.controls.map((item) => item.value).toList(growable: false);
-
-  @override
-  void initState() {
-    super.initState();
-
-    _values = _mapValues();
-    _initSubs();
-  }
-
-  void _initSubs() {
-    widget.controls.forEach((controller) => _subs.add(controller.subscribe(
-          (data) => setState(() {
-            _values = _mapValues();
-          }),
-          current: false,
-        )));
-  }
-
-  @override
-  void didUpdateWidget(FieldBuilderGroup oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.controls != oldWidget.controls) {
-      _subs.forEach((item) => item.cancel());
-      _subs.clear();
-
-      _initSubs();
-    }
-
-    List initial = _values!;
-    List current = _mapValues();
-
-    if (initial.length == current.length) {
-      for (int i = 0; i < initial.length; i++) {
-        if (initial[i] != current[i]) {
-          setState(() {
-            _values = current;
-          });
-          break;
-        }
-      }
-    } else {
-      setState(() {
-        _values = current;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return widget.builder(context, _values);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _subs.forEach((sub) => sub.cancel());
-    _subs.clear();
-  }
 }
 
 //########################################################################################
