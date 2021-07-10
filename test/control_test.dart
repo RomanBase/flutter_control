@@ -164,24 +164,32 @@ void main() async {
     });
 
     test('value', () {
-      final sub1 =
-          broadcast.subscribe('sub', (value) => expect(value.toString(), '1'));
-      final sub2 = broadcast.subscribe<int>('sub', (value) => expect(value, 1));
-      final sub3 =
-          broadcast.subscribe(String, (value) => expect(value.toString(), '2'));
+      final sub1 = broadcast.subscribeTo(
+          'sub', (value) => expect(value.toString(), '1'));
+      final sub2 =
+          broadcast.subscribeTo<int>('sub', (value) => expect(value, 1));
+      final sub3 = broadcast.subscribeTo(
+          String, (value) => expect(value.toString(), '2'));
       final sub4 =
-          broadcast.subscribe<String>(String, (value) => expect(value, '2'));
+          broadcast.subscribeTo<String>(String, (value) => expect(value, '2'));
+      final sub5 = broadcast.subscribeTo(
+          'notnull', (value) => expect(value, isNotNull),
+          nullOk: false);
 
       expect(sub1.isValidForBroadcast('sub', 'string'), isTrue);
+      expect(sub1.isValidForBroadcast('sub', 1), isTrue);
 
-      expect(sub2.isValidForBroadcast('sub', 100), isTrue);
-      expect(sub2.isValidForBroadcast('sub', '100'), isFalse);
+      expect(sub2.isValidForBroadcast('sub', 2), isTrue);
+      expect(sub2.isValidForBroadcast('sub', '2'), isFalse);
 
-      expect(sub3.isValidForBroadcast(String, 'string'), isTrue);
-      expect(sub3.isValidForBroadcast(String, 100), isTrue);
+      expect(sub3.isValidForBroadcast(String, '3'), isTrue);
+      expect(sub3.isValidForBroadcast(String, 3), isTrue);
 
-      expect(sub4.isValidForBroadcast(String, 'string'), isTrue);
-      expect(sub4.isValidForBroadcast(String, 100), isFalse);
+      expect(sub4.isValidForBroadcast(String, '4'), isTrue);
+      expect(sub4.isValidForBroadcast(String, 4), isFalse);
+
+      expect(sub5.isValidForBroadcast('notnull', '5'), isTrue);
+      expect(sub5.isValidForBroadcast('notnull', null), isFalse);
 
       final count1 = broadcast.broadcast(key: 'sub', value: '1');
       final count2 = broadcast.broadcast(key: 'sub', value: 1);
@@ -189,10 +197,15 @@ void main() async {
       final count3 = broadcast.broadcast(key: String, value: '2');
       final count4 = broadcast.broadcast(key: String, value: 2);
 
+      final count5 = broadcast.broadcast(key: 'notnull', value: null);
+      final count6 = broadcast.broadcast(key: 'notnull', value: 'value');
+
       expect(count1, 1);
       expect(count2, 2);
       expect(count3, 2);
       expect(count4, 1);
+      expect(count5, 0);
+      expect(count6, 1);
 
       broadcast.clear();
       expect(broadcast.subCount, 0);

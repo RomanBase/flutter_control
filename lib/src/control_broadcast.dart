@@ -1,17 +1,44 @@
 import 'package:flutter_control/core.dart';
 
+class BroadcastSubscriptionException implements Exception {
+  dynamic args;
+
+  BroadcastSubscriptionException([this.args]);
+
+  @override
+  String toString() {
+    if (args == null || !(args is BroadcastSubscriptionArgs)) {
+      return 'No arguments provided - [BroadcastSubscriptionArgs]';
+    }
+
+    if (args!.key == null) {
+      return 'No broadcast Key provided - [BroadcastSubscriptionArgs]';
+    }
+
+    return 'Unable to establish [BroadcastSubscription] with given args: $args';
+  }
+}
+
+class BroadcastSubscriptionArgs<T> {
+  final dynamic key;
+  final bool nullOk;
+
+  const BroadcastSubscriptionArgs({
+    required this.key,
+    this.nullOk: true,
+  });
+
+  BroadcastSubscription<T> createSubscription() =>
+      BroadcastSubscription._(key, nullOk: nullOk);
+}
+
 /// Global stream to broadcast data and events.
 /// Stream is driven by keys and object types.
 ///
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
-class ControlBroadcast implements Disposable {
-  final _parent = ControlObservable();
-
+class ControlBroadcast extends ControlObservable {
   /// Last available value for subs.
   final _store = Map();
-
-  /// Number of active subs.
-  int get subCount => _parent.subCount;
 
   /// Returns stored object by give - exact [key].
   /// Object can be stored during [broadcast].
@@ -23,25 +50,62 @@ class ControlBroadcast implements Disposable {
     return null;
   }
 
+  /// In most of cases not used directly
+  /// Check [subscribeTo] / [subscribeOf] and [subscribeEvent] / [subscribeEventOf]
+  @override
+  BroadcastSubscription subscribe(
+    ValueCallback action, {
+    bool current: true,
+    dynamic args,
+  }) {
+    final sub = createSubscription(args);
+    subs.add(sub);
+
+    sub.initSubscription(this, action);
+
+    if (args is BroadcastSubscriptionArgs) {
+      if (current &&
+          _store.containsKey(args.key) &&
+          sub.isValidForBroadcast(sub.key, _store[args.key])) {
+        sub.notifyCallback(_store[args.key]);
+      }
+    }
+
+    return sub;
+  }
+
+  @override
+  BroadcastSubscription createSubscription([dynamic args]) {
+    if (args == null ||
+        !(args is BroadcastSubscriptionArgs) ||
+        args.key == null) {
+      throw BroadcastSubscriptionException(args);
+    }
+
+    return args.createSubscription();
+  }
+
   /// Subscribe to global object stream for given [key] and [Type].
   /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  BroadcastSubscription<T> subscribe<T>(
+  BroadcastSubscription<T> subscribeTo<T>(
     dynamic key,
     ValueChanged<T?> onData, {
     bool current: true,
     bool nullOk: true,
   }) {
-    final sub = BroadcastSubscription<T>._(key, nullOk: true);
-    sub.initSubscription(_parent, onData);
+    assert(key != null);
 
-    if (current && _store.containsKey(key) && sub.isValidForBroadcast(sub.key, _store[key])) {
-      sub.notifyCallback(_store[key]);
-    }
-
-    return sub;
+    return subscribe(
+      (data) => onData.call(data == null ? null : data as T),
+      current: current,
+      args: BroadcastSubscriptionArgs<T>(
+        key: key,
+        nullOk: nullOk,
+      ),
+    ) as BroadcastSubscription<T>;
   }
 
   /// Subscribe to global object stream for given [Type]. This [Type] is used as broadcast [key].
@@ -56,7 +120,7 @@ class ControlBroadcast implements Disposable {
   }) {
     assert(T != dynamic);
 
-    return subscribe<T>(T, onData, current: current, nullOk: nullOk);
+    return subscribeTo<T>(T, onData, current: current, nullOk: nullOk);
   }
 
   /// Subscribe to global event stream for given [key].
@@ -64,7 +128,7 @@ class ControlBroadcast implements Disposable {
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) {
-    return subscribe(key, (_) => callback(), current: false);
+    return subscribeTo(key, (_) => callback(), current: false);
   }
 
   /// Subscribe to global event stream for given [Type]. This [Type] is used as broadcast [key].
@@ -94,7 +158,7 @@ class ControlBroadcast implements Disposable {
       _store[key] = value;
     }
 
-    _parent.subs.cast<BroadcastSubscription>().forEach((sub) {
+    subs.cast<BroadcastSubscription>().forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
         count++;
         sub.notifyCallback(value);
@@ -110,13 +174,12 @@ class ControlBroadcast implements Disposable {
   /// Returns number of notified subs.
   int broadcastEvent<T>({dynamic key}) => broadcast<T>(key: key, value: null);
 
-  /// Cancels subscriptions to global object/event stream.
-  void cancel(BroadcastSubscription sub) => _parent.cancel(sub);
+  @override
+  void notify() => broadcast(key: value?.key, value: value?.value);
 
-  /// Clears all subs and stored data.
+  @override
   void clear() {
-    _parent.subs.forEach((sub) => sub.invalidate());
-    _parent.subs.clear();
+    super.clear();
     _store.clear();
   }
 
@@ -140,5 +203,6 @@ class BroadcastSubscription<T> extends ControlSubscription<T> {
   BroadcastSubscription._(this.key, {this.nullOk: true});
 
   /// Checks if [key] and [value] is eligible for this subscription.
-  bool isValidForBroadcast(dynamic key, dynamic value) => ((value == null && nullOk) || value is T) && (key == null || key == this.key);
+  bool isValidForBroadcast(dynamic key, dynamic value) =>
+      (key == this.key) && ((value == null && nullOk) || value is T);
 }

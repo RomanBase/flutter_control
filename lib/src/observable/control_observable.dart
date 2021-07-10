@@ -78,6 +78,7 @@ class ControlObservable<T> implements Disposable {
   ControlSubscription<T> subscribe(
     ValueCallback<T?> action, {
     bool current: true,
+    dynamic args,
   }) {
     final sub = createSubscription();
     subs.add(sub);
@@ -91,7 +92,8 @@ class ControlObservable<T> implements Disposable {
     return sub;
   }
 
-  ControlSubscription<T> createSubscription() => ControlSubscription<T>();
+  ControlSubscription<T> createSubscription([dynamic args]) =>
+      ControlSubscription<T>();
 
   void cancel(ControlSubscription<T> subscription) {
     subscription.invalidate();
@@ -126,10 +128,14 @@ class ControlObservable<T> implements Disposable {
     subs.forEach((element) => element.notifyCallback(value));
   }
 
-  @override
-  void dispose() {
+  void clear() {
     subs.forEach((element) => element.invalidate());
     subs.clear();
+  }
+
+  @override
+  void dispose() {
+    clear();
   }
 }
 

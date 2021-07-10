@@ -200,7 +200,7 @@ class BroadcastProvider {
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription<T> subscribe<T>(
           dynamic key, ValueChanged<T?> onData) =>
-      ControlFactory._instance._broadcast.subscribe(key, onData);
+      ControlFactory._instance._broadcast.subscribeTo<T>(key, onData);
 
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
