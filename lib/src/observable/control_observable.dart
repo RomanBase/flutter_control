@@ -22,6 +22,8 @@ class ControlObservable<T> implements Disposable {
 
   bool get isActive => isValid && _active;
 
+  int get subCount => subs.length;
+
   static ControlObservable<T> of<T>(dynamic object) {
     if (object is ControlObservable<T>) {
       return object;
