@@ -1,20 +1,22 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup
-    implements ActionControlObservable<Iterable?>, Disposable {
+class ObservableGroup implements ObservableModel<Iterable> {
   final _items = <DisposableToken>[];
 
-  final _control = ActionControl.broadcast<Iterable>();
+  final _parent = ActionControl.broadcast<Iterable>();
 
   @override
-  Iterable? get value => _control.value;
+  Iterable? get value => _parent.value;
+
+  @override
+  set value(Iterable? value) => _parent.value = value;
 
   int get length => _items.length;
 
   operator [](int index) => _getValue(_items[index]);
 
-  ObservableGroup([List? observables]) {
+  ObservableGroup([Iterable? observables]) {
     observables?.forEach((item) => join(item));
   }
 
@@ -25,7 +27,7 @@ class ObservableGroup
 
     final item = token.data;
 
-    if (item is ActionControlObservable) {
+    if (item is ObservableModel) {
       return item.value;
     }
 
@@ -46,8 +48,8 @@ class ObservableGroup
   DisposableToken join(dynamic observer) {
     final event = DisposableClient(parent: this);
 
-    if (observer is ActionControlObservable) {
-      final sub = observer.subscribe((value) => _notifyControl())!;
+    if (observer is ObservableModel) {
+      final sub = observer.subscribe((value) => _notifyControl());
       event.onCancel = sub.dispose;
     } else if (observer is FieldControlStream) {
       // ignore: cancel_subscriptions
@@ -77,31 +79,28 @@ class ObservableGroup
     }
   }
 
-  void _notifyControl() => _control.value = _getValues();
+  void _notifyControl() => _parent.value = _getValues();
 
-  void notify() => _control.notify();
-
-  @override
-  ActionControlListenable<Iterable> get listenable => _control.listenable;
-
-  @override
-  ActionSubscription<Iterable> once(ValueCallback<Iterable?> action,
-          {Predicate<List>? until, bool current = true}) =>
-      _control.once(action,
-          until: until as bool Function(Iterable<dynamic>?)?, current: current);
-
-  @override
-  ActionSubscription<Iterable?>? subscribe(ValueCallback<Iterable?> action,
-          {bool current = true}) =>
-      _control.subscribe(action, current: current);
-
-  /// [ActionControlObservable.equal]
-  bool equal(other) => identityHashCode(this) == identityHashCode(other);
+  void notify() => _parent.notify();
 
   @override
   void dispose() {
-    _control.dispose();
+    _parent.dispose();
     _items.forEach((item) => item.cancel());
     _items.clear();
   }
+
+  @override
+  void setValue(Iterable? value, {bool notify = true, bool forceNotify = false}) => _parent.setValue(
+        value ?? [],
+        notify: notify,
+        forceNotify: forceNotify,
+      );
+
+  @override
+  ControlSubscription<Iterable> subscribe(ValueCallback<Iterable?> action, {bool current = true, dynamic args}) => _parent.subscribe(
+        action,
+        current: current,
+        args: args,
+      );
 }

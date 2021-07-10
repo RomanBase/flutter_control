@@ -142,7 +142,7 @@ class ControlScope {
   bool get isInitialized => rootKey.currentState != null && context != null;
 
   /// Subscribe to listen about [BuildContext] changes.
-  ActionControlObservable get rootContextSub => _context.sub;
+  ObservableValue get rootContextSub => ObservableValue.of(_context);
 
   /// Returns current [ControlRootSetup] of [ControlRoot].
   ControlRootSetup? get setup => _rootKey.currentState?._setup;

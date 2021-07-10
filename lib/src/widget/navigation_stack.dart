@@ -361,7 +361,7 @@ class NavigatorStackControl extends BaseControl with StateControl {
   int? get currentPageIndex => _pageIndex.value;
 
   /// Subscription to listen about page index changes.
-  ActionControlObservable<int?> get pageIndex => _pageIndex.sub;
+  ObservableValue<int?> get pageIndex => ObservableValue.of(_pageIndex);
 
   bool reloadOnReselect;
 
@@ -527,7 +527,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
     if (control._initialIndex == null && widget.initialIndex != null) {
       control._initialIndex = widget.initialIndex;
       control._pageIndex
-          .setValue(control._initialIndex, notifyListeners: false);
+          .setValue(control._initialIndex, notify: false);
     }
   }
 
@@ -601,7 +601,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
 
   @override
   Widget build(BuildContext context) {
-    return ActionBuilder(
+    return ControlBuilder(
       control: widget.control.pageIndex,
       builder: (context, dynamic index) {
         final stack = (widget.builder ?? StackGroupBuilders.stack)(

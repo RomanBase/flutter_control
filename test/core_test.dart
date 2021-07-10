@@ -34,7 +34,7 @@ void main() {
     EntryConverter<String> entryConverter = (key, value) => '${key}_$value';
     ControlWidgetBuilder<String> controlWidgetBuilder =
         (context, value) => TestInitWidget(args: value);
-    Predicate<String> predicate = (value) => value!.isNotEmpty;
+    Predicate<String> predicate = (value) => value.isNotEmpty;
 
     final initObject = initializer('args');
     final initWidget =

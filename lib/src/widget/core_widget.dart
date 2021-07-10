@@ -214,7 +214,7 @@ abstract class CoreWidget extends StatefulWidget
 
   @protected
   void registerStateNotifier(dynamic object) {
-    if (object is ActionControlObservable) {
+    if (object is ObservableValue) {
       register(object.subscribe((value) => notifyState()));
     } else if (object is FieldControlStream) {
       register(object.subscribe((value) => notifyState()));

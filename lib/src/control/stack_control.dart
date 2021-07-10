@@ -1,11 +1,11 @@
 import 'package:flutter_control/core.dart';
 
-class StackControl<T> implements ActionControlObservable<T?>, Disposable {
+class StackControl<T> implements ObservableModel<T> {
   /// Current stack of values.
   final List<T?> _stack = <T>[];
 
   /// Holds current value and [ActionControlObservable] interface just wraps this control.
-  final _control = ActionControl.broadcast<T>();
+  final _parent = ActionControl.broadcast<T>();
 
   /// Stack with root value.
   bool _root = false;
@@ -21,7 +21,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
 
   /// Current/Last value of stack.
   @override
-  T? get value => _control.value;
+  T? get value => _parent.value;
 
   /// Pushes this value to stack.
   set value(T? value) => push(value);
@@ -44,13 +44,6 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
   /// Returns value in stack by index.
   operator [](int index) => _stack[index];
 
-  /// Returns [ActionControlSub] to provide read only version of [StackControl].
-  ActionControlObservable<T?> get sub => ActionControlSub<T>(_control);
-
-  @override
-  ActionControlListenable<T> get listenable =>
-      ActionControlListenable<T>(_control);
-
   StackControl({T? value, bool root = false}) {
     _root = root;
     if (value != null) {
@@ -65,7 +58,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
     }
 
     _stack.add(value);
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Push given [value] to end of stack.
@@ -74,7 +67,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
     _stack.remove(value);
     _stack.add(value);
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pushes whole [stack].
@@ -86,7 +79,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
 
     _stack.addAll(stack);
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops last [value] from stack.
@@ -97,7 +90,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
 
     _stack.removeLast();
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops to given [value]. All next values are removed from stack.
@@ -108,7 +101,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
       _stack.removeRange(index, _stack.length);
     }
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops to [value] of given [test]. All next values are removed from stack.
@@ -119,7 +112,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
       _stack.removeRange(index, _stack.length);
     }
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops to root/first value of stack. All next values are removed from stack.
@@ -133,7 +126,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
     _stack.clear();
     _stack.add(item);
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops to last value of stack. All previous values are removed from stack.
@@ -147,7 +140,7 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
     _stack.clear();
     _stack.add(item);
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Pops until last item in stack.
@@ -169,47 +162,36 @@ class StackControl<T> implements ActionControlObservable<T?>, Disposable {
   void clear() {
     _stack.clear();
 
-    _notifyControl();
+    _notifyParent();
   }
 
   /// Checks if given [item] is in stack.
   bool contains(T item) => _stack.contains(item);
 
-  /// Sets [value] to control.
-  void _notifyControl() => _control.value = _last;
-
-  /// Notifies all listeners with current [value].
-  void notify() => _control.notify();
-
-  /// [ActionControlObservable.cancel]
-  void cancel([ActionSubscription? sub]) =>
-      _control.cancel(sub as ActionSubscription<T>?);
-
-  /// [ActionControlObservable.subscribe]
-  ActionSubscription<T?>? subscribe(ValueCallback<T?> action,
-          {bool current: true}) =>
-      _control.subscribe(action, current: current);
-
-  /// [ActionControlObservable.once]
-  ActionSubscription<T> once(ValueCallback<T?> action,
-          {Predicate<T>? until, bool current: true}) =>
-      _control.once(action, until: until, current: current);
+  /// Sets [value] to parent control.
+  void _notifyParent() => _parent.value = _last;
 
   @override
-  bool operator ==(other) {
-    return other is ActionControlObservable && other.value == value ||
-        other == value;
-  }
-
-  /// [ActionControlObservable.equal]
-  bool equal(other) => identityHashCode(this) == identityHashCode(other);
+  void setValue(T? value, {bool notify = true, bool forceNotify = false}) => push(value);
 
   @override
-  int get hashCode => value?.hashCode ?? super.hashCode;
+  ControlSubscription<T> subscribe(
+    ValueCallback<T?> action, {
+    bool current = true,
+    args,
+  }) =>
+      _parent.subscribe(
+        action,
+        current: current,
+        args: args,
+      );
+
+  @override
+  void notify() => _parent.notify();
 
   @override
   void dispose() {
     _stack.clear();
-    _control.dispose();
+    _parent.dispose();
   }
 }

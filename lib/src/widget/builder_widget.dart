@@ -44,7 +44,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
 
     dynamic data;
 
-    if (control is ActionControlObservable) {
+    if (control is ObservableValue) {
       data = control.value;
     } else if (control is FieldControlStream) {
       data = control.value;
@@ -65,7 +65,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   }
 
   void _initSub() {
-    if (control is ActionControlObservable) {
+    if (control is ObservableValue) {
       _sub = control.subscribe(
         (value) => _notifyState(),
         current: false,
@@ -178,7 +178,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
     final data = [];
 
     widget.controls.forEach((control) {
-      if (control is ActionControlObservable) {
+      if (control is ObservableValue) {
         data.add(control.value);
       } else if (control is FieldControlStream) {
         data.add(control.value);
@@ -195,7 +195,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   /// Subscribes to Controls and listen each about changes.
   void _initSubs() {
     widget.controls.forEach((control) {
-      if (control is ActionControlObservable) {
+      if (control is ObservableValue) {
         _subs.add(control.subscribe(
           (value) => _notifyState(),
           current: false,
