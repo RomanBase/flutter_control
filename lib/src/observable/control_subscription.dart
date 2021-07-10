@@ -1,12 +1,12 @@
 import 'package:flutter_control/core.dart';
 
 class ControlSubscription<T> implements Disposable {
-  ControlObservable<T>? _parent;
-  ValueCallback<T>? _callback;
+  ControlObservable? _parent;
+  ValueCallback<T?>? _callback;
 
-  Predicate<T>? _until;
+  Predicate<T?>? _until;
 
-  Predicate<T>? _filter;
+  Predicate<T?>? _filter;
 
   bool _active = true;
 
@@ -14,15 +14,14 @@ class ControlSubscription<T> implements Disposable {
 
   bool get isActive => isValid && _active;
 
-  void initSubscription(
-      ControlObservable<T> parent, ValueCallback<T> callback) {
+  void initSubscription(ControlObservable parent, ValueCallback<T?> callback) {
     _parent = parent;
     _callback = callback;
   }
 
-  void filter(Predicate<T>? filter) => _filter = filter;
+  void filter(Predicate<T?>? filter) => _filter = filter;
 
-  void until(Predicate<T>? predicate) => _until = predicate;
+  void until(Predicate<T?>? predicate) => _until = predicate;
 
   void once() => _until = (value) => true;
 
@@ -53,7 +52,7 @@ class ControlSubscription<T> implements Disposable {
     invalidate();
   }
 
-  void invalidate(){
+  void invalidate() {
     _active = false;
     _parent = null;
     _callback = null;

@@ -74,7 +74,7 @@ class ControlObservable<T> implements Disposable {
   }
 
   ControlSubscription<T> subscribe(
-    ValueCallback<T> action, {
+    ValueCallback<T?> action, {
     bool current: true,
   }) {
     final sub = createSubscription();

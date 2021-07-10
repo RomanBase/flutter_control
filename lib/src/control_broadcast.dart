@@ -5,14 +5,13 @@ import 'package:flutter_control/core.dart';
 ///
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
 class ControlBroadcast implements Disposable {
-  /// List of active subs.
-  final _subscriptions = <BroadcastSubscription>[];
+  final _parent = ControlObservable();
 
   /// Last available value for subs.
   final _store = Map();
 
   /// Number of active subs.
-  int get subCount => _subscriptions.length;
+  int get subCount => _parent.subCount;
 
   /// Returns stored object by give - exact [key].
   /// Object can be stored during [broadcast].
@@ -35,18 +34,11 @@ class ControlBroadcast implements Disposable {
     bool current: true,
     bool nullOk: true,
   }) {
-    assert(onData != null);
+    final sub = BroadcastSubscription<T>._(key, nullOk: true);
+    sub.initSubscription(_parent, onData);
 
-    final sub = BroadcastSubscription<T>._(key, nullOk: nullOk)
-      .._parent = this
-      .._onData = onData;
-
-    _subscriptions.add(sub);
-
-    if (current &&
-        _store.containsKey(key) &&
-        sub.isValidForBroadcast(sub.key, _store[key])) {
-      sub._notify(_store[key]);
+    if (current && _store.containsKey(key) && sub.isValidForBroadcast(sub.key, _store[key])) {
+      sub.notifyCallback(_store[key]);
     }
 
     return sub;
@@ -62,7 +54,6 @@ class ControlBroadcast implements Disposable {
     bool current: true,
     bool nullOk: true,
   }) {
-    assert(onData != null);
     assert(T != dynamic);
 
     return subscribe<T>(T, onData, current: current, nullOk: nullOk);
@@ -103,10 +94,10 @@ class ControlBroadcast implements Disposable {
       _store[key] = value;
     }
 
-    _subscriptions.forEach((sub) {
+    _parent.subs.cast<BroadcastSubscription>().forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
         count++;
-        sub._notify(value);
+        sub.notifyCallback(value);
       }
     });
 
@@ -120,15 +111,12 @@ class ControlBroadcast implements Disposable {
   int broadcastEvent<T>({dynamic key}) => broadcast<T>(key: key, value: null);
 
   /// Cancels subscriptions to global object/event stream.
-  void cancelSubscription(BroadcastSubscription sub) {
-    sub.pause();
-    _subscriptions.remove(sub);
-  }
+  void cancel(BroadcastSubscription sub) => _parent.cancel(sub);
 
   /// Clears all subs and stored data.
   void clear() {
-    _subscriptions.forEach((sub) => sub._parent = null);
-    _subscriptions.clear();
+    _parent.subs.forEach((sub) => sub.invalidate());
+    _parent.subs.clear();
     _store.clear();
   }
 
@@ -140,56 +128,17 @@ class ControlBroadcast implements Disposable {
 
 /// Subscription of global data/event stream.
 /// Holds subscription [key] and [Type] and callback [onData] event.
-class BroadcastSubscription<T> implements Disposable {
+class BroadcastSubscription<T> extends ControlSubscription<T> {
   /// Key of sub.
   final dynamic key;
 
   /// Checks if 'null' is valid for broadcast.
   final bool nullOk;
 
-  /// Parent of this sub.
-  ControlBroadcast? _parent;
-
-  /// Callback from sub.
-  late ValueChanged<T?> _onData;
-
-  /// Only active sub is valid for broadcast.
-  bool _active = true;
-
-  /// Checks if parent is valid and sub is active.
-  bool get isActive => _parent != null && _active;
-
   /// Default constructor.
   /// Only [ControlBroadcast] can initialize sub.
   BroadcastSubscription._(this.key, {this.nullOk: true});
 
   /// Checks if [key] and [value] is eligible for this subscription.
-  bool isValidForBroadcast(dynamic key, dynamic value) =>
-      _active &&
-      ((value == null && nullOk) || value is T) &&
-      (key == null || key == this.key);
-
-  /// Pauses this subscription and [ControlBroadcast.broadcast] will skip this sub during next event.
-  void pause() => _active = false;
-
-  /// Resumes this subscription and [ControlBroadcast.broadcast] will notify this sub during next event.
-  void resume() => _active = true;
-
-  /// Notifies callback.
-  void _notify(dynamic value) => _onData(value as T?);
-
-  /// Cancels subscription to global stream in [ControlFactory].
-  /// After cancel there is no way to resume this sub.
-  void cancel() {
-    _active = false;
-    if (_parent != null) {
-      _parent!.cancelSubscription(this);
-      _parent = null;
-    }
-  }
-
-  @override
-  void dispose() {
-    cancel();
-  }
+  bool isValidForBroadcast(dynamic key, dynamic value) => ((value == null && nullOk) || value is T) && (key == null || key == this.key);
 }
