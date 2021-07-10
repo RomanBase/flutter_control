@@ -1,7 +1,44 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ControlObservable<T> implements Disposable {
+abstract class ObservableValue<T> {
+  T? get value;
+
+  ControlSubscription<T> subscribe(
+    ValueCallback<T?> action, {
+    bool current: true,
+    dynamic args,
+  });
+
+  static ObservableValue<T> of<T>(ObservableModel<T> observable) => _ObservableValue<T>(observable);
+}
+
+abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
+  set value(T? value) => setValue(value);
+
+  void setValue(T? value, {bool notify: true, bool forceNotify: false});
+
+  void notify();
+}
+
+class _ObservableValue<T> implements ObservableValue<T> {
+  final ObservableModel<T> _parent;
+
+  @override
+  T? get value => _parent.value;
+
+  _ObservableValue(this._parent);
+
+  @override
+  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, dynamic args}) => _parent.subscribe(
+        action,
+        current: current,
+        args: args,
+      );
+}
+
+class ControlObservable<T> implements ObservableModel<T> {
+  @protected
   final subs = <ControlSubscription<T>>[];
 
   dynamic data;
@@ -10,8 +47,10 @@ class ControlObservable<T> implements Disposable {
 
   T? _value;
 
+  @override
   T? get value => _value;
 
+  @override
   set value(T? value) => setValue(value);
 
   bool get isEmpty => value == null;
@@ -23,6 +62,10 @@ class ControlObservable<T> implements Disposable {
   bool get isActive => isValid && _active;
 
   int get subCount => subs.length;
+
+  ControlObservable([T? value]) {
+    _value = value;
+  }
 
   static ControlObservable<T> of<T>(dynamic object) {
     if (object is ControlObservable<T>) {
@@ -69,12 +112,29 @@ class ControlObservable<T> implements Disposable {
     };
 
     listenable.addListener(callback);
-    observable.register(DisposableClient()
-      ..onDispose = () => listenable.removeListener(callback));
+    observable.register(DisposableClient()..onDispose = () => listenable.removeListener(callback));
 
     return observable;
   }
 
+  @override
+  void setValue(T? value, {bool notify: true, bool forceNotify: false}) {
+    if (_value == value) {
+      if (forceNotify) {
+        this.notify();
+      }
+
+      return;
+    }
+
+    _value = value;
+
+    if (notify || forceNotify) {
+      this.notify();
+    }
+  }
+
+  @override
   ControlSubscription<T> subscribe(
     ValueCallback<T?> action, {
     bool current: true,
@@ -92,34 +152,19 @@ class ControlObservable<T> implements Disposable {
     return sub;
   }
 
-  ControlSubscription<T> createSubscription([dynamic args]) =>
-      ControlSubscription<T>();
+  @protected
+  ControlSubscription<T> createSubscription([dynamic args]) => ControlSubscription<T>();
 
   void cancel(ControlSubscription<T> subscription) {
     subscription.invalidate();
     subs.remove(subscription);
   }
 
-  void setValue(T? value, {bool notify: true, bool forceNotify: false}) {
-    if (_value == value) {
-      if (forceNotify) {
-        this.notify();
-      }
-
-      return;
-    }
-
-    _value = value;
-
-    if (notify || forceNotify) {
-      this.notify();
-    }
-  }
-
   void pause() => _active = false;
 
   void resume() => _active = isValid;
 
+  @override
   void notify() {
     if (!isActive) {
       return;
