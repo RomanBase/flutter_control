@@ -2,8 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Experimental version of unified [ControlWidgetBuilder].
-/// Currently supports [ActionControl], [FieldControl], [Listenable]
-//TODO: support [Stream] and [Future] via [FieldControl].
+/// Supports [ControlObservable] - [ActionControl], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
 class ControlBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
   final dynamic control;
@@ -35,25 +34,9 @@ class ControlBuilder<T> extends StatefulWidget {
 class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   Disposable? _sub;
 
-  dynamic get control => widget.control;
+  ObservableValue<T>? _observable;
 
-  T? _mapValue() {
-    if (T != dynamic && control is T) {
-      return control;
-    }
-
-    dynamic data;
-
-    if (control is ObservableValue) {
-      data = control.value;
-    } else if (control is ValueListenable) {
-      data = control.value;
-    } else {
-      data = control;
-    }
-
-    return (widget.valueConverter?.call(data) ?? data) as T?;
-  }
+  T? _mapValue() => _observable?.value;
 
   @override
   void initState() {
@@ -63,14 +46,17 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   }
 
   void _initSub() {
-    if (control is ObservableValue) {
-      _sub = control.subscribe(
-        (value) => _notifyState(),
-        current: false,
-      );
-    } else if (control is Listenable) {
-      control.addListener(_notifyState);
+    _observable = ControlObservable.of<T>(widget.control);
+
+    if (widget.control != _observable) {
+      // Mark for Dispose if observable is not same as [widget.control].
+      _observable!.data = DisposeMarker;
     }
+
+    _sub = _observable!.subscribe(
+      (value) => _notifyState(),
+      current: false,
+    );
 
     value = _mapValue();
   }
@@ -81,8 +67,9 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   void didUpdateWidget(ControlBuilder<T?> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (control != oldWidget.control) {
+    if (widget.control != oldWidget.control) {
       _disableSub();
+      _disableObservable();
       _initSub();
       _notifyState();
     }
@@ -100,10 +87,14 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   void _disableSub() {
     _sub?.dispose();
     _sub = null;
+  }
 
-    if (control is Listenable) {
-      control.removeListener(_notifyState);
+  void _disableObservable() {
+    if (_observable?.data == DisposeMarker) {
+      DisposeHandler.disposeOf(_observable, this);
     }
+
+    _observable = null;
   }
 
   @override
@@ -111,17 +102,13 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
     super.dispose();
 
     _disableSub();
+    _disableObservable();
   }
 }
 
 /// Subscribes to multiple [Stream], [Observable] and [Listenable] objects and listens about changes.
 /// Whenever one of [controls] notifies about change, Widget is rebuild.
-/// Supports [ActionControl], [FieldControl], [StateControl], [ValueListenable] and [Listenable].
-///
-/// Check single control Widget for specified version:
-///   - [ActionBuilder] for single [ActionControlObservable].
-///   - [FieldBuilder] for single [FieldControlStream].
-///   - [NotifierBuilder] for single [Listenable].
+/// Supports [ControlObservable] - [ActionControl], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
 class ControlBuilderGroup extends StatefulWidget {
   /// List of Controls that will notify this Widget about changes.
   final List controls;
@@ -152,7 +139,9 @@ class ControlBuilderGroup extends StatefulWidget {
 /// State of [ControlBuilderGroup].
 class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   /// All active subs.
-  final _subs = <Disposable?>[];
+  final _subs = <Disposable>[];
+
+  final _observables = <ObservableValue>[];
 
   @override
   void initState() {
@@ -168,32 +157,23 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
       return widget.controls;
     }
 
-    final data = [];
-
-    widget.controls.forEach((control) {
-      if (control is ObservableValue) {
-        data.add(control.value);
-      } else if (control is ValueListenable) {
-        data.add(control.value);
-      } else {
-        data.add(control);
-      }
-    });
-
-    return data;
+    return _observables.map((e) => e.value).toList();
   }
 
   /// Subscribes to Controls and listen each about changes.
   void _initSubs() {
     widget.controls.forEach((control) {
-      if (control is ObservableValue) {
-        _subs.add(control.subscribe(
-          (value) => _notifyState(),
-          current: false,
-        ));
-      } else if (control is Listenable) {
-        control.addListener(_notifyState);
+      final observable = ControlObservable.of(control);
+      if (control != observable) {
+        // Mark for Dispose if observable is not same as [widget.control].
+        observable.data = DisposeMarker;
       }
+
+      _observables.add(observable);
+      _subs.add(observable.subscribe(
+        (value) => _notifyState(),
+        current: false,
+      ));
     });
   }
 
@@ -207,6 +187,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
     //TODO: check just controls and re-sub only changes
 
     _disposeSubs();
+    _disableObservables();
     _initSubs();
 
     List initial = value!;
@@ -229,14 +210,18 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
 
   /// Disposes all Subscriptions and Listeners.
   void _disposeSubs() {
-    _subs.forEach((item) => item!.dispose());
+    _subs.forEach((item) => item.dispose());
     _subs.clear();
+  }
 
-    widget.controls.forEach((control) {
-      if (control is Listenable) {
-        control.removeListener(_notifyState);
+  void _disableObservables() {
+    _observables.forEach((element) {
+      if (element.data == DisposeMarker) {
+        DisposeHandler.disposeOf(element, this);
       }
     });
+
+    _observables.clear();
   }
 
   @override

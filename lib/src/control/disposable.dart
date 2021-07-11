@@ -1,5 +1,7 @@
 import 'package:flutter_control/core.dart';
 
+typedef DisposeMarker = Function();
+
 /// Standard dispose implementation.
 abstract class Disposable {
   /// Used to clear and dispose object.

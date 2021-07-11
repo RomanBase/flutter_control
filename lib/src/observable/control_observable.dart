@@ -4,6 +4,8 @@ import 'package:flutter_control/core.dart';
 abstract class ObservableValue<T> {
   T? get value;
 
+  dynamic data;
+
   ControlSubscription<T> subscribe(
     ValueCallback<T?> action, {
     bool current: true,
@@ -16,7 +18,8 @@ abstract class ObservableValue<T> {
       _ObservableHandler<T>(observable);
 }
 
-abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
+abstract class ObservableModel<T> extends ObservableValue<T>
+    implements Disposable {
   bool get isEmpty => value == null;
 
   bool get isNotEmpty => value != null;
@@ -25,8 +28,6 @@ abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
 
   bool get isActive;
 
-  dynamic data;
-
   set value(T? value) => setValue(value);
 
   void setValue(T? value, {bool notify: true, bool forceNotify: false});
@@ -34,7 +35,7 @@ abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
   void notify();
 }
 
-class _ObservableHandler<T> implements ObservableValue<T> {
+class _ObservableHandler<T> extends ObservableValue<T> {
   final ObservableValue<T> _parent;
 
   @override
@@ -60,6 +61,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   @protected
   final subs = <ControlSubscription<T>>[];
 
+  @override
   dynamic data;
 
   bool _active = true;
@@ -81,8 +83,8 @@ class ControlObservable<T> extends ObservableModel<T> {
     _value = value;
   }
 
-  static ControlObservable<T> of<T>(dynamic object) {
-    if (object is ControlObservable<T>) {
+  static ObservableValue<T> of<T>(dynamic object) {
+    if (object is ObservableValue<T>) {
       return object;
     } else if (object is Stream<T>) {
       return ofStream(object);

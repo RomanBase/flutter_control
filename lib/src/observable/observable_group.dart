@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup implements ObservableValue<Iterable>, Disposable {
+class ObservableGroup extends ObservableValue<Iterable> implements Disposable {
   final _items = <DisposableToken>[];
 
   final _parent = ActionControl.broadcast<Iterable>();
