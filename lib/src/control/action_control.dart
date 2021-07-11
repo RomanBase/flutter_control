@@ -2,17 +2,18 @@ import 'dart:async';
 
 import 'package:flutter_control/core.dart';
 
-mixin ObservableComponent<T> on ControlModel implements ObservableModel<T> {
+mixin ObservableComponent<T> on ControlModel implements ObservableValue<T> {
   /// Actual control to subscribe.
   final _parent = ActionControl.broadcast<T>();
 
   @override
+  dynamic data;
+
+  @override
   T? get value => _parent.value;
 
-  @override
   set value(T? value) => _parent.value = value;
 
-  @override
   void setValue(T? value, {bool notify: true, bool forceNotify: false}) {
     _parent.setValue(
       value,
@@ -31,6 +32,9 @@ mixin ObservableComponent<T> on ControlModel implements ObservableModel<T> {
       );
 
   @override
+  void cancel(ControlSubscription<T> subscription) =>
+      _parent.cancel(subscription);
+
   void notify() => _parent.notify();
 
   @override

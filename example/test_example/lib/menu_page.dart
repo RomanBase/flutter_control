@@ -15,7 +15,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
   void onInit(Map args) {
     super.onInit(args);
 
-    register(control.pageIndex.subscribe((value) => control.notifyState()));
+    //register(control.pageIndex.subscribe((value) => control.notify()));
   }
 
   @override

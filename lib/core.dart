@@ -26,6 +26,7 @@ export 'src/util/args.dart';
 export 'src/util/base_prefs.dart';
 export 'src/util/curve.dart';
 export 'src/util/device.dart';
+export 'src/util/equality.dart';
 export 'src/util/future_block.dart';
 export 'src/util/lazy_initializer.dart';
 export 'src/util/parser.dart';
@@ -33,6 +34,7 @@ export 'src/util/unit_id.dart';
 export 'src/widget/builder_widget.dart';
 export 'src/widget/case_widget.dart';
 export 'src/widget/control/input_control.dart';
+export 'src/widget/control/navigator_stack_control.dart';
 export 'src/widget/control_root.dart';
 export 'src/widget/control_widget.dart';
 export 'src/widget/controllable_widget.dart';
@@ -59,7 +61,8 @@ typedef ValueCallback<T> = void Function(T value);
 typedef ValueConverter<T> = T Function(dynamic value);
 typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
 
-typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(
+    BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
 void printDebug(Object object) {

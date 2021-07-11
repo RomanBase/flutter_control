@@ -5,7 +5,7 @@ import 'package:flutter_control/core.dart';
 /// Based on [AnimatedSwitcher].
 class CaseWidget<T> extends StatefulWidget {
   /// Currently active case.
-  final T activeCase;
+  final T? activeCase;
 
   /// Set of [Widget] builders. Every builder is stored under own case [T] key.
   final Map<T, WidgetBuilder> builders;
