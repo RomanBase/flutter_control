@@ -19,6 +19,8 @@ export 'src/control_broadcast.dart';
 export 'src/navigator/control_navigator.dart';
 export 'src/navigator/route_control.dart';
 export 'src/object_tag.dart';
+export 'src/observable/control_observable.dart';
+export 'src/observable/control_subscription.dart';
 export 'src/theme_control.dart';
 export 'src/util/args.dart';
 export 'src/util/base_prefs.dart';
@@ -34,14 +36,13 @@ export 'src/widget/control_root.dart';
 export 'src/widget/control_widget.dart';
 export 'src/widget/controllable_widget.dart';
 export 'src/widget/core_widget.dart';
+export 'src/widget/field_builder.dart';
 export 'src/widget/input_field.dart';
 export 'src/widget/input_field_v1.dart';
 export 'src/widget/loader_widget.dart';
 export 'src/widget/navigation_stack.dart';
 export 'src/widget/transition.dart';
 export 'src/widget/widget_provider.dart';
-export 'src/observable/control_observable.dart';
-export 'src/observable/control_subscription.dart';
 
 enum LoadingStatus {
   initial,
