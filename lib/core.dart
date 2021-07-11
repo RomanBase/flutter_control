@@ -27,7 +27,7 @@ export 'src/util/base_prefs.dart';
 export 'src/util/curve.dart';
 export 'src/util/device.dart';
 export 'src/util/future_block.dart';
-export 'src/util/init_holder.dart';
+export 'src/util/lazy_initializer.dart';
 export 'src/util/parser.dart';
 export 'src/util/unit_id.dart';
 export 'src/widget/builder_widget.dart';

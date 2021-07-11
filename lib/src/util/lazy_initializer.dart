@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
 
 /// Lazily build value once and holds it for whole time.
-class InitHolder<T> {
+class LazyInitializer<T> {
   /// Current value.
   T? _value;
 
@@ -20,7 +20,7 @@ class InitHolder<T> {
   bool get isDirty => _isDirty || !isActive;
 
   /// Default constructor
-  InitHolder({ValueGetter<T>? builder}) {
+  LazyInitializer({ValueGetter<T>? builder}) {
     _builder = builder;
   }
 
