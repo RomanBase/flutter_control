@@ -185,6 +185,28 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
 
   void initControls(List<NavigatorControl> controls) => _items = controls;
 
+  NavigatorControl? getControl({int? index, MenuItem? item, dynamic key}) {
+    if (!isValid) {
+      return null;
+    }
+
+    if (index != null) {
+      return _items![index];
+    }
+
+    key ??= item?.key;
+
+    if (key != null) {
+      try {
+        return _items!.firstWhere((element) => element.menu?.key == key);
+      } on StateError {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
   /// Sets page index and notifies [pageIndex]
   /// Given index is clamped between valid indexes [items.length]
   /// Notifies [State] to switch Pages.
