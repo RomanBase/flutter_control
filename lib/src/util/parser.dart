@@ -261,6 +261,11 @@ class Parse {
     return value.runtimeType.toString();
   }
 
+  /// Returns [Type] from given [T] or [value].
+  /// Returns `dynamic` if [T] is not passed and [value] is `null`.
+  static Type type<T>([dynamic value]) =>
+      T != dynamic ? T : (value?.runtimeType ?? dynamic);
+
   /// Tries to parse value into List.
   ///
   /// List, Map, Iterable.
