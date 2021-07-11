@@ -60,7 +60,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
           ): (context) => Container(),
         },
       ),
-      bottomNavigationBar: ActionBuilder<int>(
+      bottomNavigationBar: ControlBuilder<int>(
           control: control.pageIndex,
           builder: (context, snapshot) {
             return BottomNavigationBar(

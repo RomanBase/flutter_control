@@ -206,24 +206,27 @@ class FieldControl<T> extends ObservableModel<T> {
       void onDone()?,
       bool cancelOnError: false,
       ValueConverter? converter}) {
-    return _addSub(
-      stream.listen(
-        (data) {
-          if (converter != null) {
-            final result = converter(data);
+    // ignore: cancel_subscriptions
+    final subscription = stream.listen(
+      (data) {
+        if (converter != null) {
+          final result = converter(data);
 
-            if (result is Future) {
-              result.then((value) => setValue(value)).catchError((err) {
-                printDebug(err);
-              });
-            } else {
-              setValue(result);
-            }
+          if (result is Future) {
+            result.then((value) => setValue(value)).catchError((err) {
+              printDebug(err);
+            });
           } else {
-            setValue(data);
+            setValue(result);
           }
-        },
-      ),
+        } else {
+          setValue(data);
+        }
+      },
+    );
+
+    return _addSub(
+      subscription,
       onError: onError,
       onDone: onDone,
       cancelOnError: cancelOnError,
@@ -772,7 +775,7 @@ class StringControl extends FieldControl<String?> {
     if (RegExp(regex!).hasMatch(value ?? '')) {
       super.setValue(value, notify: notify, forceNotify: forceNotify);
     } else {
-      printDebug('value is not within regex $regex');
+      printDebug('value [$value] has not match regex [$regex]');
     }
   }
 }
@@ -807,25 +810,37 @@ class NumberControl<T extends num> extends FieldControl<T> {
   /// [max] - default 1
   NumberControl.inRange({T? value, T? min, T? max, bool clamp: true}) {
     this.clamp = clamp;
-    setRange(min, max ?? (1 as T));
+    setRange(min, max ?? _castValue(1));
     setValue(value);
   }
 
   void setRange(T? min, T? max) {
-    this.min = min ?? (0 as T);
-    this.max = max ?? (0 as T);
+    this.min = min ?? _castValue(0);
+    this.max = max ?? _castValue(0);
+  }
+
+  T _castValue(num value) {
+    if (T is int) {
+      return value.toInt() as T;
+    } else {
+      return value.toDouble() as T;
+    }
   }
 
   void setValue(T? value, {bool notify = true, bool forceNotify = false}) {
-    if (clamp && clampable) {
-      super.setValue((value ?? min).clamp(min, max) as T,
-          notify: notify, forceNotify: forceNotify);
-    } else {
-      if (value! >= min && value <= max) {
-        super.setValue(value, notify: notify, forceNotify: forceNotify);
+    if (clampable) {
+      if (clamp) {
+        super.setValue(_castValue((value ?? min).clamp(min, max)),
+            notify: notify, forceNotify: forceNotify);
       } else {
-        printDebug('value is not within range $min - $max');
+        if (value! >= min && value <= max) {
+          super.setValue(value, notify: notify, forceNotify: forceNotify);
+        } else {
+          printDebug('value [$value] is not within range [$min - $max]');
+        }
       }
+    } else {
+      super.setValue(value, notify: notify, forceNotify: forceNotify);
     }
   }
 }

@@ -1,4 +1,5 @@
 name: flutter_control_example
+publish_to: none
 description: Example App with Flutter Control.
 
 # The following defines the version and build number for your application.

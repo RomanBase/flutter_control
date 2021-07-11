@@ -84,8 +84,8 @@ class DetailController extends BaseControl
 
     _model ??= args.getArg<CardModel>();
 
-    _model.countLabel
-        .streamTo(title, converter: (input) => '${_model.title} - $input');
+    title.subscribeTo(_model.countLabel.stream,
+        converter: (input) => '${_model.title} - $input');
   }
 
   void addItem() => newItem('${localize('item_title')} ${items.length}');
@@ -118,7 +118,7 @@ class DetailController extends BaseControl
 class CardModel extends BaseModel with LocalizationProvider {
   final String title;
   final countLabel = StringControl();
-  final progress = DoubleControl();
+  final progress = NumberControl<double>();
   final items = ListControl<CardItemModel>();
 
   CardModel(this.title) {
