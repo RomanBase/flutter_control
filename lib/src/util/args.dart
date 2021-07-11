@@ -1,5 +1,4 @@
 import 'package:flutter_control/core.dart';
-import 'package:flutter_control/core.dart';
 
 /// Stores data as arguments based on [key] - [value] pairs.
 class ControlArgs implements Disposable {
@@ -41,9 +40,13 @@ class ControlArgs implements Disposable {
     } else if (args is Map) {
       _args.addAll(args);
     } else if (args is Iterable) {
-      args.forEach((item) {
-        _args[item.runtimeType] = item;
-      });
+      if (args.runtimeType == Parse.type<Iterable<dynamic>>()) {
+        args.forEach((item) {
+          _args[item.runtimeType] = item;
+        });
+      } else {
+        _args[args.runtimeType] = args;
+      }
     } else {
       _args[args.runtimeType] = args;
     }
@@ -56,42 +59,22 @@ class ControlArgs implements Disposable {
 
   /// Clears original data and stores items from [args].
   void swap(ControlArgs args) {
-    assert(args != null);
-
     _args.clear();
     _args.addAll(args._args);
   }
 
   /// Combines this store with given [args].
   void combine(ControlArgs args) {
-    assert(args != null);
-
     _args.addAll(args._args);
   }
 
   /// Combines this store with given [args].
   /// Returns new [ControlArgs] that contains both [args].
   ControlArgs combineWith(ControlArgs args) {
-    assert(args != null);
-
     final store = ControlArgs(this);
     store._args.addAll(args._args);
 
     return store;
-  }
-
-  //TODO: purpose ?
-  /// Ensures that data store contains given [key]. Otherwise [value] is stored under given [key].
-  bool ensureArg(dynamic key, dynamic value) {
-    if (key == null || value == null) {
-      return false;
-    }
-
-    if (this[key] == null) {
-      this[key] = value;
-    }
-
-    return true;
   }
 
   bool containsKey(dynamic key) => _args.containsKey(key);
