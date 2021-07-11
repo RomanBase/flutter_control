@@ -29,7 +29,10 @@ class InputField extends ControllableWidget<InputControl> {
           focusNode: scope.focus,
           decoration: decoration,
           keyboardType: keyboardType,
-          textInputAction: action ?? (scope.isNextChained ? TextInputAction.next : TextInputAction.done),
+          textInputAction: action ??
+              (scope.isNextChained
+                  ? TextInputAction.next
+                  : TextInputAction.done),
           obscureText: scope.obscure,
           style: style ?? Theme.of(context).textTheme.bodyText1,
           textAlign: textAlign,
@@ -59,16 +62,23 @@ class InputField extends ControllableWidget<InputControl> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cursor = color ?? theme.textSelectionTheme.cursorColor ?? Colors.black;
+    final cursor =
+        color ?? theme.textSelectionTheme.cursorColor ?? Colors.black;
 
     final _decoration = (decoration ??
             InputDecoration(
-              border: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.5))),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
-              disabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-              labelStyle: theme.textTheme.bodyText1!.copyWith(color: cursor.withOpacity(0.5)),
-              hintStyle: theme.textTheme.bodyText1!.copyWith(color: cursor.withOpacity(0.5)),
+              border:
+                  UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: cursor.withOpacity(0.5))),
+              focusedBorder:
+                  UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
+              disabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: cursor.withOpacity(0.25))),
+              labelStyle: theme.textTheme.bodyText1!
+                  .copyWith(color: cursor.withOpacity(0.5)),
+              hintStyle: theme.textTheme.bodyText1!
+                  .copyWith(color: cursor.withOpacity(0.5)),
             ))
         .copyWith(
       labelText: label,
@@ -84,4 +94,5 @@ class InputField extends ControllableWidget<InputControl> {
   }
 }
 
-typedef Widget InputBuilder(BuildContext context, InputControl scope, InputDecoration decoration);
+typedef Widget InputBuilder(
+    BuildContext context, InputControl scope, InputDecoration decoration);

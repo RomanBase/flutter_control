@@ -84,7 +84,7 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   InputControl({String? text, this.regex}) {
     value =
-    text == null ? TextEditingValue.empty : TextEditingValue(text: text);
+        text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
   /// Sets [control] to chain.
