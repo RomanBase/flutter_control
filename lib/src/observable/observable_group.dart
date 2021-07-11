@@ -1,19 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup extends ObservableModel<Iterable> {
+class ObservableGroup implements ObservableValue<Iterable>, Disposable {
   final _items = <DisposableToken>[];
 
   final _parent = ActionControl.broadcast<Iterable>();
 
-  @override
   bool get isActive => _parent.isActive;
 
-  @override
   bool get isValid => _parent.isValid;
 
   @override
-  Iterable? get value => _parent.value;
+  Iterable get value => _parent.value ?? [];
 
   int get length => _items.length;
 
@@ -68,24 +66,6 @@ class ObservableGroup extends ObservableModel<Iterable> {
 
   void _notifyControl() => _parent.value = _getValues();
 
-  void notify() => _parent.notify();
-
-  @override
-  void dispose() {
-    _parent.dispose();
-    _items.forEach((item) => item.cancel());
-    _items.clear();
-  }
-
-  @override
-  void setValue(Iterable? value,
-          {bool notify = true, bool forceNotify = false}) =>
-      _parent.setValue(
-        value ?? [],
-        notify: notify,
-        forceNotify: forceNotify,
-      );
-
   @override
   ControlSubscription<Iterable> subscribe(ValueCallback<Iterable?> action,
           {bool current = true, dynamic args}) =>
@@ -98,4 +78,11 @@ class ObservableGroup extends ObservableModel<Iterable> {
   @override
   void cancel(ControlSubscription<Iterable> subscription) =>
       _parent.cancel(subscription);
+
+  @override
+  void dispose() {
+    _parent.dispose();
+    _items.forEach((item) => item.cancel());
+    _items.clear();
+  }
 }

@@ -10,8 +10,10 @@ abstract class ObservableValue<T> {
     dynamic args,
   });
 
+  void cancel(ControlSubscription<T> subscription);
+
   static ObservableValue<T> of<T>(ObservableModel<T> observable) =>
-      _ObservableValue<T>(observable);
+      _ObservableHandler<T>(observable);
 }
 
 abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
@@ -30,17 +32,15 @@ abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
   void setValue(T? value, {bool notify: true, bool forceNotify: false});
 
   void notify();
-
-  void cancel(ControlSubscription<T> subscription);
 }
 
-class _ObservableValue<T> implements ObservableValue<T> {
-  final ObservableModel<T> _parent;
+class _ObservableHandler<T> implements ObservableValue<T> {
+  final ObservableValue<T> _parent;
 
   @override
   T? get value => _parent.value;
 
-  _ObservableValue(this._parent);
+  _ObservableHandler(this._parent);
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T?> action,
@@ -50,6 +50,10 @@ class _ObservableValue<T> implements ObservableValue<T> {
         current: current,
         args: args,
       );
+
+  @override
+  void cancel(ControlSubscription<T> subscription) =>
+      _parent.cancel(subscription);
 }
 
 class ControlObservable<T> extends ObservableModel<T> {
@@ -88,7 +92,7 @@ class ControlObservable<T> extends ObservableModel<T> {
       return ofListenable(object);
     }
 
-    return ControlObservable<T>()..value = object;
+    return ControlObservable<T>()..value = object is T ? object : null;
   }
 
   static ControlObservable<T> ofStream<T>(Stream<T> stream) {
