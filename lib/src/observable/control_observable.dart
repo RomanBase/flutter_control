@@ -10,15 +10,28 @@ abstract class ObservableValue<T> {
     dynamic args,
   });
 
-  static ObservableValue<T> of<T>(ObservableModel<T> observable) => _ObservableValue<T>(observable);
+  static ObservableValue<T> of<T>(ObservableModel<T> observable) =>
+      _ObservableValue<T>(observable);
 }
 
 abstract class ObservableModel<T> implements ObservableValue<T>, Disposable {
+  bool get isEmpty => value == null;
+
+  bool get isNotEmpty => value != null;
+
+  bool get isValid;
+
+  bool get isActive;
+
+  dynamic data;
+
   set value(T? value) => setValue(value);
 
   void setValue(T? value, {bool notify: true, bool forceNotify: false});
 
   void notify();
+
+  void cancel(ControlSubscription<T> subscription);
 }
 
 class _ObservableValue<T> implements ObservableValue<T> {
@@ -30,14 +43,16 @@ class _ObservableValue<T> implements ObservableValue<T> {
   _ObservableValue(this._parent);
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, dynamic args}) => _parent.subscribe(
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+          {bool current = true, dynamic args}) =>
+      _parent.subscribe(
         action,
         current: current,
         args: args,
       );
 }
 
-class ControlObservable<T> implements ObservableModel<T> {
+class ControlObservable<T> extends ObservableModel<T> {
   @protected
   final subs = <ControlSubscription<T>>[];
 
@@ -51,14 +66,9 @@ class ControlObservable<T> implements ObservableModel<T> {
   T? get value => _value;
 
   @override
-  set value(T? value) => setValue(value);
-
-  bool get isEmpty => value == null;
-
-  bool get isNotEmpty => value != null;
-
   bool get isValid => true;
 
+  @override
   bool get isActive => isValid && _active;
 
   int get subCount => subs.length;
@@ -112,7 +122,8 @@ class ControlObservable<T> implements ObservableModel<T> {
     };
 
     listenable.addListener(callback);
-    observable.register(DisposableClient()..onDispose = () => listenable.removeListener(callback));
+    observable.register(DisposableClient()
+      ..onDispose = () => listenable.removeListener(callback));
 
     return observable;
   }
@@ -135,11 +146,8 @@ class ControlObservable<T> implements ObservableModel<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(
-    ValueCallback<T?> action, {
-    bool current: true,
-    dynamic args,
-  }) {
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+      {bool current: true, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
 
@@ -153,8 +161,10 @@ class ControlObservable<T> implements ObservableModel<T> {
   }
 
   @protected
-  ControlSubscription<T> createSubscription([dynamic args]) => ControlSubscription<T>();
+  ControlSubscription<T> createSubscription([dynamic args]) =>
+      ControlSubscription<T>();
 
+  @override
   void cancel(ControlSubscription<T> subscription) {
     subscription.invalidate();
     subs.remove(subscription);

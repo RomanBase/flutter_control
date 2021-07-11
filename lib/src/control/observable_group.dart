@@ -1,16 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup implements ObservableModel<Iterable> {
+class ObservableGroup extends ObservableModel<Iterable> {
   final _items = <DisposableToken>[];
 
   final _parent = ActionControl.broadcast<Iterable>();
 
   @override
-  Iterable? get value => _parent.value;
+  bool get isActive => _parent.isActive;
 
   @override
-  set value(Iterable? value) => _parent.value = value;
+  bool get isValid => _parent.isValid;
+
+  @override
+  Iterable? get value => _parent.value;
 
   int get length => _items.length;
 
@@ -27,11 +30,7 @@ class ObservableGroup implements ObservableModel<Iterable> {
 
     final item = token.data;
 
-    if (item is ObservableModel) {
-      return item.value;
-    }
-
-    if (item is FieldControlStream) {
+    if (item is ObservableValue) {
       return item.value;
     }
 
@@ -51,10 +50,6 @@ class ObservableGroup implements ObservableModel<Iterable> {
     if (observer is ObservableModel) {
       final sub = observer.subscribe((value) => _notifyControl());
       event.onCancel = sub.dispose;
-    } else if (observer is FieldControlStream) {
-      // ignore: cancel_subscriptions
-      final sub = observer.subscribe((event) => _notifyControl());
-      event.onCancel = sub.dispose;
     } else if (observer is Listenable) {
       observer.addListener(_notifyControl);
       event.onCancel = () => observer.removeListener(_notifyControl);
@@ -71,14 +66,6 @@ class ObservableGroup implements ObservableModel<Iterable> {
     return token;
   }
 
-  void cancel(DisposableToken token, {bool dispose: true}) {
-    _items.remove(token);
-
-    if (dispose) {
-      token.cancel();
-    }
-  }
-
   void _notifyControl() => _parent.value = _getValues();
 
   void notify() => _parent.notify();
@@ -91,16 +78,24 @@ class ObservableGroup implements ObservableModel<Iterable> {
   }
 
   @override
-  void setValue(Iterable? value, {bool notify = true, bool forceNotify = false}) => _parent.setValue(
+  void setValue(Iterable? value,
+          {bool notify = true, bool forceNotify = false}) =>
+      _parent.setValue(
         value ?? [],
         notify: notify,
         forceNotify: forceNotify,
       );
 
   @override
-  ControlSubscription<Iterable> subscribe(ValueCallback<Iterable?> action, {bool current = true, dynamic args}) => _parent.subscribe(
+  ControlSubscription<Iterable> subscribe(ValueCallback<Iterable?> action,
+          {bool current = true, dynamic args}) =>
+      _parent.subscribe(
         action,
         current: current,
         args: args,
       );
+
+  @override
+  void cancel(ControlSubscription<Iterable> subscription) =>
+      _parent.cancel(subscription);
 }

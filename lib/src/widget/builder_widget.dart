@@ -46,8 +46,6 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
 
     if (control is ObservableValue) {
       data = control.value;
-    } else if (control is FieldControlStream) {
-      data = control.value;
     } else if (control is ValueListenable) {
       data = control.value;
     } else {
@@ -66,11 +64,6 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
 
   void _initSub() {
     if (control is ObservableValue) {
-      _sub = control.subscribe(
-        (value) => _notifyState(),
-        current: false,
-      );
-    } else if (control is FieldControlStream) {
       _sub = control.subscribe(
         (value) => _notifyState(),
         current: false,
@@ -180,8 +173,6 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
     widget.controls.forEach((control) {
       if (control is ObservableValue) {
         data.add(control.value);
-      } else if (control is FieldControlStream) {
-        data.add(control.value);
       } else if (control is ValueListenable) {
         data.add(control.value);
       } else {
@@ -196,11 +187,6 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   void _initSubs() {
     widget.controls.forEach((control) {
       if (control is ObservableValue) {
-        _subs.add(control.subscribe(
-          (value) => _notifyState(),
-          current: false,
-        ));
-      } else if (control is FieldControlStream) {
         _subs.add(control.subscribe(
           (value) => _notifyState(),
           current: false,

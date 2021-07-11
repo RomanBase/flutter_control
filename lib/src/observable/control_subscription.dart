@@ -1,7 +1,7 @@
 import 'package:flutter_control/core.dart';
 
 class ControlSubscription<T> implements Disposable {
-  ControlObservable? _parent;
+  ObservableModel? _parent;
   ValueCallback<T?>? _callback;
 
   Predicate<T?>? _until;
@@ -14,7 +14,7 @@ class ControlSubscription<T> implements Disposable {
 
   bool get isActive => isValid && _active;
 
-  void initSubscription(ControlObservable parent, ValueCallback<T?> callback) {
+  void initSubscription(ObservableModel parent, [ValueCallback<T?>? callback]) {
     _parent = parent;
     _callback = callback;
   }

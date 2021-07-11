@@ -1,11 +1,21 @@
 import 'package:flutter_control/core.dart';
 
-class StackControl<T> implements ObservableModel<T> {
+class StackControl<T> extends ObservableModel<T> {
   /// Current stack of values.
   final List<T?> _stack = <T>[];
 
   /// Holds current value and [ActionControlObservable] interface just wraps this control.
   final _parent = ActionControl.broadcast<T>();
+
+  @override
+  bool get isActive => _parent.isActive;
+
+  @override
+  bool get isValid => _parent.isValid;
+
+  /// Current/Last value of stack.
+  @override
+  T? get value => _parent.value;
 
   /// Stack with root value.
   bool _root = false;
@@ -18,13 +28,6 @@ class StackControl<T> implements ObservableModel<T> {
 
   /// First value in stack.
   T? get _first => _stack.isEmpty ? null : _stack.first;
-
-  /// Current/Last value of stack.
-  @override
-  T? get value => _parent.value;
-
-  /// Pushes this value to stack.
-  set value(T? value) => push(value);
 
   /// Root/First value of stack.
   T? get root => isRooted ? _first : null;
@@ -172,7 +175,12 @@ class StackControl<T> implements ObservableModel<T> {
   void _notifyParent() => _parent.value = _last;
 
   @override
-  void setValue(T? value, {bool notify = true, bool forceNotify = false}) => push(value);
+  void setValue(T? value, {bool notify = true, bool forceNotify = false}) =>
+      push(value);
+
+  @override
+  void cancel(ControlSubscription<T> subscription) =>
+      _parent.cancel(subscription);
 
   @override
   ControlSubscription<T> subscribe(

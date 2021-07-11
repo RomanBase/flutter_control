@@ -22,7 +22,9 @@ mixin ObservableComponent<T> on ControlModel implements ObservableModel<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current: true, dynamic args}) => _parent.subscribe(
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+          {bool current: true, dynamic args}) =>
+      _parent.subscribe(
         action,
         current: current,
         args: args,
@@ -59,7 +61,8 @@ class ActionControl<T> extends ControlObservable<T> {
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  static ActionControl<T> broadcast<T>([T? value]) => _ActionControlBroadcast<T>._(value);
+  static ActionControl<T> broadcast<T>([T? value]) =>
+      _ActionControlBroadcast<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
@@ -75,7 +78,8 @@ class ActionControl<T> extends ControlObservable<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(action, {bool current = true, dynamic args}) {
+  ControlSubscription<T> subscribe(action,
+      {bool current = true, dynamic args}) {
     if (_single && subCount > 0) {
       subs.clear();
     }

@@ -526,8 +526,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup>
   void _updateIndex() {
     if (control._initialIndex == null && widget.initialIndex != null) {
       control._initialIndex = widget.initialIndex;
-      control._pageIndex
-          .setValue(control._initialIndex, notify: false);
+      control._pageIndex.setValue(control._initialIndex, notify: false);
     }
   }
 
