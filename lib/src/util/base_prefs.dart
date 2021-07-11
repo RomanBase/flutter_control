@@ -56,7 +56,7 @@ class BasePrefs {
   double getDouble(String key, {double defaultValue: 0.0}) =>
       prefs?.getDouble(key) ?? defaultValue;
 
-  void setJson(String key, dynamic? value) =>
+  void setJson(String key, dynamic value) =>
       prefs?.setString(key, jsonEncode(value));
 
   dynamic getJson(String key) => jsonDecode(get(key, defaultValue: '{}')!);
@@ -66,8 +66,5 @@ mixin PrefsProvider {
   BasePrefs? _prefs;
 
   BasePrefs get prefs =>
-      _prefs ?? (_prefs = Control.get<BasePrefs>() ?? BasePrefs());
-
-  static Future<BasePrefs> init() =>
-      (Control.get<BasePrefs>() ?? BasePrefs()).init();
+      _prefs ?? (_prefs = Control.get<BasePrefs>() ?? BasePrefs()..init());
 }
