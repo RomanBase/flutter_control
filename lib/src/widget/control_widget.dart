@@ -80,7 +80,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
 /// {@endtemplate}
 abstract class ControlWidget extends CoreWidget
     with LocalizationProvider
-    implements Initializable, Disposable, StateNotifier {
+    implements Initializable, Disposable {
   /// Widget's [State]
   /// It's available just after [ControlState] is initialized.
   @protected
@@ -141,8 +141,8 @@ abstract class ControlWidget extends CoreWidget
       control!.init(holder.args);
       control.register(this);
 
-      if (control is StateControl) {
-        state._subscribeStateNotifier(control as StateControl);
+      if (control is ObservableComponent) {
+        registerStateNotifier(control);
       }
     });
   }
@@ -155,12 +155,6 @@ abstract class ControlWidget extends CoreWidget
       printDebug('no controls found - onInit');
       return;
     }
-
-    controls!.forEach((control) {
-      if (control is StateControl) {
-        (control as StateControl).onStateInitialized();
-      }
-    });
   }
 
   @override
@@ -198,8 +192,7 @@ abstract class ControlWidget extends CoreWidget
 }
 
 /// [State] of [ControlWidget]
-class ControlState<U extends ControlWidget> extends CoreState<U>
-    implements StateNotifier {
+class ControlState<U extends ControlWidget> extends CoreState<U> {
   List<ControlModel?>? controls;
 
   @override
@@ -234,11 +227,6 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
   @override
   Widget build(BuildContext context) => widget.build(context)!;
 
-  /// Subscribes to [StateControl]
-  void _subscribeStateNotifier(StateControl control) {
-    control.addListener(notifyState);
-  }
-
   /// Disposes and removes all [controls].
   /// Controller can prevent disposing [BaseControl.preventDispose].
   /// Then disposes Widget.
@@ -249,10 +237,6 @@ class ControlState<U extends ControlWidget> extends CoreState<U>
 
     if (controls != null) {
       controls!.forEach((control) {
-        if (control is StateControl) {
-          (control as StateControl).removeListener(notifyState);
-        }
-
         control!.requestDispose(this);
       });
       controls!.clear();

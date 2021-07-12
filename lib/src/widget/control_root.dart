@@ -162,8 +162,8 @@ class ControlScope {
     final currentState = appKey.currentState;
 
     if (currentState != null && currentState.mounted) {
-      if (currentState is StateNotifier) {
-        (currentState as StateNotifier).notifyState(args);
+      if (currentState is ControlRootState) {
+        currentState.notifyState(args);
       } else {
         printDebug(
             'Found State is not StateNotifier, Trying to call setState directly..');
@@ -414,7 +414,7 @@ class ControlRoot extends StatefulWidget {
 
 /// [State] of [ControlRoot].
 /// Handles localization, theme and App state changes.
-class ControlRootState extends State<ControlRoot> implements StateNotifier {
+class ControlRootState extends State<ControlRoot> {
   /// Combination of current State and args passed during State change.
   final _args = ControlArgs();
 
@@ -492,7 +492,6 @@ class ControlRootState extends State<ControlRoot> implements StateNotifier {
     _initControl();
   }
 
-  @override
   void notifyState([state]) {
     _notifyState(() {
       if (state is ControlArgs) {

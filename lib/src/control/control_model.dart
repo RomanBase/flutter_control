@@ -12,12 +12,6 @@ abstract class Initializable {
   void init(Map args) {}
 }
 
-/// Basic interface for communication between Control (eg. [StateControl]) and [State].
-abstract class StateNotifier {
-  /// Notifies about state changes and requests State to rebuild UI.
-  void notifyState([dynamic state]);
-}
-
 /// {@template control-model}
 /// Base class to use with [CoreWidget] - specifically [ControlWidget] and [StateboundWidget].
 /// Logic part that handles Streams, loading, data, etc.
@@ -140,38 +134,6 @@ mixin TickerComponent on ControlModel {
     super.dispose();
 
     _ticker = null;
-  }
-}
-
-/// Mixin to control [State] of [StateboundWidget] or [ControlWidget].
-/// Also usable with [NotifierBuilder].
-@deprecated
-mixin StateControl on Disposable implements StateNotifier, Listenable {
-  /// Notifier and state holder.
-  final _notifier = ValueNotifier(null);
-
-  /// Returns state as [Listenable].
-  /// Prevent to use directly, check [addListener], [removeListener] and [notifyState].
-  ValueListenable get state => _notifier;
-
-  /// Called right after [State.initState] and whenever dependency of state changes [State.didChangeDependencies].
-  void onStateInitialized() {}
-
-  @override
-  void notifyState([dynamic state]) => _notifier.value = state;
-
-  @override
-  void addListener(VoidCallback listener) => _notifier.addListener(listener);
-
-  @override
-  void removeListener(VoidCallback listener) =>
-      _notifier.removeListener(listener);
-
-  @override
-  void dispose() {
-    super.dispose();
-
-    _notifier.dispose();
   }
 }
 
