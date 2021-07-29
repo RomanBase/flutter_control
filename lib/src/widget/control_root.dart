@@ -303,7 +303,7 @@ class ControlRootSetup {
 
   /// Checks if [BaseLocalization] is ready and tries to localize given [localizationKey].
   /// [defaultValue] - Fallback if localization isn't ready or [localizationKey] is not found.
-  String? title(String localizationKey, String defaultValue) {
+  String title(String localizationKey, String defaultValue) {
     if (localization != null &&
         localization!.isActive &&
         localization!.contains(localizationKey)) {

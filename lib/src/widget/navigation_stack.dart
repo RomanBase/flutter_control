@@ -143,7 +143,7 @@ class _NavigatorStackState extends State<NavigatorStack>
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
             builder: (context) =>
-                widget.initializer.getWidget(context) ?? Container());
+                widget.initializer.getWidget(context));
       },
     );
 

@@ -36,12 +36,12 @@ class Parse {
   /// }
   ///
   /// Returns formatted string.
-  static String? format(String? input, Map<String, String> params,
+  static String format(String input, Map<String, String> params,
       [ParamDecoratorFormat? decorator]) {
     decorator ??= ParamDecorator.curl;
 
     params.forEach(
-        (key, value) => input = input!.replaceFirst(decorator!(key), value));
+        (key, value) => input = input.replaceFirst(decorator!(key), value));
 
     return input;
   }

@@ -598,7 +598,7 @@ class BaseLocalization extends ChangeNotifier
   /// Tries to localize text by given [key].
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localize(String key) {
+  String localize(String key) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
@@ -611,7 +611,7 @@ class BaseLocalization extends ChangeNotifier
   /// If given [key] is not found, then tries to localize one of [alterKeys].
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizeOr(String key, List<String> alterKeys) {
+  String localizeOr(String key, List<String> alterKeys) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
@@ -644,7 +644,7 @@ class BaseLocalization extends ChangeNotifier
   /// Returns formatted string.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizeFormat(String key, Map<String, String> params) {
+  String localizeFormat(String key, Map<String, String> params) {
     if (_data.containsKey(key)) {
       return Parse.format(_data[key], params, _paramDecorator);
     }
@@ -668,7 +668,7 @@ class BaseLocalization extends ChangeNotifier
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizePlural(String key, int plural,
+  String localizePlural(String key, int plural,
       [Map<String, String>? params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
@@ -716,7 +716,7 @@ class BaseLocalization extends ChangeNotifier
   /// }
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? localizeValue(String key, String value) {
+  String localizeValue(String key, String value) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final map = _data[key] as Map;
@@ -743,7 +743,7 @@ class BaseLocalization extends ChangeNotifier
   /// ]
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  List<String?> localizeList(String key) {
+  Iterable<String> localizeList(String key) {
     if (_data.containsKey(key)) {
       final data = _data[key];
 
@@ -752,7 +752,7 @@ class BaseLocalization extends ChangeNotifier
       }
 
       if (data is Map) {
-        return data.values.cast<String>() as List<String?>;
+        return data.values.cast<String>();
       }
 
       return [_data[key]];
@@ -796,7 +796,7 @@ class BaseLocalization extends ChangeNotifier
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String? extractLocalization(dynamic data,
+  String extractLocalization(dynamic data,
       {String? locale, String? defaultLocale}) {
     locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
@@ -936,32 +936,32 @@ mixin LocalizationProvider {
 
   ///[BaseLocalization.localize]
   @protected
-  String? localize(String key) => localization!.localize(key);
+  String localize(String key) => localization!.localize(key);
 
   ///[BaseLocalization.localizeOr]
   @protected
-  String? localizeOr(String key, List<String> alterKeys) =>
+  String localizeOr(String key, List<String> alterKeys) =>
       localization!.localizeOr(key, alterKeys);
 
   ///[BaseLocalization.localizeFormat]
   @protected
-  String? localizeFormat(String key, Map<String, String> params) =>
+  String localizeFormat(String key, Map<String, String> params) =>
       localization!.localizeFormat(key, params);
 
   ///[BaseLocalization.localizePlural]
   @protected
-  String? localizePlural(String key, int plural,
+  String localizePlural(String key, int plural,
           [Map<String, String>? params]) =>
       localization!.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeValue]
   @protected
-  String? localizeValue(String key, String value) =>
+  String localizeValue(String key, String value) =>
       localization!.localizeValue(key, value);
 
   ///[BaseLocalization.localizeList]
   @protected
-  List<String?> localizeList(String key) => localization!.localizeList(key);
+  Iterable<String> localizeList(String key) => localization!.localizeList(key);
 
   ///[BaseLocalization.localizeDynamic]
   @protected
@@ -972,7 +972,7 @@ mixin LocalizationProvider {
 
   ///[BaseLocalization.extractLocalization]
   @protected
-  String? extractLocalization(dynamic data,
+  String extractLocalization(dynamic data,
           {String? locale, String? defaultLocale}) =>
       localization!.extractLocalization(data,
           locale: locale, defaultLocale: defaultLocale);

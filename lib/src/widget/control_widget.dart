@@ -180,7 +180,7 @@ abstract class ControlWidget extends CoreWidget
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected
-  Widget? build(BuildContext context);
+  Widget build(BuildContext context);
 
   /// Disposes and removes all [controls].
   /// Check [DisposeHandler] for different dispose strategies.
@@ -225,7 +225,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.build(context)!;
+  Widget build(BuildContext context) => widget.build(context);
 
   /// Disposes and removes all [controls].
   /// Controller can prevent disposing [BaseControl.preventDispose].
