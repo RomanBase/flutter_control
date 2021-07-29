@@ -311,42 +311,42 @@ class ThemeConfig<T extends ControlTheme> {
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T? of<T extends ControlTheme?>([BuildContext? context]) =>
-      Control.init<ControlTheme>(context) as T?;
+  static T of<T extends ControlTheme>([BuildContext? context]) =>
+      Control.init<ControlTheme>(context) as T;
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T? theme = of<T>();
+  final T theme = of<T>();
 
   /// Instance of [AssetPath].
   ///
   /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
-  AssetPath get asset => theme!.assets;
+  AssetPath get assets => theme.assets;
 
   /// Instance of [Device].
   /// Wrapper of [MediaQuery].
   @protected
-  Device get device => theme!.device;
+  Device get device => theme.device;
 
   /// Instance of nearest [ThemeData].
   @protected
-  ThemeData get themeData => theme!.data;
+  ThemeData get themeData => theme.data;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get font => theme!.font;
+  TextTheme get font => theme.font;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontPrimary => theme!.fontPrimary;
+  TextTheme get fontPrimary => theme.fontPrimary;
 
   /// Instance of nearest [TextTheme].
   @protected
-  TextTheme get fontAccent => theme!.fontAccent;
+  TextTheme get fontAccent => theme.fontAccent;
 
   /// Origin of [ControlTheme].
   /// [ControlTheme.scope] initializes with nearest [ThemeData].
@@ -358,7 +358,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
   void invalidateTheme([BuildContext? context]) {
-    theme?.invalidate(
+    theme.invalidate(
         context != null && themeScope == ControlTheme.scope ? context : null);
   }
 }
