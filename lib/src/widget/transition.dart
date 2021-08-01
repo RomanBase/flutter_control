@@ -31,7 +31,7 @@ class CrossTransition {
     this.duration: _kCrossDuration,
     this.reverseDuration,
     required AnimatedSwitcherTransitionBuilder transition,
-  })   : transitionIn = transition,
+  })  : transitionIn = transition,
         transitionOut = transition;
 
   Widget _builder(Widget child, Animation<double> animation) {

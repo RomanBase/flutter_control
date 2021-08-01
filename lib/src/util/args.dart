@@ -39,7 +39,12 @@ class ControlArgs implements Disposable {
       combine(args);
     } else if (args is Map) {
       _args.addAll(args);
+    } else if (args is Set) {
+      args.forEach((item) {
+        _args[item.runtimeType] = item;
+      });
     } else if (args is Iterable) {
+      //TODO: check .toSet option to remove duplicity ?
       if (args.runtimeType == Parse.type<Iterable<dynamic>>()) {
         args.forEach((item) {
           _args[item.runtimeType] = item;

@@ -668,8 +668,7 @@ class BaseLocalization extends ChangeNotifier
   /// plural: -1 returns 'none of above'
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizePlural(String key, int plural,
-      [Map<String, String>? params]) {
+  String localizePlural(String key, int plural, [Map<String, String>? params]) {
     if (_data.containsKey(key)) {
       if (_data[key] is Map) {
         final data = _data[key];

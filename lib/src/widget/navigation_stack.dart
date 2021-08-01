@@ -142,8 +142,7 @@ class _NavigatorStackState extends State<NavigatorStack>
       observers: [_heroController!],
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
-            builder: (context) =>
-                widget.initializer.getWidget(context));
+            builder: (context) => widget.initializer.getWidget(context));
       },
     );
 

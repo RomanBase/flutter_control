@@ -24,14 +24,18 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 abstract class SingleControlWidget<T extends ControlModel?>
     extends ControlWidget {
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
-  T? get control => hasControl ? controls![0] as T? : null;
+  T get control => controls![0] as T;
 
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   SingleControlWidget({Key? key, dynamic args}) : super(key: key, args: args);
 
   @override
-  List<ControlModel?> initControls() {
+  List<ControlModel> initControls() {
     final control = initControl();
+
+    if (control == null) {
+      throw 'NULL Control - $this';
+    }
 
     if (autoMountControls) {
       final controls = holder.findControls();
@@ -43,10 +47,6 @@ abstract class SingleControlWidget<T extends ControlModel?>
       controls.insert(0, control);
 
       return controls;
-    }
-
-    if (control == null) {
-      printDebug('NULL Control - $this');
     }
 
     return [control];
@@ -117,7 +117,7 @@ abstract class ControlWidget extends CoreWidget
   ///
   /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel?> initControls() =>
+  List<ControlModel> initControls() =>
       autoMountControls ? holder.findControls() : [];
 
   @override
@@ -193,7 +193,7 @@ abstract class ControlWidget extends CoreWidget
 
 /// [State] of [ControlWidget]
 class ControlState<U extends ControlWidget> extends CoreState<U> {
-  List<ControlModel?>? controls;
+  List<ControlModel>? controls;
 
   @override
   void initState() {
@@ -206,7 +206,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
   void initControls() {
     controls = widget.initControls();
 
-    widget.holder.set(controls);
+    widget.holder.set(controls!.toSet());
 
     controls!.forEach((control) {
       if (control is ReferenceCounter) {
@@ -237,7 +237,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
 
     if (controls != null) {
       controls!.forEach((control) {
-        control!.requestDispose(this);
+        control.requestDispose(this);
       });
       controls!.clear();
       controls = null;

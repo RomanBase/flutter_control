@@ -54,7 +54,7 @@ class ControlArgHolder implements Disposable {
 
   /// Returns all [ControlModel]s from internal args - [ControlArgs].
   /// If none found, empty List is returned.
-  List<ControlModel?> findControls() => argStore.getAll<ControlModel>();
+  List<ControlModel> findControls() => argStore.getAll<ControlModel>();
 
   /// Copy corresponding State and args from [oldHolder].
   void copy(ControlArgHolder oldHolder) {
