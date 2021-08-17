@@ -103,6 +103,17 @@ class ControlArgs implements Disposable {
     return list as List<T>;
   }
 
+  /// Returns all items for given [test].
+  void removeAll<T>({Predicate? test}) {
+    if (test == null && T != dynamic) {
+      if (test == null && T != dynamic) {
+        test = (item) => item is T;
+      }
+    }
+
+    _args.removeWhere((key, value) => test!(value));
+  }
+
   /// Removes item by [Type] or [key].
   void remove<T>({dynamic key}) => _args.remove(key ?? T);
 
