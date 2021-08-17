@@ -147,7 +147,6 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
   void initState() {
     super.initState();
 
-    value = _mapValues();
     _initSubs();
   }
 
@@ -175,6 +174,8 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
         current: false,
       ));
     });
+
+    value = _mapValues();
   }
 
   /// Notifies State and maps Control values.

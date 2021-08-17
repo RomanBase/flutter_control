@@ -37,6 +37,10 @@ class CardsPage extends SingleControlWidget<CardsController>
               ),
             ),
           ),
+          ControlBuilderGroup(
+            controls: [control.input, control.countLabel, control.cards],
+            builder: (context, values) => Text('$values'),
+          ),
           Container(
             color: Colors.grey,
             padding: EdgeInsets.symmetric(
