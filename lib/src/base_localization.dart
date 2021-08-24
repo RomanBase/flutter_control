@@ -68,19 +68,19 @@ class LocalizationAsset {
 
   /// Asset path to file with localization data (json).
   /// - /assets/localization/en.json or /assets/localization/en_US.json
-  final String? assetPath;
+  final String? path;
 
   /// Returns just first 2 signs of [locale] key.
   String get iso2Locale => locale.length > 2 ? locale.substring(0, 2) : locale;
 
-  /// Checks validity of [locale] and [assetPath]
-  bool get isValid => assetPath != null;
+  /// Checks validity of [locale] and [path]
+  bool get isValid => path != null;
 
   /// [locale] - It's preferred to use iso2 (en) or unicode (en_US) standard.
-  /// [assetPath] - Asset path to file with localization data (json).
+  /// [path] - Asset path to file with localization data (json).
   LocalizationAsset(
     this.locale,
-    this.assetPath,
+    this.path,
   );
 
   /// Parses [locale] string to [Locale].
@@ -135,6 +135,11 @@ class LocalizationAsset {
 
     return localizationAssets;
   }
+
+  @override
+  String toString() {
+    return '$locale: $path';
+  }
 }
 
 /// Defines result of localization change.
@@ -143,20 +148,20 @@ class LocalizationArgs {
   final String? locale;
 
   /// Source of locale to load from. Asset path, runtime, network or any other.
-  final String? source;
+  final String source;
 
   /// True if requested locale is loaded and set.
   /// Locale can be active even if not [changed].
-  final bool? isActive;
+  final bool isActive;
 
   /// True if locale [isActive] and is different then previous locale.
-  final bool? changed;
+  final bool changed;
 
   LocalizationArgs({
-    this.locale,
-    this.source,
-    this.isActive,
-    this.changed,
+    required this.locale,
+    this.source: 'runtime',
+    this.isActive: false,
+    this.changed: false,
   });
 
   @override
@@ -413,13 +418,13 @@ class BaseLocalization extends ChangeNotifier
 
     final args = await loadLocalizationData(locale);
 
-    if (args.isActive!) {
-      _locale = locale;
+    if (args.isActive) {
+      _locale = args.locale;
       notifyListeners();
 
       if (preferred) {
         if (main) {
-          prefs.set(preference_key, locale);
+          prefs.set(preference_key, _locale);
         } else {
           printDebug(
               'Only \'main\' localization can change preferred locale !!!');
@@ -483,17 +488,17 @@ class BaseLocalization extends ChangeNotifier
       );
     }
 
-    final args = await _loadAssetLocalization(locale, getAssetPath(locale));
+    final args = await _loadAssetLocalization(locale, getAsset(locale));
 
     loading = false;
 
     return args;
   }
 
-  /// Loads localization from asset file for given [locale] and [path].
+  /// Loads localization from asset file for given [locale] and [asset].
   Future<LocalizationArgs> _loadAssetLocalization(
-      String locale, String? path) async {
-    if (path == null) {
+      String locale, LocalizationAsset? asset) async {
+    if (asset == null || !asset.isValid) {
       return LocalizationArgs(
         locale: locale,
         isActive: false,
@@ -503,16 +508,16 @@ class BaseLocalization extends ChangeNotifier
     }
 
     try {
-      final json = await rootBundle.loadString(path, cache: false);
+      final json = await rootBundle.loadString(asset.path!, cache: false);
       final data = jsonDecode(json);
 
       if (data != null) {
         data.forEach((key, value) => _data[key] = value);
 
-        print('localization changed to: $path');
+        print('localization changed to: $asset');
 
         final args = LocalizationArgs(
-          locale: locale,
+          locale: asset.locale,
           isActive: true,
           changed: true,
           source: 'asset',
@@ -524,7 +529,7 @@ class BaseLocalization extends ChangeNotifier
       printDebug(ex.toString());
     }
 
-    print('localization failed to change: $path');
+    print('localization failed to change: $asset');
 
     return LocalizationArgs(
       locale: locale,
@@ -536,7 +541,7 @@ class BaseLocalization extends ChangeNotifier
 
   /// Returns [true] if localization file is available and is possible to load it.
   /// Do not check physical existence of file !
-  bool isLocalizationAvailable(String locale) => getAssetPath(locale) != null;
+  bool isLocalizationAvailable(String locale) => getAsset(locale)?.isValid ?? false;
 
   /// Checks if [a] and [b] is same or if this values points to same asset path.
   /// Comparing 'en' and 'en_US' can be true because they can point to same asset file.
@@ -549,7 +554,7 @@ class BaseLocalization extends ChangeNotifier
       return true;
     }
 
-    return getAssetPath(a) == getAssetPath(b);
+    return getAsset(a)?.path == getAsset(b)?.path;
   }
 
   /// Tries to find asset for given [locale].
@@ -582,12 +587,6 @@ class BaseLocalization extends ChangeNotifier
 
     return null;
   }
-
-  /// Tries to find asset path for given [locale].
-  /// Locale of 'en' and 'en_US' can point to same asset file.
-  ///
-  /// Returns asset path for given [locale] or null if localization asset is not available.
-  String? getAssetPath(String locale) => getAsset(locale)?.assetPath;
 
   /// Tries to find [Locale] is assets for given [locale].
   /// Locale of 'en' and 'en_US' can point to same asset file, so resulted [Locale] for 'en_US' can be [Locale('en')] if only 'en.json' file exists.

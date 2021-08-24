@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
       },
       injector: Injector.of({
         ControlTheme: (item, args) {
-          printDebug('inject theme');
           item.assets = AssetPath(rootDir: 'assets');
         },
       }),
