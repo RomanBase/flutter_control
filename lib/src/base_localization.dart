@@ -541,7 +541,8 @@ class BaseLocalization extends ChangeNotifier
 
   /// Returns [true] if localization file is available and is possible to load it.
   /// Do not check physical existence of file !
-  bool isLocalizationAvailable(String locale) => getAsset(locale)?.isValid ?? false;
+  bool isLocalizationAvailable(String locale) =>
+      getAsset(locale)?.isValid ?? false;
 
   /// Checks if [a] and [b] is same or if this values points to same asset path.
   /// Comparing 'en' and 'en_US' can be true because they can point to same asset file.
