@@ -1,7 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-abstract class ObservableValue<T> {
+abstract class ObservableChannel implements Disposable {
+  ControlSubscription subscribe(
+    VoidCallback action, {
+    dynamic args,
+  });
+
+  void cancel(ControlSubscription subscription);
+
+  @override
+  void dispose() {}
+}
+
+abstract class ObservableValue<T> implements Disposable {
   T? get value;
 
   dynamic data;
@@ -16,10 +28,12 @@ abstract class ObservableValue<T> {
 
   static ObservableValue<T> of<T>(ObservableModel<T> observable) =>
       _ObservableHandler<T>(observable);
+
+  @override
+  void dispose() {}
 }
 
-abstract class ObservableModel<T> extends ObservableValue<T>
-    implements Disposable {
+abstract class ObservableModel<T> extends ObservableValue<T> {
   bool get isEmpty => value == null;
 
   bool get isNotEmpty => value != null;
