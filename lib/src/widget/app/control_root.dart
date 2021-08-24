@@ -482,7 +482,7 @@ class ControlRootState extends State<ControlRoot> {
     });
 
     _localeSub = BaseLocalization.subscribeChanges((args) {
-      if (args!.changed!) {
+      if (args!.changed) {
         _notifyState(() {}, true);
       }
     });
