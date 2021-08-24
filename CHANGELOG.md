@@ -1,9 +1,11 @@
-## [2.0.0] - Nullsafety
-Migrate library to Dart 2.0 - Null Safety.
+## [2.1.0] - Base
+New unified observable system. Updated localization and root components.
+## [2.0.0] - Null-safety
+Migrate library to Dart 2.0 and Null Safety.
 ## [1.0.0] - Core
 Upgraded architecture and stable version.
 ## [0.15.3] - Vanilla.
-Simple architecture, Factory and Store, Model, Widget and other Components.
+Base architecture and pattern, Factory and Store, Model, Widget and other Components.
 
 ---
 

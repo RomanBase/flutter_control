@@ -21,13 +21,6 @@ import 'package:flutter_control/core.dart';
 
 ---
 
-Simplified structure of **core** classes in Flutter Control. Full diagram is at bottom of this page.\
-`Control` with `ControlFactory` is main gate and bounds everything together.\
-`ControlWidget` holds UI and `ControlModel` solves Business Logic.
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure_simple.png)
-
----
-
 **Flutter Control Core**
 - `Control` Main static class. Initializes `ControlFactory` and provides easy access to most of core [Control] objects like `BaseLocalization`, `RouteStore`, `ControlBroadcast`, etc..
 - `ControlFactory` Initializes and can store Controls, Models and other Objects. Works as Service Locator and Storage.\
@@ -41,7 +34,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
     Control.initControl(
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.build(locales: ['en_US', 'es_ES']),
+        locales: LocalizationAsset.map(locales: ['en_US', 'es_ES']),
       ),
       entries: {
         CounterListControl: CounterListControl(),
@@ -59,7 +52,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
     );
 ```
 
-- `ControlRoot` Wraps [AppWidgets] and initializes [Control]. It's just shortcut to start with Flutter Control. Via `ControlScope` is possible to maintain `State` of this root widget and control whole app state (localization, theme, etc.).\
+- `ControlRoot` Wraps basic app flow and initializes [Control]. It's just shortcut to start with Flutter Control. Via `ControlScope` is possible to maintain `State` of this root widget and control whole app state (localization, theme, etc.).\
   Additionally offers App State management - home screen, localization and theme changes.
 
 ```dart
@@ -101,27 +94,29 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
    
 - `SingleControlWidget` is focused to single **ControlModel**. But still can handle multiple Controls.
 
-- `StateboundWidget` - Subscribes to just one `StateControl` - a mixin class typically used with [ControlModel] - [BaseControl] or [BaseModel].\
-  Whenever state of [StateControl] is changed, this Widget is rebuild.
+- `ControllableWidget` - Subscribes to one or more `Observable` - [ObservableComponent], [ActionControl], [FieldControl], [Stream], [Future], [Notifier]\
+  Whenever state of [ControlObservable] is changed, this Widget is rebuild.
 
   These Widgets comes with few `mixin` classes:
    - `RouteControl` to abstract navigation and easily pass arguments to Routes and init other Pages.
    - `TickerControl` and `SingleTickerControl` to create [State] with `Ticker` and provide access to `vsync`.
+   - `LocalizationProvider`, `ThemeProvider`, `OnLayout`, `ControlsComponent` and more..
    
 - `ControlModel` is base class to maintain Business Logic parts.\
   `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for Pages or complex Widgets and also to separate robust Logic parts.\
   `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller Widgets like Items in dynamic List or to separate/reuse Logic parts.\
   This Controls comes with few `mixin` classes to extend base functionality:
-   - `RouteControlProvider` to provide Navigation outside of Widget.
-   - `StateControl` to control State and notify Widget about changes.
+   - `ObservableComponent` to control State and notify Widget about changes.
    - `TickerComponent` passes `Ticker` to Model and enables to control animations outside of Widget.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
+- `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
+  With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
+
 - `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
   Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\
-  On the Widget side is `ActionBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
-  `ActionControlSub` provides read-only version of [ActionControl].\
+  On the Widget side is `ControlBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
 
 ```dart
@@ -137,7 +132,7 @@ Simplified structure of **core** classes in Flutter Control. Full diagram is at 
   Can listen `Stream`, `Future` or subscribe to another [FieldControl] with possibility to filter and convert values.\
   [FieldControl] comes with pre-build primitive variants as `StringControl`, `DoubleControl`, etc., where is possible to use validation, regex or value clamping. And also `ListControl` to work with Iterables.\
   On the Widget side is `FieldBuilder` to dynamically build Widgets. Also `ControlBuilderGroup` for use with multiple Observables. It's also possible to use standard `StreamBuilder`.\
-  `FieldControlSub` provides read-only version of [FieldControl]. And `FieldSink` or `FieldSinkConverter` provides **Sink** of [FieldControl].\
+  `FieldSink` or `FieldSinkConverter` provides **Sink** of [FieldControl].\
   Upon dismiss of [FieldControl], every `FieldSubscription` is closed.
 
 ```dart
@@ -168,7 +163,7 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     Control.initControl(
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.build(locales: ['en_US', 'es_ES']),
+        locales: LocalizationAsset.map(locales: ['en_US', 'es_ES']),
       ),
     );
 ```
@@ -243,9 +238,3 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 ---
 
 Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/examples) at Git repository for more complex solutions and how to use this library.
-
----
-
-**Core Structure**
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/structure.png)
