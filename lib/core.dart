@@ -26,7 +26,6 @@ export 'src/util/args.dart';
 export 'src/util/base_prefs.dart';
 export 'src/util/curve.dart';
 export 'src/util/device.dart';
-export 'src/util/equality.dart';
 export 'src/util/future_block.dart';
 export 'src/util/lazy_initializer.dart';
 export 'src/util/parser.dart';
