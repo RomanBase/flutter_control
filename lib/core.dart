@@ -26,7 +26,6 @@ export 'src/util/args.dart';
 export 'src/util/base_prefs.dart';
 export 'src/util/curve.dart';
 export 'src/util/device.dart';
-export 'src/util/equality.dart';
 export 'src/util/future_block.dart';
 export 'src/util/lazy_initializer.dart';
 export 'src/util/parser.dart';
@@ -65,8 +64,14 @@ typedef ControlWidgetBuilder<T> = Widget Function(
     BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
-void printDebug(Object object) {
-  if (kDebugMode && Control.debug) {
+void printDebug(dynamic object) {
+  if (kDebugMode && Control.debug && object != null) {
     print(object);
+  }
+}
+
+void printAction(ValueGetter<dynamic> action) {
+  if (kDebugMode && Control.debug) {
+    print(action());
   }
 }

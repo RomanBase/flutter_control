@@ -117,6 +117,14 @@ class ControlArgs implements Disposable {
   /// Removes item by [Type] or [key].
   void remove<T>({dynamic key}) => _args.remove(key ?? T);
 
+  T? pop<T>({dynamic key}) {
+    final value = get<T>(key: key);
+
+    remove<T>(key: key);
+
+    return value;
+  }
+
   /// Clears whole data store.
   void clear() => _args.clear();
 

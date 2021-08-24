@@ -159,12 +159,28 @@ class Control {
   /// nullable
   static T? init<T>([dynamic args]) => factory.init(args);
 
+  static T? initOf<T>(
+      {dynamic key, T? value, dynamic args, bool store: false}) {
+    final val = get<T>(key: key);
+
+    if (val != null) {
+      return val;
+    }
+
+    if (value != null && store) {
+      set<T>(key: key, value: value);
+      inject(value, args: args);
+    }
+
+    return value;
+  }
+
   /// Injects and initializes given [item] with [args].
 
   /// [Initializable.init] is called only when [args] are not null.
   ///
   /// [Control] provides static call for this function via [Control.inject].
-  static void inject<T>(dynamic item, {dynamic args}) =>
+  static void inject<T>(dynamic item, {dynamic args, bool store: false}) =>
       factory.inject(item, args: args, withInjector: true, withArgs: true);
 
   /// Executes sequence of functions to retrieve expected object.

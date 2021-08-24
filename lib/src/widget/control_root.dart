@@ -248,14 +248,13 @@ class ControlScope {
 class ControlRootSetup {
   final session = UnitId.randomId();
 
+  final args = ControlArgs();
+
   /// App key for [WidgetsApp] Widget. This key is same as [ControlScope.appKey].
   Key? key;
 
   /// Current [AppState].
   AppState? state;
-
-  /// Arguments passed to [ControlRootState]. Typically passed when changing state.
-  ControlArgs? args;
 
   /// Current [ControlTheme].
   ControlTheme? style;
@@ -278,7 +277,6 @@ class ControlRootSetup {
   ControlRootSetup({
     this.key,
     this.state,
-    this.args,
     this.style,
     this.context,
   });
@@ -317,18 +315,15 @@ class ControlRootSetup {
   ControlRootSetup copyWith({
     Key? key,
     AppState? state,
-    ControlArgs? args,
     ControlTheme? style,
     BuildContext? context,
-  }) {
-    return new ControlRootSetup(
-      key: key ?? this.key,
-      state: state ?? this.state,
-      args: args ?? this.args,
-      style: style ?? this.style,
-      context: context ?? this.context,
-    );
-  }
+  }) =>
+      ControlRootSetup(
+        key: key ?? this.key,
+        state: state ?? this.state,
+        style: style ?? this.style,
+        context: context ?? this.context,
+      )..args.set(args);
 }
 
 /// Typically root Widget of whole Application.
@@ -368,13 +363,15 @@ class ControlRoot extends StatefulWidget {
   final AppState initState;
 
   /// List of app states. Widget builders and transitions.
-  final List<AppStateSetup>? states;
+  final List<AppStateSetup> states;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
   final AppWidgetBuilder app;
 
   final Future Function(ControlRootSetup setup)? onSetupChanged;
+
+  final ValueCallback<BuildContext>? onBuild;
 
   /// Root [Widget] of whole app.
   /// Initializes [Control] and handles localization and theme changes.
@@ -402,10 +399,11 @@ class ControlRoot extends StatefulWidget {
     this.theme,
     this.transition,
     this.initState: AppState.init,
-    this.states,
+    this.states: const [],
     required this.app,
     this.initAsync,
     this.onSetupChanged,
+    this.onBuild,
   }) : super(key: _rootKey);
 
   @override
@@ -415,17 +413,17 @@ class ControlRoot extends StatefulWidget {
 /// [State] of [ControlRoot].
 /// Handles localization, theme and App state changes.
 class ControlRootState extends State<ControlRoot> {
-  /// Combination of current State and args passed during State change.
-  final _args = ControlArgs();
-
   /// Active setup, theme, localization and state.
   final _setup = ControlRootSetup();
+
+  /// Combination of current State and args passed during State change.
+  ControlArgs get _args => _setup.args;
 
   /// Default theme config. Used to build [ControlTheme].
   late ThemeConfig _theme;
 
   /// [AppState] - case:builder Map of [ControlRoot.states].
-  Map<dynamic, WidgetBuilder>? _states;
+  late Map<dynamic, WidgetBuilder> _states;
 
   /// [AppState] - case:transition Map of [ControlRoot.states].
   Map<dynamic, CrossTransition>? _transitions;
@@ -443,8 +441,8 @@ class ControlRootState extends State<ControlRoot> {
     _context.value = context;
     _args[AppState] = widget.initState;
 
-    _states = AppStateSetup.fillBuilders(widget.states!);
-    _transitions = AppStateSetup.fillTransitions(widget.states!);
+    _states = AppStateSetup.fillBuilders(widget.states);
+    _transitions = AppStateSetup.fillTransitions(widget.states);
 
     final initState = widget.initState.build(
       (context) => InitLoader.of(
@@ -460,8 +458,8 @@ class ControlRootState extends State<ControlRoot> {
       ),
     );
 
-    if (!_states!.containsKey(initState.key)) {
-      _states![initState.key] = initState.builder;
+    if (!_states.containsKey(initState.key)) {
+      _states[initState.key] = initState.builder;
     }
 
     _theme = widget.theme ??
@@ -537,7 +535,6 @@ class ControlRootState extends State<ControlRoot> {
   Widget build(BuildContext context) {
     _setup.context = context;
     _setup.state = _args.get<AppState>();
-    _setup.args = _args;
 
     printDebug('BUILD CONTROL - ${_setup._localKey}');
 
@@ -548,10 +545,12 @@ class ControlRootState extends State<ControlRoot> {
         Builder(builder: (context) {
           _context.value = context;
 
+          widget.onBuild?.call(context);
+
           return CaseWidget(
             key: ObjectKey(_setup.session),
             activeCase: _setup.state,
-            builders: _states!,
+            builders: _states,
             transition: widget.transition,
             transitions: _transitions,
             placeholder: (_) => Container(
