@@ -34,7 +34,7 @@ class ControlBuilder<T> extends StatefulWidget {
 class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   Disposable? _sub;
 
-  ObservableValue<T>? _observable;
+  ObservableValue<T?>? _observable;
 
   T? _mapValue() => _observable?.value;
 

@@ -36,9 +36,11 @@ class BroadcastSubscriptionArgs<T> {
 /// Stream is driven by keys and object types.
 ///
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
-class ControlBroadcast extends ControlObservable {
+class ControlBroadcast extends ControlObservable<dynamic> {
   /// Last available value for subs.
   final _store = Map();
+
+  ControlBroadcast() : super(null);
 
   /// Returns stored object by give - exact [key].
   /// Object can be stored during [broadcast].

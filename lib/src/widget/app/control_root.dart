@@ -2,7 +2,7 @@ import 'package:flutter_control/core.dart';
 
 /// Holder of current root context.
 /// Accessed via [ControlScope].
-final _context = ActionControl.broadcast<BuildContext>();
+final _context = ActionControl.empty<BuildContext>();
 
 /// Key of [ControlRoot] Widget. Set by framework.
 /// Accessed via [ControlScope].

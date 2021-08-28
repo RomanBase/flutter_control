@@ -91,7 +91,7 @@ class FieldSubscription<T> extends ControlSubscription<T>
 }
 
 /// {@macro action-control}
-class FieldControl<T> extends ObservableModel<T> {
+class FieldControl<T> extends ObservableModel<T?> {
   /// Current broadcast [StreamController].
   final StreamController<T?> _stream = StreamController<T?>.broadcast();
 
@@ -272,7 +272,7 @@ class FieldControl<T> extends ObservableModel<T> {
   }
 
   @override
-  void cancel(ControlSubscription<T> subscription) {
+  void cancel(ControlSubscription<T?> subscription) {
     assert(subscription is FieldSubscription);
 
     _subscriptions.remove(subscription);

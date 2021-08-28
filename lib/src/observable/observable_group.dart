@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-class ObservableGroup extends ObservableValue<Iterable> implements Disposable {
+class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
   final _items = <DisposableToken>[];
 
-  final _parent = ActionControl.broadcast<Iterable>();
+  final _parent = ActionControl.empty<Iterable>();
 
   bool get isActive => _parent.isActive;
 
@@ -67,7 +67,7 @@ class ObservableGroup extends ObservableValue<Iterable> implements Disposable {
   void _notifyControl() => _parent.value = _getValues();
 
   @override
-  ControlSubscription<Iterable> subscribe(ValueCallback<Iterable?> action,
+  ControlSubscription<Iterable?> subscribe(ValueCallback<Iterable?> action,
           {bool current = true, dynamic args}) =>
       _parent.subscribe(
         action,
@@ -76,7 +76,7 @@ class ObservableGroup extends ObservableValue<Iterable> implements Disposable {
       );
 
   @override
-  void cancel(ControlSubscription<Iterable> subscription) =>
+  void cancel(ControlSubscription<Iterable?> subscription) =>
       _parent.cancel(subscription);
 
   @override

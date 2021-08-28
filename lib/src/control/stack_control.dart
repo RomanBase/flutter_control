@@ -1,11 +1,11 @@
 import 'package:flutter_control/core.dart';
 
-class StackControl<T> extends ObservableModel<T> {
+class StackControl<T> extends ObservableModel<T?> {
   /// Current stack of values.
   final List<T?> _stack = <T>[];
 
   /// Holds current value and [ActionControlObservable] interface just wraps this control.
-  final _parent = ActionControl.broadcast<T>();
+  final _parent = ActionControl.empty<T>();
 
   @override
   bool get isActive => _parent.isActive;
@@ -179,11 +179,11 @@ class StackControl<T> extends ObservableModel<T> {
       push(value);
 
   @override
-  void cancel(ControlSubscription<T> subscription) =>
+  void cancel(ControlSubscription<T?> subscription) =>
       _parent.cancel(subscription);
 
   @override
-  ControlSubscription<T> subscribe(
+  ControlSubscription<T?> subscribe(
     ValueCallback<T?> action, {
     bool current = true,
     args,

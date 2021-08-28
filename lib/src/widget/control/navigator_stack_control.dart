@@ -170,7 +170,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
   int get currentPageIndex => _pageIndex.value ?? 0;
 
   /// Subscription to listen about page index changes.
-  ObservableValue<int> get pageIndex => ObservableValue.of(_pageIndex);
+  ObservableValue<int?> get pageIndex => ObservableValue.of(_pageIndex);
 
   bool reloadOnReselect;
 

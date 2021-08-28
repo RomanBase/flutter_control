@@ -14,21 +14,26 @@ class ActionControl<T> extends ControlObservable<T> {
   bool get _single => true;
 
   ///Default constructor.
-  ActionControl._([T? value]) : super(value);
+  ActionControl._(T value) : super(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.
-  static ActionControl<T> single<T>([T? value]) => ActionControl<T>._(value);
+  static ActionControl<T> single<T>(T value) => ActionControl<T>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Multiple subs can be used.
-  static ActionControl<T> broadcast<T>([T? value]) =>
+  static ActionControl<T> broadcast<T>(T value) =>
       _ActionControlBroadcast<T>._(value);
+
+  static ActionControl<T?> empty<T>({T? value, bool broadcast: true}) =>
+      broadcast
+          ? _ActionControlBroadcast<T?>._(value)
+          : ActionControl<T?>._(value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// This control will subscribe to [BroadcastProvider] with given [key] and will listen to Global Stream.
-  static ActionControl<T> provider<T>({dynamic key, T? defaultValue}) {
-    final control = _ActionControlBroadcast<T>._(defaultValue);
+  static ActionControl<T?> provider<T>({dynamic key, T? defaultValue}) {
+    final control = _ActionControlBroadcast<T?>._(defaultValue);
 
     control._globalSub = BroadcastProvider.subscribe<T>(
       Control.factory.keyOf<T>(key: key),
@@ -39,7 +44,7 @@ class ActionControl<T> extends ControlObservable<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
       {bool current = true, dynamic args}) {
     if (_single && subCount > 0) {
       subs.clear();
@@ -67,5 +72,5 @@ class _ActionControlBroadcast<T> extends ActionControl<T> {
   @override
   bool get _single => false;
 
-  _ActionControlBroadcast._([T? value]) : super._(value);
+  _ActionControlBroadcast._(T value) : super._(value);
 }

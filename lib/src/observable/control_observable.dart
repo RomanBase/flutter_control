@@ -14,7 +14,7 @@ abstract class ObservableChannel implements Disposable {
 }
 
 abstract class ObservableValue<T> implements Disposable {
-  T? get value;
+  T get value;
 
   dynamic data;
 
@@ -26,8 +26,8 @@ abstract class ObservableValue<T> implements Disposable {
 
   void cancel(ControlSubscription<T> subscription);
 
-  static ObservableValue<T> of<T>(ObservableModel<T> observable) =>
-      _ObservableHandler<T>(observable);
+  static ObservableValue<T?> of<T>(ObservableModel<T?> observable) =>
+      _ObservableHandler<T?>(observable);
 
   @override
   void dispose() {}
@@ -42,9 +42,9 @@ abstract class ObservableModel<T> extends ObservableValue<T> {
 
   bool get isActive;
 
-  set value(T? value) => setValue(value);
+  set value(T value) => setValue(value);
 
-  void setValue(T? value, {bool notify: true, bool forceNotify: false});
+  void setValue(T value, {bool notify: true, bool forceNotify: false});
 
   void notify();
 }
@@ -53,7 +53,7 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   final ObservableValue<T> _parent;
 
   @override
-  T? get value => _parent.value;
+  T get value => _parent.value;
 
   _ObservableHandler(this._parent);
 
@@ -80,10 +80,10 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   bool _active = true;
 
-  T? _value;
+  T _value;
 
   @override
-  T? get value => _value;
+  T get value => _value;
 
   @override
   bool get isValid => true;
@@ -93,11 +93,12 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   int get subCount => subs.length;
 
-  ControlObservable([T? value]) {
-    _value = value;
-  }
+  ControlObservable(this._value);
 
-  static ObservableValue<T> of<T>(dynamic object) {
+  static ControlObservable<T?> empty<T>([T? value]) =>
+      ControlObservable<T?>(value);
+
+  static ObservableValue<T?> of<T>(dynamic object) {
     if (object is ObservableValue<T>) {
       return object;
     } else if (object is Stream<T>) {
@@ -108,10 +109,10 @@ class ControlObservable<T> extends ObservableModel<T> {
       return ofListenable(object);
     }
 
-    return ControlObservable<T>()..value = object is T ? object : null;
+    return ControlObservable<T?>(object is T ? object : null);
   }
 
-  static ControlObservable<T> ofStream<T>(Stream<T> stream) {
+  static ControlObservable<T?> ofStream<T>(Stream<T> stream) {
     final observable = _ClientObservable<T>();
     final sub = stream.listen((event) => observable.setValue(event));
 
@@ -120,8 +121,8 @@ class ControlObservable<T> extends ObservableModel<T> {
     return observable;
   }
 
-  static ControlObservable<T> ofFuture<T>(Future<T> future) {
-    final observable = ControlObservable<T>();
+  static ControlObservable<T?> ofFuture<T>(Future<T> future) {
+    final observable = ControlObservable<T?>(null);
 
     future.then((value) => observable.setValue(value)).catchError((err) {
       printDebug(err);
@@ -130,7 +131,7 @@ class ControlObservable<T> extends ObservableModel<T> {
     return observable;
   }
 
-  static ControlObservable<T> ofListenable<T>(Listenable listenable) {
+  static ControlObservable<T?> ofListenable<T>(Listenable listenable) {
     final observable = _ClientObservable<T>();
 
     final callback = () {
@@ -149,7 +150,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @override
-  void setValue(T? value, {bool notify: true, bool forceNotify: false}) {
+  void setValue(T value, {bool notify: true, bool forceNotify: false}) {
     if (_value == value) {
       if (forceNotify) {
         this.notify();
@@ -166,7 +167,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
       {bool current: true, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
@@ -214,7 +215,11 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 }
 
-class _ClientObservable<T> extends ControlObservable<T> {
+class _ControlObservableNullable<T> extends ControlObservable<T?> {
+  _ControlObservableNullable([T? value]) : super(value);
+}
+
+class _ClientObservable<T> extends _ControlObservableNullable<T> {
   Disposable? _disposable;
 
   void register(Disposable object) {
