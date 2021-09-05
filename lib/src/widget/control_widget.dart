@@ -21,6 +21,10 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 /// {@macro control-widget}
 abstract class SingleControlWidget<T extends ControlModel?>
     extends ControlWidget {
+
+  /// specific [key] under which is [ControlModel] stored in [ControlFactory].
+  dynamic get factoryKey;
+
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
   T get control => controls![0] as T;
 
@@ -55,7 +59,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
-  T? initControl() => getControl<T>();
+  T? initControl() => getControl<T>(key: factoryKey);
 }
 
 /// {@template control-widget}
