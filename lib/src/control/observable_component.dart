@@ -55,8 +55,7 @@ mixin NotifierComponent<T> on ControlModel implements ObservableChannel {
       );
 
   @override
-  void cancel(ControlSubscription subscription) =>
-      _parent.cancel(subscription);
+  void cancel(ControlSubscription subscription) => _parent.cancel(subscription);
 
   void notify() => _parent.notify();
 

@@ -469,6 +469,10 @@ class ControlFactory with Disposable {
     final item = init<T>(args ?? key);
 
     if (item is LazyControl) {
+      if (item.factoryKey != null) {
+        key = item.factoryKey;
+      }
+
       item._factoryKey = key;
       set<T>(key: key, value: item);
     }
