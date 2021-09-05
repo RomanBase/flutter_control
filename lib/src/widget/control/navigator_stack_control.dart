@@ -167,7 +167,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
   /// Returns current page index.
   /// Use [setPageIndex] to change active controller.
   /// Use [pageIndex] to be notified about changes.
-  int get currentPageIndex => _pageIndex.value ?? 0;
+  int get currentPageIndex => _pageIndex.value;
 
   /// Subscription to listen about page index changes.
   ObservableValue<int?> get pageIndex => ObservableValue.of(_pageIndex);
