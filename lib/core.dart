@@ -22,6 +22,7 @@ export 'src/object_tag.dart';
 export 'src/observable/control_observable.dart';
 export 'src/observable/control_subscription.dart';
 export 'src/observable/observable_group.dart';
+export 'src/observable/observable_helpers.dart';
 export 'src/theme_control.dart';
 export 'src/util/args.dart';
 export 'src/util/base_prefs.dart';
