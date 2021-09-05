@@ -13,7 +13,7 @@ import 'package:flutter_control/core.dart';
 /// [ControlBroadcast] - Sends data and events via global broadcast. Use [BroadcastProvider] for base and direct workflow.
 /// [BaseLocalization] - Loads and stores localization data. Use it directly via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
 /// [RouteStore] - Stores route builders and their paths and settings. Use [ControlRoute.of] to retrieve route. Then is possible to alter this route with new settings, path or transition.
-/// [ControlScope] - This class provides access to root of Widget Tree and to [ControlRootState]. But only if [ControlRoot] Widget is used.
+/// [ControlRootScope] - This class provides access to root of Widget Tree and to [ControlRootState]. But only if [ControlRoot] Widget is used.
 /// [BasePrefs] - Wrapper around [SharedPreferences].
 class Control {
   /// Control is pure static class.
@@ -43,11 +43,6 @@ class Control {
   /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
   /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
   static BaseLocalization? get localization => Control.get<BaseLocalization>();
-
-  /// Returns scope of [ControlRoot].
-  /// This scope provides access to root of Widget Tree and to [ControlRootState].
-  /// But only if [ControlRoot] Widget is used.
-  static ControlScope get scope => ControlScope();
 
   /////
   /////

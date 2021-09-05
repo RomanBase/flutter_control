@@ -162,9 +162,9 @@ abstract class CoreWidget extends StatefulWidget
     }
   }
 
-  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
+  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
   BuildContext? getContext({bool root: false}) =>
-      root ? Control.scope.context ?? context : context;
+      root ? ControlScope.root.context ?? context : context;
 
   /// Returns raw internal arg store.
   /// Typically not used directly.

@@ -149,7 +149,7 @@ class ControlTheme {
   AssetPath? _asset;
 
   @protected
-  BuildContext get context => _context ?? Control.scope.context!;
+  BuildContext get context => _context ?? ControlScope.root.context!;
 
   Device get device => _device ?? (_device = Device.of(context));
 

@@ -21,7 +21,6 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 /// {@macro control-widget}
 abstract class SingleControlWidget<T extends ControlModel?>
     extends ControlWidget {
-
   /// specific [key] under which is [ControlModel] stored in [ControlFactory].
   dynamic get factoryKey => null;
 
@@ -166,9 +165,9 @@ abstract class ControlWidget extends CoreWidget
   @protected
   void onStateChanged(dynamic state) {}
 
-  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlScope].
+  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
   BuildContext? getContext({bool root: false}) =>
-      root ? Control.scope.context ?? context : context;
+      root ? ControlScope.root.context ?? context : context;
 
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].

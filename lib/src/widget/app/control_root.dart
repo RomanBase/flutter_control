@@ -1,15 +1,15 @@
 import 'package:flutter_control/core.dart';
 
 /// Holder of current root context.
-/// Accessed via [ControlScope].
+/// Accessed via [ControlRootScope].
 final _context = ActionControl.empty<BuildContext>();
 
 /// Key of [ControlRoot] Widget. Set by framework.
-/// Accessed via [ControlScope].
+/// Accessed via [ControlRootScope].
 const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
 
 /// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
-/// Accessed via [ControlScope].
+/// Accessed via [ControlRootScope].
 const _appKey = GlobalObjectKey(AppWidgetBuilder);
 
 /// Main Widget builder.
@@ -64,7 +64,7 @@ class AppStateSetup {
 /// Other predefined States (as [AppState.onboarding]) can be used to separate main App States and their flow.
 /// It's possible to create custom States by extending [AppState].
 ///
-/// Change State via [ControlScope] -> [Control.root].
+/// Change State via [ControlRootScope] -> [Control.root].
 class AppState {
   static const init = const AppState();
 
@@ -109,12 +109,16 @@ class _AppStateMain extends AppState {
   const _AppStateMain();
 }
 
+class ControlScope {
+  static ControlRootScope get root => ControlRootScope._();
+}
+
 /// Holds [appKey] and [rootKey], this keys are pointing to [WidgetsApp] and [ControlRoot] Widgets.
 /// Also holds current root [context]. This context can be changed within Widget Tree, but it's highly recommended to point this context to any top level Widget.
-class ControlScope {
+class ControlRootScope {
   /// Gives access to global variables like [appKey] and [rootKey].
   /// Also global root [context] is accessible via this object.
-  const ControlScope();
+  const ControlRootScope._();
 
   /// Key of [ControlRoot] Widget. Set by framework.
   GlobalKey<ControlRootState> get rootKey => _rootKey;
@@ -243,14 +247,14 @@ class ControlScope {
       );
 }
 
-/// Setup for actual [ControlRoot] and [ControlScope].
+/// Setup for actual [ControlRoot] and [ControlRootScope].
 /// Passed to [AppWidgetBuilder].
 class ControlRootSetup {
   final session = UnitId.randomId();
 
   final args = ControlArgs();
 
-  /// App key for [WidgetsApp] Widget. This key is same as [ControlScope.appKey].
+  /// App key for [WidgetsApp] Widget. This key is same as [ControlRootScope.appKey].
   Key? key;
 
   /// Current [AppState].
@@ -268,8 +272,8 @@ class ControlRootSetup {
       state.hashCode ^
       (style?.data.hashCode ?? 0xFF));
 
-  /// Setup for actual [ControlRoot] and [ControlScope].
-  /// [key] - [_appKey] - [ControlScope.appKey].
+  /// Setup for actual [ControlRoot] and [ControlRootScope].
+  /// [key] - [_appKey] - [ControlRootScope.appKey].
   /// [state] - Active app state.
   /// [args] - Arguments passed with state change.
   /// [style] - Active theme.

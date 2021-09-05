@@ -50,7 +50,7 @@ abstract class InitLoaderControl extends BaseControl {
   Future<dynamic> load();
 
   void notifyControl(AppState? state, [dynamic args]) {
-    Control.scope.setAppState(state, args: args);
+    ControlScope.root.setAppState(state, args: args);
   }
 
   @override

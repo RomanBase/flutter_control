@@ -6,11 +6,11 @@ class ControlNavigator implements RouteNavigator {
   ControlNavigator(this.context);
 
   BuildContext getContext({bool root: false}) =>
-      root ? Control.scope.context ?? context : context;
+      root ? ControlScope.root.context ?? context : context;
 
   @protected
   NavigatorState getNavigator({bool root: false}) {
-    if (root && !Control.scope.isInitialized) {
+    if (root && !ControlScope.root.isInitialized) {
       return Navigator.of(context, rootNavigator: true);
     }
 
