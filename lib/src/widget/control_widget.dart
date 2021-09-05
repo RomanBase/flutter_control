@@ -165,10 +165,6 @@ abstract class ControlWidget extends CoreWidget
   @protected
   void onStateChanged(dynamic state) {}
 
-  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
-  BuildContext? getContext({bool root: false}) =>
-      root ? ControlScope.root.context ?? context : context;
-
   /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
   /// Specific control is determined by [Type] and [key].
   /// [args] - Arguments to pass to [ControlModel].
@@ -177,6 +173,9 @@ abstract class ControlWidget extends CoreWidget
           ControlArgs(controls).combineWith(holder.argStore).data,
           key: key,
           args: args ?? holder.args);
+
+  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
+      scope.get<T>(key: key, args: args);
 
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]

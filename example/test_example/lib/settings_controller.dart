@@ -33,14 +33,14 @@ class SettingsController extends BaseControl
   }
 
   void unloadApp() {
-    Control.scope.setOnboardingState();
+    ControlScope.root.setOnboardingState();
   }
 
   void swapApp() {
-    if (Control.scope.setup.state == AppState.auth) {
-      Control.scope.setMainState();
+    if (ControlScope.root.setup.state == AppState.auth) {
+      ControlScope.root.setMainState();
     } else {
-      Control.scope.setAuthState();
+      ControlScope.root.setAuthState();
     }
   }
 }

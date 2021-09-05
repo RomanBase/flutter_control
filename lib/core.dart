@@ -41,6 +41,7 @@ export 'src/widget/component/loader_widget.dart';
 export 'src/widget/component/navigation_stack.dart';
 export 'src/widget/control/input_control.dart';
 export 'src/widget/control/navigator_stack_control.dart';
+export 'src/widget/control/scope.dart';
 export 'src/widget/control/widget_provider.dart';
 export 'src/widget/control_widget.dart';
 export 'src/widget/controllable_widget.dart';

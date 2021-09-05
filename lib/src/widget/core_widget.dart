@@ -88,6 +88,8 @@ abstract class CoreWidget extends StatefulWidget
     implements Initializable, Disposable {
   final holder = ControlArgHolder();
 
+  ControlScope get scope => ControlScope.of(this);
+
   /// Returns 'true' if [State] is hooked and [WidgetControlHolder] is initialized.
   bool get isInitialized => holder.initialized;
 

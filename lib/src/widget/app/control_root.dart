@@ -109,16 +109,12 @@ class _AppStateMain extends AppState {
   const _AppStateMain();
 }
 
-class ControlScope {
-  static ControlRootScope get root => ControlRootScope._();
-}
-
 /// Holds [appKey] and [rootKey], this keys are pointing to [WidgetsApp] and [ControlRoot] Widgets.
 /// Also holds current root [context]. This context can be changed within Widget Tree, but it's highly recommended to point this context to any top level Widget.
 class ControlRootScope {
   /// Gives access to global variables like [appKey] and [rootKey].
   /// Also global root [context] is accessible via this object.
-  const ControlRootScope._();
+  const ControlRootScope.main();
 
   /// Key of [ControlRoot] Widget. Set by framework.
   GlobalKey<ControlRootState> get rootKey => _rootKey;
