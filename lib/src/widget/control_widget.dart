@@ -23,7 +23,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
     extends ControlWidget {
 
   /// specific [key] under which is [ControlModel] stored in [ControlFactory].
-  dynamic get factoryKey;
+  dynamic get factoryKey => null;
 
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
   T get control => controls![0] as T;
