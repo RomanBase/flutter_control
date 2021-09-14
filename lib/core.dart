@@ -51,6 +51,7 @@ export 'src/widget/mixin/animation.dart';
 export 'src/widget/mixin/control.dart';
 export 'src/widget/mixin/layout.dart';
 export 'src/widget/mixin/navigation.dart';
+export 'src/widget/mixin/overlay.dart';
 
 enum LoadingStatus {
   initial,
