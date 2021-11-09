@@ -8,7 +8,7 @@ class ControlBuilder<T> extends StatefulWidget {
   final dynamic control;
 
   /// Widget builder.
-  final ControlWidgetBuilder<T?> builder;
+  final ControlWidgetBuilder<dynamic> builder;
 
   /// Widget builder for non value.
   final WidgetBuilder? noData;
@@ -34,9 +34,19 @@ class ControlBuilder<T> extends StatefulWidget {
 class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   Disposable? _sub;
 
-  ObservableValue<T?>? _observable;
+  ObservableValue<dynamic>? _observable;
 
-  T? _mapValue() => _observable?.value;
+  T? _mapValue() {
+    if (widget.valueConverter != null) {
+      return widget.valueConverter!.call(_observable?.value);
+    }
+
+    if (widget.control is T && T != dynamic) {
+      return widget.control;
+    }
+
+    return _observable?.value;
+  }
 
   @override
   void initState() {
