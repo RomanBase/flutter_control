@@ -160,7 +160,7 @@ abstract class CoreWidget extends StatefulWidget
   @protected
   void onDependencyChanged() {
     if (this is ThemeProvider) {
-      (this as ThemeProvider).invalidateTheme(context);
+      (this as ThemeProvider).invalidateTheme(context!);
     }
   }
 

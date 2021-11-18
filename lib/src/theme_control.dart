@@ -170,7 +170,7 @@ class ControlTheme {
 
   ControlTheme(this._context);
 
-  void invalidate([BuildContext? context]) {
+  void invalidate(BuildContext context) {
     _data = null;
     _device = null;
     _context = context;
@@ -311,7 +311,7 @@ class ThemeConfig<T extends ControlTheme> {
 }
 
 mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>([BuildContext? context]) =>
+  static T of<T extends ControlTheme>(BuildContext context) =>
       Control.init<ControlTheme>(context) as T;
 
   /// Instance of requested [ControlTheme].
@@ -319,7 +319,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T theme = of<T>();
+  final T theme = of<T>(ControlScope.root.context!);
 
   /// Instance of [AssetPath].
   ///
@@ -357,8 +357,7 @@ mixin ThemeProvider<T extends ControlTheme> {
 
   /// Invalidates current [ControlTheme].
   /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
-  void invalidateTheme([BuildContext? context]) {
-    theme.invalidate(
-        context != null && themeScope == ControlTheme.scope ? context : null);
+  void invalidateTheme(BuildContext context) {
+    theme.invalidate(context);
   }
 }
