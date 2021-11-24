@@ -136,7 +136,7 @@ class ControlObservable<T> extends ObservableModel<T> {
 
     final callback = () {
       if (listenable is ValueListenable<T>) {
-        observable.setValue(listenable.value);
+        observable.setValue(listenable.value, forceNotify: true);
       } else {
         observable.notify();
       }
