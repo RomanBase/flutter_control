@@ -56,7 +56,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   }
 
   void _initSub() {
-    _observable = ControlObservable.of<T>(widget.control);
+    _observable = ControlObservable.of<dynamic>(widget.control);
 
     if (widget.control != _observable) {
       // Mark for Dispose if observable is not same as [widget.control].

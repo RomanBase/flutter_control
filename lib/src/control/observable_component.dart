@@ -35,6 +35,9 @@ mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?> {
   void notify() => _parent.notify();
 
   @override
+  ObservableValue<U> cast<U>() => this as ObservableValue<U>;
+
+  @override
   void dispose() {
     super.dispose();
 

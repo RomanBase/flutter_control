@@ -18,6 +18,8 @@ abstract class ObservableValue<T> implements Disposable {
 
   dynamic data;
 
+  ObservableValue<U> cast<U>() => this as ObservableValue<U>;
+
   ControlSubscription<T> subscribe(
     ValueCallback<T?> action, {
     bool current: true,
@@ -99,14 +101,26 @@ class ControlObservable<T> extends ObservableModel<T> {
       ControlObservable<T?>(value);
 
   static ObservableValue<T?> of<T>(dynamic object) {
-    if (object is ObservableValue<T>) {
-      return object;
-    } else if (object is Stream<T>) {
-      return ofStream(object);
-    } else if (object is Future<T>) {
-      return ofFuture(object);
-    } else if (object is Listenable) {
-      return ofListenable(object);
+    if (T == dynamic) {
+      if (object is ObservableValue) {
+        return object.cast();
+      } else if (object is Stream) {
+        return ofStream(object).cast();
+      } else if (object is Future) {
+        return ofFuture(object).cast();
+      } else if (object is Listenable) {
+        return ofListenable(object).cast();
+      }
+    } else {
+      if (object is ObservableValue<T>) {
+        return object;
+      } else if (object is Stream<T>) {
+        return ofStream(object);
+      } else if (object is Future<T>) {
+        return ofFuture(object);
+      } else if (object is Listenable) {
+        return ofListenable(object);
+      }
     }
 
     return ControlObservable<T?>(object is T ? object : null);
