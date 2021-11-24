@@ -45,13 +45,9 @@ class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
   DisposableToken join(dynamic observer) {
     final event = DisposableClient(parent: this);
 
-    if (observer is ObservableModel) {
-      final sub = observer.subscribe((value) => _notifyControl());
-      event.onCancel = sub.dispose;
-    } else if (observer is Listenable) {
-      observer.addListener(_notifyControl);
-      event.onCancel = () => observer.removeListener(_notifyControl);
-    }
+    final sub =
+        ControlObservable.of(observer).subscribe((value) => _notifyControl());
+    event.onCancel = sub.dispose;
 
     final token = event.asToken(data: observer);
 
