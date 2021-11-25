@@ -488,7 +488,7 @@ class ControlFactory with Disposable {
   ///
   /// nullable
   T? init<T>({Type? key, dynamic args}) {
-    final initializer = findInitializer<T>();
+    final initializer = findInitializer<T>(key);
 
     if (initializer != null) {
       final item = initializer(args);
