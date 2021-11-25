@@ -312,7 +312,7 @@ class ThemeConfig<T extends ControlTheme> {
 
 mixin ThemeProvider<T extends ControlTheme> {
   static T of<T extends ControlTheme>(BuildContext context) =>
-      Control.init<ControlTheme>(context) as T;
+      Control.init<ControlTheme>(args: context) as T;
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].

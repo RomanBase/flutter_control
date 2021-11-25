@@ -87,7 +87,7 @@ void main() async {
       expect(itemByType == itemByKey, isTrue);
       expect(itemByType.runtimeType, BaseControl);
 
-      final itemInit = factory.init<_ArgModel>('init')!;
+      final itemInit = factory.init<_ArgModel>(args: 'init')!;
       final itemGetInit = factory.get<_ArgModel>(args: 'init')!;
 
       expect(itemInit.value, 'init');

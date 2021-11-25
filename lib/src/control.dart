@@ -152,7 +152,8 @@ class Control {
   /// [Control] provides static call for this function via [Control.init].
   ///
   /// nullable
-  static T? init<T>([dynamic args]) => factory.init(args);
+  static T? init<T>({Type? key, dynamic args}) =>
+      factory.init(key: key, args: args);
 
   static T? initOf<T>(
       {dynamic key, T? value, dynamic args, bool store: false}) {
@@ -461,7 +462,7 @@ class ControlFactory with Disposable {
       }
     }
 
-    final item = init<T>(args ?? key);
+    final item = init<T>(key: key == Type ? key : null, args: args ?? key);
 
     if (item is LazyControl) {
       if (item.factoryKey != null) {
@@ -486,7 +487,7 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.init].
   ///
   /// nullable
-  T? init<T>([dynamic args]) {
+  T? init<T>({Type? key, dynamic args}) {
     final initializer = findInitializer<T>();
 
     if (initializer != null) {
@@ -541,8 +542,10 @@ class ControlFactory with Disposable {
   /// [ControlFactory.init] uses this method to retrieve [Initializer].
   ///
   /// nullable
-  Initializer<T>? findInitializer<T>() {
-    if (_initializers.containsKey(T)) {
+  Initializer<T>? findInitializer<T>([Type? key]) {
+    if (key != null && _initializers.containsKey(key)) {
+      return _initializers[key] as T Function(dynamic)?;
+    } else if (_initializers.containsKey(T)) {
       return _initializers[T] as T Function(dynamic)?;
     } else if (T != dynamic) {
       final key = _initializers.keys.firstWhereOrNull((item) => item is T);
