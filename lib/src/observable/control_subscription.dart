@@ -43,7 +43,7 @@ class ControlSubscription<T> implements Disposable {
     _callback?.call(value);
 
     if (closePass(value)) {
-      cancel();
+      invalidate();
     }
   }
 

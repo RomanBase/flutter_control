@@ -216,6 +216,7 @@ class ControlObservable<T> extends ObservableModel<T> {
     }
 
     subs.forEach((element) => element.notifyCallback(value));
+    subs.removeWhere((element) => !element.isValid);
   }
 
   void clear() {
