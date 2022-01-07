@@ -25,6 +25,12 @@ class ControlScope {
     return ControlScope._(context ?? root.context);
   }
 
+  static T? provide<T>(dynamic parent, {dynamic key, dynamic args}) =>
+      ControlScope.of(parent).get(
+        key: key,
+        args: args,
+      );
+
   T? _get<T>({dynamic key, dynamic args, BuildContext? context}) {
     context ??= this.context;
 

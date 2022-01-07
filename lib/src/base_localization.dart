@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
@@ -76,9 +75,11 @@ class LocalizationAsset {
   /// Checks validity of [locale] and [path]
   bool get isValid => path != null;
 
+  static const empty = const LocalizationAsset('#', null);
+
   /// [locale] - It's preferred to use iso2 (en) or unicode (en_US) standard.
   /// [path] - Asset path to file with localization data (json).
-  LocalizationAsset(
+  const LocalizationAsset(
     this.locale,
     this.path,
   );
@@ -224,8 +225,9 @@ class BaseLocalization extends ChangeNotifier
   bool get isActive => _data.length > 0;
 
   /// Is [true] if any [LocalizationAsset] is valid.
-  bool get hasValidAsset =>
-      assets.firstWhereOrNull((item) => item.isValid) != null;
+  bool get hasValidAsset => assets
+      .firstWhere((item) => item.isValid, orElse: () => LocalizationAsset.empty)
+      .isValid;
 
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;
@@ -256,7 +258,7 @@ class BaseLocalization extends ChangeNotifier
   }
 
   /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
-  /// Every localization change is broadcasted with result of data load.
+  /// Every localization change is send to global broadcast with result of data load.
   ///
   /// [callback] to listen results of locale changes.
   static BroadcastSubscription<LocalizationArgs> subscribeChanges(
@@ -362,7 +364,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [loadSystemLocale] - to load new system preferred locale.
   /// Returns result of localization change [LocalizationArgs] or just result of reset prefs [bool].
-  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  /// Result of localization change is send to global broadcast with [BaseLocalization] key.
   Future<dynamic> resetPreferredLocale({bool loadSystemLocale: false}) async {
     prefs.set(preference_key, null);
 
@@ -391,7 +393,7 @@ class BaseLocalization extends ChangeNotifier
   ///
   /// [getSystemLocale] is used to get preferred locale.
   /// Returns result of localization change [LocalizationArgs].
-  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  /// Result of localization change is send to global broadcast with [BaseLocalization] key.
   Future<LocalizationArgs> changeToSystemLocale(
       {bool resetPreferred: false}) async {
     loading = true;
@@ -409,7 +411,7 @@ class BaseLocalization extends ChangeNotifier
   /// Set [preferred] to store locale as system preferred into shared preferences.
   ///
   /// Returns result of localization change [LocalizationArgs].
-  /// Result of localization change is also broadcasted to global object stream with [BaseLocalization] key.
+  /// Result of localization change is send to global broadcast with [BaseLocalization] key.
   Future<LocalizationArgs> changeLocale(String locale,
       {bool preferred: true}) async {
     if (debug && locale == 'debug') {

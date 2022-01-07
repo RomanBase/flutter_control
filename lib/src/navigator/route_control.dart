@@ -60,7 +60,7 @@ abstract class RouteNavigator {
 /// Do not open multiple routes from one handler !
 class RouteHandler {
   /// Implementation of navigator.
-  final RouteNavigator? navigator;
+  final RouteNavigator navigator;
 
   /// Implementation of provider.
   final ControlRoute routeProvider;
@@ -92,11 +92,7 @@ class RouteHandler {
   /// [routeProvider] - Route settings and builder.
   ///
   /// Do not open multiple routes from one handler !
-  RouteHandler(this.navigator, this.routeProvider) {
-    assert(navigator != null,
-        'Ensure that your widget implements [RouteNavigator] or is with [RouteControl] mixin.');
-    assert(routeProvider != null);
-  }
+  RouteHandler(this.navigator, this.routeProvider);
 
   /// Creates copy of [RouteHandler] with given builder.
   ///
@@ -127,7 +123,7 @@ class RouteHandler {
       {bool root: false, bool replacement: false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");
 
-    _result = navigator!.openRoute(
+    _result = navigator.openRoute(
       _route = routeProvider.init(args: args),
       root: root,
       replacement: replacement,
@@ -140,7 +136,7 @@ class RouteHandler {
   Future<dynamic>? openRoot({dynamic args}) {
     printDebug("open root: ${routeProvider.identifier} from $navigator");
 
-    _result = navigator!.openRoot(_route = routeProvider.init(args: args));
+    _result = navigator.openRoot(_route = routeProvider.init(args: args));
 
     return _result;
   }
@@ -150,7 +146,7 @@ class RouteHandler {
     printDebug("open dialog: ${routeProvider.identifier} from $navigator");
 
     _route = null;
-    return _result = navigator!.openDialog(
+    return _result = navigator.openDialog(
       WidgetInitializer.of(routeProvider._builder!).wrap(args: args),
       root: root,
       type: type,
@@ -185,6 +181,20 @@ class ControlRoute {
       ..settings = settings
       .._builder = builder;
   }
+
+  /// Builds [Route] via [builder] with given [identifier] and [settings].
+  /// If [identifier] is not provided then [UnitId.nextId] is used.
+  /// [settings] - Additional [Route] settings.
+  static ControlRoute next({
+    dynamic identifier,
+    dynamic settings,
+    required WidgetBuilder builder,
+  }) =>
+      build(
+        identifier: identifier ?? UnitId.nextId(),
+        settings: settings,
+        builder: builder,
+      );
 
   /// Holds [Route] with given [identifier].
   /// Useful for specific or generated Routes.
@@ -330,7 +340,7 @@ class ControlRoute {
         .._routeBuilder = routeBuilder ?? this._routeBuilder;
 
   /// Initializes [RouteHandler] with given [navigator] and this Route provider.
-  RouteHandler navigator(RouteNavigator? navigator) =>
+  RouteHandler navigator(RouteNavigator navigator) =>
       RouteHandler(navigator, this);
 
   /// Registers this Route to [RouteStore].
@@ -433,7 +443,7 @@ class RouteStore {
     assert(() {
       if (_routes.containsKey(identifier)) {
         printDebug(
-            'Storage already contains key: $identifier. Route of this key will be overriden.');
+            'Storage already contains key: $identifier. Route of this key will be override.');
       }
       return true;
     }());

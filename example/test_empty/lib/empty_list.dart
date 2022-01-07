@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 
 class EmptyList extends StatelessWidget {
@@ -38,10 +37,20 @@ class EmptyItem extends ControlWidget {
             Text(
               '${holder.args.length}',
             ),
+            ControlBuilder<String>(
+              control: controls[0],
+              valueConverter: (control) => control.index,
+              builder: (context, value) => Text('$value'),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 }
 

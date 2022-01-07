@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 
 typedef InitInjection<T> = void Function(T? item, dynamic args);
 
-/// TODO: purpose
+/// TODO: purpose ?
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
@@ -50,7 +50,7 @@ class BaseInjector implements Injector, Disposable {
     }
   }
 
-  InitInjection? findInjector<T>(Type type) {
+  InitInjection? findInjector<T>([Type? type]) {
     if (T != dynamic && _injectors.containsKey(T)) {
       return _injectors[T];
     }

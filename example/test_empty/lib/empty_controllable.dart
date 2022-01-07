@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
-final action = ActionControl.broadcast();
+final action = ActionControl.broadcast(-1);
 final model = EmptyModel();
 
 int count = 0;
@@ -23,7 +23,7 @@ class EmptyControllableWidget extends ControlWidget {
   }
 }
 
-class EmptyModel extends BaseModel with ActionComponent {}
+class EmptyModel extends BaseModel with ObservableComponent {}
 
 class StatusWidget extends ControllableWidget with CoreWidgetDebugPrinter {
   StatusWidget(control) : super(control);

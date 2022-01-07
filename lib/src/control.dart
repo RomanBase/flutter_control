@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
+
+class _InvalidKey {}
 
 /// Main [Control] static class.
 /// Provides easy access to most usable [Control] classes. These objects are stored in [ControlFactory] with their [Type] key.
@@ -324,7 +325,7 @@ class ControlFactory with Disposable {
       if (value is Initializable) {
         inject(value, args: {});
 
-        printDebug('Factory inits $key - ${value.runtimeType.toString()}');
+        printDebug('Factory init $key - ${value.runtimeType.toString()}');
       }
 
       if (value is DisposeHandler) {
@@ -388,7 +389,7 @@ class ControlFactory with Disposable {
     assert(() {
       if (_initializers.containsKey(T)) {
         printDebug(
-            'Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be overriden.');
+            'Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be override.');
       }
       return true;
     }());
@@ -409,7 +410,7 @@ class ControlFactory with Disposable {
     assert(() {
       if (_items.containsKey(key) && _items[key] != value) {
         printDebug(
-            'Factory already contains key: ${key.toString()}. Value of this key will be overriden.');
+            'Factory already contains key: ${key.toString()}. Value of this key will be override.');
       }
       return true;
     }());
@@ -548,9 +549,10 @@ class ControlFactory with Disposable {
     } else if (_initializers.containsKey(T)) {
       return _initializers[T] as T Function(dynamic)?;
     } else if (T != dynamic) {
-      final key = _initializers.keys.firstWhereOrNull((item) => item is T);
+      final key = _initializers.keys
+          .firstWhere((item) => item is T, orElse: () => _InvalidKey);
 
-      if (key != null) {
+      if (key != _InvalidKey) {
         return _initializers[key] as T Function(dynamic)?;
       }
     }
@@ -638,9 +640,9 @@ class ControlFactory with Disposable {
       if (_items.values.firstWhere((item) => item.runtimeType == value,
                   orElse: () => null) !=
               null ||
-          _initializers.keys
-                  .firstWhereOrNull((item) => item.runtimeType == value) !=
-              null) {
+          _initializers.keys.firstWhere((item) => item.runtimeType == value,
+                  orElse: () => _InvalidKey) !=
+              _InvalidKey) {
         return true;
       }
     }

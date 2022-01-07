@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 abstract class BaseControlWidget extends CoreWidget {
@@ -25,7 +24,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
   dynamic get factoryKey => null;
 
   /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
-  T get control => controls![0] as T;
+  T get control => controls[0] as T;
 
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   SingleControlWidget({Key? key, dynamic args}) : super(key: key, args: args);
@@ -77,7 +76,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
 /// [SingleControlWidget] - Focused to single [ControlModel]. But still can handle multiple Controls.
 /// [MountedControlWidget] - Automatically uses all [ControlModel]s passed to Widget.
 ///
-/// Also check [StateboundWidget] an abstract Widget focused to build smaller Widgets controlled by [StateControl] and [BaseModel].
+/// Also check [ControllableWidget] an abstract Widget focused to build smaller Widgets controlled by [ObservableModel] and [BaseModel].
 /// {@endtemplate}
 abstract class ControlWidget extends CoreWidget
     with LocalizationProvider
@@ -90,10 +89,10 @@ abstract class ControlWidget extends CoreWidget
   /// List of [ControlModel]s initialized via [initControls].
   /// Set [autoMountControls] to automatically init all Models passed through [args].
   @protected
-  List<ControlModel?>? get controls => state?.controls;
+  List<ControlModel?> get controls => state?.controls ?? [];
 
   /// Checks if [controls] is not empty.
-  bool get hasControl => controls != null && controls!.isNotEmpty;
+  bool get hasControl => controls.isNotEmpty;
 
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
   /// By default set to 'false'.
@@ -132,13 +131,13 @@ abstract class ControlWidget extends CoreWidget
   void onInitState(ControlState state) {
     assert(isInitialized);
 
-    if (controls == null) {
+    if (controls.isEmpty) {
       printDebug('no controls found - onInitState');
       return;
     }
 
-    controls!.remove(null);
-    controls!.forEach((control) {
+    controls.remove(null);
+    controls.forEach((control) {
       control!.init(holder.args);
       control.register(this);
 
@@ -146,16 +145,6 @@ abstract class ControlWidget extends CoreWidget
         registerStateNotifier(control);
       }
     });
-  }
-
-  @protected
-  void onInit(Map args) {
-    super.onInit(args);
-
-    if (controls == null) {
-      printDebug('no controls found - onInit');
-      return;
-    }
   }
 
   @override
@@ -174,6 +163,9 @@ abstract class ControlWidget extends CoreWidget
           key: key,
           args: args ?? holder.args);
 
+  /// Tries to find specific [ControlModel]. Looks up in current WidgetTree of [CoreWidget]s, their [controls] and [args].
+  /// Specific control is determined by [Type] and [key].
+  /// [args] - Arguments to pass to [ControlModel].
   T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
       scope.get<T>(key: key, args: args);
 

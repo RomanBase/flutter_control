@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/core.dart';
 
 /// Abstract implementation of simple widget initializer and holder.

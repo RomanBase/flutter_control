@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Showing only one widget by active case.
