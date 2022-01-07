@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter_control/core.dart';
 
 typedef InitInjection<T> = void Function(T? item, dynamic args);
@@ -61,9 +60,9 @@ class BaseInjector implements Injector, Disposable {
 
     if (T != dynamic) {
       final key =
-          _injectors.keys.firstWhereOrNull((item) => item.runtimeType is T);
+          _injectors.keys.firstWhere((item) => item.runtimeType is T, orElse: () => dynamic);
 
-      if (key != null) {
+      if (key != dynamic) {
         return _injectors[key];
       }
     }
