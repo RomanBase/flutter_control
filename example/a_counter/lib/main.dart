@@ -28,17 +28,22 @@ class CounterControl extends BaseControl {
   void onInit(Map args) {
     super.onInit(args);
 
-    progress.subscribeTo(number.stream, converter: (value) => value / number.max);
+    progress.subscribeTo(number.stream,
+        converter: (value) => value / number.max);
   }
 
   void incrementCounter() {
     number.value++;
-    message.value = number.atMax ? "Counter value at Maximum !" : "Counter value Increasing...";
+    message.value = number.atMax
+        ? "Counter value at Maximum !"
+        : "Counter value Increasing...";
   }
 
   void decrementCounter() {
     number.value--;
-    message.value = number.atMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
+    message.value = number.atMin
+        ? "Counter value at Minimum !"
+        : "Counter value Decreasing...";
   }
 
   @override

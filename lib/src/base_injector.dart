@@ -59,8 +59,8 @@ class BaseInjector implements Injector, Disposable {
     }
 
     if (T != dynamic) {
-      final key =
-          _injectors.keys.firstWhere((item) => item.runtimeType is T, orElse: () => dynamic);
+      final key = _injectors.keys
+          .firstWhere((item) => item.runtimeType is T, orElse: () => dynamic);
 
       if (key != dynamic) {
         return _injectors[key];
