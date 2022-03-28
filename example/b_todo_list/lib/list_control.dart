@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-class TodoItemModel extends BaseModel with StateControl {
+class TodoItemModel extends BaseModel with ObservableComponent {
   final String title;
 
   bool _isDone;
@@ -9,7 +9,7 @@ class TodoItemModel extends BaseModel with StateControl {
 
   set isDone(value) {
     _isDone = value;
-    notifyState();
+    notify();
   }
 
   TodoItemModel(this.title, [this._isDone = false]);

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
@@ -224,8 +223,7 @@ class BaseLocalization extends ChangeNotifier
   bool get isActive => _data.length > 0;
 
   /// Is [true] if any [LocalizationAsset] is valid.
-  bool get hasValidAsset =>
-      assets.firstWhereOrNull((item) => item.isValid) != null;
+  bool get hasValidAsset => assets.any((element) => element.isValid);
 
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;

@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ActionBuilder<Locale>(
+    return ControlBuilder<Locale>(
       control: ActionControl.provider(key: Locale, defaultValue: Locale('en')),
       builder: (context, value) {
         return MaterialApp(

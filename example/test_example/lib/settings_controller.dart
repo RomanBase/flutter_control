@@ -17,7 +17,7 @@ class SettingsController extends BaseControl
   }
 
   void toggleTheme() async {
-    invalidateTheme();
+    invalidateTheme(ControlScope.root.context);
 
     final currentTheme = theme.config.preferredThemeName;
 

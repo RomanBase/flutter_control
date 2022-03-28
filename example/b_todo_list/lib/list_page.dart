@@ -66,8 +66,8 @@ class ItemWidget extends StatelessWidget {
   final ValueCallback<TodoItemModel> onEditPressed;
 
   ItemWidget({
-    @required this.model,
-    @required this.onEditPressed,
+    this.model,
+    this.onEditPressed,
   }) : super(key: ObjectKey(model));
 
   @override
@@ -89,8 +89,8 @@ class ItemWidget extends StatelessWidget {
               ),
             ),
           ),
-          NotifierBuilder(
-            control: model.state,
+          ControlBuilder(
+            control: model,
             builder: (context, value) => Checkbox(
               value: model.isDone,
               onChanged: (checked) => model.isDone = checked,

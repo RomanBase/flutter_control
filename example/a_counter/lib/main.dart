@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 
 void main() => runApp(MyApp());
@@ -21,29 +20,25 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterControl extends BaseControl {
-  final number = IntegerControl.inRange(value: 5, max: 10);
-  final progress = DoubleControl();
+  final number = NumberControl.inRange(value: 5, max: 10);
+  final progress = NumberControl<double>();
   final message = StringControl("Press button to increase or decrese counter");
 
   @override
   void onInit(Map args) {
     super.onInit(args);
 
-    number.streamTo(progress, converter: (value) => value / number.max);
+    progress.subscribeTo(number.stream, converter: (value) => value / number.max);
   }
 
   void incrementCounter() {
     number.value++;
-    message.value = number.atMax
-        ? "Counter value at Maximum !"
-        : "Counter value Increasing...";
+    message.value = number.atMax ? "Counter value at Maximum !" : "Counter value Increasing...";
   }
 
   void decrementCounter() {
     number.value--;
-    message.value = number.atMin
-        ? "Counter value at Minimum !"
-        : "Counter value Decreasing...";
+    message.value = number.atMin ? "Counter value at Minimum !" : "Counter value Decreasing...";
   }
 
   @override

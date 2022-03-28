@@ -35,15 +35,20 @@ class ControlScope {
     final state = context.findAncestorStateOfType<ControlState>();
 
     if (state == null) {
-      return Control.get<T>(key: key, args: args);
+      return null;
     }
 
-    return Control.resolve<T>(
-          ControlArgs(state.controls).combineWith(state.args).data,
-          key: key,
-          args: args,
-        ) ??
-        _get(key: key, args: args, context: state.context);
+    final item = Control.resolve<T>(
+      ControlArgs(state.controls).combineWith(state.args).data,
+      key: key,
+      args: args,
+    );
+
+    if (item != null) {
+      return item;
+    }
+
+    return _get(key: key, args: args, context: state.context);
   }
 
   T? get<T>({dynamic key, dynamic args}) => _get<T>(key: key, args: args);

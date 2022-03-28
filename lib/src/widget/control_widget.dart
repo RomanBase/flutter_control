@@ -174,9 +174,6 @@ abstract class ControlWidget extends CoreWidget
           key: key,
           args: args ?? holder.args);
 
-  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
-      scope.get<T>(key: key, args: args);
-
   /// [StatelessWidget.build]
   /// [StatefulWidget.build]
   @protected

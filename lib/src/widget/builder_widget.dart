@@ -8,7 +8,7 @@ class ControlBuilder<T> extends StatefulWidget {
   final dynamic control;
 
   /// Widget builder.
-  final ControlWidgetBuilder<dynamic> builder;
+  final ControlWidgetBuilder<T> builder;
 
   /// Widget builder for non value.
   final WidgetBuilder? noData;

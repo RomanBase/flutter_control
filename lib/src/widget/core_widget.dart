@@ -168,6 +168,10 @@ abstract class CoreWidget extends StatefulWidget
   BuildContext? getContext({bool root: false}) =>
       root ? ControlScope.root.context ?? context : context;
 
+  /// Returns [ControlModel] by given [T] or [key] from current UI Tree
+  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
+      scope.get<T>(key: key, args: args);
+
   /// Returns raw internal arg store.
   /// Typically not used directly.
   /// Check:

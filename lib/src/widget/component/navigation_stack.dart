@@ -313,7 +313,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
       control: widget.control.pageIndex,
       builder: (context, index) {
         final stack = (widget.builder ?? StackGroupBuilders.stack)(
-            context, index ?? 0, _items);
+            context, index, _items);
 
         if (widget.overrideNavigation) {
           return WillPopScope(
