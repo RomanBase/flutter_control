@@ -1,6 +1,8 @@
 import 'dart:math';
 
 class UnitId {
+  const UnitId._();
+
   static const az = 'abcdefghijklmnopqrstuvwxyz';
   static const aZ = 'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ';
   static const azn = 'abcdefghijklmnopqrstuvwxyz0123456789';

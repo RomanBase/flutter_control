@@ -180,7 +180,7 @@ class DisposableToken extends DisposableClientBase {
   DisposableToken(
     this._client, {
     this.data,
-  }) : assert(_client != null);
+  });
 
   /// Propagates `thread` notifications with possibility to cancel operations.
   ///

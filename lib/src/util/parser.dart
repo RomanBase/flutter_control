@@ -21,6 +21,8 @@ class ParamDecorator {
 
 /// Helps to parse basic objects.
 class Parse {
+  const Parse._();
+
   /// Replaces [params] in [input] string
   /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
   /// Set custom [ParamDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
@@ -137,7 +139,7 @@ class Parse {
     }
 
     if (value is String) {
-      return double.tryParse(value) ?? defaultValue;
+      return double.tryParse(value.replaceAll(',', '.')) ?? defaultValue;
     }
 
     return defaultValue;
@@ -293,7 +295,7 @@ class Parse {
         value.forEach((item) {
           final listItem = convert(item, converter: converter);
 
-          if (listItem != null && listItem is T) {
+          if (listItem != null) {
             items.add(listItem);
           }
         });
@@ -305,7 +307,7 @@ class Parse {
         valueMap.forEach((key, item) {
           final listItem = convertEntry(key, item, converter: entryConverter);
 
-          if (listItem != null && listItem is T) {
+          if (listItem != null) {
             items.add(listItem);
           }
         });
@@ -328,13 +330,13 @@ class Parse {
       if (converter != null) {
         final listItem = convert(value, converter: converter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items.add(listItem);
         }
       } else if (entryConverter != null) {
         final listItem = convertEntry(0, value, converter: entryConverter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items.add(listItem);
         }
       } else {
@@ -372,7 +374,7 @@ class Parse {
         value.forEach((key, item) {
           final mapItem = convert(item, converter: converter);
 
-          if (mapItem != null && mapItem is T) {
+          if (mapItem != null) {
             items[key] = mapItem;
           }
         });
@@ -380,7 +382,7 @@ class Parse {
         value.forEach((key, item) {
           final mapItem = convertEntry(key, item, converter: entryConverter);
 
-          if (mapItem != null && mapItem is T) {
+          if (mapItem != null) {
             items[key] = mapItem;
           }
         });
@@ -403,13 +405,13 @@ class Parse {
       if (converter != null) {
         final listItem = convert(value, converter: converter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items[0] = listItem;
         }
       } else if (entryConverter != null) {
         final listItem = convertEntry(0, value, converter: entryConverter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items[0] = listItem;
         }
       } else {
@@ -445,7 +447,7 @@ class Parse {
         value.forEach((key, item) {
           final mapItem = convert(item, converter: converter);
 
-          if (mapItem != null && mapItem is T) {
+          if (mapItem != null) {
             items[keyConverter(key, item)] = mapItem;
           }
         });
@@ -453,7 +455,7 @@ class Parse {
         value.forEach((key, item) {
           final mapItem = convertEntry(key, item, converter: entryConverter);
 
-          if (mapItem != null && mapItem is T) {
+          if (mapItem != null) {
             items[keyConverter(key, item)] = mapItem;
           }
         });
@@ -468,13 +470,13 @@ class Parse {
       if (converter != null) {
         final listItem = convert(value, converter: converter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items[keyConverter(0, listItem)] = listItem;
         }
       } else if (entryConverter != null) {
         final listItem = convertEntry(0, value, converter: entryConverter);
 
-        if (listItem != null && listItem is T) {
+        if (listItem != null) {
           items[keyConverter(0, listItem)] = listItem;
         }
       } else {
@@ -633,10 +635,6 @@ extension ObjectExtension on Object {
   ObjectTag asTag() => ObjectTag.of(hashCode);
 
   ControlArgs asArg() => ControlArgs(this);
-
-  T? getArg<T>({dynamic key, T? defaultValue}) =>
-      Parse.getArg<T>(this is ControlArgs ? (this as ControlArgs).data : this,
-          key: key, defaultValue: defaultValue);
 }
 
 extension MapExtension on Map {

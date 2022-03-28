@@ -77,10 +77,10 @@ class InputControl extends TextEditingController with DisposeHandler {
   }
 
   /// Check si [text] is not empty.
-  bool get isEmpty => text == null || text.isEmpty;
+  bool get isEmpty => text.isEmpty;
 
   /// Checks if [text] is null or empty.
-  bool get isNotEmpty => text != null && text.isNotEmpty;
+  bool get isNotEmpty => text.isNotEmpty;
 
   InputControl({String? text, this.regex}) {
     value =

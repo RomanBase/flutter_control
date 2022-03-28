@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
 /// Standard initialization of object right after constructor.
@@ -13,7 +12,7 @@ abstract class Initializable {
 }
 
 /// {@template control-model}
-/// Base class to use with [CoreWidget] - specifically [ControlWidget] and [StateboundWidget].
+/// Base class to use with [CoreWidget] - specifically [ControlWidget].
 /// Logic part that handles Streams, loading, data, etc.
 /// Init [args] helps to pass reference of other used Controls and objects.
 ///
@@ -92,7 +91,7 @@ class BaseModel extends ControlModel {
   BaseModel();
 }
 
-/// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [StateboundWidget].
+/// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [ControllableWidget].
 /// Enables to construct [AnimationController] and control animations.
 ///
 /// Typically used as private [ControlModel] next to Widget class. This solution helps to separate animation/UI logic, actual business logic and pure UI.
@@ -137,7 +136,7 @@ mixin TickerComponent on ControlModel {
   }
 }
 
-/// Mixin for [ControlModel] to pass [RouteNavigator] from [CoreWidget] - [ControlWidget] or [StateboundWidget].
+/// Mixin for [ControlModel] to pass [RouteNavigator] from [CoreWidget] - [ControlWidget] or [ControllableWidget].
 /// Creates bridge to UI where [Navigator] is implemented and enables navigation from Logic class.
 ///
 /// Check [ControlRoute] and [RouteStore] to work with routes.
@@ -165,7 +164,7 @@ mixin RouteControlProvider on ControlModel {
 
   /// {@macro route-store-get}
   RouteHandler? routeOf<T>([dynamic identifier]) =>
-      ControlRoute.of<T>(identifier)?.navigator(_navigator);
+      ControlRoute.of<T>(identifier)?.navigator(_navigator!);
 
   /// {@macro route-open}
   RouteHandler openRoute(
@@ -175,7 +174,7 @@ mixin RouteControlProvider on ControlModel {
     dynamic args,
     FutureOr<dynamic> result(dynamic value)?,
   }) {
-    final handler = RouteHandler(_navigator, route);
+    final handler = RouteHandler(_navigator!, route);
 
     final future =
         handler.openRoute(root: root, replacement: replacement, args: args);
@@ -193,7 +192,7 @@ mixin RouteControlProvider on ControlModel {
     dynamic args,
     FutureOr<dynamic> result(dynamic value)?,
   }) {
-    final handler = RouteHandler(_navigator, route);
+    final handler = RouteHandler(_navigator!, route);
 
     final future = handler.openRoot(args: args);
 
@@ -211,7 +210,7 @@ mixin RouteControlProvider on ControlModel {
     dynamic type,
     dynamic args,
   }) {
-    return RouteHandler(_navigator, route)
+    return RouteHandler(_navigator!, route)
         .openDialog(root: root, type: type, args: args);
   }
 

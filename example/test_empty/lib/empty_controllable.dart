@@ -1,6 +1,6 @@
 import 'package:flutter_control/core.dart';
 
-final action = ActionControl.empty();
+final action = ActionControl.broadcast(-1);
 final model = EmptyModel();
 
 int count = 0;
