@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_control/core.dart';
 
