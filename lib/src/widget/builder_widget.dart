@@ -8,13 +8,10 @@ class ControlBuilder<T> extends StatefulWidget {
   final dynamic control;
 
   /// Widget builder.
-  final ControlWidgetBuilder<T?> builder;
+  final ControlWidgetBuilder<T> builder;
 
   /// Widget builder for non value.
   final WidgetBuilder? noData;
-
-  /// Checks if 'null' value of [control] is valid for [builder].
-  final bool nullOk;
 
   final T Function(dynamic)? valueConverter;
 
@@ -23,7 +20,6 @@ class ControlBuilder<T> extends StatefulWidget {
     required this.control,
     required this.builder,
     this.noData,
-    this.nullOk: false,
     this.valueConverter,
   }) : super(key: key);
 
@@ -87,7 +83,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
 
   @override
   Widget build(BuildContext context) {
-    if (value == null && !widget.nullOk) {
+    if (value == null && null is! T) {
       return widget.noData?.call(context) ?? Container();
     }
 

@@ -44,10 +44,9 @@ class CaseWidget<T> extends StatefulWidget {
     Map<T, CrossTransition>? transitions,
     bool autoKey: true,
   }) =>
-      ControlBuilder<T>(
+      ControlBuilder<T?>(
         key: key,
         control: control,
-        nullOk: true,
         builder: (context, value) => CaseWidget<T>(
           activeCase: value,
           builders: builders,
