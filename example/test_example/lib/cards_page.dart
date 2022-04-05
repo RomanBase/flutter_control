@@ -59,10 +59,11 @@ class CardsPage extends SingleControlWidget<CardsController>
   }
 }
 
-class CardWidget extends ControlWidget with ThemeProvider {
+class CardWidget extends ControllableWidget<CardModel>
+    with ThemeProvider, LocalizationProvider {
   final CardModel item;
 
-  CardWidget(this.item) : super(key: ObjectKey(item));
+  CardWidget(this.item) : super(item, key: ObjectKey(item));
 
   @override
   Widget build(BuildContext context) {
@@ -81,17 +82,29 @@ class CardWidget extends ControlWidget with ThemeProvider {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              item.title,
-              style: font.headline6,
+            Row(
+              children: [
+                Text(
+                  item.title,
+                  style: font.headline6,
+                ),
+                Spacer(),
+                CaseWidget(
+                  activeCase: item.items.length,
+                  builders: {
+                    0: (_) => Text('A'),
+                    1: (_) => Text('B'),
+                    2: (_) => Text('C'),
+                  },
+                  placeholder: (_) => Text('#'),
+                ),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: FieldBuilder<String>(
-                control: item.countLabel,
-                builder: (context, text) => Text(text),
-                noData: (context) => Text(localize('empty_card')),
-              ),
+              child: Text(item.countLabel.isEmpty
+                  ? localize('empty_card')
+                  : item.countLabel.value),
             ),
             FieldBuilder<double>(
               control: item.progress,

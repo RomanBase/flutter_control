@@ -58,7 +58,7 @@ class CaseWidget<T> extends StatefulWidget {
       );
 
   @override
-  _CaseWidgetState createState() => _CaseWidgetState();
+  _CaseWidgetState createState() => _CaseWidgetState<T>();
 
   /// Returns transition of [activeCase].
   CrossTransition get activeTransition {
@@ -70,7 +70,7 @@ class CaseWidget<T> extends StatefulWidget {
   }
 }
 
-class _CaseWidgetState extends State<CaseWidget> {
+class _CaseWidgetState<T> extends State<CaseWidget<T>> {
   late Widget currentWidget;
 
   late CrossTransition currentTransition;
@@ -83,7 +83,7 @@ class _CaseWidgetState extends State<CaseWidget> {
   }
 
   @override
-  void didUpdateWidget(CaseWidget oldWidget) {
+  void didUpdateWidget(CaseWidget<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.activeCase != oldWidget.activeCase) {

@@ -115,7 +115,8 @@ class DetailController extends BaseControl
   }
 }
 
-class CardModel extends BaseModel with LocalizationProvider {
+class CardModel extends BaseModel
+    with LocalizationProvider, ObservableComponent {
   final String title;
   final countLabel = StringControl();
   final progress = NumberControl<double>();
@@ -137,6 +138,8 @@ class CardModel extends BaseModel with LocalizationProvider {
 
     countLabel.setValue('$num/$sum');
     progress.setValue(num / sum);
+
+    notify();
   }
 
   @override
