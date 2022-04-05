@@ -309,7 +309,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
 
   @override
   Widget build(BuildContext context) {
-    return ControlBuilder<int>(
+    return ControlBuilder<int?>(
       control: widget.control.pageIndex,
       builder: (context, index) {
         final stack = (widget.builder ?? StackGroupBuilders.stack)(

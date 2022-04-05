@@ -27,7 +27,7 @@ class ControlBuilder<T> extends StatefulWidget {
   _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
+class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
   Disposable? _sub;
 
   ObservableValue<dynamic>? _observable;
@@ -70,7 +70,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
   _notifyState() => notifyValue(_mapValue());
 
   @override
-  void didUpdateWidget(ControlBuilder<T?> oldWidget) {
+  void didUpdateWidget(ControlBuilder<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.control != oldWidget.control) {
@@ -87,7 +87,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T?>, T?> {
       return widget.noData?.call(context) ?? Container();
     }
 
-    return widget.builder(context, value);
+    return widget.builder(context, value!);
   }
 
   void _disableSub() {
