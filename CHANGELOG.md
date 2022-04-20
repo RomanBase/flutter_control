@@ -1,4 +1,4 @@
-## [2.1.1] - Improvements
+## [2.1.2] - Improvements
 Minor improvements and quality of life changes.
 ## [2.1.0] - Base
 New unified observable system. Updated localization and root components.

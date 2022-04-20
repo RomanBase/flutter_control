@@ -45,6 +45,10 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
       val = widget.valueConverter!.call(val);
     }
 
+    if(T == dynamic){
+      return val ?? _observable?.value ?? widget.control;
+    }
+
     return val;
   }
 
