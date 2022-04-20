@@ -33,15 +33,19 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
   ObservableValue<dynamic>? _observable;
 
   T? _mapValue() {
+    dynamic val;
+
+    if (_observable?.value is T) {
+      val = _observable?.value;
+    } else if (widget.control is T) {
+      val = widget.control;
+    }
+
     if (widget.valueConverter != null) {
-      return widget.valueConverter!.call(_observable?.value);
+      val = widget.valueConverter!.call(val);
     }
 
-    if (widget.control is T && T != dynamic) {
-      return widget.control;
-    }
-
-    return _observable?.value;
+    return val;
   }
 
   @override
