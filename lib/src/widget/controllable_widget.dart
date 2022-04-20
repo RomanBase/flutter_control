@@ -52,6 +52,10 @@ class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
           _value = value;
           return widget.build(context);
         },
+        noData: (context) {
+          _value = null;
+          return widget.build(context);
+        },
       );
     }
   }

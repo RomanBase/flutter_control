@@ -87,7 +87,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
 
   @override
   Widget build(BuildContext context) {
-    if (value == null && null is! T) {
+    if (value == null) {
       return widget.noData?.call(context) ?? Container();
     }
 
