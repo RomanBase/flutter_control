@@ -41,15 +41,15 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
       val = widget.control;
     }
 
+    if (val == null && (T == dynamic || null is T)) {
+      val = _observable?.value ?? widget.control;
+    }
+
     if (widget.valueConverter != null) {
       val = widget.valueConverter!.call(val);
     }
 
-    if(T == dynamic){
-      return val ?? _observable?.value ?? widget.control;
-    }
-
-    return val;
+    return val as T?;
   }
 
   @override

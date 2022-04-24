@@ -119,11 +119,14 @@ class CardModel extends BaseModel
     with LocalizationProvider, ObservableComponent {
   final String title;
   final countLabel = StringControl();
-  final progress = NumberControl<double>();
+  final progress = ControlObservable.empty<double>();
   final items = ListControl<CardItemModel>();
 
   CardModel(this.title) {
-    items.subscribe((list) => _updateProgress());
+    items.subscribe(
+      (list) => _updateProgress(),
+      current: false,
+    );
   }
 
   void _updateProgress() {
@@ -156,7 +159,7 @@ class CardModel extends BaseModel
 
 class CardItemModel extends BaseModel {
   final String title;
-  final done = BoolControl();
+  final done = ActionControl.empty<bool>();
 
   CardItemModel(CardModel parent, this.title) {
     done.subscribe((value) => parent._updateProgress());

@@ -699,34 +699,6 @@ class LoadingControl extends FieldControl<LoadingStatus> {
 //########################################################################################
 //########################################################################################
 
-/// Extended version of [FieldControl] specified to [bool].
-class BoolControl extends FieldControl<bool> {
-  /// Checks if [value] is 'true'.
-  bool get isTrue => value == true;
-
-  /// Checks if [value] is 'false' or 'null'.
-  bool get isFalse => value == false || value == null;
-
-  /// [FieldControl] of [bool].
-  /// Default [value] is 'false'.
-  BoolControl([bool value = false]) : super(value);
-
-  /// Toggles current value and notifies listeners.
-  /// 'true' -> 'false'
-  /// 'false' -> 'true'
-  void toggle() {
-    setValue(!value!);
-  }
-
-  /// Sets value to 'true'.
-  /// Listeners are notified if [value] is changed.
-  void setTrue() => setValue(true);
-
-  /// Sets value to 'false'.
-  /// Listeners are notified if [value] is changed.
-  void setFalse() => setValue(false);
-}
-
 /// Extended version of [FieldControl] specified to [String].
 class StringControl extends FieldControl<String?> {
   /// Returns 'true' if value is 'null' or empty String.

@@ -37,10 +37,10 @@ class CardsPage extends SingleControlWidget<CardsController>
               ),
             ),
           ),
-          ControlBuilderGroup(
+          /*ControlBuilderGroup(
             controls: [control.input, control.countLabel, control.cards],
             builder: (context, values) => Text('$values'),
-          ),
+          ),*/
           Container(
             color: Colors.grey,
             padding: EdgeInsets.symmetric(
@@ -106,10 +106,11 @@ class CardWidget extends ControllableWidget<CardModel>
                   ? localize('empty_card')
                   : item.countLabel.value),
             ),
-            FieldBuilder<double>(
+            ControlBuilder(
               control: item.progress,
               builder: (context, progress) =>
-                  LinearProgressIndicator(value: progress),
+                  LinearProgressIndicator(value: item.progress.value ?? 1.0),
+              noData: (context) => Text('---'),
             ),
           ],
         ),
@@ -167,8 +168,9 @@ class ItemWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          FieldBuilder<bool>(
+          ControlBuilder<bool>(
             control: item.done,
+            valueConverter: (_) => item.done.isTrue,
             builder: (context, done) =>
                 Checkbox(value: done, onChanged: item.changeState),
           ),
