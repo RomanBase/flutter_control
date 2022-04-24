@@ -19,6 +19,111 @@ class ParamDecorator {
   static ParamDecoratorFormat get percent => (input) => '\%$input';
 }
 
+/// Helps to parse basic nullable objects.
+class ParseN {
+  const ParseN._();
+
+  /// Tries to parse value into [String].
+  ///
+  /// If none found, then 'null' is returned.
+  static String? string(dynamic value) {
+    if (value is String) {
+      return value;
+    }
+
+    if (value != null) {
+      return value.toString();
+    }
+
+    return null;
+  }
+
+  /// Tries to parse value into [integer].
+  ///
+  /// null, int, double, bool, String
+  ///
+  /// If none found, then 'null' is returned.
+  static int? toInteger(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    if (value is double) {
+      return value.toInt();
+    }
+
+    if (value is bool) {
+      return value ? 1 : 0;
+    }
+
+    if (value is String) {
+      return int.tryParse(value) ?? double.tryParse(value)?.toInt();
+    }
+
+    return null;
+  }
+
+  /// Tries to parse value into [double].
+  ///
+  /// null, int, double, bool, String.
+  ///
+  /// If none found, then 'null' is returned.
+  static double? toDouble(dynamic value) {
+    if (value is double) {
+      return value;
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    if (value is int) {
+      return value.toDouble();
+    }
+
+    if (value is bool) {
+      return value ? 1.0 : 0.0;
+    }
+
+    if (value is String) {
+      return double.tryParse(value.replaceAll(',', '.'));
+    }
+
+    return null;
+  }
+
+  /// Tries to parse value into [bool].
+  ///
+  /// null, int, double, bool, String.
+  ///
+  /// If none found, then 'null' is returned.
+  static bool? toBool(dynamic value) {
+    if (value is bool) {
+      return value;
+    }
+
+    if (value == null) {
+      return null;
+    }
+
+    if (value is String) {
+      return value.toLowerCase() == 'true';
+    }
+
+    final num = toInteger(value);
+
+    if (num != null) {
+      return num > 0;
+    }
+
+    return null;
+  }
+}
+
 /// Helps to parse basic objects.
 class Parse {
   const Parse._();
@@ -53,7 +158,7 @@ class Parse {
   /// [num] - milliseconds or seconds - [isSec] `true`
   /// [String] - ISO formatted date and time.
   /// Timestamp or any other object with `toDate` method.
-  static DateTime? toDate(dynamic value, {bool inSec: false}) {
+  static DateTime? date(dynamic value, {bool inSec: false}) {
     if (value is num) {
       return DateTime.fromMillisecondsSinceEpoch(
           inSec ? value * 1000 as int : value as int);
@@ -64,7 +169,7 @@ class Parse {
     }
 
     try {
-      return value.toDate();
+      return value.date();
     } on NoSuchMethodError {
       return null;
     }
@@ -208,8 +313,7 @@ class Parse {
     try {
       return converter(value) ?? defaultValue;
     } catch (err) {
-      printDebug(
-          'failed to convert ${value?.toString()} to ${T.runtimeType.toString()}');
+      printDebug('failed to convert $T from ${value?.toString()}');
     }
 
     return defaultValue;
@@ -223,7 +327,7 @@ class Parse {
       return converter(key, value) ?? defaultValue;
     } catch (err) {
       printDebug(
-          'failed to convert ${key?.toString()} : ${value?.toString()} to ${T.runtimeType.toString()}');
+          'failed to convert $T from ${key?.toString()} : ${value?.toString()}');
     }
 
     return defaultValue;
@@ -267,6 +371,9 @@ class Parse {
   /// Returns `dynamic` if [T] is not passed and [value] is `null`.
   static Type type<T>([dynamic value]) =>
       T != dynamic ? T : (value?.runtimeType ?? dynamic);
+
+  /// Returns 'true' if [T] is nullable.
+  static bool nullableType<T>() => null is T || T == dynamic;
 
   /// Tries to parse value into List.
   ///
