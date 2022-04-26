@@ -46,7 +46,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
     }
 
     if (widget.valueConverter != null) {
-      val = widget.valueConverter!.call(val);
+      val = widget.valueConverter!.call(val ?? _observable?.value);
     }
 
     return val as T?;
