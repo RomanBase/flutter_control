@@ -6,6 +6,62 @@ import 'package:flutter_control/core.dart';
 typedef RouteWidgetBuilder = Route Function(
     WidgetBuilder builder, RouteSettings settings);
 
+typedef RouteGenerateBuilder = Route? Function(RouteSettings settings);
+
+class RouteResolver {
+  RouteGenerateBuilder? onGenerate;
+
+  ControlRootSetup? get setup => ControlScope.root.setup;
+
+  RouteSettings? get settings => setup?.args.get<RouteSettings>();
+
+  RouteResolver._();
+
+  RouteSettings? popSettings() => setup?.args.pop<RouteSettings>();
+
+  Route? restore() {
+    final settings = popSettings();
+
+    if (settings != null) {
+      return generate(settings);
+    }
+
+    return null;
+  }
+
+  Route? generate(RouteSettings settings,
+      {bool? active, RouteGenerateBuilder? onGenerate}) {
+    if (onGenerate != null) {
+      this.onGenerate = onGenerate;
+    }
+
+    String? path = settings.name;
+
+    if (path == null) {
+      return null;
+    }
+
+    active ??= Control.isInitialized;
+
+    if (!active) {
+      ControlScope.root.setup?.args.set(settings);
+      return null;
+    }
+
+    return this.onGenerate?.call(settings);
+  }
+
+  Future navigate(RouteNavigator navigator) async {
+    final route = restore();
+
+    if (route != null) {
+      return navigator.openRoute(route);
+    }
+
+    return null;
+  }
+}
+
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
   /// {@template route-open}
@@ -157,6 +213,8 @@ class RouteHandler {
 /// [Route] builder with given settings.
 /// Using [Type] as route identifier is recommended.
 class ControlRoute {
+  static RouteResolver? get routing => Control.get<RouteStore>()?.routing;
+
   /// Builds [Route] via [builder] with given [identifier] and [settings].
   /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
   /// [settings] - Additional [Route] settings.
@@ -396,6 +454,8 @@ class ControlRouteTransition extends PageRoute {
 ///   - fill routes: [Control.initControl] or add routes directly.
 ///   - retrieve route: [ControlRoute.of].
 class RouteStore {
+  final routing = RouteResolver._();
+
   /// Map based Route Store.
   /// Key: [RouteStore.routeIdentifier].
   /// Value: [RouteControl].

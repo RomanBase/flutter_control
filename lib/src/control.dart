@@ -24,11 +24,11 @@ class Control {
   /// Checks if [ControlFactory] is initialized.
   ///
   /// Factory can be initialized via [Control.initControl] or [ControlFactory.initialize].
-  static get isInitialized => factory.isInitialized;
+  static bool get isInitialized => factory.isInitialized;
 
   /// Checks if current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
   /// This value is also provided to [BaseLocalization] during [Control.initControl] and to various other classes.
-  static get debug => factory.debug;
+  static bool get debug => factory.debug;
 
   /// Returns instance of [ControlFactory].
   static ControlFactory get factory => ControlFactory._instance;

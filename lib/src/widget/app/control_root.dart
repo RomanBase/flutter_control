@@ -262,6 +262,8 @@ class ControlRootSetup {
   /// Parent context.
   BuildContext? context;
 
+  RouteResolver? get routing => ControlRoute.routing;
+
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
   ObjectKey get _localKey => ObjectKey(session.hashCode ^
       (localization?.locale.hashCode ?? 0xFF) ^
@@ -439,6 +441,7 @@ class ControlRootState extends State<ControlRoot> {
     super.initState();
 
     _context.value = context;
+
     _args[AppState] = widget.initState;
 
     _states = AppStateSetup.fillBuilders(widget.states);

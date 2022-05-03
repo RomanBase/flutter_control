@@ -65,6 +65,15 @@ class MyApp extends StatelessWidget {
         theme: setup.theme,
         title: setup.title('app_name', 'Flutter Example'),
         home: home,
+        onGenerateRoute: (settings) => ControlRoute.routing.generate(
+          settings,
+          active: setup.state == AppState.main,
+          onGenerate: (settings) {
+            final uri = Uri.parse(settings.name);
+
+            return null;
+          },
+        ),
       ),
     );
   }
