@@ -399,7 +399,7 @@ class RouteStore {
   /// Map based Route Store.
   /// Key: [RouteStore.routeIdentifier].
   /// Value: [RouteControl].
-  final _routes = Map<String?, ControlRoute>();
+  final _routes = Map<String, ControlRoute>();
 
   /// Stores Routes with their Identifiers.
   ///
@@ -494,7 +494,7 @@ class RouteStore {
   /// This method is mainly used by framework to determine identifier of [ControlRoute] stored in [RouteStore].
   ///
   /// Returned identifier is formatted as path -> '/name'.
-  static String? routeIdentifier<T>([dynamic value]) {
+  static String routeIdentifier<T>([dynamic value]) {
     if (value == null && T != dynamic) {
       value = T;
     }
@@ -509,11 +509,13 @@ class RouteStore {
       id = value.runtimeType.toString();
     }
 
-    if (id != null && !id.startsWith('/')) {
-      id = '/$id';
+    String key = id ?? UnitId.nextId();
+
+    if (!key.startsWith('/')) {
+      key = '/$key';
     }
 
-    return id;
+    return key;
   }
 
   /// Alters given [identifier] with [path].
@@ -523,6 +525,6 @@ class RouteStore {
       path = '/$path';
     }
 
-    return routeIdentifier(identifier)! + path;
+    return routeIdentifier(identifier) + path;
   }
 }
