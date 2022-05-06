@@ -300,13 +300,13 @@ class ThemeConfig<T extends ControlTheme> {
 
   bool isPreferred(dynamic key) => preferredThemeName == Parse.name(key);
 
-  ThemeConfig copyWith({
+  ThemeConfig<T> copyWith({
     dynamic theme,
   }) =>
-      ThemeConfig(
+      ThemeConfig<T>(
         builder: this.builder,
         initTheme: theme ?? this.initTheme,
-        themes: this.themes as Map<dynamic, ThemeData Function(ControlTheme)>,
+        themes: this.themes,
       );
 }
 
