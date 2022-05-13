@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_control/core.dart';
 
-abstract class ObservableChannel implements Disposable {
+abstract class ObservableNotifier {
+  void notify();
+}
+
+abstract class ObservableChannel implements Disposable, ObservableNotifier {
   ControlSubscription subscribe(
     VoidCallback action, {
     dynamic args,
@@ -35,7 +39,8 @@ abstract class ObservableValue<T> implements Disposable {
   void dispose() {}
 }
 
-abstract class ObservableModel<T> extends ObservableValue<T> {
+abstract class ObservableModel<T> extends ObservableValue<T>
+    implements ObservableNotifier {
   bool get isEmpty => value == null;
 
   bool get isNotEmpty => value != null;
@@ -47,8 +52,6 @@ abstract class ObservableModel<T> extends ObservableValue<T> {
   set value(T value) => setValue(value);
 
   void setValue(T value, {bool notify: true, bool forceNotify: false});
-
-  void notify();
 }
 
 class _ObservableHandler<T> extends ObservableValue<T> {
@@ -110,6 +113,8 @@ class ControlObservable<T> extends ObservableModel<T> {
         return ofFuture(object).cast();
       } else if (object is Listenable) {
         return ofListenable(object).cast();
+      } else if (object is ObservableChannel) {
+        return ofChannel(object).cast();
       }
     } else {
       if (object is ObservableValue<T>) {
@@ -120,6 +125,8 @@ class ControlObservable<T> extends ObservableModel<T> {
         return ofFuture(object);
       } else if (object is Listenable) {
         return ofListenable(object);
+      } else if (object is ObservableChannel) {
+        return ofChannel(object);
       }
     }
 
@@ -159,6 +166,14 @@ class ControlObservable<T> extends ObservableModel<T> {
     listenable.addListener(callback);
     observable.register(DisposableClient()
       ..onDispose = () => listenable.removeListener(callback));
+
+    return observable;
+  }
+
+  static ControlObservable<T?> ofChannel<T>(ObservableChannel channel) {
+    final observable = _ClientObservable<T>();
+
+    channel.subscribe(() => observable.notify());
 
     return observable;
   }

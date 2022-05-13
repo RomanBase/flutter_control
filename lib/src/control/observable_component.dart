@@ -1,6 +1,26 @@
 import 'package:flutter_control/core.dart';
 
-mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?> {
+class ObservableLeaf<T> {
+  final ObservableNotifier _parent;
+
+  T? _value;
+
+  T? get value => _value;
+
+  set value(T? value) {
+    _value = value;
+    _parent.notify();
+  }
+
+  bool get isEmpty => _value == null;
+
+  bool get isNotEmpty => _value != null;
+
+  ObservableLeaf(this._parent, [this._value]);
+}
+
+mixin ObservableComponent<T> on ControlModel
+    implements ObservableValue<T?>, ObservableNotifier {
   /// Actual control to subscribe.
   final _parent = ActionControl.empty<T>();
 
@@ -32,6 +52,7 @@ mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?> {
   void cancel(ControlSubscription<T?> subscription) =>
       _parent.cancel(subscription);
 
+  @override
   void notify() => _parent.notify();
 
   @override
@@ -45,7 +66,7 @@ mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?> {
   }
 }
 
-mixin NotifierComponent<T> on ControlModel implements ObservableChannel {
+mixin NotifierComponent on ControlModel implements ObservableChannel {
   /// Actual control to subscribe.
   final _parent = ControlObservable.empty();
 
@@ -60,6 +81,7 @@ mixin NotifierComponent<T> on ControlModel implements ObservableChannel {
   @override
   void cancel(ControlSubscription subscription) => _parent.cancel(subscription);
 
+  @override
   void notify() => _parent.notify();
 
   @override

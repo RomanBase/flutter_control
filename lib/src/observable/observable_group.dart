@@ -62,6 +62,8 @@ class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
 
   void _notifyControl() => _parent.value = _getValues();
 
+  void notify() => _notifyControl();
+
   @override
   ControlSubscription<Iterable?> subscribe(ValueCallback<Iterable?> action,
           {bool current = true, dynamic args}) =>
