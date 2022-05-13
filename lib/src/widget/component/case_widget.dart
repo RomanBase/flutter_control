@@ -20,6 +20,10 @@ class CaseWidget<T> extends StatefulWidget {
 
   final bool autoKey;
 
+  final bool reverseOrder;
+
+  final bool reverseAnimation;
+
   /// Resolves what to show by [activeCase].
   /// Every [Widget] has custom case [T] key and is build only if case is active.
   /// Only one [Widget] is shown at given time.
@@ -33,6 +37,8 @@ class CaseWidget<T> extends StatefulWidget {
     this.transition,
     this.transitions,
     this.autoKey: true,
+    this.reverseOrder: false,
+    this.reverseAnimation: false,
   }) : super(key: key);
 
   static Widget builder<T>({
@@ -43,6 +49,8 @@ class CaseWidget<T> extends StatefulWidget {
     CrossTransition? transition,
     Map<T, CrossTransition>? transitions,
     bool autoKey: true,
+    ValueGetter<bool>? reverseOrder,
+    ValueGetter<bool>? reverseAnimation,
   }) =>
       ControlBuilder<T?>(
         key: key,
@@ -54,6 +62,8 @@ class CaseWidget<T> extends StatefulWidget {
           transition: transition,
           transitions: transitions,
           autoKey: autoKey,
+          reverseOrder: reverseOrder?.call() ?? false,
+          reverseAnimation: reverseAnimation?.call() ?? false,
         ),
       );
 
@@ -120,8 +130,21 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
       duration: currentTransition.duration,
       reverseDuration:
           currentTransition.reverseDuration ?? currentTransition.duration,
-      transitionBuilder: currentTransition.builder,
+      transitionBuilder:
+          currentTransition.build(reverse: widget.reverseAnimation),
       child: currentWidget,
+      layoutBuilder: (child, list) => Stack(
+        alignment: Alignment.center,
+        children: widget.reverseOrder
+            ? [
+                if (child != null) child,
+                ...list,
+              ]
+            : [
+                ...list,
+                if (child != null) child,
+              ],
+      ),
     );
   }
 }

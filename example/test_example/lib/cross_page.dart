@@ -54,6 +54,8 @@ class CrossPage extends SingleControlWidget<CrossControl> {
               duration: Duration(seconds: 3),
               end: Offset(0.0, 1.5),
             ),
+            reverseOrder: () => true,
+            reverseAnimation: () => control.cross.value == 'blue',
           ),
         ),
         RaisedButton(

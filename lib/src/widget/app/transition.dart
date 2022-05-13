@@ -15,8 +15,8 @@ class CrossTransition {
   final AnimatedSwitcherTransitionBuilder transitionIn;
   final AnimatedSwitcherTransitionBuilder transitionOut;
 
-  AnimatedSwitcherTransitionBuilder get builder =>
-      (child, anim) => _builder(child, anim);
+  AnimatedSwitcherTransitionBuilder build({bool reverse: false}) =>
+      (child, anim) => _builder(child, anim, reverse);
 
   /// [duration] - [Animation] length.
   /// [transition] - Builds Transition Widget based on input [Animation] and in/out Widgets.
@@ -34,11 +34,15 @@ class CrossTransition {
   })  : transitionIn = transition,
         transitionOut = transition;
 
-  Widget _builder(Widget child, Animation<double> animation) {
-    printDebug('${animation.status} ${animation.value} -- $child');
+  Widget _builder(Widget child, Animation<double> animation,
+      [bool reverse = false]) {
+    final animateForward = reverse
+        ? (animation.status == AnimationStatus.completed ||
+            animation.status == AnimationStatus.reverse)
+        : (animation.status == AnimationStatus.dismissed ||
+            animation.status == AnimationStatus.forward);
 
-    if (animation.status == AnimationStatus.dismissed ||
-        animation.status == AnimationStatus.forward) {
+    if (animateForward) {
       return transitionIn.call(child, animation);
     }
 
