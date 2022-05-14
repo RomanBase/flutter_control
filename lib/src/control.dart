@@ -230,8 +230,7 @@ class BroadcastProvider {
   ///
   /// Returns number of notified subs.
   static void broadcast<T>({dynamic key, dynamic value, bool store: false}) =>
-      Control.broadcaster
-          .broadcast<T>(key: key, value: value, store: store);
+      Control.broadcaster.broadcast<T>(key: key, value: value, store: store);
 
   /// Sends event to global event stream.
   /// Subs with same [key] will be notified.

@@ -94,7 +94,6 @@ class _WidgetInitBuilder extends WidgetInitializer {
 
   @override
   Widget initWidget(BuildContext context, {dynamic args}) {
-
     args = _buildArgs(args);
     final widget = builder(InitBuilderArgs(context, args));
 
