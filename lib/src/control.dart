@@ -21,17 +21,17 @@ class Control {
   /// Just hidden constructor.
   Control._();
 
+  /// Returns instance of [ControlFactory].
+  static ControlFactory get factory => ControlFactory._instance;
+
   /// Checks if [ControlFactory] is initialized.
   ///
   /// Factory can be initialized via [Control.initControl] or [ControlFactory.initialize].
   static bool get isInitialized => factory.isInitialized;
 
-  /// Checks if current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
+  /// Checks the current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
   /// This value is also provided to [BaseLocalization] during [Control.initControl] and to various other classes.
   static bool get debug => factory.debug;
-
-  /// Returns instance of [ControlFactory].
-  static ControlFactory get factory => ControlFactory._instance;
 
   /// Returns default instance of [ControlBroadcast] - this instance is stored in [ControlFactory].
   /// Use [BroadcastProvider] for base broadcast operations.
@@ -43,7 +43,7 @@ class Control {
 
   /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
   /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
-  static BaseLocalization? get localization => Control.get<BaseLocalization>();
+  static BaseLocalization get localization => Control.get<BaseLocalization>()!;
 
   /////
   /////
@@ -73,7 +73,7 @@ class Control {
     }
 
     debug ??= kDebugMode;
-    ControlFactory._instance.debug = debug;
+    factory.debug = debug;
 
     entries ??= {};
     initializers ??= {};
@@ -84,6 +84,7 @@ class Control {
     );
 
     final prefs = BasePrefs();
+    final route = RouteStore(routes);
     final loc = BaseLocalization(
       localization.fallbackLocale,
       localization.toAssets(),
@@ -92,7 +93,7 @@ class Control {
       ..main = true;
 
     entries[BasePrefs] = prefs;
-    entries[RouteStore] = RouteStore(routes);
+    entries[RouteStore] = route;
     entries[BaseLocalization] = loc;
 
     ControlFactory._instance.initialize(
@@ -213,7 +214,7 @@ class BroadcastProvider {
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription<T> subscribe<T>(
           dynamic key, ValueChanged<T?> onData) =>
-      ControlFactory._instance._broadcast.subscribeTo<T>(key, onData);
+      Control.broadcaster.subscribeTo<T>(key, onData);
 
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
@@ -221,7 +222,7 @@ class BroadcastProvider {
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription subscribeEvent(
           dynamic key, VoidCallback callback) =>
-      ControlFactory._instance._broadcast.subscribeEvent(key, callback);
+      Control.broadcaster.subscribeEvent(key, callback);
 
   /// Sends [value] to global object stream.
   /// Subs with same [key] and [value] type will be notified.
@@ -229,7 +230,7 @@ class BroadcastProvider {
   ///
   /// Returns number of notified subs.
   static void broadcast<T>({dynamic key, dynamic value, bool store: false}) =>
-      ControlFactory._instance._broadcast
+      Control.broadcaster
           .broadcast<T>(key: key, value: value, store: store);
 
   /// Sends event to global event stream.
@@ -237,7 +238,7 @@ class BroadcastProvider {
   ///
   /// Returns number of notified subs.
   static void broadcastEvent<T>({dynamic key}) =>
-      ControlFactory._instance._broadcast.broadcastEvent<T>(key: key);
+      Control.broadcaster.broadcastEvent<T>(key: key);
 }
 
 /// Main singleton class.

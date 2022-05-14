@@ -18,11 +18,10 @@ abstract class WidgetInitializer implements Disposable {
   WidgetInitializer();
 
   factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) =>
-      _WidgetInitBuilder(builder)..data = data;
+      _WidgetWrapBuilder(builder)..data = data;
 
-  static WidgetInitializer control<T>(ControlWidgetBuilder<T?> builder,
-          [Object? data]) =>
-      _WidgetInitControlBuilder(builder)..data = data;
+  factory WidgetInitializer.initOf(InitWidgetBuilder builder, [Object? data]) =>
+      _WidgetInitBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -65,19 +64,17 @@ abstract class WidgetInitializer implements Disposable {
   }
 }
 
-/// Simple [WidgetBuilder] and holder.
-class _WidgetInitBuilder extends WidgetInitializer {
+/// Simple [WidgetBuilder].
+class _WidgetWrapBuilder extends WidgetInitializer {
   /// Current builder.
-  final WidgetBuilder? builder;
+  final WidgetBuilder builder;
 
   /// Default constructor
-  _WidgetInitBuilder(this.builder) {
-    assert(builder != null);
-  }
+  _WidgetWrapBuilder(this.builder);
 
   @override
-  Widget initWidget(BuildContext? context, {dynamic args}) {
-    final widget = builder!(context!);
+  Widget initWidget(BuildContext context, {dynamic args}) {
+    final widget = builder(context);
 
     if (widget is Initializable) {
       (widget as Initializable).init(_buildArgs(args));
@@ -87,19 +84,22 @@ class _WidgetInitBuilder extends WidgetInitializer {
   }
 }
 
-class _WidgetInitControlBuilder<T> extends WidgetInitializer {
-  final ControlWidgetBuilder<T?> builder;
+/// Simple [WidgetBuilder].
+class _WidgetInitBuilder extends WidgetInitializer {
+  /// Current builder.
+  final InitWidgetBuilder builder;
 
-  _WidgetInitControlBuilder(this.builder);
+  /// Default constructor
+  _WidgetInitBuilder(this.builder);
 
   @override
-  Widget initWidget(BuildContext context, {args}) {
-    final initArgs = _buildArgs(args);
+  Widget initWidget(BuildContext context, {dynamic args}) {
 
-    final widget = builder(context, Parse.getArg<T>(initArgs));
+    args = _buildArgs(args);
+    final widget = builder(InitBuilderArgs(context, args));
 
     if (widget is Initializable) {
-      (widget as Initializable).init(initArgs);
+      (widget as Initializable).init(args);
     }
 
     return widget;

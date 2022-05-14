@@ -186,6 +186,9 @@ class BaseLocalization extends ChangeNotifier
   /// [LocalizationAsset] defines language and asset path to file with localization data.
   final List<LocalizationAsset> assets;
 
+  /// Current localization data.
+  final _data = <String, dynamic>{};
+
   /// The system-reported default locale of the device.
   Locale get deviceLocale => WidgetsBinding.instance!.window.locale;
 
@@ -210,9 +213,6 @@ class BaseLocalization extends ChangeNotifier
 
   /// Current locale key.
   String? _locale;
-
-  /// Current localization data.
-  Map<String, dynamic> _data = Map();
 
   /// Enables debug mode for localization.
   /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).

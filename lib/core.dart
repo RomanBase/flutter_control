@@ -72,6 +72,8 @@ typedef ControlWidgetBuilder<T> = Widget Function(
     BuildContext context, T value);
 typedef bool Predicate<T>(T value);
 
+typedef InitWidgetBuilder = Widget Function(InitBuilderArgs args);
+
 void printDebug(dynamic object) {
   if (kDebugMode && Control.debug && object != null) {
     print(object);
