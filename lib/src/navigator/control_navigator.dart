@@ -83,7 +83,7 @@ class ControlNavigator implements RouteNavigator {
   }
 
   @override
-  Future openDialog(builder, {bool root = true, type}) {
+  Future openDialog(builder, {bool root = true, dynamic type}) {
     return showDialog(
         context: getContext(root: root),
         builder: (context) => builder(context),
@@ -92,7 +92,7 @@ class ControlNavigator implements RouteNavigator {
 
   @override
   Future openRoot(Route route) {
-    return getNavigator().pushAndRemoveUntil(route, (pop) => false);
+    return getNavigator().pushAndRemoveUntil(route, (route) => route.isFirst);
   }
 
   @override
