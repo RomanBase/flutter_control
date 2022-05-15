@@ -86,7 +86,7 @@ class CardWidget extends ControllableWidget<CardModel>
               children: [
                 Text(
                   item.title,
-                  style: font.headline6,
+                  style: theme.font.headline6,
                 ),
                 Spacer(),
                 CaseWidget(

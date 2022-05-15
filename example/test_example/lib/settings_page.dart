@@ -58,7 +58,7 @@ class SettingsPage extends ControlWidget
               child: Text(
                 localize('localization_info'),
                 textAlign: TextAlign.center,
-                style: font.bodyText1.copyWith(color: theme.primaryColor),
+                style: theme.font.bodyText1.copyWith(color: theme.primaryColor),
               ),
             ),
             SettingsNavButton(),

@@ -36,9 +36,6 @@ class AssetPath {
 /// Wraps [ThemeData] and [Device] to provide more settings and custom properties that are more app design specific.
 /// [ControlTheme] is build during [ControlRoot] initialization.
 class ControlTheme {
-  static const root = 0;
-  static const scope = 1;
-
   final padding = 16.0;
 
   final paddingHalf = 8.0;
@@ -111,27 +108,29 @@ class ControlTheme {
 
   TextTheme get fontPrimary => data.primaryTextTheme;
 
-  TextTheme get fontAccent => data.accentTextTheme;
-
-  Color get primaryColor => data.primaryColor;
+  Color get primaryColor => scheme.primary;
 
   Color get primaryColorDark => data.primaryColorDark;
 
   Color get primaryColorLight => data.primaryColorLight;
 
-  Color get accentColorLight => data.accentColor.withOpacity(0.5);
+  Color get secondaryColor => scheme.secondary;
 
-  Color get accentColor => data.accentColor;
-
-  Color get accentColorDark => data.accentColor;
-
-  Color get tintColor => data.accentColor;
+  Color get tertiaryColor => scheme.tertiary;
 
   Color get backgroundColor => data.backgroundColor;
 
-  Color get errorColor => data.errorColor;
+  Color get backgroundTintColor => data.scaffoldBackgroundColor;
+
+  Color get errorColor => scheme.error;
 
   Color get activeColor => data.toggleableActiveColor;
+
+  Color get accentColorPrimary => scheme.onPrimary;
+
+  Color get accentColorSecondary => scheme.onSecondary;
+
+  Color get accentColorTertiary => scheme.onTertiary;
 
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -156,6 +155,8 @@ class ControlTheme {
   ThemeData get data => _data ?? (_data = Theme.of(context));
 
   AssetPath get assets => _asset ?? (_asset = AssetPath());
+
+  ColorScheme get scheme => data.colorScheme;
 
   @protected
   set assets(AssetPath value) => _asset = value;
@@ -332,31 +333,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   @protected
   Device get device => theme.device;
 
-  /// Instance of nearest [ThemeData].
-  @protected
-  ThemeData get themeData => theme.data;
-
-  /// Instance of nearest [TextTheme].
-  @protected
-  TextTheme get font => theme.font;
-
-  /// Instance of nearest [TextTheme].
-  @protected
-  TextTheme get fontPrimary => theme.fontPrimary;
-
-  /// Instance of nearest [TextTheme].
-  @protected
-  TextTheme get fontAccent => theme.fontAccent;
-
-  /// Origin of [ControlTheme].
-  /// [ControlTheme.scope] initializes with nearest [ThemeData].
-  /// [ControlTheme.root] initializes with root [ThemeData] - default.
-  ///
-  /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
-  int get themeScope => ControlTheme.scope;
-
-  /// Invalidates current [ControlTheme].
-  /// Override [themeScope] to gather correct [ThemeData]. Scope: [ControlTheme.root] / [ControlTheme.scope].
+  /// Invalidates current [ControlTheme] with given [context].
   void invalidateTheme(BuildContext context) {
     theme.invalidate(context);
   }
