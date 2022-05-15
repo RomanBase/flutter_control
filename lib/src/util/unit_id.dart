@@ -46,35 +46,11 @@ class UnitId {
   static String nextId() {
     final stamp = DateTime.now().toUtc().microsecondsSinceEpoch;
 
-    return cycleId(stamp, aZn) + randomId(length: 4, includeNums: true);
+    return cycleId(stamp, aZn) + randomId(length: 4, sequence: aZn);
   }
 
   /// Returns random String with given [length] and settings.
-  static String randomId(
-      {int length: 8,
-      bool includeNums: false,
-      bool toLower: false,
-      bool toUpper: false}) {
-    String sequence = az;
-
-    if (includeNums) {
-      if (toLower) {
-        sequence = azn;
-      } else if (toUpper) {
-        sequence = azn.toUpperCase();
-      } else {
-        sequence = aZn;
-      }
-    } else {
-      if (toLower) {
-        sequence = az;
-      } else if (toUpper) {
-        sequence = az.toUpperCase();
-      } else {
-        sequence = aZ;
-      }
-    }
-
+  static String randomId({int length: 8, String sequence: az}) {
     final output = randomFromSequence(length, sequence);
 
     return output;
