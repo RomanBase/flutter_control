@@ -96,20 +96,19 @@ class Control {
     entries[RouteStore] = route;
     entries[BaseLocalization] = loc;
 
-    ControlFactory._instance.initialize(
+    factory.initialize(
       entries: entries,
       initializers: initializers,
       injector: injector,
       initAsync: () async {
         await prefs.init();
         await FutureBlock.wait([
-          localization!.initLocale
-              ? loc.init(
-                  loadDefaultLocale: localization.loadDefaultLocale,
-                  handleSystemLocale: localization.handleSystemLocale,
-                  stableLocale: localization.stableLocale,
-                )
-              : null,
+          if (localization!.initLocale)
+            loc.init(
+              loadDefaultLocale: localization.loadDefaultLocale,
+              handleSystemLocale: localization.handleSystemLocale,
+              stableLocale: localization.stableLocale,
+            ),
           initAsync?.call(),
         ]);
       },
