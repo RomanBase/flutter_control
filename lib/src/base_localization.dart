@@ -189,6 +189,28 @@ class BaseLocalization extends ChangeNotifier
   /// Current localization data.
   final _data = <String, dynamic>{};
 
+  /// Checks if this localization is main and will broadcast [LocalizationArgs] changes with [BaseLocalization] key.
+  /// Only one localization should be main !
+  bool main = false;
+
+  /// Current locale key.
+  String? _locale;
+
+  /// Enables debug mode for localization.
+  /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
+  bool debug = true;
+
+  /// Loading localization data is async, so check this to prevent concurrent loading.
+  bool loading = false;
+
+  /// Custom func for [extractLocalization].
+  /// Default extractor is [Map] based: {'locale': 'value'}.
+  LocalizationExtractor? _mapExtractor;
+
+  /// Custom param decorator.
+  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
+  ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
+
   /// The system-reported default locale of the device.
   Locale get deviceLocale => WidgetsBinding.instance!.window.locale;
 
@@ -211,16 +233,6 @@ class BaseLocalization extends ChangeNotifier
                   orElse: () => deviceLocale))
           .countryCode;
 
-  /// Current locale key.
-  String? _locale;
-
-  /// Enables debug mode for localization.
-  /// When localization key isn't found for given locale, then [localize] returns key and current locale (key_locale).
-  bool debug = true;
-
-  /// Loading localization data is async, so check this to prevent concurrent loading.
-  bool loading = false;
-
   /// Is [true] if any data are stored in localization map.
   bool get isActive => _data.length > 0;
 
@@ -230,36 +242,22 @@ class BaseLocalization extends ChangeNotifier
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;
 
-  /// Custom func for [extractLocalization].
-  /// Default extractor is [Map] based: {'locale': 'value'}.
-  LocalizationExtractor? _mapExtractor;
-
-  /// Custom param decorator.
-  /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
-  ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
-
-  /// Checks if this localization is main and will broadcast [LocalizationArgs] changes with [BaseLocalization] key.
-  /// Only one localization should be main !
-  bool main = false;
-
   /// Json/Map based localization.
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   /// [assets] - defines locales and asset path to files with localization data.
   BaseLocalization(this.defaultLocale, this.assets);
 
-  /// Creates new localization object based on main [Control.localization].
-  factory BaseLocalization.current(List<LocalizationAsset> assets) {
-    assert(Control.isInitialized);
-
-    return BaseLocalization(Control.localization!.defaultLocale, assets);
+  /// Creates new localization object based on this localization settings.
+  BaseLocalization instanceOf(List<LocalizationAsset> assets) {
+    return BaseLocalization(defaultLocale, assets);
   }
 
   /// Subscription to default global object stream - [ControlBroadcast] with [BaseLocalization] key.
   /// Every localization change is send to global broadcast with result of data load.
   ///
   /// [callback] to listen results of locale changes.
-  static BroadcastSubscription<LocalizationArgs> subscribeChanges(
+  static BroadcastSubscription<LocalizationArgs> subscribe(
       ValueCallback<LocalizationArgs?> callback) {
     return BroadcastProvider.subscribe<LocalizationArgs>(
         BaseLocalization, callback);
