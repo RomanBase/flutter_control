@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
         theme: setup.theme,
         title: setup.title('app_name', 'Flutter Example'),
         home: home,
-        onGenerateRoute: (settings) => ControlRoute.routing.generate(
+        onGenerateRoute: (settings) => ControlRoute.provider.generate(
           settings,
           active: setup.state == AppState.main,
           onGenerate: (settings) {

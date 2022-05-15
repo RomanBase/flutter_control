@@ -14,60 +14,6 @@ class InitBuilderArgs extends ControlArgs {
   InitBuilderArgs(this.context, [dynamic args]) : super(args);
 }
 
-class RouteResolver {
-  RouteGenerateBuilder? onGenerate;
-
-  ControlRootSetup? get setup => ControlScope.root.setup;
-
-  RouteSettings? get settings => setup?.args.get<RouteSettings>();
-
-  RouteResolver._();
-
-  RouteSettings? popSettings() => setup?.args.pop<RouteSettings>();
-
-  Route? restore() {
-    final settings = popSettings();
-
-    if (settings != null) {
-      return generate(settings);
-    }
-
-    return null;
-  }
-
-  Route? generate(RouteSettings settings,
-      {bool? active, RouteGenerateBuilder? onGenerate}) {
-    if (onGenerate != null) {
-      this.onGenerate = onGenerate;
-    }
-
-    String? path = settings.name;
-
-    if (path == null) {
-      return null;
-    }
-
-    active ??= Control.isInitialized;
-
-    if (!active) {
-      ControlScope.root.setup?.args.set(settings);
-      return null;
-    }
-
-    return this.onGenerate?.call(settings);
-  }
-
-  Future navigate(RouteNavigator navigator) async {
-    final route = restore();
-
-    if (route != null) {
-      return navigator.openRoute(route);
-    }
-
-    return null;
-  }
-}
-
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
   /// {@template route-open}
@@ -221,7 +167,7 @@ class RouteHandler {
 class ControlRoute {
   static get _store => Control.get<RouteStore>()!;
 
-  static RouteResolver get routing => _store.routing;
+  static RoutingProvider get provider => _store.provider;
 
   /// Builds [Route] via [builder] with given [identifier] and [settings].
   /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
@@ -450,7 +396,7 @@ class ControlRouteTransition extends PageRoute {
 ///   - fill routes: [Control.initControl] or add routes directly.
 ///   - retrieve route: [ControlRoute.of].
 class RouteStore {
-  final routing = RouteResolver._();
+  final routing = RoutingProvider._();
 
   /// Map based Route Store.
   /// Key: [RouteStore.routeIdentifier].
@@ -564,5 +510,59 @@ class RouteStore {
     }
 
     return routeIdentifier(identifier) + path;
+  }
+}
+
+class RoutingProvider {
+  RouteGenerateBuilder? onGenerate;
+
+  ControlRootSetup? get setup => ControlScope.root.setup;
+
+  RouteSettings? get settings => setup?.args.get<RouteSettings>();
+
+  RoutingProvider._();
+
+  RouteSettings? popSettings() => setup?.args.pop<RouteSettings>();
+
+  Route? generate(RouteSettings settings,
+      {bool? active, RouteGenerateBuilder? onGenerate}) {
+    if (onGenerate != null) {
+      this.onGenerate = onGenerate;
+    }
+
+    String? path = settings.name;
+
+    if (path == null) {
+      return null;
+    }
+
+    active ??= Control.isInitialized;
+
+    if (!active) {
+      ControlScope.root.setup?.args.set(settings);
+      return null;
+    }
+
+    return this.onGenerate?.call(settings);
+  }
+
+  Route? restore() {
+    final settings = popSettings();
+
+    if (settings != null) {
+      return generate(settings);
+    }
+
+    return null;
+  }
+
+  Future restoreRouteNavigation(RouteNavigator navigator) async {
+    final route = restore();
+
+    if (route != null) {
+      return navigator.openRoute(route);
+    }
+
+    return null;
   }
 }
