@@ -24,28 +24,28 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
       body: NavigatorStack.menu(
         control: control,
         items: {
-          MenuItem(
+          NavItem(
             key: 'cards',
             iconBuilder: (selected) => Icons.credit_card,
             titleBuilder: (selected) => localize('card_title'),
           ): (context) => CardsPage(),
-          MenuItem(
+          NavItem(
             key: 'settings',
             iconBuilder: (selected) => Icons.settings_applications,
             titleBuilder: (selected) => localize('settings'),
           ): (context) => SettingsPage(),
-          MenuItem(
+          NavItem(
             key: 'cross',
             iconBuilder: (selected) => selected ? Icons.filter : Icons.crop,
             titleBuilder: (selected) =>
                 selected ? localize('cross_up') : localize('cross'),
           ): (context) => CrossPage(),
-          MenuItem(
+          NavItem(
             key: 'swap',
             iconBuilder: (selected) => Icons.swap_horiz,
             titleBuilder: (selected) => localize('swap'),
           ): (context) => SwapPage(),
-          MenuItem(
+          NavItem(
             key: 'about',
             iconBuilder: (selected) => Icons.file_upload,
             titleBuilder: (selected) => localize('about'),

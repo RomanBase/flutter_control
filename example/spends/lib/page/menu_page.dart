@@ -16,7 +16,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
         control: control,
         initialIndex: 1,
         items: {
-          MenuItem(
+          NavItem(
             key: 'filter',
             iconBuilder: (_) => Icons.sort,
             onSelected: () {
@@ -24,15 +24,15 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
               return true;
             },
           ): null,
-          MenuItem(
+          NavItem(
             key: 'spends',
             iconBuilder: (_) => Icons.account_balance_wallet,
           ): (_) => SpendsPage(),
-          MenuItem(
+          NavItem(
             key: 'earnings',
             iconBuilder: (_) => Icons.account_balance,
           ): (_) => EarningsPage(),
-          MenuItem(
+          NavItem(
             key: 'account',
             iconBuilder: (_) => Icons.person,
             onSelected: () {
@@ -57,7 +57,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
             builder: (context, index) {
               return Row(
                 children: <Widget>[
-                  for (MenuItem item in control.menuItems)
+                  for (NavItem item in control.menuItems)
                     Visibility(
                       visible: item != control.currentMenu,
                       child: IconButton(

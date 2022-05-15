@@ -9,17 +9,17 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl> {
       body: NavigatorStack.menu(
         control: control,
         items: {
-          MenuItem(
+          NavItem(
             key: 'main',
             titleBuilder: (_) => 'main',
             iconBuilder: (_) => Icons.dashboard,
           ): (_) => MainPage(),
-          MenuItem(
+          NavItem(
             key: 'dialog',
             titleBuilder: (_) => 'dialog',
             iconBuilder: (_) => Icons.file_upload,
           ): (_) => DialogPage(),
-          MenuItem(
+          NavItem(
             key: 'menu',
             titleBuilder: (_) => 'menu',
             iconBuilder: (_) => Icons.info_outline,

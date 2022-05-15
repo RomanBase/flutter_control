@@ -1,5 +1,11 @@
 import 'package:flutter_control/core.dart';
 
+class InitBuilderArgs extends ControlArgs {
+  final BuildContext context;
+
+  InitBuilderArgs(this.context, [dynamic args]) : super(args);
+}
+
 /// Abstract implementation of simple widget initializer and holder.
 abstract class WidgetInitializer implements Disposable {
   /// Current Widget.

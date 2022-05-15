@@ -7,29 +7,30 @@ class ControlScope {
 
   static ControlRootScope get root => ControlRootScope.main();
 
+  /// [parent] should be [BuildContext], [State] or [CoreWidget]
   factory ControlScope.of([dynamic parent]) {
     BuildContext? context;
 
     if (parent is BuildContext) {
       context = parent;
-    }
-
-    if (context == null) {
-      if (parent is CoreWidget) {
-        context = parent.context;
-      } else if (parent is State) {
-        context = parent.context;
-      }
+    } else if (parent is CoreWidget) {
+      context = parent.context;
+    } else if (parent is State) {
+      context = parent.context;
     }
 
     return ControlScope._(context ?? root.context);
   }
 
+  /// Tries to provide object from Widget Tree by given [T] and/or [key].
+  /// [parent] should be [BuildContext], [State] or [CoreWidget]
   static T? provide<T>(dynamic parent, {dynamic key, dynamic args}) =>
-      ControlScope.of(parent).get(
+      ControlScope.of(parent).get<T>(
         key: key,
         args: args,
       );
+
+  T? get<T>({dynamic key, dynamic args}) => _get<T>(key: key, args: args);
 
   T? _get<T>({dynamic key, dynamic args, BuildContext? context}) {
     context ??= this.context;
@@ -56,6 +57,4 @@ class ControlScope {
 
     return _get(key: key, args: args, context: state.context);
   }
-
-  T? get<T>({dynamic key, dynamic args}) => _get<T>(key: key, args: args);
 }

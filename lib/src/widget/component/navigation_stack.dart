@@ -79,7 +79,7 @@ class NavigatorStack extends StatefulWidget {
   /// [NavigatorStack]
   static Widget menu({
     NavigatorStackControl? control,
-    required Map<MenuItem, WidgetBuilder> items,
+    required Map<NavItem, WidgetBuilder> items,
     StackGroupBuilder? builder,
     bool overrideNavigation: true,
   }) {

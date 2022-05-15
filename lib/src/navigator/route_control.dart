@@ -8,12 +8,6 @@ typedef RouteWidgetBuilder = Route Function(
 
 typedef RouteGenerateBuilder = Route? Function(RouteSettings settings);
 
-class InitBuilderArgs extends ControlArgs {
-  final BuildContext context;
-
-  InitBuilderArgs(this.context, [dynamic args]) : super(args);
-}
-
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
   /// {@template route-open}
