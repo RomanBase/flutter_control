@@ -46,7 +46,7 @@ class ControlScope {
     }
 
     final item = Control.resolve<T>(
-      ControlArgs(state.controls).combineWith(state.args).data,
+      ControlArgs(state.controls).merge(state.args).data,
       key: key,
       args: args,
     );

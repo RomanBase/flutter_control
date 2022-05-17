@@ -57,7 +57,7 @@ class BasePrefs {
       prefs?.getDouble(key) ?? defaultValue;
 
   void setJson(String key, dynamic value) =>
-      prefs?.setString(key, jsonEncode(value));
+      prefs?.setString(key, jsonEncode(value ?? {}));
 
   dynamic getJson(String key) => jsonDecode(get(key, defaultValue: '{}')!);
 }

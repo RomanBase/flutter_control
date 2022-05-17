@@ -44,7 +44,6 @@ class ControlArgs implements Disposable {
         _args[item.runtimeType] = item;
       });
     } else if (args is Iterable) {
-      //TODO: check .toSet option to remove duplicity ?
       if (args.runtimeType == Parse.type<Iterable<dynamic>>()) {
         args.forEach((item) {
           _args[item.runtimeType] = item;
@@ -62,12 +61,6 @@ class ControlArgs implements Disposable {
   void add<T>({dynamic key, required dynamic value}) =>
       _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
 
-  /// Clears original data and stores items from [args].
-  void swap(ControlArgs args) {
-    _args.clear();
-    _args.addAll(args._args);
-  }
-
   /// Combines this store with given [args].
   void combine(ControlArgs args) {
     _args.addAll(args._args);
@@ -75,13 +68,14 @@ class ControlArgs implements Disposable {
 
   /// Combines this store with given [args].
   /// Returns new [ControlArgs] that contains both [args].
-  ControlArgs combineWith(ControlArgs args) {
+  ControlArgs merge(ControlArgs args) {
     final store = ControlArgs(this);
     store._args.addAll(args._args);
 
     return store;
   }
 
+  /// Whether this args contains the given [key].
   bool containsKey(dynamic key) => _args.containsKey(key);
 
   /// Returns object of given [key] or [defaultValue].
@@ -90,6 +84,8 @@ class ControlArgs implements Disposable {
 
   /// Returns all items for given [test].
   List<T> getAll<T>({Predicate? test}) {
+    assert(test != null || T != dynamic);
+
     if (test == null && T != dynamic) {
       test = (item) => item is T;
     }
@@ -103,24 +99,34 @@ class ControlArgs implements Disposable {
     return list as List<T>;
   }
 
-  /// Returns all items for given [test].
+  /// Removes all items for given [test].
   void removeAll<T>({Predicate? test}) {
     if (test == null && T != dynamic) {
-      if (test == null && T != dynamic) {
-        test = (item) => item is T;
-      }
+      test = (item) => item is T;
+    } else {
+      clear();
+      return;
     }
 
     _args.removeWhere((key, value) => test!(value));
   }
 
   /// Removes item by [Type] or [key].
-  void remove<T>({dynamic key}) => _args.remove(key ?? T);
+  T? remove<T>({dynamic key}) {
+    assert(key != null || T != dynamic);
 
+    return _args.remove(Control.factory.keyOf<T>(key: key));
+  }
+
+  /// Removes and returns item by [Type] or [key].
   T? pop<T>({dynamic key}) {
+    assert(key != null || T != dynamic);
+
     final value = get<T>(key: key);
 
-    remove<T>(key: key);
+    if (value != null) {
+      remove<T>(key: key);
+    }
 
     return value;
   }
