@@ -212,10 +212,10 @@ class BaseLocalization extends ChangeNotifier
   ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
 
   /// The system-reported default locale of the device.
-  Locale get deviceLocale => WidgetsBinding.instance!.window.locale;
+  Locale get deviceLocale => WidgetsBinding.instance.window.locale;
 
   /// The full system-reported supported locales of the device.
-  List<Locale> get deviceLocales => WidgetsBinding.instance!.window.locales;
+  List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
 
   /// Returns currently loaded locale.
   String? get locale => _locale;
@@ -302,7 +302,7 @@ class BaseLocalization extends ChangeNotifier
     loading = false;
 
     if (handleSystemLocale) {
-      WidgetsBinding.instance!.window.onLocaleChanged = () {
+      WidgetsBinding.instance.window.onLocaleChanged = () {
         //TODO: Q: only when preferred locale is not set ??
         if (!isSystemLocaleActive()) {
           changeToSystemLocale();
@@ -918,7 +918,7 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 mixin LocalizationProvider {
   /// Shortcut for delegate of default [BaseLocalization].
   static BaseLocalizationDelegate get delegate =>
-      Control.localization!.delegate;
+      Control.localization.delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///

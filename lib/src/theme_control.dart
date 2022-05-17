@@ -248,7 +248,7 @@ class ThemeConfig<T extends ControlTheme> {
       .get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
 
   static Brightness get platformBrightness =>
-      SchedulerBinding.instance!.window.platformBrightness;
+      SchedulerBinding.instance.window.platformBrightness;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({
