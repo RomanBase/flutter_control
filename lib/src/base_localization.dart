@@ -8,10 +8,42 @@ typedef LocalizationExtractor = String Function(
     Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
+class LocalizationModule extends ControlModule<BaseLocalization> {
+  final LocalizationConfig config;
+
+  LocalizationModule(this.config, {bool? debug}) {
+    initModule();
+    module!.debug = debug ?? Control.debug;
+  }
+
+  @override
+  void initModule() {
+    super.initModule();
+
+    if (!isInitialized) {
+      module = BaseLocalization(config.fallbackLocale, config.toAssets());
+      module!.main = true;
+    }
+  }
+
+  @override
+  Future<void> init() => module!.init(
+        loadDefaultLocale: config.loadDefaultLocale,
+        handleSystemLocale: config.handleSystemLocale,
+        stableLocale: config.stableLocale,
+      );
+}
+
 /// Map of supported locales, default locale and loading rules.
 ///
 /// Config is passed to [Control.initControl] to init [BaseLocalization].
 class LocalizationConfig {
+  static LocalizationConfig get empty => LocalizationConfig(
+        locales: {
+          WidgetsBinding.instance.window.locale.toString(): null,
+        },
+      );
+
   /// Default locale key. If not provided, first locale from [locales] is used.
   final String? defaultLocale;
 
@@ -916,60 +948,61 @@ class BaseLocalizationDelegate extends LocalizationsDelegate<BaseLocalization> {
 ///
 /// Access to [BaseLocalizationDelegate] is handled via static functions.
 mixin LocalizationProvider {
+  static BaseLocalization get instance => Control.get<BaseLocalization>()!;
+
   /// Shortcut for delegate of default [BaseLocalization].
-  static BaseLocalizationDelegate get delegate => Control.localization.delegate;
+  static BaseLocalizationDelegate get delegate => instance.delegate;
 
   /// Delegate of [BaseLocalization] for the widget tree that corresponds to the given [context].
   ///
   /// Note: usable only with [LocalizationsDelegate]. If delegate is not specified use [Control.localization] instead.
-  static BaseLocalization? of(BuildContext context) {
-    return Localizations.of<BaseLocalization>(context, BaseLocalization);
-  }
+  static BaseLocalization? of(BuildContext context) =>
+      Localizations.of<BaseLocalization>(context, BaseLocalization);
 
   ///Instance of default [BaseLocalization]
   @protected
-  BaseLocalization? get localization => Control.localization;
+  BaseLocalization get localization => instance;
 
   ///[BaseLocalization.localize]
   @protected
-  String localize(String key) => localization!.localize(key);
+  String localize(String key) => localization.localize(key);
 
   ///[BaseLocalization.localizeOr]
   @protected
   String localizeOr(String key, List<String> alterKeys) =>
-      localization!.localizeOr(key, alterKeys);
+      localization.localizeOr(key, alterKeys);
 
   ///[BaseLocalization.localizeFormat]
   @protected
   String localizeFormat(String key, Map<String, String> params) =>
-      localization!.localizeFormat(key, params);
+      localization.localizeFormat(key, params);
 
   ///[BaseLocalization.localizePlural]
   @protected
   String localizePlural(String key, int plural,
           [Map<String, String>? params]) =>
-      localization!.localizePlural(key, plural, params);
+      localization.localizePlural(key, plural, params);
 
   ///[BaseLocalization.localizeValue]
   @protected
   String localizeValue(String key, String value) =>
-      localization!.localizeValue(key, value);
+      localization.localizeValue(key, value);
 
   ///[BaseLocalization.localizeList]
   @protected
-  Iterable<String> localizeList(String key) => localization!.localizeList(key);
+  Iterable<String> localizeList(String key) => localization.localizeList(key);
 
   ///[BaseLocalization.localizeDynamic]
   @protected
   dynamic localizeDynamic(String key,
           {LocalizationParser? parser, dynamic defaultValue}) =>
-      localization!
-          .localizeDynamic(key, parser: parser, defaultValue: defaultValue);
+      localization.localizeDynamic(key,
+          parser: parser, defaultValue: defaultValue);
 
   ///[BaseLocalization.extractLocalization]
   @protected
   String extractLocalization(dynamic data,
           {String? locale, String? defaultLocale}) =>
-      localization!.extractLocalization(data,
+      localization.extractLocalization(data,
           locale: locale, defaultLocale: defaultLocale);
 }

@@ -17,6 +17,7 @@ export 'src/core/control/field_control.dart';
 export 'src/core/control/observable_component.dart';
 export 'src/core/control/stack_control.dart';
 export 'src/core/control_broadcast.dart';
+export 'src/core/module.dart';
 export 'src/core/object_tag.dart';
 export 'src/core/observable/control_observable.dart';
 export 'src/core/observable/control_subscription.dart';
@@ -42,7 +43,7 @@ export 'src/ui/control/widget_provider.dart';
 export 'src/ui/control_widget.dart';
 export 'src/ui/controllable_widget.dart';
 export 'src/ui/core_widget.dart';
-export 'src/ui/device.dart';
+export 'src/ui/app/device.dart';
 export 'src/ui/field_builder.dart';
 export 'src/ui/mixin/animation.dart';
 export 'src/ui/mixin/control.dart';
@@ -51,7 +52,7 @@ export 'src/ui/mixin/navigation.dart';
 export 'src/ui/mixin/overlay.dart';
 export 'src/ui/navigator/control_navigator.dart';
 export 'src/ui/navigator/route_control.dart';
-export 'src/ui/theme_control.dart';
+export 'src/ui/app/theme_control.dart';
 
 enum LoadingStatus {
   initial,
@@ -84,4 +85,37 @@ void printAction(ValueGetter<dynamic> action) {
   if (kDebugMode && Control.debug) {
     print(action());
   }
+}
+
+//TODO: move to core
+class AssetPath {
+  final String rootDir;
+
+  const AssetPath({this.rootDir: 'assets'});
+
+  /// Refers to assets/path
+  String root(String path) =>
+      path.startsWith('/') ? "$rootDir$path" : "$rootDir/$path";
+
+  /// Refers to assets/images/name.ext
+  /// Default [ext] is 'png'.
+  String image(String name, [String ext = 'png']) => root("images/$name.$ext");
+
+  /// Refers to assets/icons/name.ext
+  /// Default [ext] is 'png'.
+  String icon(String name, [String ext = 'png']) => root("icons/$name.$ext");
+
+  /// Refers to assets/icons/name.svg
+  String svg(String name) => root("icons/$name.svg");
+
+  /// Refers to assets/data/name.ext
+  String data(String name, String ext) => root("data/$name.$ext");
+
+  /// Refers to assets/raw/name.ext
+  String raw(String name, String ext) => root("raw/$name.$ext");
+
+  /// Refers to assets/localization/name.ext
+  /// Default [ext] is 'json'.
+  String localization(String name, [String ext = 'json']) =>
+      root("localization/$name.$ext");
 }

@@ -8,6 +8,25 @@ typedef RouteWidgetBuilder = Route Function(
 
 typedef RouteGenerateBuilder = Route? Function(RouteSettings settings);
 
+class RoutingModule extends ControlModule<RouteStore> {
+  final List<ControlRoute> routes;
+
+  RoutingModule(this.routes) {
+    initModule();
+  }
+
+  void initModule() {
+    super.initModule();
+
+    if (!isInitialized) {
+      module = RouteStore(routes);
+    }
+  }
+
+  @override
+  Future? init() => null;
+}
+
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
   /// {@template route-open}

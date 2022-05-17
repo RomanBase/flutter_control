@@ -287,7 +287,7 @@ class ControlRootSetup {
   ThemeData get theme => style!.data;
 
   /// Reference to [BaseLocalization] to provide actual localization settings.
-  BaseLocalization? get localization => Control.localization;
+  BaseLocalization? get localization => Control.get<BaseLocalization>();
 
   /// Current app locale that can be passed to [WidgetsApp.locale].
   Locale? get locale => localization!.currentLocale;
@@ -512,14 +512,17 @@ class ControlRootState extends State<ControlRoot> {
   void _initControl() async {
     final initialized = Control.initControl(
       debug: widget.debug,
-      localization: widget.localization,
       entries: widget.entries,
       initializers: {
         if (widget.initializers != null) ...widget.initializers!,
         ...{ControlTheme: _theme.initializer},
       },
       injector: widget.injector,
-      routes: widget.routes,
+      modules: [
+        PrefsModule(),
+        LocalizationModule(widget.localization ?? LocalizationConfig.empty),
+        RoutingModule(widget.routes ?? []),
+      ],
       initAsync: () => FutureBlock.wait([
         _loadTheme(),
         widget.initAsync?.call(),

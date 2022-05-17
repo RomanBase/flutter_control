@@ -3,6 +3,25 @@ import 'dart:convert';
 import 'package:flutter_control/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class PrefsModule extends ControlModule<BasePrefs> {
+  int get priority => 100;
+
+  PrefsModule() {
+    initModule();
+  }
+
+  void initModule() {
+    super.initModule();
+
+    if (!isInitialized) {
+      module = BasePrefs();
+    }
+  }
+
+  @override
+  Future? init() => module!.init();
+}
+
 /// Wrapper around [SharedPreferences].
 class BasePrefs {
   SharedPreferences? prefs;

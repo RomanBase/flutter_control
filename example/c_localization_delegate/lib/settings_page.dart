@@ -26,12 +26,12 @@ class SettingsPage extends ControlWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: <Widget>[
                   RaisedButton(
-                    onPressed: () => Control.broadcaster
+                    onPressed: () => Control.broadcast
                         .broadcast<Locale>(value: Locale('en')),
                     child: Text(localize('button_en')),
                   ),
                   RaisedButton(
-                    onPressed: () => Control.broadcaster
+                    onPressed: () => Control.broadcast
                         .broadcast<Locale>(value: Locale('es')),
                     child: Text(localize('button_es')),
                   ),

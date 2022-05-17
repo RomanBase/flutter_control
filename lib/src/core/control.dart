@@ -35,15 +35,11 @@ class Control {
 
   /// Returns default instance of [ControlBroadcast] - this instance is stored in [ControlFactory].
   /// Use [BroadcastProvider] for base broadcast operations.
-  static ControlBroadcast get broadcaster => factory._broadcast;
+  static ControlBroadcast get broadcast => factory._broadcast;
 
   /// Returns default instance of [Injector] - this instance is stored in [ControlFactory].
   /// Injector is set via [Control.initControl] or [ControlFactory.setInjector].
   static Injector? get injector => factory._injector;
-
-  /// Returns default instance of [BaseLocalization] - this instance is stored in [ControlFactory].
-  /// Default localization is [Map] based and it's possible to use it via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
-  static BaseLocalization get localization => Control.get<BaseLocalization>()!;
 
   /////
   /////
@@ -53,19 +49,17 @@ class Control {
   /// Loads [BasePrefs] and [BaseLocalization], also builds [RouteStore].
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [localization] - Custom config for [BaseLocalization]. Map of supported locales, default locale and loading rules.
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection.
-  /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition. [RouteStore] is also stored in [ControlFactory].
+  /// [modules] -
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
     bool? debug,
-    LocalizationConfig? localization,
     Map? entries,
     Map<Type, Initializer>? initializers,
     Injector? injector,
-    List<ControlRoute>? routes,
+    List<ControlModule> modules: const [],
     Future Function()? initAsync,
   }) {
     if (isInitialized) {
@@ -77,38 +71,29 @@ class Control {
 
     entries ??= {};
     initializers ??= {};
-    localization ??= LocalizationConfig(
-      locales: {
-        'en': null,
-      },
-    );
 
-    final prefs = BasePrefs();
-    final route = RouteStore(routes);
-    final loc = BaseLocalization(
-      localization.fallbackLocale,
-      localization.toAssets(),
-    )
-      ..debug = debug
-      ..main = true;
-
-    entries[BasePrefs] = prefs;
-    entries[RouteStore] = route;
-    entries[BaseLocalization] = loc;
+    modules.sort();
 
     factory.initialize(
-      entries: entries,
-      initializers: initializers,
+      entries: {
+        for (ControlModule module in modules) ...module.entries,
+        ...entries,
+      },
+      initializers: {
+        for (ControlModule module in modules) ...module.initializers,
+        ...initializers,
+      },
       injector: injector,
       initAsync: () async {
-        await prefs.init();
+        for (ControlModule module in modules) {
+          if (module.preInit) {
+            await module.init();
+          }
+        }
+
         await FutureBlock.wait([
-          if (localization!.initLocale)
-            loc.init(
-              loadDefaultLocale: localization.loadDefaultLocale,
-              handleSystemLocale: localization.handleSystemLocale,
-              stableLocale: localization.stableLocale,
-            ),
+          for (ControlModule module in modules)
+            if (!module.preInit) module.init(),
           initAsync?.call(),
         ]);
       },
@@ -213,7 +198,7 @@ class BroadcastProvider {
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription<T> subscribe<T>(
           dynamic key, ValueChanged<T?> onData) =>
-      Control.broadcaster.subscribeTo<T>(key, onData);
+      Control.broadcast.subscribeTo<T>(key, onData);
 
   /// Subscribe to global event stream for given [key].
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
@@ -221,7 +206,7 @@ class BroadcastProvider {
   /// Returns [BroadcastSubscription] to control and close subscription.
   static BroadcastSubscription subscribeEvent(
           dynamic key, VoidCallback callback) =>
-      Control.broadcaster.subscribeEvent(key, callback);
+      Control.broadcast.subscribeEvent(key, callback);
 
   /// Sends [value] to global object stream.
   /// Subs with same [key] and [value] type will be notified.
@@ -229,14 +214,14 @@ class BroadcastProvider {
   ///
   /// Returns number of notified subs.
   static void broadcast<T>({dynamic key, dynamic value, bool store: false}) =>
-      Control.broadcaster.broadcast<T>(key: key, value: value, store: store);
+      Control.broadcast.broadcast<T>(key: key, value: value, store: store);
 
   /// Sends event to global event stream.
   /// Subs with same [key] will be notified.
   ///
   /// Returns number of notified subs.
   static void broadcastEvent<T>({dynamic key}) =>
-      Control.broadcaster.broadcastEvent<T>(key: key);
+      Control.broadcast.broadcastEvent<T>(key: key);
 }
 
 /// Main singleton class.
