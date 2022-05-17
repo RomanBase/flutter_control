@@ -9,6 +9,8 @@ class Device {
 
   factory Device.of(BuildContext context) => Device(MediaQuery.of(context));
 
+  Brightness get brightness => data.platformBrightness;
+
   bool get portrait => data.orientation == Orientation.portrait;
 
   bool get landscape => data.orientation == Orientation.landscape;
@@ -21,7 +23,7 @@ class Device {
 
   double get ratio => 1.0 / data.devicePixelRatio;
 
-  double get revertRatio => 1.0 - ratio;
+  double get revertedRatio => 1.0 - ratio;
 
   double get screenRatio => width / height;
 
@@ -31,28 +33,25 @@ class Device {
 
   double get max => math.max(width, height);
 
-  @deprecated
-  bool get hasNotch => data.padding.top > 20.0;
-
   double get topBorderSize => data.padding.top;
 
   double get bottomBorderSize => data.padding.bottom;
 
   /// Converts px to logical display points
   /// PX -> DP
-  double px(double value) => value * ratio;
+  double toDp(double value) => value * ratio;
 
   /// Converts logical display points to px
   /// DP -> PX
-  double dp(double value) => value / ratio;
+  double toPx(double value) => value / ratio;
 
-  Size pxSize(Size size) => Size(px(size.width), px(size.height));
+  Size toDpSize(Size size) => Size(toDp(size.width), toDp(size.height));
 
-  Size dpSize(Size size) => Size(dp(size.width), dp(size.height));
+  Size toPxSize(Size size) => Size(toPx(size.width), toPx(size.height));
 
-  Offset pxOffset(Offset offset) => Offset(px(offset.dx), px(offset.dy));
+  Offset toDpOffset(Offset offset) => Offset(toDp(offset.dx), toDp(offset.dy));
 
-  Offset dpOffset(Offset offset) => Offset(dp(offset.dx), dp(offset.dy));
+  Offset toPxOffset(Offset offset) => Offset(toPx(offset.dx), toPx(offset.dy));
 
   T onOrientation<T>(
       {Initializer<T>? portrait, Initializer<T>? landscape, dynamic args}) {
