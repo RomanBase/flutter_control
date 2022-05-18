@@ -24,12 +24,15 @@ export 'src/core/observable/control_subscription.dart';
 export 'src/core/observable/observable_group.dart';
 export 'src/core/observable/observable_helpers.dart';
 export 'src/core/util/args.dart';
+export 'src/core/util/assets.dart';
 export 'src/core/util/curve.dart';
 export 'src/core/util/future_block.dart';
 export 'src/core/util/lazy_initializer.dart';
 export 'src/core/util/parser.dart';
 export 'src/core/util/unit_id.dart';
 export 'src/ui/app/control_root.dart';
+export 'src/ui/app/device.dart';
+export 'src/ui/app/theme_control.dart';
 export 'src/ui/app/transition.dart';
 export 'src/ui/builder_widget.dart';
 export 'src/ui/component/case_widget.dart';
@@ -43,7 +46,6 @@ export 'src/ui/control/widget_provider.dart';
 export 'src/ui/control_widget.dart';
 export 'src/ui/controllable_widget.dart';
 export 'src/ui/core_widget.dart';
-export 'src/ui/app/device.dart';
 export 'src/ui/field_builder.dart';
 export 'src/ui/mixin/animation.dart';
 export 'src/ui/mixin/control.dart';
@@ -52,7 +54,6 @@ export 'src/ui/mixin/navigation.dart';
 export 'src/ui/mixin/overlay.dart';
 export 'src/ui/navigator/control_navigator.dart';
 export 'src/ui/navigator/route_control.dart';
-export 'src/ui/app/theme_control.dart';
 
 enum LoadingStatus {
   initial,
@@ -85,37 +86,4 @@ void printAction(ValueGetter<dynamic> action) {
   if (kDebugMode && Control.debug) {
     print(action());
   }
-}
-
-//TODO: move to core
-class AssetPath {
-  final String rootDir;
-
-  const AssetPath({this.rootDir: 'assets'});
-
-  /// Refers to assets/path
-  String root(String path) =>
-      path.startsWith('/') ? "$rootDir$path" : "$rootDir/$path";
-
-  /// Refers to assets/images/name.ext
-  /// Default [ext] is 'png'.
-  String image(String name, [String ext = 'png']) => root("images/$name.$ext");
-
-  /// Refers to assets/icons/name.ext
-  /// Default [ext] is 'png'.
-  String icon(String name, [String ext = 'png']) => root("icons/$name.$ext");
-
-  /// Refers to assets/icons/name.svg
-  String svg(String name) => root("icons/$name.svg");
-
-  /// Refers to assets/data/name.ext
-  String data(String name, String ext) => root("data/$name.$ext");
-
-  /// Refers to assets/raw/name.ext
-  String raw(String name, String ext) => root("raw/$name.$ext");
-
-  /// Refers to assets/localization/name.ext
-  /// Default [ext] is 'json'.
-  String localization(String name, [String ext = 'json']) =>
-      root("localization/$name.$ext");
 }
