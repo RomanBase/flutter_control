@@ -644,6 +644,15 @@ class ListControl<T> extends FieldControl<List<T>> {
 //########################################################################################
 //########################################################################################
 
+enum LoadingStatus {
+  initial,
+  progress,
+  done,
+  error,
+  outdated,
+  unknown,
+}
+
 /// Extended [FieldControl] specified to control [LoadingStatus].
 class LoadingControl extends FieldControl<LoadingStatus> {
   /// Returns true if [value] is [LoadingStatus.done].
@@ -687,12 +696,6 @@ class LoadingControl extends FieldControl<LoadingStatus> {
 
   /// Changes status to [LoadingStatus.unknown] and sets inner message.
   void unknown({dynamic msg}) => setStatus(LoadingStatus.unknown, msg: msg);
-
-  /// Changes status based on given [loading] value and sets inner message.
-  /// 'true' - [LoadingStatus.progress].
-  /// 'false' - [LoadingStatus.done].
-  void status(bool loading, {dynamic msg}) =>
-      loading ? progress(msg: msg) : done(msg: msg);
 }
 
 //########################################################################################

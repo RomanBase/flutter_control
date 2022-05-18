@@ -135,12 +135,3 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
           },
         );
 }
-
-enum LoadingStatus {
-  initial,
-  progress,
-  done,
-  error,
-  outdated,
-  unknown,
-}
