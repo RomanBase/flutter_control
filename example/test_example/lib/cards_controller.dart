@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 import 'cards_page.dart';
 
 class CardsController extends BaseControl
-    with RouteControlProvider, LocalizationProvider {
+    with RouteNavigatorProvider, LocalizationProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
   final input = InputControl();
@@ -51,8 +51,9 @@ class CardsController extends BaseControl
 
   void removeCard(CardModel item) => cards.remove(item);
 
-  openCard(CardModel item) =>
-      routeOf<DetailPage>().openRoute(args: {'card': item});
+  openCard(CardModel item) => ControlRoute.of<DetailPage>()
+      .navigator(navigator)
+      .openRoute(args: {'card': item});
 
   @override
   void dispose() {
@@ -67,7 +68,7 @@ class CardsController extends BaseControl
 }
 
 class DetailController extends BaseControl
-    with RouteControlProvider, LocalizationProvider {
+    with RouteNavigatorProvider, LocalizationProvider {
   CardModel _model;
 
   ListControl<CardItemModel> get items => _model.items;
@@ -104,7 +105,7 @@ class DetailController extends BaseControl
 
   void deleteSelf() {
     BroadcastProvider.broadcast(key: 'remove_card', value: _model);
-    close();
+    navigator.close();
   }
 
   @override
