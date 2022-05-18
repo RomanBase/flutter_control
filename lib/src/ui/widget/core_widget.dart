@@ -1,10 +1,10 @@
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/core.dart';
 
-export 'mixin/animation.dart';
-export 'mixin/control.dart';
-export 'mixin/layout.dart';
-export 'mixin/navigation.dart';
+export '../mixin/animation.dart';
+export '../mixin/control.dart';
+export '../mixin/layout.dart';
+export '../mixin/navigation.dart';
 
 /// Holds arguments from Widget and State.
 /// Helps to transfer arguments between Widget Tree rebuilds and resurrection of State.
