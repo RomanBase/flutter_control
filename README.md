@@ -94,19 +94,19 @@ import 'package:flutter_control/core.dart';
    
 - `SingleControlWidget` is focused to single **ControlModel**. But still can handle multiple Controls.
 
-- `ControllableWidget` - Subscribes to one or more `Observable` - [ObservableComponent], [ActionControl], [FieldControl], [Stream], [Future], [Notifier]\
+- `ControllableWidget` - Subscribes to one or more `Observable` - [ObservableComponent], [ActionControl], [FieldControl], [Stream], [Future], [Listenable]\
   Whenever state of [ControlObservable] is changed, this Widget is rebuild.
 
   These Widgets comes with few `mixin` classes:
    - `RouteControl` to abstract navigation and easily pass arguments to Routes and init other Pages.
-   - `TickerControl` and `SingleTickerControl` to create [State] with `Ticker` and provide access to `vsync`.
-   - `LocalizationProvider`, `ThemeProvider`, `OnLayout`, `ControlsComponent` and more..
+   - `TickerAnimControl`, `TickerControl` and `SingleTickerControl` to create [State] with `Ticker` and provide access to `vsync`.
+   - `LocalizationProvider`, `ThemeProvider`, `OnLayout`, `ControlsComponent`, `OverlayControl` and more..
    
 - `ControlModel` is base class to maintain Business Logic parts.\
-  `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for Pages or complex Widgets and also to separate robust Logic parts.\
-  `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller Widgets like Items in dynamic List or to separate/reuse Logic parts.\
+  `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
+  `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
   This Controls comes with few `mixin` classes to extend base functionality:
-   - `ObservableComponent` to control State and notify Widget about changes.
+   - `ObservableComponent` to control State and notify Widget about changes. Mostly used with `BaseModel`
    - `TickerComponent` passes `Ticker` to Model and enables to control animations outside of Widget.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
@@ -130,8 +130,8 @@ import 'package:flutter_control/core.dart';
 
 - `FieldControl` is more robust Observable solution around `Stream` and `StreamController`. Primarily is used to notify Widgets and to provide events about value changes.\
   Can listen `Stream`, `Future` or subscribe to another [FieldControl] with possibility to filter and convert values.\
-  [FieldControl] comes with pre-build primitive variants as `StringControl`, `DoubleControl`, etc., where is possible to use validation, regex or value clamping. And also `ListControl` to work with Iterables.\
-  On the Widget side is `FieldBuilder` to dynamically build Widgets. Also `ControlBuilderGroup` for use with multiple Observables. It's also possible to use standard `StreamBuilder`.\
+  [FieldControl] comes with pre-build primitive variants as `StringControl`, `NumberControl`, etc., where is possible to use validation, regex or value clamping. And also `ListControl` to work with Iterables.\
+  On the Widget side is `FieldBuilder` and `ControlBuilder` to dynamically build Widgets. Also `ControlBuilderGroup` for use with multiple Observables. It's also possible to use standard `StreamBuilder`.\
   `FieldSink` or `FieldSinkConverter` provides **Sink** of [FieldControl].\
   Upon dismiss of [FieldControl], every `FieldSubscription` is closed.
 
@@ -163,7 +163,10 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     Control.initControl(
       localization: LocalizationConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.map(locales: ['en_US', 'es_ES']),
+        locales: {
+          'en': 'assets/localization/en.json',
+          'es': 'assets/localization/es.json',
+        },
       ),
     );
 ```
@@ -172,8 +175,7 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     ControlRoot(
       localization: LocalizationConfig(
         locales: {
-          'en': 'assets/localization/en.json',
-          'es': 'assets/localization/es.json',
+          ...LocalizationAsset.map(locales: ['en_US', 'es_ES']),
         },
       ),
     );
@@ -196,7 +198,7 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 
 **Navigation and Routing**
 
-- `ControlRoute` Specifies `Route` with `Transition` and [WidgetBuilder] settings for `RouteHandler`. Handler then solves navigation and passes **args** to Widgets and Models.\
+- `ControlRoute` Specifies `Route` with `Transition` and [WidgetBuilder] for `RouteHandler`. Handler then solves navigation and passes **args** to Widgets and Models.\
   Use `RouteControl` mixin to enable this navigation with [ControlWidget] and `RouteControlProvider` mixin with [ControlModel].
   Routes can be stored in `RouteStore` and Route builder is accessible statically via `ControlRoute.of`.
 
@@ -211,9 +213,10 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     class ListPage extends ControlWidget with RouteControl {
       Widget build(BuildContext context){
         ...
-        routeOf<DetailPage>().openRoute();
-        routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
-        routeOf(key: 'detail_super').openRoute();
+        onPressed: () => routeOf<DetailPage>().openRoute();
+        onPressed: () => routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
+        onPressed: () => routeOf(key: 'detail_super').openRoute();
+        ...
       };
     }
 ```

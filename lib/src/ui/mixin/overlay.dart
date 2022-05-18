@@ -5,11 +5,18 @@ mixin OverlayControl on CoreWidget {
     required dynamic key,
     required Widget Function(Rect parent) builder,
     GlobalKey? parentKey,
+    bool barrierDismissible: true,
   }) {
+    assert(isInitialized);
+
     final overlay = Overlay.of(context!);
 
     if (overlay == null) {
       return null;
+    }
+
+    if (getArgStore().containsKey(ObjectTag.of(key))) {
+      return getOverlay(key);
     }
 
     final box = (parentKey?.currentState?.context.findRenderObject() ??
@@ -17,16 +24,20 @@ mixin OverlayControl on CoreWidget {
     final location = box.localToGlobal(Offset.zero);
     final size = box.size;
 
+    final child = builder(
+        Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
+
     final entry = OverlayEntry(
-      builder: (_) => Stack(
-        children: [
-          GestureDetector(
-            onTap: () => hideOverlay(key),
-          ),
-          builder(
-              Rect.fromLTWH(location.dx, location.dy, size.width, size.height)),
-        ],
-      ),
+      builder: (_) => barrierDismissible
+          ? Stack(
+              children: [
+                GestureDetector(
+                  onTap: () => hideOverlay(key),
+                ),
+                child,
+              ],
+            )
+          : child,
     );
 
     setArg(key: ObjectTag.of(key), value: entry);

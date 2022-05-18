@@ -10,9 +10,8 @@ Library is currently pretty complex and any contribution is highly welcomed.
 
 **Issues and Features**
 - Just pick any issue and try to solve it.
-- We also have open [Trello](https://trello.com/b/q6sROh2g/flutter-control) where anybody can join and pick any Card/Field from [Roadmap] swim line.
+- We also have open [Trello](https://trello.com/b/q6sROh2g/flutter-control) where anybody can join and pick any Card/Field from [Roadmap] of [Backlog] swim lines.
 
 ---
 
 - [Trello](https://trello.com/b/q6sROh2g/flutter-control)
-- [Discord](https://discord.gg/4JupkuY)
