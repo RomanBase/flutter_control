@@ -341,16 +341,16 @@ class ControlRoot extends StatefulWidget {
   final LocalizationConfig? localization;
 
   /// [Control.initControl]
-  final Map? entries;
+  final Map entries;
 
   /// [Control.initControl]
-  final Map<Type, Initializer>? initializers;
+  final Map<Type, Initializer> initializers;
 
   /// [Control.initControl]
   final Injector? injector;
 
   /// [Control.initControl]
-  final List<ControlRoute>? routes;
+  final List<ControlRoute> routes;
 
   /// Config of [ControlTheme] and list of available [ThemeData].
   final ThemeConfig? theme;
@@ -394,10 +394,10 @@ class ControlRoot extends StatefulWidget {
   const ControlRoot({
     this.debug,
     this.localization,
-    this.entries,
-    this.initializers,
+    this.entries: const {},
+    this.initializers: const {},
     this.injector,
-    this.routes,
+    this.routes: const [],
     this.theme,
     this.transition,
     this.initState: AppState.init,
@@ -514,14 +514,15 @@ class ControlRootState extends State<ControlRoot> {
       debug: widget.debug,
       entries: widget.entries,
       initializers: {
-        if (widget.initializers != null) ...widget.initializers!,
-        ...{ControlTheme: _theme.initializer},
+        ...widget.initializers,
+        ControlTheme: _theme.initializer,
       },
       injector: widget.injector,
       modules: [
         PrefsModule(),
-        LocalizationModule(widget.localization ?? LocalizationConfig.empty),
-        RoutingModule(widget.routes ?? []),
+        LocalizationModule(widget.localization ?? LocalizationConfig.empty,
+            debug: widget.debug),
+        RoutingModule(widget.routes),
       ],
       initAsync: () => FutureBlock.wait([
         _loadTheme(),
