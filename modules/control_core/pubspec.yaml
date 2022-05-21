@@ -1,4 +1,4 @@
-name: localino
+name: control_core
 description: A starting point for Dart libraries or applications.
 version: 0.9.0
 
@@ -7,8 +7,5 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  control_core:
-    path: ../control_core
-
-  control_config:
-    path: ../control_config
+  flutter:
+    sdk: flutter

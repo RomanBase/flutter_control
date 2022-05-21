@@ -6,8 +6,9 @@ library localino;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:control_config/config.dart';
+import 'package:control_core/core.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:flutter_control/core.dart';
 
 part 'src/config.dart';
 
@@ -17,8 +18,7 @@ part 'src/localization.dart';
 
 part 'src/provider.dart';
 
-typedef LocalizationExtractor = String Function(
-    Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoModule extends ControlModule<Localino> {

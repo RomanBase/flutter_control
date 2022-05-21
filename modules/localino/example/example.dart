@@ -1,4 +1,5 @@
-import 'package:flutter_control/core.dart';
+import 'package:control_core/core.dart';
+import 'package:localino/localino.dart';
 
 void main() {
   initStandaloneModule();

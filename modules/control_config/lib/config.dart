@@ -2,7 +2,7 @@ library control_config;
 
 import 'dart:convert';
 
-import 'package:flutter_control/core.dart';
+import 'package:control_core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'src/control_prefs.dart';
@@ -27,7 +27,7 @@ class ConfigModule extends ControlModule<ControlPrefs> {
 
   static bool initControl() {
     if (Control.isInitialized) {
-      if (Control.factory.containsKey(Localino)) {
+      if (Control.factory.containsKey(ControlPrefs)) {
         return false;
       }
 

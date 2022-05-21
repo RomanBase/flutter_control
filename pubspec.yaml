@@ -19,14 +19,14 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # https://pub.dartlang.org/packages/shared_preferences
-  shared_preferences: '>=2.0.0 <3.0.0'
-
-  localino:
-    path: ./modules/localino
+  control_core:
+    path: ./modules/control_core
 
   control_config:
     path: ./modules/control_config
+
+  localino:
+    path: ./modules/localino
 
 flutter:
 
