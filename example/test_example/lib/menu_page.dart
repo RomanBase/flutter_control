@@ -6,7 +6,7 @@ import 'cards_page.dart';
 import 'settings_page.dart';
 
 class MenuPage extends SingleControlWidget<NavigatorStackControl>
-    with LocalizationProvider {
+    with LocalinoProvider {
   @override
   NavigatorStackControl initControl() =>
       NavigatorStackControl(initialPageIndex: 1);

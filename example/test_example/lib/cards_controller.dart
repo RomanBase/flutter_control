@@ -3,7 +3,7 @@ import 'package:flutter_control/core.dart';
 import 'cards_page.dart';
 
 class CardsController extends BaseControl
-    with RouteNavigatorProvider, LocalizationProvider {
+    with RouteNavigatorProvider, LocalinoProvider {
   final cards = ListControl<CardModel>();
   final countLabel = StringControl();
   final input = InputControl();
@@ -68,7 +68,7 @@ class CardsController extends BaseControl
 }
 
 class DetailController extends BaseControl
-    with RouteNavigatorProvider, LocalizationProvider {
+    with RouteNavigatorProvider, LocalinoProvider {
   CardModel _model;
 
   ListControl<CardItemModel> get items => _model.items;
@@ -117,7 +117,7 @@ class DetailController extends BaseControl
 }
 
 class CardModel extends BaseModel
-    with LocalizationProvider, ObservableComponent {
+    with LocalinoProvider, ObservableComponent {
   final String title;
   final countLabel = StringControl();
   final progress = ControlObservable.empty<double>();

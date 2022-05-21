@@ -145,7 +145,7 @@ class ControlTheme {
     _context = context;
   }
 
-  static BroadcastSubscription<ControlTheme> subscribeChanges(
+  static BroadcastSubscription<ControlTheme> subscribe(
       ValueCallback<ControlTheme?> callback) {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }

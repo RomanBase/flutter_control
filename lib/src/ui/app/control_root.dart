@@ -287,7 +287,7 @@ class ControlRootSetup {
   ThemeData get theme => style!.data;
 
   /// Reference to [BaseLocalization] to provide actual localization settings.
-  BaseLocalization? get localization => Control.get<BaseLocalization>();
+  Localino? get localization => LocalinoProvider.instance;
 
   /// Current app locale that can be passed to [WidgetsApp.locale].
   Locale? get locale => localization!.currentLocale;
@@ -295,7 +295,7 @@ class ControlRootSetup {
   /// Localization delegate for [WidgetsApp.localizationsDelegates].
   /// Pass this delegate only if using [LocalizationsDelegate] type of localization.
   /// Also use [GlobalMaterialLocalizations.delegate] and others 'Global' Flutter delegates when setting this delegate.
-  BaseLocalizationDelegate get localizationDelegate => localization!.delegate;
+  LocalinoDelegate get localizationDelegate => localization!.delegate;
 
   /// List of supported locales for [WidgetsApp.supportedLocales].
   /// Also use [GlobalMaterialLocalizations.delegate] and others 'Global' Flutter delegates when setting supported locales.
@@ -338,7 +338,7 @@ class ControlRoot extends StatefulWidget {
   final bool? debug;
 
   /// [Control.initControl]
-  final LocalizationConfig? localization;
+  final LocalinoConfig? localization;
 
   /// [Control.initControl]
   final Map entries;
@@ -478,13 +478,13 @@ class ControlRootState extends State<ControlRoot> {
     _setup.key = _appKey;
     _setup.style = _theme.initializer(context)..setDefaultTheme();
 
-    _themeSub = ControlTheme.subscribeChanges((value) {
+    _themeSub = ControlTheme.subscribe((value) {
       _notifyState(() {
         _setup.style = value;
       }, true);
     });
 
-    _localeSub = BaseLocalization.subscribe((args) {
+    _localeSub = LocalinoProvider.subscribe((args) {
       if (args!.changed) {
         _notifyState(() {}, true);
       }
@@ -520,7 +520,7 @@ class ControlRootState extends State<ControlRoot> {
       injector: widget.injector,
       modules: [
         PrefsModule(),
-        LocalizationModule(widget.localization ?? LocalizationConfig.empty,
+        LocalinoModule(widget.localization ?? LocalinoConfig.empty,
             debug: widget.debug),
         RoutingModule(widget.routes),
       ],

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_control/core.dart';
 import 'package:flutter_control_example/cross_page.dart';
 
@@ -15,9 +14,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      localization: LocalizationConfig(
+      localization: LocalinoConfig(
         defaultLocale: 'en',
-        locales: LocalizationAsset.map(
+        locales: LocalinoAsset.map(
           // References to assets/localization/en.json
           locales: [
             'en',

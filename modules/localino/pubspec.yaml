@@ -1,0 +1,11 @@
+name: localino
+description: A starting point for Dart libraries or applications.
+version: 0.9.0
+
+environment:
+  flutter: '>=3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  flutter_control:
+    path: ../../

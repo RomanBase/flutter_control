@@ -60,7 +60,7 @@ class CardsPage extends SingleControlWidget<CardsController>
 }
 
 class CardWidget extends ControllableWidget<CardModel>
-    with ThemeProvider, LocalizationProvider {
+    with ThemeProvider, LocalinoProvider {
   final CardModel item;
 
   CardWidget(this.item) : super(item, key: ObjectKey(item));

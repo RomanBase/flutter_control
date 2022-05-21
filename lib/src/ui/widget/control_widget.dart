@@ -80,7 +80,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
 /// Also check [ControllableWidget] an abstract Widget focused to build smaller Widgets controlled by [ObservableModel] and [BaseModel].
 /// {@endtemplate}
 abstract class ControlWidget extends CoreWidget
-    with LocalizationProvider
+    with LocalinoProvider
     implements Initializable, Disposable {
   /// Widget's [State]
   /// It's available just after [ControlState] is initialized.

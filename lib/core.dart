@@ -5,8 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'core.dart';
 
 export 'package:flutter/material.dart';
+export 'package:localino/localino.dart';
 
-export 'src/base_localization.dart';
 export 'src/base_prefs.dart';
 export 'src/core/base_injector.dart';
 export 'src/core/control.dart';
