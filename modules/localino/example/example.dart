@@ -1,5 +1,6 @@
 import 'package:control_core/core.dart';
 import 'package:localino/localino.dart';
+import 'package:control_config/config.dart';
 
 void main() {
   initStandaloneModule();
@@ -17,7 +18,7 @@ void initStandaloneModule() {
 void initWithControl() {
   var initialized = Control.initControl(
     modules: [
-      PrefsModule(),
+      ConfigModule(),
       LocalinoModule(LocalinoConfig(
         locales: LocalinoAsset.map(locales: ['en', 'cs']),
       )),

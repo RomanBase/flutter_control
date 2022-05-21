@@ -51,14 +51,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   Locale? get currentLocale => getLocale(locale);
 
   /// Returns best possible country code based on [currentLocale] and [deviceLocale].
-  String? get currentCountry =>
-      currentLocale?.countryCode ??
-      (locale == null
-              ? deviceLocale
-              : deviceLocales.firstWhere(
-                  (element) => locale!.startsWith(element.languageCode),
-                  orElse: () => deviceLocale))
-          .countryCode;
+  String? get currentCountry => currentLocale?.countryCode ?? (locale == null ? deviceLocale : deviceLocales.firstWhere((element) => locale!.startsWith(element.languageCode), orElse: () => deviceLocale)).countryCode;
 
   /// Is [true] if any data are stored in localization map.
   bool get isActive => _data.length > 0;
@@ -85,10 +78,11 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   ///
   /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
   /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
-  Future<LocalinoArgs> init(
-      {bool loadDefaultLocale: true,
-      bool handleSystemLocale: true,
-      String? stableLocale}) async {
+  Future<LocalinoArgs> init({
+    bool loadDefaultLocale: true,
+    bool handleSystemLocale: false,
+    String? stableLocale,
+  }) async {
     if (!hasValidAsset) {
       return LocalinoArgs(
         locale: null,
@@ -98,6 +92,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       );
     }
 
+    this.main = main;
     loading = true;
 
     await prefs.mount();
@@ -155,9 +150,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   ///
   /// Returns preferred locale of this app instance.
   String getSystemLocale() {
-    return prefs.get(preference_key) ??
-        getAvailableAssetLocaleForDevice() ??
-        defaultLocale;
+    return prefs.get(preference_key) ?? getAvailableAssetLocaleForDevice() ?? defaultLocale;
   }
 
   /// Checks if preferred locale is loaded.
@@ -206,8 +199,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// [getSystemLocale] is used to get preferred locale.
   /// Returns result of localization change [LocalinoArgs].
   /// Result of localization change is send to global broadcast with [Localino] key.
-  Future<LocalinoArgs> changeToSystemLocale(
-      {bool resetPreferred: false}) async {
+  Future<LocalinoArgs> changeToSystemLocale({bool resetPreferred: false}) async {
     loading = true;
 
     final locale = getSystemLocale();
@@ -224,8 +216,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   ///
   /// Returns result of localization change [LocalinoArgs].
   /// Result of localization change is send to global broadcast with [Localino] key.
-  Future<LocalinoArgs> changeLocale(String locale,
-      {bool preferred: true}) async {
+  Future<LocalinoArgs> changeLocale(String locale, {bool preferred: true}) async {
     if (debug && locale == 'debug') {
       return _setDebugLocale();
     }
@@ -240,8 +231,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
         if (main) {
           prefs.set(preference_key, _locale);
         } else {
-          printDebug(
-              'Only \'main\' localization can change preferred locale !!!');
+          printDebug('Only \'main\' localization can change preferred locale !!!');
         }
       }
 
@@ -310,8 +300,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   }
 
   /// Loads localization from asset file for given [locale] and [asset].
-  Future<LocalinoArgs> _loadAssetLocalization(
-      String locale, LocalinoAsset? asset) async {
+  Future<LocalinoArgs> _loadAssetLocalization(String locale, LocalinoAsset? asset) async {
     if (asset == null || !asset.isValid) {
       return LocalinoArgs(
         locale: locale,
@@ -355,8 +344,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Returns [true] if localization file is available and is possible to load it.
   /// Do not check physical existence of file !
-  bool isLocalizationAvailable(String locale) =>
-      getAsset(locale)?.isValid ?? false;
+  bool isLocalizationAvailable(String locale) => getAsset(locale)?.isValid ?? false;
 
   /// Checks if [a] and [b] is same or if this values points to same asset path.
   /// Comparing 'en' and 'en_US' can be true because they can point to same asset file.
@@ -488,8 +476,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
         final data = _data[key];
         final nums = <int>[];
 
-        data.forEach(
-            (num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
+        data.forEach((num, value) => nums.add(Parse.toInteger(num, defaultValue: -1)));
         nums.sort();
 
         String? output;
@@ -588,8 +575,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// [parser] custom parser of returned data - can return custom Address class.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  dynamic localizeDynamic(String key,
-      {LocalizationParser? parser, dynamic defaultValue}) {
+  dynamic localizeDynamic(String key, {LocalizationParser? parser, dynamic defaultValue}) {
     if (_data.containsKey(key)) {
       if (parser != null) {
         return parser(_data[key], locale);
@@ -609,8 +595,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// [defaultLocale] - default is locale passed into constructor.
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String extractLocalization(dynamic data,
-      {String? locale, String? defaultLocale}) {
+  String extractLocalization(dynamic data, {String? locale, String? defaultLocale}) {
     locale ??= this.locale;
     defaultLocale ??= this.defaultLocale;
 
@@ -634,14 +619,12 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Sets custom extractor for [extractLocalization].
   ///
   /// Default extractor is [Map] based: {'locale': 'value'}.
-  void setCustomExtractor(LocalizationExtractor extractor) =>
-      _mapExtractor = extractor;
+  void setCustomExtractor(LocalizationExtractor extractor) => _mapExtractor = extractor;
 
   /// Sets custom decorator for string formatting
   ///
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
-  void setCustomParamDecorator(ParamDecoratorFormat decorator) =>
-      _paramDecorator = decorator;
+  void setCustomParamDecorator(ParamDecoratorFormat decorator) => _paramDecorator = decorator;
 
   /// Updates value in current localization set.
   /// This update is only runtime and isn't stored to localization file.

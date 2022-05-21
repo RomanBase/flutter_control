@@ -17,11 +17,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
 
   void initModule() {
     if (Control.isInitialized) {
-      final object = Control.get<T>(key: key);
-
-      if (object != null) {
-        module = object;
-      }
+      module = Control.get<T>(key: key);
     }
   }
 
@@ -37,14 +33,6 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
         Control.factory.setInitializer(key: key, initializer: value);
       });
     }
-  }
-
-  void ensureInitialized() {
-    if (Control.isInitialized) {
-      Control.initControl();
-    }
-
-    initStore();
   }
 
   Future? init();

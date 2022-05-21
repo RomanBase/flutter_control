@@ -46,7 +46,7 @@ class LocalinoModule extends ControlModule<Localino> {
         stableLocale: config.stableLocale,
       );
 
-  static bool initControl(LocalinoConfig config, {bool? debug}) {
+  static Future<bool> initControl(LocalinoConfig config, {bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         return false;
@@ -54,13 +54,14 @@ class LocalinoModule extends ControlModule<Localino> {
 
       final module = LocalinoModule(config, debug: debug);
       module.initStore();
+      await module.init();
 
       return true;
     }
 
     return Control.initControl(
       modules: [
-        PrefsModule(),
+        ConfigModule(),
         LocalinoModule(config, debug: debug),
       ],
     );

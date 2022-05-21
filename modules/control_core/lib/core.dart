@@ -9,7 +9,7 @@ import 'dart:math';
 export 'package:flutter/foundation.dart';
 export 'package:flutter/material.dart';
 
-part 'src/base_injector.dart';
+part 'src/injector.dart';
 
 part 'src/control.dart';
 
@@ -25,7 +25,7 @@ part 'src/control/observable_component.dart';
 
 part 'src/control/stack_control.dart';
 
-part 'src/control_broadcast.dart';
+part 'src/broadcast.dart';
 
 part 'src/module.dart';
 
