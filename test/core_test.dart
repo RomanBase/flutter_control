@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'mock_widget.dart';

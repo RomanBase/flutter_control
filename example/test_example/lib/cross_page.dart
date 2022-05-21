@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 
 class CrossControl extends ControlModel with ReferenceCounter {
   final cross = ActionControl.single<String>('red');

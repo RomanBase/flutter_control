@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:flutter_control_example/cross_page.dart';
 import 'package:flutter_control_example/swap_page.dart';
 

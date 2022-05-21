@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 
 class SwapPage extends StatefulWidget {
   final greenControl = SwapControl(Colors.green);

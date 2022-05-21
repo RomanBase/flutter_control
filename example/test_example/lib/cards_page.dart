@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 
 import 'cards_controller.dart';
 import 'settings_page.dart';
