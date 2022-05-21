@@ -519,7 +519,7 @@ class ControlRootState extends State<ControlRoot> {
       },
       injector: widget.injector,
       modules: [
-        PrefsModule(),
+        ConfigModule(),
         LocalinoModule(widget.localization ?? LocalinoConfig.empty,
             debug: widget.debug),
         RoutingModule(widget.routes),

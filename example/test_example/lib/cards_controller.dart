@@ -116,8 +116,7 @@ class DetailController extends BaseControl
   }
 }
 
-class CardModel extends BaseModel
-    with LocalinoProvider, ObservableComponent {
+class CardModel extends BaseModel with LocalinoProvider, ObservableComponent {
   final String title;
   final countLabel = StringControl();
   final progress = ControlObservable.empty<double>();

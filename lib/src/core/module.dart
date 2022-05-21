@@ -9,7 +9,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
 
   Map get entries => {key: module};
 
-  Map<dynamic, Initializer> get initializers => {};
+  Map<Type, Initializer> get initializers => {};
 
   bool get preInit => priority > 0;
 
@@ -22,6 +22,20 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
       if (object != null) {
         module = object;
       }
+    }
+  }
+
+  void initStore() {
+    if (entries.isNotEmpty) {
+      entries.forEach((key, value) {
+        Control.set(key: key, value: value);
+      });
+    }
+
+    if (initializers.isNotEmpty) {
+      initializers.forEach((key, value) {
+        Control.factory.setInitializer(key: key, initializer: value);
+      });
     }
   }
 

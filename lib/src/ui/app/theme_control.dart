@@ -200,7 +200,7 @@ class ControlTheme {
 typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(
     T control);
 
-class ThemeConfig<T extends ControlTheme> {
+class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   static const preference_key = 'control_theme';
 
   final Initializer<T>? builder;
@@ -212,8 +212,8 @@ class ThemeConfig<T extends ControlTheme> {
   Initializer<T> get initializer =>
       (context) => (builder ?? _defaultBuilder)(context)..config = this;
 
-  String? get preferredThemeName => Control.get<BasePrefs>()!
-      .get(ThemeConfig.preference_key, defaultValue: Parse.name(initTheme));
+  String? get preferredThemeName => prefs.get(ThemeConfig.preference_key,
+      defaultValue: Parse.name(initTheme));
 
   static Brightness get platformBrightness =>
       SchedulerBinding.instance.window.platformBrightness;
@@ -250,15 +250,13 @@ class ThemeConfig<T extends ControlTheme> {
 
   ThemeData getSystemTheme(T control) => getTheme(preferredThemeName, control);
 
-  void setAsPreferred() => Control.get<BasePrefs>()!
-      .set(ThemeConfig.preference_key, Parse.name(initTheme));
+  void setAsPreferred() =>
+      prefs.set(ThemeConfig.preference_key, Parse.name(initTheme));
 
-  void resetPreferred() =>
-      Control.get<BasePrefs>()!.set(ThemeConfig.preference_key, null);
+  void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
   U? getPreferredKey<U>([dynamic enums]) {
-    final dynamic key =
-        Control.get<BasePrefs>()!.get(ThemeConfig.preference_key);
+    final dynamic key = prefs.get(ThemeConfig.preference_key);
 
     if (enums != null) {
       return Parse.toEnum<U>(key, enums);

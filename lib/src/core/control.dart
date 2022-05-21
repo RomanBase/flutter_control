@@ -369,16 +369,18 @@ class ControlFactory with Disposable {
   }
 
   /// Stores initializer for later use - [init] or [get].
-  void setInitializer<T>(Initializer<T> initializer) {
+  void setInitializer<T>({Type? key, required Initializer<T> initializer}) {
+    key ??= T;
+
     assert(() {
-      if (_initializers.containsKey(T)) {
+      if (_initializers.containsKey(key)) {
         printDebug(
-            'Factory already contains key: ${T.runtimeType.toString()}. Value of this key will be override.');
+            'Factory already contains key: $key. Value of this key will be override.');
       }
       return true;
     }());
 
-    _initializers[T] = initializer;
+    _initializers[key] = initializer;
   }
 
   /// Stores [value] with given [key] in [ControlFactory].
@@ -606,7 +608,7 @@ class ControlFactory with Disposable {
   /// Basically calls [ControlFactory.removeInitializer] and [ControlFactory.setInitializer].
   void swapInitializer<T>(Initializer<T> initializer) {
     removeInitializer(T);
-    setInitializer(initializer);
+    setInitializer<T>(initializer: initializer);
   }
 
   /// Checks if key/type/object is in Factory.

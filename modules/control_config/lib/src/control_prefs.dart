@@ -1,34 +1,12 @@
-import 'dart:convert';
-
-import 'package:flutter_control/core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-class PrefsModule extends ControlModule<BasePrefs> {
-  int get priority => 100;
-
-  PrefsModule() {
-    initModule();
-  }
-
-  void initModule() {
-    super.initModule();
-
-    if (!isInitialized) {
-      module = BasePrefs();
-    }
-  }
-
-  @override
-  Future? init() => module!.init();
-}
+part of control_config;
 
 /// Wrapper around [SharedPreferences].
-class BasePrefs {
+class ControlPrefs {
   SharedPreferences? prefs;
 
   bool get mounted => prefs != null;
 
-  Future<BasePrefs> init() async {
+  Future<ControlPrefs> init() async {
     await mount();
     return this;
   }
@@ -82,10 +60,5 @@ class BasePrefs {
 }
 
 mixin PrefsProvider {
-  BasePrefs? _prefs;
-
-  BasePrefs get prefs =>
-      _prefs ??
-      (_prefs = Control.get<BasePrefs>() ?? BasePrefs()
-        ..init());
+  ControlPrefs get prefs => Control.get<ControlPrefs>()!;
 }

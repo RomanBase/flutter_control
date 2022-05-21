@@ -25,5 +25,8 @@ dependencies:
   localino:
     path: ./modules/localino
 
+  control_config:
+    path: ./modules/control_config
+
 flutter:
 

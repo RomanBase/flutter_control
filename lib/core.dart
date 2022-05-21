@@ -6,8 +6,8 @@ import 'core.dart';
 
 export 'package:flutter/material.dart';
 export 'package:localino/localino.dart';
+export 'package:control_config/config.dart';
 
-export 'src/base_prefs.dart';
 export 'src/core/base_injector.dart';
 export 'src/core/control.dart';
 export 'src/core/control/action_control.dart';

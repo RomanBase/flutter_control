@@ -17,7 +17,8 @@ part 'src/localization.dart';
 
 part 'src/provider.dart';
 
-typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(
+    Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoModule extends ControlModule<Localino> {
@@ -52,10 +53,7 @@ class LocalinoModule extends ControlModule<Localino> {
       }
 
       final module = LocalinoModule(config, debug: debug);
-
-      module.entries.forEach((key, value) {
-        Control.set(key: key, value: value);
-      });
+      module.initStore();
 
       return true;
     }
