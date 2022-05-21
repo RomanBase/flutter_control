@@ -60,6 +60,7 @@ class LocalinoModule extends ControlModule<Localino> {
 
     return Control.initControl(
       modules: [
+        PrefsModule(),
         LocalinoModule(config, debug: debug),
       ],
     );

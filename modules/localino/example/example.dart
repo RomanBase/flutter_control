@@ -17,6 +17,7 @@ void initStandaloneModule() {
 void initWithControl() {
   var initialized = Control.initControl(
     modules: [
+      PrefsModule(),
       LocalinoModule(LocalinoConfig(
         locales: LocalinoAsset.map(locales: ['en', 'cs']),
       )),

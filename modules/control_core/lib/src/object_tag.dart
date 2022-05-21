@@ -3,7 +3,7 @@ part of control_core;
 class ObjectTag {
   final Object? value;
 
-  //ValueKey get key => ValueKey(this.value);
+  ValueKey get key => ValueKey(this.value);
 
   const ObjectTag._(this.value);
 
@@ -12,7 +12,7 @@ class ObjectTag {
 
   factory ObjectTag.next() => ObjectTag._(UnitId.nextId());
 
-  /*factory ObjectTag.key(Key? key) {
+  factory ObjectTag.key(Key? key) {
     Object? object;
 
     if (key != null) {
@@ -28,7 +28,7 @@ class ObjectTag {
     }
 
     return ObjectTag.of(object);
-  }*/
+  }
 
   ObjectTag variant(Object variant) =>
       ObjectTag._(value.hashCode ^ variant.hashCode);
@@ -47,6 +47,6 @@ class ObjectTag {
   }
 }
 
-/*extension KeyExt on Key {
+extension KeyExt on Key {
   ValueKey variant(Object value) => ObjectTag.key(this).variant(value).key;
-}*/
+}

@@ -39,6 +39,14 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     }
   }
 
+  void ensureInitialized() {
+    if (Control.isInitialized) {
+      Control.initControl();
+    }
+
+    initStore();
+  }
+
   Future? init();
 
   int compareTo(ControlModule other) {
