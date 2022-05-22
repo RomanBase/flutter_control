@@ -15,21 +15,32 @@ Shell moduleShell(String name) => shell.cd('modules/$name');
 
 Shell exampleShell(String name) => shell.cd('example/$name');
 
-Future runModules(Future Function(Shell sh) func) async {
+Future proceedModules(Future Function(Shell sh) func) async {
   for (var value in modules) {
     await func.call(moduleShell(value));
   }
 }
 
-Future runExamples(Future Function(Shell sh) func) async {
+Future proceedExamples(Future Function(Shell sh) func) async {
   for (var value in examples) {
     await func.call(exampleShell(value));
   }
 }
 
-Future runScript(String script) async {
+Future runInModules(String script) async {
+  await proceedModules((sh) => sh.run(script));
   await shell.run(script);
-  await runModules((sh) => sh.run(script));
+}
+
+Future runInExamples(String script) async {
+  await shell.run(script);
+  await proceedExamples((sh) => sh.run(script));
+}
+
+Future runAll(String script) async {
+  await proceedModules((sh) => sh.run(script));
+  await shell.run(script);
+  await proceedExamples((sh) => sh.run(script));
 }
 
 ///////////////////////////////////////////////////////
@@ -37,7 +48,7 @@ Future runScript(String script) async {
 ///////////////////////////////////////////////////////
 
 Future pubGet() async {
-  await runScript('flutter pub get');
+  await runInModules('flutter pub get');
 }
 
 Future dartfmt() async {
