@@ -43,7 +43,7 @@ class LocalinoConfig {
     required this.locales,
     this.initLocale: true,
     this.loadDefaultLocale: true,
-    this.handleSystemLocale: true,
+    this.handleSystemLocale: false,
   });
 
   /// Converts Map of [locales] to List of [LocalinoAsset]s.

@@ -1,15 +1,15 @@
 library control_core;
 
-import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:math';
+import 'dart:math' as math;
+
+import 'package:flutter/foundation.dart';
 
 export 'package:flutter/foundation.dart';
-export 'package:flutter/material.dart';
 
-part 'src/injector.dart';
+part 'src/broadcast.dart';
 
 part 'src/control.dart';
 
@@ -25,7 +25,7 @@ part 'src/control/observable_component.dart';
 
 part 'src/control/stack_control.dart';
 
-part 'src/broadcast.dart';
+part 'src/injector.dart';
 
 part 'src/module.dart';
 

@@ -8,13 +8,6 @@ environment:
   flutter: '>=3.0.0'
   sdk: '>=2.12.0 <3.0.0'
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
-  mockito: ^5.2.0
-  pedantic: ^1.11.1
-
 dependencies:
   flutter:
     sdk: flutter
@@ -28,5 +21,10 @@ dependencies:
   localino:
     path: ./modules/localino
 
-flutter:
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  mockito: ^5.2.0
+  pedantic: ^1.11.1
 

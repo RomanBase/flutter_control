@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:control_config/config.dart';
 import 'package:control_core/core.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/widgets.dart';
 
 part 'src/config.dart';
 
@@ -23,6 +24,11 @@ typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoModule extends ControlModule<Localino> {
   final LocalinoConfig config;
+
+  @override
+  Map<Type, Initializer> get subModules => {
+        ConfigModule: (_) => ConfigModule(),
+      };
 
   LocalinoModule(this.config, {bool? debug}) {
     initModule();
@@ -40,30 +46,32 @@ class LocalinoModule extends ControlModule<Localino> {
   }
 
   @override
-  Future<void> init() => module!.init(
-        loadDefaultLocale: config.loadDefaultLocale,
-        handleSystemLocale: config.handleSystemLocale,
-        stableLocale: config.stableLocale,
-      );
+  Future? init() => config.initLocale
+      ? module!.init(
+          loadDefaultLocale: config.loadDefaultLocale,
+          handleSystemLocale: config.handleSystemLocale,
+          stableLocale: config.stableLocale,
+        )
+      : null;
 
-  static Future<bool> initControl(LocalinoConfig config, {bool? debug}) async {
+  static Future<bool> initWithControl(LocalinoConfig config, {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         return false;
       }
 
       final module = LocalinoModule(config, debug: debug);
-      module.initStore();
-      await module.init();
+      module.initStore(includeSubModules: true);
+
+      await module.initWithSubModules(args: args);
 
       return true;
     }
 
-    return Control.initControl(
-      modules: [
-        ConfigModule(),
-        LocalinoModule(config, debug: debug),
-      ],
+    return ControlModule.initControl(
+      LocalinoModule(config, debug: debug),
+      args: args,
+      debug: debug,
     );
   }
 }

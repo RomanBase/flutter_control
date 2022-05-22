@@ -60,7 +60,7 @@ class UnitId {
   static String randomFromSequence(int length, String sequence) {
     final output = StringBuffer();
 
-    final rnd = Random();
+    final rnd = math.Random();
 
     for (int i = 0; i < length; i++) {
       output.write(sequence[rnd.nextInt(sequence.length)]);
@@ -87,7 +87,7 @@ class UnitId {
 
     int max = 0;
     for (int i = 1; i < digits; i++) {
-      max += pow(count, i) as int;
+      max += math.pow(count, i) as int;
     }
 
     return max;

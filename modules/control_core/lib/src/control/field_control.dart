@@ -535,7 +535,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 
   /// [Iterable.shuffle].
-  void shuffle([Random? random]) {
+  void shuffle([math.Random? random]) {
     _list.shuffle(random);
     notify();
   }
