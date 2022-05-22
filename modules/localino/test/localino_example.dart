@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:localino/localino.dart';
 
 void main() {
-
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('init standalone', () async {
@@ -29,7 +28,8 @@ void main() {
       modules: [
         LocalinoModule(LocalinoConfig(
           locales: LocalinoAsset.map(locales: ['en', 'cs']),
-          initLocale: false, // no assets in test so localino can't be initialized.
+          initLocale:
+              false, // no assets in test so localino can't be initialized.
         )),
       ],
     );

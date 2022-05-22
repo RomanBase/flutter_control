@@ -689,7 +689,10 @@ class ControlFactory with Disposable {
   void printDebugStore({bool items: true, bool initializers: true}) {
     if (items) {
       printDebug('--- Items ---');
-      _items.forEach((key, value) => value == this ? printDebug('$runtimeType - $isInitialized | ${_items.length} | ${_initializers.length} | $hashCode') : printDebug('$key - $value'));
+      _items.forEach((key, value) => value == this
+          ? printDebug(
+              '$runtimeType - $isInitialized | ${_items.length} | ${_initializers.length} | $hashCode')
+          : printDebug('$key - $value'));
     }
 
     if (initializers) {

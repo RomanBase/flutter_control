@@ -19,7 +19,8 @@ part 'src/localization.dart';
 
 part 'src/provider.dart';
 
-typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(
+    Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoModule extends ControlModule<Localino> {
@@ -54,7 +55,8 @@ class LocalinoModule extends ControlModule<Localino> {
         )
       : null;
 
-  static Future<bool> initWithControl(LocalinoConfig config, {Map? args, bool? debug}) async {
+  static Future<bool> initWithControl(LocalinoConfig config,
+      {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         return false;
