@@ -1,5 +1,5 @@
 name: localino
-description: A starting point for Dart libraries or applications.
+description: Json based localization.
 version: 0.9.0
 
 environment:
@@ -10,11 +10,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  control_core:
-    path: ../control_core
+  # https://pub.dev/packages/control_core
+  control_core: ^0.9.0
 
-  control_config:
-    path: ../control_config
+  # https://pub.dev/packages/control_config
+  control_config: ^0.9.0
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,9 @@
+## [2.5.1] - Multiple libs
+Library is now separated to multiple modules:
+ - control_core
+ - control_config
+ - localino
+ - flutter_control
 ## [2.1.3] - Improvements
 Minor improvements and quality of life changes.
 ## [2.1.0] - Base
