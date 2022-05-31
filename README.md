@@ -9,7 +9,7 @@ Flutter Control is complex library to maintain App and State management.\
 Library merges multiple functionality under one hood. This approach helps to tidily bound separated logic into complex solution.
 
 ```dart
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 ```
 
  - **App State Management** - Managing application state, localization, theme and other global App changes.
@@ -32,10 +32,6 @@ import 'package:flutter_control/core.dart';
   
 ```dart
     Control.initControl(
-      localization: LocalizationConfig(
-        defaultLocale: 'en',
-        locales: LocalizationAsset.map(locales: ['en_US', 'es_ES']),
-      ),
       entries: {
         CounterListControl: CounterListControl(),
       },
@@ -45,6 +41,12 @@ import 'package:flutter_control/core.dart';
       },
       routes: [
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+      ],
+      modules: [
+        LocalinoModule(LocalinoConfig(
+          defaultLocale: 'en',
+          locales: LocalinoAsset.map(locales: ['en_US', 'es_ES']),
+          )),
       ],
       initAsync: () async {
         loadPreAppConfig();
@@ -57,7 +59,7 @@ import 'package:flutter_control/core.dart';
 
 ```dart
     ControlRoot(
-      localization: LocalizationConfig(locales: [...]),
+      localization: LocalinoConfig(locales: [...]),
       theme: ThemeConfig<MyThemne>(
         builder: (context) => MyTheme(context),
         themes: {...},
