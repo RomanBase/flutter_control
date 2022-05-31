@@ -51,11 +51,11 @@ part 'src/util/parser.dart';
 
 part 'src/util/unit_id.dart';
 
-typedef Initializer<T> = T Function(dynamic args);
+typedef Initializer<T> = T Function(Object? args);
 typedef ValueCallback<T> = void Function(T value);
 
 typedef ValueConverter<T> = T Function(dynamic value);
-typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
+typedef EntryConverter<T> = T Function(Object key, dynamic value);
 
 typedef Predicate<T> = bool Function(T value);
 
