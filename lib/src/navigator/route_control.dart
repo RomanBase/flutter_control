@@ -271,6 +271,10 @@ class ControlRoute {
       return _routeBuilder!(builder, routeSettings);
     }
 
+    if (kIsWeb) {
+      return MaterialPageRoute(builder: builder, settings: routeSettings);
+    }
+
     if (Platform.isIOS) {
       return CupertinoPageRoute(builder: builder, settings: routeSettings);
     }
