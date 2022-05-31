@@ -353,8 +353,7 @@ class ControlRoute {
   /// {@template route-name}
   /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
   /// {@endtemplate}
-  ControlRoute named(String identifier, [dynamic args]) =>
-      _copyWith(identifier: identifier);
+  ControlRoute named(String identifier) => _copyWith(identifier: identifier);
 
   /// Creates copy of [RouteControl] with given settings.
   ControlRoute _copyWith(
@@ -537,7 +536,9 @@ class RouteStore {
   /// Alters given [identifier] with [path].
   static String routePathIdentifier<T>(
       {dynamic identifier, dynamic path, dynamic args}) {
-    if (path is String) {
+    if (path == null) {
+      path = routeIdentifier(identifier);
+    } else if (path is String) {
       if (!path.startsWith('/')) {
         path = '/$path';
       }
@@ -548,8 +549,6 @@ class RouteStore {
           Parse.toList(args, entryConverter: (key, value) => '$key/$value')
               .join('/');
     }
-
-    path = routeIdentifier(identifier) + path;
 
     if (args == null) {
       return path;
