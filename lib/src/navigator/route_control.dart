@@ -127,8 +127,9 @@ class RouteHandler {
   /// Creates copy of [RouteHandler] with given path name.
   ///
   /// @{macro route-path}
-  RouteHandler path(String path) =>
-      RouteHandler(navigator, routeProvider.path(path));
+  RouteHandler path(
+          {Initializer<dynamic>? name, Initializer<dynamic>? query}) =>
+      RouteHandler(navigator, routeProvider.path(name: name, query: query));
 
   /// Creates copy of [RouteHandler] with given identifier.
   ///
@@ -241,7 +242,7 @@ class ControlRoute {
 
   /// Route name. This identifier is typically stored in [RouteStore].
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
-  String? identifier;
+  late String identifier;
 
   /// Additional route settings.
   Object? arguments;
@@ -251,6 +252,10 @@ class ControlRoute {
 
   /// Custom Route builder.
   RouteWidgetBuilder? _routeBuilder;
+
+  Initializer<dynamic>? _pathBuilder;
+
+  Initializer<dynamic>? _queryBuilder;
 
   /// Default private constructor.
   /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
@@ -262,10 +267,17 @@ class ControlRoute {
     return WidgetInitializer.initOf(_builder!);
   }
 
+  String _buildPath(dynamic args) => RouteStore.routePathIdentifier(
+        identifier: identifier,
+        path: _pathBuilder?.call(args) ?? '',
+        args: _queryBuilder?.call(args),
+      );
+
   /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
   /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
-  Route _buildRoute(WidgetBuilder builder) {
-    final routeSettings = RouteSettings(name: identifier, arguments: arguments);
+  Route _buildRoute(WidgetBuilder builder, String? path) {
+    final routeSettings =
+        RouteSettings(name: path ?? identifier, arguments: arguments);
 
     if (_routeBuilder != null) {
       return _routeBuilder!(builder, routeSettings);
@@ -290,7 +302,7 @@ class ControlRoute {
 
     final initializer = buildInitializer();
 
-    final route = _buildRoute(initializer.wrap(args: args));
+    final route = _buildRoute(initializer.wrap(args: args), _buildPath(args));
 
     initializer.data = route;
 
@@ -328,30 +340,36 @@ class ControlRoute {
               ));
 
   /// {@template route-path}
-  /// Alters current [identifier] with given [path] and returns copy of [ControlRoute] with new settings.
+  /// Alters current [identifier] with given [name] and [query] args and returns copy of [ControlRoute] with new settings.
   /// ```
-  /// ControlRoute.of<DetailPage>().path('/detail/123');
+  /// ControlRoute.of<DetailPage>(identifier: 'detail').path(path: (_) => 'node', query: (args) => {'id': args['id']});
+  /// refers to: /detail/node?id=1
   /// ```
   /// {@endtemplate}
-  ControlRoute path(String path) => _copyWith(
-      identifier:
-          RouteStore.routePathIdentifier(identifier: identifier, path: path));
+  ControlRoute path(
+          {Initializer<dynamic>? name, Initializer<dynamic>? query}) =>
+      _copyWith(path: name, query: query);
 
   /// {@template route-name}
   /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
   /// {@endtemplate}
-  ControlRoute named(String identifier) => _copyWith(identifier: identifier);
+  ControlRoute named(String identifier, [dynamic args]) =>
+      _copyWith(identifier: identifier);
 
   /// Creates copy of [RouteControl] with given settings.
   ControlRoute _copyWith(
           {dynamic identifier,
           Object? arguments,
-          RouteWidgetBuilder? routeBuilder}) =>
+          RouteWidgetBuilder? routeBuilder,
+          Initializer<dynamic>? path,
+          Initializer<dynamic>? query}) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
         ..arguments = arguments ?? this.arguments
         .._builder = _builder
-        .._routeBuilder = routeBuilder ?? this._routeBuilder;
+        .._routeBuilder = routeBuilder ?? this._routeBuilder
+        .._pathBuilder = path ?? this._pathBuilder
+        .._queryBuilder = query ?? this._queryBuilder;
 
   /// Initializes [RouteHandler] with given [navigator] and this Route provider.
   RouteHandler navigator(RouteNavigator navigator) =>
@@ -436,7 +454,7 @@ class RouteStore {
   /// Adds given [route] to [RouteStore].
   /// Returns store key.
   String? addRoute<T>(ControlRoute route) {
-    final identifier = route.identifier ?? routeIdentifier<T>();
+    final identifier = route.identifier;
 
     assert(() {
       if (_routes.containsKey(identifier)) {
@@ -518,12 +536,36 @@ class RouteStore {
 
   /// Alters given [identifier] with [path].
   static String routePathIdentifier<T>(
-      {dynamic identifier, required String path}) {
-    if (!path.startsWith('/')) {
-      path = '/$path';
+      {dynamic identifier, dynamic path, dynamic args}) {
+    if (path is String) {
+      if (!path.startsWith('/')) {
+        path = '/$path';
+      }
+    } else if (path is List) {
+      path = '/' + path.join('/');
+    } else if (path is Map) {
+      path = '/' +
+          Parse.toList(args, entryConverter: (key, value) => '$key/$value')
+              .join('/');
     }
 
-    return routeIdentifier(identifier) + path;
+    path = routeIdentifier(identifier) + path;
+
+    if (args == null) {
+      return path;
+    }
+
+    if (args is Map) {
+      return '$path?' +
+          Parse.toList(args, entryConverter: (key, value) => '$key:$value')
+              .join(',');
+    }
+
+    if (args is List) {
+      return '$path?args=' + args.join(',');
+    }
+
+    return '$path$args';
   }
 }
 
