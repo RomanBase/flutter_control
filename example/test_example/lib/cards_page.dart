@@ -69,8 +69,8 @@ class CardWidget extends ControllableWidget<CardModel>
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.all(16.0),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: theme.backgroundColor,
         boxShadow: [
           BoxShadow(
               offset: Offset(2.0, 2.0), blurRadius: 6.0, color: Colors.black45),

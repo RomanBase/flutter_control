@@ -38,8 +38,15 @@ class MyApp extends StatelessWidget {
         },
       }),
       routes: [
-        ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+        ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()).path(
+            name: (_) => ['settings', 'detail'],
+            query: (_) => {'a': 1, 'b': 'A'}),
+        ControlRoute.build<DetailPage>(
+                identifier: 'detail', builder: (_) => DetailPage())
+            .path(
+                name: (_) => 'check',
+                query: (args) =>
+                    Uri.encodeComponent(Parse.getArg<CardModel>(args).title)),
       ],
       theme: ThemeConfig<MyTheme>(
         builder: (context) => MyTheme(context),

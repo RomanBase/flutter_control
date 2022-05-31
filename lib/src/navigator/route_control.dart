@@ -557,15 +557,15 @@ class RouteStore {
 
     if (args is Map) {
       return '$path?' +
-          Parse.toList(args, entryConverter: (key, value) => '$key:$value')
-              .join(',');
+          Parse.toList(args, entryConverter: (key, value) => '$key=$value')
+              .join('&');
     }
 
     if (args is List) {
       return '$path?args=' + args.join(',');
     }
 
-    return '$path$args';
+    return '$path/$args';
   }
 }
 

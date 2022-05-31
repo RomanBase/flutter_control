@@ -51,7 +51,7 @@ class CardsController extends BaseControl
 
   void removeCard(CardModel item) => cards.remove(item);
 
-  openCard(CardModel item) => ControlRoute.of<DetailPage>()
+  openCard(CardModel item) => ControlRoute.of('detail')
       .navigator(navigator)
       .openRoute(args: {'card': item});
 
