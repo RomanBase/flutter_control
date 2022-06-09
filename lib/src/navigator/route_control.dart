@@ -564,6 +564,10 @@ class RouteStore {
       return '$path?args=' + args.join(',');
     }
 
+    if (path.endsWith('/')) {
+      return '$path$args';
+    }
+
     return '$path/$args';
   }
 }

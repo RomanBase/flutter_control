@@ -44,7 +44,6 @@ class MyApp extends StatelessWidget {
         ControlRoute.build<DetailPage>(
                 identifier: 'detail', builder: (_) => DetailPage())
             .path(
-                name: (_) => 'check',
                 query: (args) =>
                     Uri.encodeComponent(Parse.getArg<CardModel>(args).title)),
       ],
