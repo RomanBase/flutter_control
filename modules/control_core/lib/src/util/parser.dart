@@ -613,6 +613,10 @@ class Parse {
       return value;
     }
 
+    if (value is ControlArgs) {
+      return value.get<T>(key: key, defaultValue: defaultValue);
+    }
+
     if (value is Map) {
       return getArgFromMap<T>(value,
           key: key, predicate: predicate, defaultValue: defaultValue);

@@ -182,6 +182,7 @@ class ControlRoute {
 
   /// Builds [Route] via [builder] with given [identifier] and [settings].
   /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// [mask] - specific url mask, that can be used for dynamic routing - check [RouteStore.routePathMask] for more info. E.g. /project/{pid}/user{uid}
   /// [settings] - Additional [Route] settings.
   ///
   /// Typically used within [Control.initControl] or [ControlRoot].
@@ -194,6 +195,7 @@ class ControlRoute {
   /// Using [Type] as route identifier is recommended.
   static ControlRoute build<T>({
     dynamic identifier,
+    String? mask,
     Object? arguments,
     required InitWidgetBuilder builder,
   }) {
@@ -201,6 +203,7 @@ class ControlRoute {
 
     return ControlRoute._()
       ..identifier = RouteStore.routeIdentifier<T>(identifier)
+      ..mask = mask
       ..arguments = arguments
       .._builder = builder;
   }
@@ -211,10 +214,12 @@ class ControlRoute {
   /// Check [RouteControl.build] for classic [WidgetBuilder] version.
   static ControlRoute route<T>({
     dynamic identifier,
+    String? mask,
     required Route route,
   }) =>
       ControlRoute._()
         ..identifier = RouteStore.routeIdentifier<T>(identifier)
+        ..mask = mask
         .._routeBuilder = (_, __) => route;
 
   /// @{template route-store-get}
@@ -243,6 +248,8 @@ class ControlRoute {
   /// Route name. This identifier is typically stored in [RouteStore].
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
   late String identifier;
+
+  String? mask;
 
   /// Additional route settings.
   Object? arguments;
@@ -302,7 +309,8 @@ class ControlRoute {
 
     final initializer = buildInitializer();
 
-    final route = _buildRoute(initializer.wrap(args: args), _buildPath(args));
+    final route = _buildRoute(initializer.wrap(args: args),
+        _buildPath(ControlArgs(args)..add(value: this)));
 
     initializer.data = route;
 
@@ -347,8 +355,10 @@ class ControlRoute {
   /// ```
   /// {@endtemplate}
   ControlRoute path(
-          {Initializer<dynamic>? name, Initializer<dynamic>? query}) =>
-      _copyWith(path: name, query: query);
+          {Initializer<dynamic>? name,
+          Initializer<dynamic>? query,
+          String? mask}) =>
+      _copyWith(path: name, query: query, mask: mask);
 
   /// {@template route-name}
   /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
@@ -356,14 +366,17 @@ class ControlRoute {
   ControlRoute named(String identifier) => _copyWith(identifier: identifier);
 
   /// Creates copy of [RouteControl] with given settings.
-  ControlRoute _copyWith(
-          {dynamic identifier,
-          Object? arguments,
-          RouteWidgetBuilder? routeBuilder,
-          Initializer<dynamic>? path,
-          Initializer<dynamic>? query}) =>
+  ControlRoute _copyWith({
+    dynamic identifier,
+    String? mask,
+    Object? arguments,
+    RouteWidgetBuilder? routeBuilder,
+    Initializer<dynamic>? path,
+    Initializer<dynamic>? query,
+  }) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
+        ..mask = mask ?? this.mask
         ..arguments = arguments ?? this.arguments
         .._builder = _builder
         .._routeBuilder = routeBuilder ?? this._routeBuilder
@@ -434,6 +447,8 @@ class RouteStore {
   /// Value: [RouteControl].
   final _routes = Map<String, ControlRoute>();
 
+  final _masks = <_RouteMask?>[];
+
   /// Stores Routes with their Identifiers.
   ///
   /// Typically not used directly, but via framework:
@@ -464,6 +479,7 @@ class RouteStore {
     }());
 
     _routes[identifier] = route;
+    _masks.add(_RouteMask.of(route.mask ?? identifier));
 
     return identifier;
   }
@@ -478,30 +494,15 @@ class RouteStore {
       return _routes[identifier];
     }
 
+    identifier = _RouteMask.of(identifier);
+    final mask = _masks.firstWhere((element) => element!.match(identifier),
+        orElse: () => null);
+
+    if (mask != null && _routes.containsKey(mask.path)) {
+      return _routes[mask.path];
+    }
+
     return null;
-  }
-
-  /// Decompose given [identifier] and splits path to separated parts.
-  /// Currently usable just for debug purposes.
-  /// Returns parts of path in [List].
-  List<String> decompose(String identifier) {
-    final list = <String>[];
-
-    final items = identifier.split('/');
-
-    if (identifier.startsWith('/')) {
-      list.add('/');
-    } else {
-      list.add(items[0]);
-    }
-
-    if (items.length > 1) {
-      for (int i = 1; i < items.length; i++) {
-        list.add('${items[i - 1]}/${items[i]}');
-      }
-    }
-
-    return list;
   }
 
   /// Resolves identifier for given route [Type] and [name].
@@ -532,6 +533,8 @@ class RouteStore {
 
     return key;
   }
+
+  static _RouteMask routePathMask(String path) => _RouteMask.of(path);
 
   /// Alters given [identifier] with [path].
   static String routePathIdentifier<T>(
@@ -569,6 +572,66 @@ class RouteStore {
     }
 
     return '$path/$args';
+  }
+}
+
+class _RouteMask {
+  final List<_PathSegment> _segments;
+
+  String get path => '/' + _segments.map((e) => e.name).join('/');
+
+  List<String> get args =>
+      _segments.where((e) => e.mask).map((e) => e.name).toList();
+
+  static _RouteMask get root => _RouteMask._([_PathSegment('', false, null)]);
+
+  const _RouteMask._(this._segments);
+
+  factory _RouteMask.of(String path) => path == '/'
+      ? root
+      : _RouteMask._(_PathSegment.chain(Uri.parse(path).pathSegments));
+
+  bool match(_RouteMask other) {
+    if (other._segments.length != _segments.length) {
+      return false;
+    }
+
+    for (int i = 0; i < _segments.length; i++) {
+      if (_segments[i].mask) {
+        continue;
+      }
+
+      if (_segments[i].name != other._segments[i].name) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+class _PathSegment {
+  static RegExp _mask = RegExp('{.*}');
+
+  final String name;
+  final bool mask;
+  final _PathSegment? next;
+
+  _PathSegment(this.name, this.mask, this.next);
+
+  static List<_PathSegment> chain(List<String> parts) {
+    final segments = <_PathSegment>[];
+
+    _PathSegment? lastSegment;
+    parts.reversed.forEach((element) {
+      segments.add(lastSegment = _PathSegment(
+        element,
+        _mask.hasMatch(element),
+        lastSegment,
+      ));
+    });
+
+    return segments.reversed.toList();
   }
 }
 
