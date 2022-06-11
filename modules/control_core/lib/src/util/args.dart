@@ -44,12 +44,12 @@ class ControlArgs implements Disposable {
         _args[item.runtimeType] = item;
       });
     } else if (args is Iterable) {
-      if (args.runtimeType == Parse.type<Iterable<dynamic>>()) {
+      if (args.length > 1 && args.every((element) => element.runtimeType == args.first.runtimeType)) {
+        _args[args.runtimeType] = args;
+      } else {
         args.forEach((item) {
           _args[item.runtimeType] = item;
         });
-      } else {
-        _args[args.runtimeType] = args;
       }
     } else {
       _args[args.runtimeType] = args;
@@ -58,8 +58,7 @@ class ControlArgs implements Disposable {
 
   /// Adds [value] to data store under given [key].
   /// [ControlFactory.keyOf] is used to determine store key.
-  void add<T>({dynamic key, required dynamic value}) =>
-      _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
+  void add<T>({dynamic key, required dynamic value}) => _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
 
   /// Combines this store with given [args].
   void combine(ControlArgs args) {
@@ -79,8 +78,7 @@ class ControlArgs implements Disposable {
   bool containsKey(dynamic key) => _args.containsKey(key);
 
   /// Returns object of given [key] or [defaultValue].
-  T? get<T>({dynamic key, T? defaultValue}) =>
-      Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
+  T? get<T>({dynamic key, T? defaultValue}) => Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
   /// Returns all items for given [test].
   List<T> getAll<T>({Predicate? test}) {
