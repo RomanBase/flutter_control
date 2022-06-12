@@ -467,7 +467,7 @@ class ControlRootState extends State<ControlRoot> {
 
     _theme = widget.theme ??
         ThemeConfig(
-          builder: (context) => ControlTheme(context),
+          builder: (context) => ControlTheme(context as BuildContext),
           initTheme: ThemeConfig.platformBrightness,
           themes: {
             Brightness.light: (_) => ThemeData.light(),

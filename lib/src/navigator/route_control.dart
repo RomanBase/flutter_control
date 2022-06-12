@@ -309,8 +309,10 @@ class ControlRoute {
 
     final initializer = buildInitializer();
 
-    final route = _buildRoute(initializer.wrap(args: args),
-        _buildPath(ControlArgs(args)..add(value: this)));
+    final route = _buildRoute(
+        initializer.wrap(args: args),
+        _buildPath(
+            ControlArgs([this, RouteMask.of(mask ?? identifier)])..set(args)));
 
     initializer.data = route;
 
@@ -447,7 +449,7 @@ class RouteStore {
   /// Value: [RouteControl].
   final _routes = Map<String, ControlRoute>();
 
-  final _masks = <_RouteMask?>[];
+  final _masks = <RouteMask>[];
 
   /// Stores Routes with their Identifiers.
   ///
@@ -479,7 +481,7 @@ class RouteStore {
     }());
 
     _routes[identifier] = route;
-    _masks.add(_RouteMask.of(route.mask ?? identifier));
+    _masks.add(RouteMask.of(route.mask ?? identifier));
 
     return identifier;
   }
@@ -494,11 +496,11 @@ class RouteStore {
       return _routes[identifier];
     }
 
-    identifier = _RouteMask.of(identifier);
-    final mask = _masks.firstWhere((element) => element!.match(identifier),
-        orElse: () => null);
+    identifier = RouteMask.of(identifier);
+    final mask = _masks.firstWhere((element) => element.match(identifier),
+        orElse: () => RouteMask.empty);
 
-    if (mask != null && _routes.containsKey(mask.path)) {
+    if (mask.isNotEmpty && _routes.containsKey(mask.path)) {
       return _routes[mask.path];
     }
 
@@ -534,7 +536,7 @@ class RouteStore {
     return key;
   }
 
-  static _RouteMask routePathMask(String path) => _RouteMask.of(path);
+  static RouteMask routePathMask(String path) => RouteMask.of(path);
 
   /// Alters given [identifier] with [path].
   static String routePathIdentifier<T>(
@@ -575,7 +577,7 @@ class RouteStore {
   }
 }
 
-class _RouteMask {
+class RouteMask {
   final List<_PathSegment> _segments;
 
   String get path => '/' + _segments.map((e) => e.name).join('/');
@@ -583,15 +585,27 @@ class _RouteMask {
   List<String> get args =>
       _segments.where((e) => e.mask).map((e) => e.name).toList();
 
-  static _RouteMask get root => _RouteMask._([_PathSegment('', false, null)]);
+  bool get isEmpty => _segments.isEmpty;
 
-  const _RouteMask._(this._segments);
+  bool get isNotEmpty => _segments.isNotEmpty;
 
-  factory _RouteMask.of(String path) => path == '/'
-      ? root
-      : _RouteMask._(_PathSegment.chain(Uri.parse(path).pathSegments));
+  int get segmentCount => _segments.length;
 
-  bool match(_RouteMask other) {
+  static RouteMask get root => RouteMask._([_PathSegment('', false, null)]);
+
+  static RouteMask get empty => RouteMask._([]);
+
+  const RouteMask._(this._segments);
+
+  factory RouteMask.of(String? path) => path == null
+      ? empty
+      : (path == '/'
+          ? root
+          : RouteMask._(_PathSegment.chain(Uri.parse(
+                  path, 0, path.endsWith('/') ? path.length - 1 : path.length)
+              .pathSegments)));
+
+  bool match(RouteMask other) {
     if (other._segments.length != _segments.length) {
       return false;
     }
@@ -607,6 +621,38 @@ class _RouteMask {
     }
 
     return true;
+  }
+
+  String format(dynamic args, [ParamDecoratorFormat? decorator]) {
+    if (args == null || this.args.isEmpty) {
+      return path;
+    }
+
+    if (args is Iterable) {
+      _PathSegment? _segment = _segments.first.firstMask();
+      final map = <String, String>{};
+
+      for (int i = 0; i < args.length; i++) {
+        if (_segment == null) {
+          break;
+        }
+
+        map[_segment.name] = args.elementAt(i);
+        _segment = _segment.nextMask();
+      }
+
+      return Parse.format(path, map, ParamDecorator.none);
+    }
+
+    if (args is Map) {
+      return Parse.format(
+          path,
+          Parse.toKeyMap(args, (key, value) => '$key',
+              converter: (value) => '$value'),
+          decorator);
+    }
+
+    return Parse.format(path, {this.args.first: '$args'}, ParamDecorator.none);
   }
 }
 
@@ -632,6 +678,22 @@ class _PathSegment {
     });
 
     return segments.reversed.toList();
+  }
+
+  _PathSegment? firstMask() {
+    if (mask) {
+      return this;
+    }
+
+    return nextMask();
+  }
+
+  _PathSegment? nextMask() {
+    if (next != null) {
+      return next!.firstMask();
+    }
+
+    return null;
   }
 }
 

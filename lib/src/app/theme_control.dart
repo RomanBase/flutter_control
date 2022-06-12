@@ -206,7 +206,8 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
-  Initializer get _defaultBuilder => (context) => ControlTheme(context);
+  Initializer get _defaultBuilder =>
+      (context) => ControlTheme(context as BuildContext);
 
   Initializer<T> get initializer =>
       (context) => (builder ?? _defaultBuilder)(context)..config = this;

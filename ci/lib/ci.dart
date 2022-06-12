@@ -54,3 +54,7 @@ Future pubGet() async {
 Future dartfmt() async {
   await shell.run('flutter dartfmt .');
 }
+
+Future pubPublish(String module) async {
+  await moduleShell(module).run('flutter pub publish');
+}

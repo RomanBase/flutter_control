@@ -224,4 +224,20 @@ void main() {
       expect(parse5, isNotNull);
     });
   });
+
+  group('Control args', () {
+    test('identical list', () {
+      final args = ControlArgs([1, 2, 3]);
+
+      expect(args.get<List<int>>(), isNotNull);
+      expect(args.get<int>(), isNull);
+    });
+
+    test('dynamic list', () {
+      final args = ControlArgs([1, 'a', true]);
+
+      expect(args.get<List>(), isNull);
+      expect(args.get<int>(), equals(1));
+    });
+  });
 }

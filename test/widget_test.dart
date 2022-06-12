@@ -64,7 +64,7 @@ void main() {
       expect(controller, isNotNull);
 
       // ignore: invalid_use_of_protected_member
-      expect(widget.controls!.length, 1);
+      expect(widget.controls.length, 1);
       expect(controller.isInitialized, isTrue);
       expect(controller.value, isTrue);
     });
@@ -77,7 +77,7 @@ void main() {
 
       await tester.pumpWidget(widget);
 
-      final controller = widget.control!;
+      final controller = widget.control;
 
       expect(widget.isInitialized, isTrue);
       expect(widget.getArg(key: 'init'), isTrue);
@@ -99,7 +99,7 @@ void main() {
       expect(widget.getArg(key: 'init'), isTrue);
 
       // ignore: invalid_use_of_protected_member
-      expect(widget.controls!.length, 0);
+      expect(widget.controls.length, 0);
     });
   });
 

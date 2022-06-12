@@ -619,12 +619,8 @@ class ControlFactory with Disposable {
       }
 
       //TODO: subtype
-      if (_items.values.firstWhere((item) => item.runtimeType == value,
-                  orElse: () => null) !=
-              null ||
-          _initializers.keys.firstWhere((item) => item.runtimeType == value,
-                  orElse: () => _InvalidKey) !=
-              _InvalidKey) {
+      if (_items.values.any((item) => item.runtimeType == value) ||
+          _initializers.keys.any((item) => item.runtimeType == value)) {
         return true;
       }
     }
