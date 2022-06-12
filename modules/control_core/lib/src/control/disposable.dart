@@ -109,7 +109,7 @@ mixin ReferenceCounter on DisposeHandler {
 /// Propagates `thread` notifications that can be canceled.
 ///
 /// For example can be used to represent Image upload Stream that can be canceled.
-/// {@end-template}
+/// {@endtemplate}
 class DisposableClientBase implements Disposable {
   /// Parent of this disposer.
   final dynamic parent;
