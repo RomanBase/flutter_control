@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 
 class RoundInputDecoration extends InputDecoration {
   RoundInputDecoration({double radius: 12.0, Color color: Colors.white})

@@ -1,11 +1,11 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_group_control.dart';
 import 'package:spends/entity/spend_item.dart';
 
 import 'spend_control.dart';
 import 'spend_item_model.dart';
 
-class SpendItemControl extends BaseControl with RouteControlProvider {
+class SpendItemControl extends BaseControl with RouteNavigatorProvider {
   final title = InputControl(regex: '.{3,}');
   final note = InputControl();
   final value = InputControl();
@@ -18,7 +18,7 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
   SpendItem get item => SpendItem(
         title: title.text,
         note: note.text,
-        value: Parse.toDouble(value.value),
+        value: Parse.toDouble(value.text),
         type: type.value,
         groupId: group.value != 'none' ? group.value : null,
         items:
@@ -78,6 +78,6 @@ class SpendItemControl extends BaseControl with RouteControlProvider {
       }
     }
 
-    close();
+    navigator.close();
   }
 }

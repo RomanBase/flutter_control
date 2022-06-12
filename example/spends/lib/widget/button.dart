@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 
 class RoundedButton extends StatelessWidget with ThemeProvider {
   final VoidCallback onPressed;
@@ -70,7 +70,7 @@ class RoundedButton extends StatelessWidget with ThemeProvider {
       return child;
     }
 
-    final textStyle = style ?? font.button;
+    final textStyle = style ?? theme.font.button;
     final text = title != null
         ? Text(title,
             style: tint != null ? textStyle.copyWith(color: tint) : textStyle)

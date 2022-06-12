@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 
@@ -28,7 +28,7 @@ class MenuPicker extends StatelessWidget with ThemeProvider<SpendTheme> {
 
   @override
   Widget build(BuildContext context) {
-    return ActionBuilder(
+    return ControlBuilder(
         control: control,
         builder: (context, value) {
           final buttons = items
@@ -55,7 +55,7 @@ class MenuPicker extends StatelessWidget with ThemeProvider<SpendTheme> {
       color: selected ? theme.primaryColorLight : Colors.transparent,
       outline: selected ? theme.primaryColorLight : theme.gray.withOpacity(0.5),
       title: item.title ?? '-',
-      style: font.button.copyWith(fontWeight: FontWeight.w300),
+      style: theme.font.button.copyWith(fontWeight: FontWeight.w300),
     );
 
     if (wrap) {

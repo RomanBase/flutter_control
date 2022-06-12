@@ -1,9 +1,10 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_item_control.dart';
 import 'package:spends/entity/spend_item.dart';
 import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
+import 'package:spends/widget/input_field.dart';
 import 'package:spends/widget/menu_picker.dart';
 
 class SpendItemDialog extends SingleControlWidget<SpendItemControl>
@@ -53,7 +54,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl>
                       ),
                     ],
                   ),
-                  ActionBuilder(
+                  ControlBuilder(
                     control: control.type,
                     builder: (context, value) {
                       if (value == SpendType.group) {
@@ -123,7 +124,7 @@ class SpendItemDialog extends SingleControlWidget<SpendItemControl>
                     onPressed: control.submit,
                     child: Text(
                       localize('submit'),
-                      style: font.button,
+                      style: theme.font.button,
                     ),
                   ),
                 ],

@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/account/account_control.dart';
 
 class AccountPage extends SingleControlWidget<AccountControl>

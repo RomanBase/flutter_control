@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/page/spend/spends_page.dart';
 import 'package:spends/theme.dart';
 
@@ -14,7 +14,6 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
     return Scaffold(
       body: NavigatorStack.menu(
         control: control,
-        initialIndex: 1,
         items: {
           NavItem(
             key: 'filter',
@@ -23,7 +22,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
               printDebug('filter selected');
               return true;
             },
-          ): null,
+          ): (_) => Container(),
           NavItem(
             key: 'spends',
             iconBuilder: (_) => Icons.account_balance_wallet,
@@ -39,11 +38,11 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
               routeOf<AccountPage>().openRoute();
               return true;
             },
-          ): null,
+          ): (_) => Container(),
         },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
-      floatingActionButton: ActionBuilder<int>(
+      floatingActionButton: ControlBuilder<int>(
         control: control.pageIndex,
         builder: (context, value) => _actionButton(value == 2),
       ),
@@ -52,7 +51,7 @@ class MenuPage extends SingleControlWidget<NavigatorStackControl>
         color: theme.gray,
         child: Container(
           height: theme.buttonHeight,
-          child: ActionBuilder<int>(
+          child: ControlBuilder<int>(
             control: control.pageIndex,
             builder: (context, index) {
               return Row(

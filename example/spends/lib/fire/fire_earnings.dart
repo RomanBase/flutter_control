@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/data/earnings_repo.dart';
 import 'package:spends/entity/earnings_item.dart';
 
@@ -8,17 +8,17 @@ import 'fire_db.dart';
 class FireEarningsRepo extends FireDB implements EarningsRepo {
   CollectionReference earningsRef() => dataRef().collection('earnings');
 
-  DocumentReference earningRef(String itemId) => earningsRef().document(itemId);
+  DocumentReference earningRef(String itemId) => earningsRef().doc(itemId);
 
   @override
   Future<List<EarningsItem>> getEarnings() async {
-    final result = await earningsRef().getDocuments();
+    final result = await earningsRef().get();
 
-    return Parse.toList<EarningsItem>(result.documents, converter: (snapshot) {
+    return Parse.toList<EarningsItem>(result.docs, converter: (snapshot) {
       if (snapshot is DocumentSnapshot && snapshot.exists) {
         return EarningsItem.fromData(
-          id: snapshot.documentID,
-          data: snapshot.data,
+          id: snapshot.id,
+          data: snapshot.data(),
         );
       }
 
@@ -30,7 +30,7 @@ class FireEarningsRepo extends FireDB implements EarningsRepo {
   Future<EarningsItem> add(EarningsItem item) async {
     final result = await earningsRef().add(item.asData());
 
-    return item.copyWith(id: result.documentID);
+    return item.copyWith(id: result.id);
   }
 
   @override
@@ -38,7 +38,7 @@ class FireEarningsRepo extends FireDB implements EarningsRepo {
     assert(origin.id != null);
     item ??= origin;
 
-    await earningRef(origin.id).setData(item.asData());
+    await earningRef(origin.id).set(item.asData());
 
     return item.copyWith(id: origin.id);
   }

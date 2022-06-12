@@ -1,8 +1,9 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_item_control.dart';
 import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
+import 'package:spends/widget/input_field.dart';
 
 class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl>
     with ThemeProvider<SpendTheme>, RouteControl {
@@ -49,7 +50,7 @@ class SpendGroupEditDialog extends SingleControlWidget<SpendItemControl>
                     onPressed: control.submit,
                     child: Text(
                       localize('submit'),
-                      style: font.button,
+                      style: theme.font.button,
                     ),
                   ),
                 ],

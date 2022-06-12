@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_control.dart';
 import 'package:spends/control/spend/spend_item_model.dart';
 import 'package:spends/entity/spend_item.dart';

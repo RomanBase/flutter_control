@@ -24,13 +24,9 @@ dependencies:
     path: ../../
 
   #https://github.com/FirebaseExtended/flutterfire
-  firebase_core:
-  firebase_auth:
-  cloud_firestore:
-  cloud_functions:
-  firebase_analytics:
-
-  google_sign_in:
+  firebase_core: 1.0.0
+  firebase_auth: 1.0.0
+  cloud_firestore: 1.0.0
 
   flutter_slidable: "^0.5.4"
 

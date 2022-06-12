@@ -1,9 +1,10 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/earnings/earnings_item_control.dart';
 import 'package:spends/entity/earnings_item.dart';
 import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
+import 'package:spends/widget/input_field.dart';
 import 'package:spends/widget/menu_picker.dart';
 
 class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
@@ -81,7 +82,7 @@ class EarningsItemDialog extends SingleControlWidget<EarningsItemControl>
                     onPressed: control.submit,
                     child: Text(
                       localize('submit'),
-                      style: font.button,
+                      style: theme.font.button,
                     ),
                   ),
                 ],

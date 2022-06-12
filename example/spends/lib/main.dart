@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/account/account_control.dart';
 import 'package:spends/control/earnings/earnings_control.dart';
 import 'package:spends/control/earnings/earnings_item_control.dart';
@@ -30,11 +29,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      localization: LocalizationConfig(locales: {
+      localization: LocalinoConfig(locales: {
         'en': 'assets/localization/en.json',
       }),
       entries: {
-        NavigatorStackControl: NavigatorStackControl(),
+        NavigatorStackControl: NavigatorStackControl(initialPageIndex: 1),
         FireControl: FireControl(),
         SpendControl: SpendControl(),
         EarningsControl: EarningsControl(),

@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/data/repo_provider.dart';
 import 'package:spends/entity/spend_item.dart';
 import 'package:spends/fire/fire_control.dart';
@@ -115,7 +115,7 @@ class SpendControl extends BaseControl with RepoProvider {
           group.item = data;
         });
 
-        await Future.wait([remove, update]);
+        await FutureBlock.wait([remove, update]);
 
         movedToGroup = true;
         group.loading.done();

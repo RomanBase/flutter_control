@@ -1,8 +1,8 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/data/repo_provider.dart';
 import 'package:spends/entity/spend_item.dart';
 
-class SpendItemModel extends BaseModel with StateControl, RepoProvider {
+class SpendItemModel extends BaseModel with ObservableComponent, RepoProvider {
   final loading = LoadingControl();
 
   SpendItem _item;
@@ -11,7 +11,7 @@ class SpendItemModel extends BaseModel with StateControl, RepoProvider {
 
   set item(SpendItem value) {
     _item = value;
-    notifyState();
+    notify();
   }
 
   SpendItemModel(SpendItem item) {

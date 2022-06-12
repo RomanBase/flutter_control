@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/data/spend_repo.dart';
 import 'package:spends/entity/spend_item.dart';
 
@@ -8,17 +8,17 @@ import 'fire_db.dart';
 class FireSpendRepo extends FireDB implements SpendRepo {
   CollectionReference spendsRef() => dataRef().collection('spends');
 
-  DocumentReference spendRef(String itemId) => spendsRef().document(itemId);
+  DocumentReference spendRef(String itemId) => spendsRef().doc(itemId);
 
   @override
   Future<List<SpendItem>> getSpends() async {
-    final result = await spendsRef().getDocuments();
+    final result = await spendsRef().get();
 
-    return Parse.toList<SpendItem>(result.documents, converter: (snapshot) {
+    return Parse.toList<SpendItem>(result.docs, converter: (snapshot) {
       if (snapshot is DocumentSnapshot && snapshot.exists) {
         return SpendItem.fromData(
-          id: snapshot.documentID,
-          data: snapshot.data,
+          id: snapshot.id,
+          data: snapshot.data(),
         );
       }
 
@@ -30,7 +30,7 @@ class FireSpendRepo extends FireDB implements SpendRepo {
   Future<SpendItem> add(SpendItem item) async {
     final result = await spendsRef().add(item.asData());
 
-    return item.copyWith(id: result.documentID);
+    return item.copyWith(id: result.id);
   }
 
   @override
@@ -38,7 +38,7 @@ class FireSpendRepo extends FireDB implements SpendRepo {
     assert(origin.id != null);
     item ??= origin;
 
-    await spendRef(origin.id).setData(item.asData());
+    await spendRef(origin.id).set(item.asData());
 
     return item.copyWith(id: origin.id);
   }

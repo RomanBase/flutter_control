@@ -1,9 +1,10 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/init_control.dart';
 import 'package:spends/fire/fire_control.dart';
 import 'package:spends/theme.dart';
 import 'package:spends/widget/button.dart';
 import 'package:spends/widget/input_decoration.dart';
+import 'package:spends/widget/input_field.dart';
 
 class _UIControl extends ControlModel with FireProvider, TickerComponent {
   final signMode = ActionControl.broadcast<SignMode>(SignMode.sign_in);
@@ -24,7 +25,7 @@ class _UIControl extends ControlModel with FireProvider, TickerComponent {
 
   @override
   void onTickerInitialized(TickerProvider ticker) {
-    final theme = ThemeProvider.of();
+    final theme = ThemeProvider.of(ControlScope.root.context);
     fieldAnim =
         AnimationController(vsync: ticker, duration: theme.animDuration);
     loadingAnim =
@@ -164,7 +165,7 @@ class InitPage extends ControlWidget
       body: Stack(
         children: <Widget>[
           _wrapToScroll(
-            child: ActionBuilder<SignMode>(
+            child: ControlBuilder<SignMode>(
               control: uiControl.signMode,
               builder: (context, value) {
                 return AnimatedContainer(
@@ -272,7 +273,7 @@ class InitPage extends ControlWidget
                   color: theme.dark,
                   child: Text(
                     localize('submit'),
-                    style: font.button,
+                    style: theme.font.button,
                   ),
                 ),
                 SizedBox(
@@ -280,7 +281,7 @@ class InitPage extends ControlWidget
                 ),
                 FadeButton(
                   onPressed: uiControl.toggleSignType,
-                  child: ActionBuilder<SignMode>(
+                  child: ControlBuilder<SignMode>(
                     control: uiControl.signMode,
                     builder: (context, value) {
                       final singIn = value == SignMode.sign_in;
@@ -295,7 +296,7 @@ class InitPage extends ControlWidget
                             ),
                             TextSpan(
                               text: singIn ? 'Sing Up!' : 'Sign In!',
-                              style: font.button,
+                              style: theme.font.button,
                             ),
                           ],
                         ),
@@ -312,7 +313,7 @@ class InitPage extends ControlWidget
                     onPressed: () => uiControl.setSignMode(SignMode.sign_pass),
                     child: Text(
                       'Forgotten password ?',
-                      style: font.bodyText2,
+                      style: theme.font.bodyText2,
                     ),
                   ),
                 ),
@@ -326,7 +327,7 @@ class InitPage extends ControlWidget
 
   Widget _fieldSignState(
       {List<SignMode> states, @required Widget child, double topPadding: 0.0}) {
-    return ActionBuilder<SignMode>(
+    return ControlBuilder<SignMode>(
       control: uiControl.signMode,
       builder: (context, mode) {
         return SizeTransition(

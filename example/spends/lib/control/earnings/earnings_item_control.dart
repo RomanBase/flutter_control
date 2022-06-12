@@ -1,9 +1,9 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/earnings/earnings_control.dart';
 import 'package:spends/control/earnings/earnings_item_model.dart';
 import 'package:spends/entity/earnings_item.dart';
 
-class EarningsItemControl extends BaseControl with RouteControlProvider {
+class EarningsItemControl extends BaseControl with RouteNavigatorProvider {
   final title = InputControl(regex: '.{3,}');
 
   var note = InputControl();
@@ -21,7 +21,7 @@ class EarningsItemControl extends BaseControl with RouteControlProvider {
   EarningsItem get item => EarningsItem(
         title: title.text,
         note: note.text,
-        value: Parse.toDouble(value.value),
+        value: Parse.toDouble(value.text),
         type: type.value,
       );
 
@@ -46,6 +46,6 @@ class EarningsItemControl extends BaseControl with RouteControlProvider {
       earningsControl.addItem(item);
     }
 
-    close();
+    navigator.close();
   }
 }

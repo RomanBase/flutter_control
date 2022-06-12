@@ -1,46 +1,49 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_control/core.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_control/control.dart';
+import 'package:spends/fire/fire_provider.dart';
 
 class FireProvider {
   FireControl get fire => Control.get<FireControl>();
 }
 
 class FireControl {
-  final _user = ActionControl.broadcast<FirebaseUser>();
+  final _user = ActionControl.empty<User>();
 
-  FirebaseUser get user => _user.value;
+  User get user => _user.value;
 
   bool get isUserSignedIn => _user.isNotEmpty;
 
   String get uid => _user.value?.uid;
 
-  ActionControlObservable<FirebaseUser> get userSub => _user.sub;
+  ObservableModel<User> get userSub => _user;
 
-  Future<FirebaseUser> signUp(
-      String email, String password, String nickname) async {
+  Future<User> signUp(String email, String password, String nickname) async {
     final user = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(email: email, password: password);
 
-    final info = UserUpdateInfo()..displayName = nickname;
-
-    await user.user.updateProfile(info);
+    await user.user.updateProfile(displayName: nickname);
 
     return _user.value = user.user;
   }
 
-  Future<FirebaseUser> signIn(String email, String password) async {
+  Future<User> signIn(String email, String password) async {
     final user = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
 
     return _user.value = user.user;
   }
 
-  Future<FirebaseUser> restore() async =>
-      _user.value = await FirebaseAuth.instance.currentUser();
+  Future<User> restore() async {
+    await FirebaseProvider
+        .initialize(); // init firebase app + edit android/app/build.gradle applicationId
 
-  Future<FirebaseUser> signInWithGoogle() async {
-    final google = GoogleSignIn(scopes: [
+    _user.value = FirebaseAuth.instance.currentUser;
+
+    return _user.value;
+  }
+
+  Future<User> signInWithGoogle() async {
+    /*final google = GoogleSignIn(scopes: [
       'email',
     ]);
 
@@ -53,14 +56,12 @@ class FireControl {
     }
 
     final auth = await acc.authentication;
-    final credential = GoogleAuthProvider.getCredential(
-        idToken: auth.idToken, accessToken: auth.accessToken);
 
-    final user = await FirebaseAuth.instance.signInWithCredential(credential);
+    final user = await FirebaseAuth.instance.signinwi(idToken: auth.idToken, accessToken: auth.accessToken);
 
     await google.signOut();
 
-    return _user.value = user.user;
+    return _user.value = user;*/
   }
 
   Future<void> signOut() async {

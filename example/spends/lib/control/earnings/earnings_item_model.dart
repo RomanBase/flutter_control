@@ -1,7 +1,7 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/entity/earnings_item.dart';
 
-class EarningsItemModel extends BaseModel with StateControl {
+class EarningsItemModel extends BaseModel with NotifierComponent {
   final loading = LoadingControl();
 
   EarningsItem _item;
@@ -10,7 +10,7 @@ class EarningsItemModel extends BaseModel with StateControl {
 
   set item(EarningsItem value) {
     _item = value;
-    notifyState();
+    notify();
   }
 
   EarningsItemModel(EarningsItem item) {

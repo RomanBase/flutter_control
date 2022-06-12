@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:spends/control/earnings/earnings_item_model.dart';
 import 'package:spends/entity/earnings_item.dart';
@@ -41,12 +41,12 @@ class EarningsListItem extends SingleControlWidget<EarningsItemModel>
                   children: <Widget>[
                     Text(
                       item.title,
-                      style: font.bodyText1,
+                      style: theme.font.bodyText1,
                     ),
                     if (item.note != null)
                       Text(
                         item.note,
-                        style: font.bodyText2,
+                        style: theme.font.bodyText2,
                       ),
                   ],
                 ),
@@ -59,11 +59,15 @@ class EarningsListItem extends SingleControlWidget<EarningsItemModel>
                 children: <Widget>[
                   Text(
                     item.yearEarnings.toInt().toString(),
-                    style: item.isSub ? font.bodyText2 : font.bodyText1,
+                    style: item.isSub
+                        ? theme.font.bodyText2
+                        : theme.font.bodyText1,
                   ),
                   Text(
                     item.monthEarnings.toInt().toString(),
-                    style: item.isSub ? font.bodyText1 : font.bodyText2,
+                    style: item.isSub
+                        ? theme.font.bodyText1
+                        : theme.font.bodyText2,
                   ),
                 ],
               ),

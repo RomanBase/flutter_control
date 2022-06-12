@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/earnings/earnings_control.dart';
 import 'package:spends/control/earnings/earnings_item_model.dart';
 import 'package:spends/theme.dart';
@@ -32,7 +32,7 @@ class EarningsPage extends SingleControlWidget<EarningsControl>
                 TabRow(
                   title: 'Extra year earnings',
                   control: control.extraEarnings,
-                  style: font.bodyText2,
+                  style: theme.font.bodyText2,
                 ),
                 SizedBox(
                   height: theme.paddingQuarter,

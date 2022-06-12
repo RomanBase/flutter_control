@@ -1,16 +1,16 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/fire/fire_control.dart';
 
 class AccountControl extends BaseControl
-    with RouteControlProvider, FireProvider {
+    with RouteNavigatorProvider, FireProvider {
   final loading = LoadingControl();
 
   void signOut() async {
     loading.progress();
     await fire.signOut();
 
-    Control.scope.setInitState();
+    ControlScope.root.setInitState();
 
-    backToRoot();
+    navigator.backToRoot();
   }
 }

@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/data/repo_provider.dart';
 import 'package:spends/entity/earnings_item.dart';
 import 'package:spends/fire/fire_control.dart';

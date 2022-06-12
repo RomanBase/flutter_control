@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_group_control.dart';
 import 'package:spends/control/spend/spend_item_model.dart';
 import 'package:spends/theme.dart';
@@ -35,7 +35,7 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl>
                   TabRow(
                     title: 'Average month spends',
                     control: control.monthAvgSpend,
-                    style: font.bodyText2,
+                    style: theme.font.bodyText2,
                   ),
                   SizedBox(
                     height: theme.paddingQuarter,
@@ -97,8 +97,8 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl>
               SizedBox(
                 width: theme.padding,
               ),
-              NotifierBuilder(
-                control: control.group.state,
+              ControlBuilder(
+                control: control.group,
                 builder: (context, state) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,12 +106,13 @@ class SpendGroupPage extends SingleControlWidget<SpendGroupControl>
                     children: <Widget>[
                       Text(
                         control.group.item.title,
-                        style: font.headline6,
+                        style: theme.font.headline6,
                       ),
                       if (control.group.item.hasNote)
                         Text(
                           control.group.item.note,
-                          style: font.bodyText2.copyWith(color: theme.dark),
+                          style:
+                              theme.font.bodyText2.copyWith(color: theme.dark),
                         ),
                     ],
                   );

@@ -1,4 +1,4 @@
-import 'package:flutter_control/core.dart';
+import 'package:flutter_control/control.dart';
 import 'package:spends/control/spend/spend_control.dart';
 import 'package:spends/control/spend/spend_item_model.dart';
 import 'package:spends/theme.dart';
@@ -35,7 +35,7 @@ class SpendsPage extends SingleControlWidget<SpendControl>
                   TabRow(
                     title: 'Average month spends',
                     control: control.monthAvgSpend,
-                    style: font.bodyText2,
+                    style: theme.font.bodyText2,
                   ),
                   SizedBox(
                     height: theme.paddingQuarter,
