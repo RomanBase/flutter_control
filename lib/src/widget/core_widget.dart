@@ -97,7 +97,7 @@ abstract class CoreWidget extends StatefulWidget
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   ///
   /// Check [ControlWidget] and [StateboundWidget].
-  CoreWidget({Key? key, dynamic args}) : super(key: key) {
+  CoreWidget({super.key, dynamic args}) {
     holder.set(args);
   }
 
@@ -216,6 +216,13 @@ abstract class CoreWidget extends StatefulWidget
   }
 
   @protected
+  void unregister(Disposable? object) {
+    assert(isInitialized);
+
+    holder.state!.unregister(object);
+  }
+
+  @protected
   void registerStateNotifier(dynamic object) {
     if (object is ObservableValue) {
       register(object.subscribe((value) => notifyState()));
@@ -273,7 +280,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   }
 
   /// Unregisters object to dispose from this State.
-  void unregister(Disposable object) {
+  void unregister(Disposable? object) {
     _objects?.remove(object);
 
     if (object is ReferenceCounter) {

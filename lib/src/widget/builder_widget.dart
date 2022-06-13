@@ -15,12 +15,12 @@ class ControlBuilder<T> extends StatefulWidget {
   final T Function(dynamic)? valueConverter;
 
   const ControlBuilder({
-    Key? key,
+    super.key,
     required this.control,
     required this.builder,
     this.noData,
     this.valueConverter,
-  }) : super(key: key);
+  });
 
   @override
   _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
@@ -139,11 +139,11 @@ class ControlBuilderGroup extends StatefulWidget {
   /// [builder] - Widget builder, passes [value] as List of values from given [controls].
   /// [passControls] - Passes [controls] to [builder] instead of 'values'.
   const ControlBuilderGroup({
-    Key? key,
+    super.key,
     required this.controls,
     required this.builder,
     this.passControls: false,
-  }) : super(key: key);
+  });
 
   @override
   _ControlBuilderGroupState createState() => _ControlBuilderGroupState();

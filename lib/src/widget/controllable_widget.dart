@@ -9,9 +9,8 @@ abstract class ControllableWidget<T> extends CoreWidget {
 
   ControllableWidget(
     this.control, {
-    Key? key,
-  })  : assert(control != null),
-        super(key: key);
+    super.key,
+  }) : assert(control != null);
 
   @override
   void onInit(Map args) {

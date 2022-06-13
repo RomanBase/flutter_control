@@ -27,7 +27,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
   T get control => controls[0] as T;
 
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
-  SingleControlWidget({Key? key, dynamic args}) : super(key: key, args: args);
+  SingleControlWidget({super.key, super.args});
 
   @override
   List<ControlModel> initControls() {
@@ -102,9 +102,9 @@ abstract class ControlWidget extends CoreWidget
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
   ControlWidget({
-    Key? key,
-    dynamic args,
-  }) : super(key: key, args: args);
+    super.key,
+    super.args,
+  });
 
   /// This is a place where to fill all required [ControlModel]s for this Widget.
   /// Called during Widget/State initialization phase.

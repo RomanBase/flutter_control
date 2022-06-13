@@ -7,11 +7,10 @@ class FieldStreamBuilder<T> extends StreamBuilder<T?> {
   /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
   /// [builder] - required Widget builder. [AsyncSnapshot] is passing data to handle.
   FieldStreamBuilder({
-    Key? key,
+    super.key,
     required FieldControl<T> control,
     required AsyncWidgetBuilder<T?> builder,
   }) : super(
-          key: key,
           initialData: control.value,
           stream: control.stream,
           builder: builder,
@@ -31,13 +30,12 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
   /// [noData] - Widget to show, when value is 'null'.
   /// [nullOk] - Determine where to handle 'null' values. 'true' - 'null' will be passed to [builder].
   FieldBuilder({
-    Key? key,
+    super.key,
     required FieldControl<T> control,
     required ControlWidgetBuilder<T?> builder,
     WidgetBuilder? noData,
     bool nullOk: false,
   }) : super(
-            key: key,
             control: control,
             builder: (context, snapshot) {
               if (snapshot.hasData || nullOk) {
@@ -60,13 +58,12 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>?> {
   /// [noData] - Widget to show, when List is empty.
   /// [nullOk] - Determine where to handle empty List. 'true' - empty List will be passed to [builder].
   ListBuilder({
-    Key? key,
+    super.key,
     required FieldControl<List<T>> control,
     required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder? noData,
     bool nullOk: false,
   }) : super(
-          key: key,
           control: control,
           builder: (context, snapshot) {
             if ((snapshot.hasData && snapshot.data!.length > 0) || nullOk) {
@@ -99,7 +96,7 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
   ///  If status don't have default builder, empty [Container] is build.
   ///  'null' is considered as [LoadingStatus.initial].
   LoadingBuilder({
-    Key? key,
+    super.key,
     required LoadingControl control,
     WidgetBuilder? initial,
     WidgetBuilder? progress,
@@ -111,7 +108,6 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
     CrossTransition? transition,
     Map<LoadingStatus, CrossTransition>? transitions,
   }) : super(
-          key: key,
           control: control,
           builder: (context, snapshot) {
             final state =
