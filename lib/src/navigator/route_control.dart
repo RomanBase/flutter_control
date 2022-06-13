@@ -5,6 +5,20 @@ typedef RouteWidgetBuilder = Route Function(
 
 typedef RouteGenerateBuilder = Route? Function(RouteSettings settings);
 
+typedef RouteArgInitializer = dynamic Function(RouteArgs args);
+
+class RouteArgs extends ControlArgs {
+  ControlRoute get route => get<ControlRoute>()!;
+
+  RouteMask get mask => get<RouteMask>()!;
+
+  RouteArgs._(ControlRoute route, RouteMask mask, [dynamic args])
+      : super(args) {
+    add(value: route);
+    add(value: mask);
+  }
+}
+
 class RoutingModule extends ControlModule<RouteStore> {
   final List<ControlRoute> routes;
 
@@ -260,9 +274,9 @@ class ControlRoute {
   /// Custom Route builder.
   RouteWidgetBuilder? _routeBuilder;
 
-  Initializer<dynamic>? _pathBuilder;
+  RouteArgInitializer? _pathBuilder;
 
-  Initializer<dynamic>? _queryBuilder;
+  RouteArgInitializer? _queryBuilder;
 
   /// Default private constructor.
   /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
@@ -274,9 +288,9 @@ class ControlRoute {
     return WidgetInitializer.initOf(_builder!);
   }
 
-  String _buildPath(dynamic args) => RouteStore.routePathIdentifier(
+  String _buildPath(RouteArgs args) => RouteStore.routePathIdentifier(
         identifier: identifier,
-        path: _pathBuilder?.call(args) ?? '',
+        path: _pathBuilder?.call(args),
         args: _queryBuilder?.call(args),
       );
 
@@ -310,9 +324,9 @@ class ControlRoute {
     final initializer = buildInitializer();
 
     final route = _buildRoute(
-        initializer.wrap(args: args),
-        _buildPath(
-            ControlArgs([this, RouteMask.of(mask ?? identifier)])..set(args)));
+      initializer.wrap(args: args),
+      _buildPath(RouteArgs._(this, RouteMask.of(mask ?? identifier), args)),
+    );
 
     initializer.data = route;
 
@@ -357,15 +371,21 @@ class ControlRoute {
   /// ```
   /// {@endtemplate}
   ControlRoute path(
-          {Initializer<dynamic>? name,
-          Initializer<dynamic>? query,
+          {RouteArgInitializer? name,
+          RouteArgInitializer? query,
           String? mask}) =>
-      _copyWith(path: name, query: query, mask: mask);
+      _copyWith(
+        path: name,
+        query: query,
+        mask: mask,
+      );
 
   /// {@template route-name}
   /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
   /// {@endtemplate}
-  ControlRoute named(String identifier) => _copyWith(identifier: identifier);
+  ControlRoute named(String identifier) => _copyWith(
+        identifier: identifier,
+      );
 
   /// Creates copy of [RouteControl] with given settings.
   ControlRoute _copyWith({
@@ -373,8 +393,8 @@ class ControlRoute {
     String? mask,
     Object? arguments,
     RouteWidgetBuilder? routeBuilder,
-    Initializer<dynamic>? path,
-    Initializer<dynamic>? query,
+    RouteArgInitializer? path,
+    RouteArgInitializer? query,
   }) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
@@ -382,8 +402,8 @@ class ControlRoute {
         ..arguments = arguments ?? this.arguments
         .._builder = _builder
         .._routeBuilder = routeBuilder ?? this._routeBuilder
-        .._pathBuilder = path ?? this._pathBuilder
-        .._queryBuilder = query ?? this._queryBuilder;
+        .._pathBuilder = path
+        .._queryBuilder = query;
 
   /// Initializes [RouteHandler] with given [navigator] and this Route provider.
   RouteHandler navigator(RouteNavigator navigator) =>
@@ -442,7 +462,7 @@ class ControlRouteTransition extends PageRoute {
 ///   - fill routes: [Control.initControl] or add routes directly.
 ///   - retrieve route: [ControlRoute.of].
 class RouteStore {
-  final routing = RoutingProvider._();
+  late RoutingProvider routing = RoutingProvider._(this);
 
   /// Map based Route Store.
   /// Key: [RouteStore.routeIdentifier].
@@ -481,7 +501,7 @@ class RouteStore {
     }());
 
     _routes[identifier] = route;
-    _masks.add(RouteMask.of(route.mask ?? identifier));
+    _masks.add(RouteMask.of(route.mask ?? identifier, identifier));
 
     return identifier;
   }
@@ -500,8 +520,8 @@ class RouteStore {
     final mask = _masks.firstWhere((element) => element.match(identifier),
         orElse: () => RouteMask.empty);
 
-    if (mask.isNotEmpty && _routes.containsKey(mask.path)) {
-      return _routes[mask.path];
+    if (mask.isNotEmpty && _routes.containsKey(mask.identifier)) {
+      return _routes[mask.identifier];
     }
 
     return null;
@@ -555,7 +575,7 @@ class RouteStore {
               .join('/');
     }
 
-    if (args == null) {
+    if (args == null || (args is String && args.isEmpty)) {
       return path;
     }
 
@@ -580,6 +600,8 @@ class RouteStore {
 class RouteMask {
   final List<_PathSegment> _segments;
 
+  final String identifier;
+
   String get path => '/' + _segments.map((e) => e.name).join('/');
 
   List<String> get args =>
@@ -591,19 +613,22 @@ class RouteMask {
 
   int get segmentCount => _segments.length;
 
-  static RouteMask get root => RouteMask._([_PathSegment('', false, null)]);
+  static RouteMask get root =>
+      RouteMask._([_PathSegment('', false, null)], '/');
 
-  static RouteMask get empty => RouteMask._([]);
+  static RouteMask get empty => RouteMask._([], '/');
 
-  const RouteMask._(this._segments);
+  const RouteMask._(this._segments, this.identifier);
 
-  factory RouteMask.of(String? path) => path == null
+  factory RouteMask.of(String? path, [String? identifier]) => path == null
       ? empty
       : (path == '/'
           ? root
-          : RouteMask._(_PathSegment.chain(Uri.parse(
-                  path, 0, path.endsWith('/') ? path.length - 1 : path.length)
-              .pathSegments)));
+          : RouteMask._(
+              _PathSegment.chain(Uri.parse(path, 0,
+                      path.endsWith('/') ? path.length - 1 : path.length)
+                  .pathSegments),
+              identifier ?? path));
 
   bool match(RouteMask other) {
     if (other._segments.length != _segments.length) {
@@ -654,6 +679,37 @@ class RouteMask {
 
     return Parse.format(path, {this.args.first: '$args'}, ParamDecorator.none);
   }
+
+  Map<String, dynamic> params(RouteMask other,
+      [int decoratorStartOffset = 1, int decoratorEndOffset = 1]) {
+    final map = <String, dynamic>{};
+
+    RouteMask mask;
+    RouteMask route;
+
+    if (args.isEmpty) {
+      if (other.args.isEmpty) {
+        return {};
+      }
+
+      mask = other;
+      route = this;
+    } else {
+      mask = this;
+      route = other;
+    }
+
+    final count = mask.segmentCount;
+    for (int i = 0; i < count; i++) {
+      if (mask._segments[i].mask && route.segmentCount > i) {
+        map[mask._segments[i]
+                .substringName(decoratorStartOffset, decoratorEndOffset)] =
+            route._segments[i].name;
+      }
+    }
+
+    return map;
+  }
 }
 
 class _PathSegment {
@@ -680,6 +736,9 @@ class _PathSegment {
     return segments.reversed.toList();
   }
 
+  String substringName(int startOffset, int endOffset) =>
+      name.substring(startOffset, name.length - endOffset);
+
   _PathSegment? firstMask() {
     if (mask) {
       return this;
@@ -698,13 +757,15 @@ class _PathSegment {
 }
 
 class RoutingProvider {
+  final RouteStore parent;
+
   RouteGenerateBuilder? onGenerate;
 
   ControlRootSetup? get setup => ControlScope.root.setup;
 
   RouteSettings? get settings => setup?.args.get<RouteSettings>();
 
-  RoutingProvider._();
+  RoutingProvider._(this.parent);
 
   RouteSettings? popSettings() => setup?.args.pop<RouteSettings>();
 
@@ -727,7 +788,32 @@ class RoutingProvider {
       return null;
     }
 
-    return this.onGenerate?.call(settings);
+    final args = ControlArgs(settings.arguments);
+
+    final controlRoute = parent.getRoute(path);
+
+    if (controlRoute != null) {
+      final mask = RouteMask.of(controlRoute.mask ?? controlRoute.identifier);
+      final params = mask.params(RouteMask.of(path));
+
+      args.add(value: controlRoute);
+      args.add(value: mask);
+      params.forEach((key, value) => args.add(key: key, value: value));
+    }
+
+    if (this.onGenerate == null) {
+      return controlRoute
+          ?._copyWith(
+            identifier: path,
+            arguments: args.data,
+          )
+          .init(args: args.data);
+    }
+
+    return this.onGenerate?.call(RouteSettings(
+          name: path,
+          arguments: args.data,
+        ));
   }
 
   Route? restore() {

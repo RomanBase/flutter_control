@@ -95,5 +95,44 @@ void main() {
       expect(exactArg, isTrue);
       expect(largerArg, isFalse);
     });
+
+    test('params', () {
+      final path = RouteMask.of('/path/to/page/detail');
+      final route = RouteMask.of('/path/{0}/page/{1}');
+      final pathS = RouteMask.of('/path/to/');
+
+      final args1 = path.params(route);
+      final args2 = route.params(path);
+      final args3 = route.params(pathS);
+
+      expect(args1, equals({'0': 'to', '1': 'detail'}));
+      expect(args1, equals(args2));
+      expect(args3, equals({'0': 'to'}));
+    });
+
+    test('restore', () {
+      final path = RouteMask.of('/path/to/page/detail');
+      final mask = RouteMask.of('/path/{0}/page/{1}');
+
+      final store = RouteStore([
+        ControlRoute.build<Container>(
+            builder: (_) => Container(), mask: mask.path),
+      ]);
+
+      final route = store.routing.generate(
+        RouteSettings(
+          name: path.path,
+          arguments: {'arg': 'X'},
+        ),
+        active: true,
+      );
+
+      expect(route, isNotNull);
+      expect(route?.settings.name, equals(path.path));
+      expect(Parse.getArg(route?.settings.arguments, key: '0'), equals('to'));
+      expect(Parse.getArg(route?.settings.arguments, key: 'arg'), equals('X'));
+      expect(Parse.getArg<RouteMask>(route?.settings.arguments)?.path,
+          equals(mask.path));
+    });
   });
 }
