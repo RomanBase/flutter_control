@@ -13,6 +13,7 @@ class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
   final WidgetInitializer initializer;
   final bool overrideNavigation;
+  final List<NavigatorObserver> observers;
 
   /// Default constructor
   const NavigatorStack._({
@@ -20,6 +21,7 @@ class NavigatorStack extends StatefulWidget {
     required this.control,
     required this.initializer,
     this.overrideNavigation: false,
+    this.observers: const [],
   }) : super(key: key);
 
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
@@ -32,6 +34,7 @@ class NavigatorStack extends StatefulWidget {
     NavigatorControl? control,
     required WidgetBuilder builder,
     bool overrideNavigation: false,
+    List<NavigatorObserver> observers: const [],
   }) {
     control ??= NavigatorControl();
 
@@ -40,6 +43,7 @@ class NavigatorStack extends StatefulWidget {
       control: control,
       initializer: WidgetInitializer.of(builder),
       overrideNavigation: overrideNavigation,
+      observers: observers,
     );
   }
 
@@ -82,12 +86,14 @@ class NavigatorStack extends StatefulWidget {
     required Map<NavItem, WidgetBuilder> items,
     StackGroupBuilder? builder,
     bool overrideNavigation: true,
+    List<NavigatorObserver> observers: const [],
   }) {
     final stack = <NavigatorStack>[];
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(menu: key),
           builder: value,
+          observers: observers,
         ) as NavigatorStack));
 
     return NavigatorStack.group(
@@ -139,7 +145,10 @@ class _NavigatorStackState extends State<NavigatorStack>
   Widget build(BuildContext context) {
     final navigator = Navigator(
       key: _navigatorKey,
-      observers: [_heroController!],
+      observers: [
+        _heroController!,
+        ...widget.observers,
+      ],
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
             builder: (context) => widget.initializer.getWidget(context));
