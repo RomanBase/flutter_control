@@ -38,54 +38,6 @@ class RoutingModule extends ControlModule<RouteStore> {
   Future? init() => null;
 }
 
-/// Providing basic type of navigation.
-abstract class RouteNavigator {
-  /// {@template route-open}
-  /// Pushes route into current Navigator.
-  /// [route] - specific route: type, settings, transition etc.
-  /// [root] - pushes route into root Navigator - onto top of everything.
-  /// [replacement] - pushes route as replacement of current route.
-  /// {@endtemplate}
-  Future<dynamic> openRoute(Route route,
-      {bool root: false, bool replacement: false});
-
-  /// {@template route-root}
-  /// Clears current [Navigator] and opens new [Route].
-  /// {@endtemplate}
-  Future<dynamic> openRoot(Route route);
-
-  /// {@template route-dialog}
-  /// Opens specific dialog based on given [type]
-  /// Be default opens simple pop-up dialog.
-  /// {@endtemplate}
-  Future<dynamic> openDialog(WidgetBuilder builder,
-      {bool root: true, dynamic type});
-
-  /// {@template route-back-root}
-  /// Goes back in navigation stack until first [Route].
-  /// {@endtemplate}
-  void backToRoot({Route? open});
-
-  /// {@template route-back-to}
-  /// Goes back in navigation stack until [Route] found.
-  /// {@endtemplate}
-  void backTo<T>({
-    Route? route,
-    String? identifier,
-    bool Function(Route<dynamic>)? predicate,
-    Route? open,
-  });
-
-  /// {@template route-close}
-  /// Pops [Route] from navigation stack.
-  /// result is send back to parent.
-  /// {@endtemplate}
-  bool close([dynamic result]);
-
-  /// Removes given [route] from navigator.
-  bool closeRoute(Route route, [dynamic result]);
-}
-
 /// Ties up [RouteNavigator] and [ControlRoute].
 ///
 /// Initializes [Widget], builds [Route] with given properties and pushes this route to [Navigator].
