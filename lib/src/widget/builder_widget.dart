@@ -34,13 +34,13 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
   T? _mapValue() {
     dynamic val;
 
-    if (_observable != null && _observable!.value is T) {
+    if (_observable != null && (_observable!.value is T || T == dynamic)) {
       val = _observable!.value;
     } else if (widget.control is T) {
       val = widget.control;
     }
 
-    if (val == null && (T == dynamic || null is T)) {
+    if (val == null && T == dynamic) {
       val = _observable?.value ?? widget.control;
     }
 
