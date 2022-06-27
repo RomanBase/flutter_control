@@ -5,8 +5,6 @@ part of flutter_control;
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
-  dynamic get value => (holder.state as _ControllableState?)?._value;
-
   ControllableWidget(
     this.control, {
     super.key,
@@ -30,8 +28,6 @@ abstract class ControllableWidget<T> extends CoreWidget {
 /// State of [ControllableWidget].
 /// Simply wraps [ControlBuilder] or [ControlBuilderGroup] based on [ControllableWidget.control].
 class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
-  dynamic _value;
-
   @override
   Widget build(BuildContext context) {
     final T _control = widget.control;
@@ -40,7 +36,6 @@ class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
       return ControlBuilderGroup(
         controls: _control,
         builder: (context, values) {
-          _value = values;
           return widget.build(context);
         },
       );
@@ -48,11 +43,9 @@ class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
       return ControlBuilder(
         control: _control,
         builder: (context, value) {
-          _value = value;
           return widget.build(context);
         },
         noData: (context) {
-          _value = null;
           return widget.build(context);
         },
       );
