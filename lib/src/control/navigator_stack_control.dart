@@ -2,17 +2,22 @@ part of flutter_control;
 
 typedef NavCallback<T> = T Function(bool selected);
 
+typedef _InvalidKey = Function;
+
 class NavItem {
-  final Object? key;
+  final Object key;
   final NavCallback<dynamic>? iconBuilder;
   final NavCallback<String>? titleBuilder;
   final Object? data;
   final bool selected;
   final ValueGetter<bool>? onSelected;
+  final List<NavigatorObserver> observers;
 
   dynamic get icon => iconBuilder != null ? iconBuilder!(selected) : null;
 
   String? get title => titleBuilder != null ? titleBuilder!(selected) : null;
+
+  static const NavItem _invalid = const NavItem(key: _InvalidKey);
 
   const NavItem({
     required this.key,
@@ -21,14 +26,16 @@ class NavItem {
     this.data,
     this.selected: false,
     this.onSelected,
+    this.observers: const [],
   });
 
   factory NavItem.static({
-    required dynamic key,
+    required Object key,
     dynamic icon,
     String? title,
     Object? data,
     ValueGetter<bool>? onSelected,
+    List<NavigatorObserver> observers: const [],
   }) =>
       NavItem(
         key: key,
@@ -36,6 +43,7 @@ class NavItem {
         titleBuilder: title == null ? null : (_) => title,
         data: data,
         onSelected: onSelected,
+        observers: observers,
       );
 
   NavItem copyWith({
@@ -45,10 +53,11 @@ class NavItem {
   }) =>
       NavItem(
         key: key ?? this.key,
-        iconBuilder: iconBuilder ?? this.iconBuilder,
-        titleBuilder: titleBuilder ?? this.titleBuilder,
         data: data ?? this.data,
         selected: selected ?? this.selected,
+        iconBuilder: this.iconBuilder,
+        titleBuilder: this.titleBuilder,
+        observers: observers,
       );
 
   @override
@@ -74,7 +83,7 @@ abstract class StackNavigationHandler {
 class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Mostly used in combination with [NavigatorStackControl]
-  NavItem? menu;
+  late NavItem menu;
 
   /// Implementation of StackNavigator.
   StackNavigationHandler? _navigator;
@@ -85,13 +94,13 @@ class NavigatorControl extends BaseControl {
   /// Data for menu item.
   /// Returns if this controller is selected.
   /// Mostly used in combination with [NavigatorStackControl]
-  bool get selected => menu!.selected;
+  bool get selected => menu.selected;
 
   /// Data for menu item.
   /// Sets selection for this controller.
   /// Mostly used in combination with [NavigatorStackControl]
   set selected(value) {
-    menu = menu!.copyWith(selected: value);
+    menu = menu.copyWith(selected: value);
     if (onSelectionChanged != null) {
       onSelectionChanged!(value);
     }
@@ -101,10 +110,11 @@ class NavigatorControl extends BaseControl {
   ValueCallback<bool>? onSelectionChanged;
 
   /// Default constructor
-  NavigatorControl({this.menu}) {
-    menu ??= NavItem(
-      key: UniqueKey(),
-    );
+  NavigatorControl({NavItem? key}) {
+    menu = key ??
+        NavItem(
+          key: UniqueKey(),
+        );
   }
 
   @override
@@ -148,7 +158,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
       isValid ? List.of(_items!, growable: false) : [];
 
   /// List of MenuItems set in Widget construct phase.
-  List<NavItem?> get menuItems =>
+  List<NavItem> get menuItems =>
       isValid ? _items!.map((item) => item.menu).toList(growable: false) : [];
 
   /// Returns current controller - based on [currentPageIndex].
@@ -198,7 +208,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
 
     if (key != null) {
       try {
-        return _items!.firstWhere((element) => element.menu?.key == key);
+        return _items!.firstWhere((element) => element.menu.key == key);
       } on StateError {
         return null;
       }
@@ -216,8 +226,8 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
     }
 
     if (currentPageIndex == index) {
-      if (_items![index].menu?.onSelected != null) {
-        if (_items![index].menu!.onSelected!()) {
+      if (_items![index].menu.onSelected != null) {
+        if (_items![index].menu.onSelected!()) {
           return;
         }
       }
@@ -233,8 +243,8 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
 
     index = index.clamp(0, _items!.length - 1);
 
-    if (_items![index].menu?.onSelected != null) {
-      if (_items![index].menu!.onSelected!()) {
+    if (_items![index].menu.onSelected != null) {
+      if (_items![index].menu.onSelected!()) {
         return;
       }
     }
@@ -243,11 +253,11 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
     currentControl.selected = true;
   }
 
-  void setPageByItem(NavItem? item) => setPageIndex(menuItems.indexOf(item));
+  void setPageByItem(NavItem item) => setPageIndex(menuItems.indexOf(item));
 
   void setPageByKey(dynamic key) =>
-      setPageByItem(menuItems.firstWhere((item) => item!.key == key,
-          orElse: () => NavItem(key: null)));
+      setPageByItem(menuItems.firstWhere((item) => item.key == key,
+          orElse: () => NavItem(key: Object)));
 
   void setInitialPage() => setPageIndex(_initialIndex ?? 0);
 

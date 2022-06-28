@@ -13,7 +13,6 @@ class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
   final WidgetInitializer initializer;
   final bool overrideNavigation;
-  final List<NavigatorObserver> observers;
 
   /// Default constructor
   const NavigatorStack._({
@@ -21,7 +20,6 @@ class NavigatorStack extends StatefulWidget {
     required this.control,
     required this.initializer,
     this.overrideNavigation: false,
-    this.observers: const [],
   }) : super(key: key);
 
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
@@ -34,16 +32,14 @@ class NavigatorStack extends StatefulWidget {
     NavigatorControl? control,
     required WidgetBuilder builder,
     bool overrideNavigation: false,
-    List<NavigatorObserver> observers: const [],
   }) {
     control ??= NavigatorControl();
 
     return NavigatorStack._(
-      key: ObjectKey(control.menu!.key),
+      key: ObjectKey(control.menu.key),
       control: control,
       initializer: WidgetInitializer.of(builder),
       overrideNavigation: overrideNavigation,
-      observers: observers,
     );
   }
 
@@ -86,14 +82,12 @@ class NavigatorStack extends StatefulWidget {
     required Map<NavItem, WidgetBuilder> items,
     StackGroupBuilder? builder,
     bool overrideNavigation: true,
-    List<NavigatorObserver> observers: const [],
   }) {
     final stack = <NavigatorStack>[];
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
-          control: NavigatorControl(menu: key),
+          control: NavigatorControl(key: key),
           builder: value,
-          observers: observers,
         ) as NavigatorStack));
 
     return NavigatorStack.group(
@@ -110,11 +104,11 @@ class NavigatorStack extends StatefulWidget {
 
 class _NavigatorStackState extends State<NavigatorStack>
     implements StackNavigationHandler {
+  late HeroController _heroController;
+
   GlobalKey<NavigatorState>? _navigatorKey;
 
   NavigatorState? get navigator => _navigatorKey?.currentState;
-
-  HeroController? _heroController;
 
   @override
   void initState() {
@@ -146,8 +140,8 @@ class _NavigatorStackState extends State<NavigatorStack>
     final navigator = Navigator(
       key: _navigatorKey,
       observers: [
-        _heroController!,
-        ...widget.observers,
+        _heroController,
+        ...widget.control.menu.observers,
       ],
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
@@ -265,11 +259,9 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
         widget.items.map((page) => page.control.menu).toList(growable: false);
 
     final oldMenuHasKeys =
-        oldMenu.firstWhere((item) => item!.key == null, orElse: () => null) ==
-            null;
+        !oldMenu.any((element) => element.key == NavItem._invalid);
     final newMenuHasKeys =
-        newMenu.firstWhere((item) => item!.key == null, orElse: () => null) ==
-            null;
+        !newMenu.any((element) => element.key == NavItem._invalid);
 
     if (oldMenuHasKeys && newMenuHasKeys) {
       if (oldMenu.length == newMenu.length) {
