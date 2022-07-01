@@ -167,7 +167,7 @@ class Parse {
     }
 
     try {
-      return value.date();
+      return value.toDate();
     } on NoSuchMethodError {
       return null;
     }
