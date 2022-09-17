@@ -47,14 +47,14 @@ Future runAll(String script) async {
 ///////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////
 
+Future clean() async {
+  await runInModules('flutter clean');
+}
+
 Future pubGet() async {
   await runInModules('flutter pub get');
 }
 
 Future dartfmt() async {
   await shell.run('flutter dartfmt .');
-}
-
-Future pubPublish(String module) async {
-  await moduleShell(module).run('flutter pub publish');
 }

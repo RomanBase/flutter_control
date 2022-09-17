@@ -511,7 +511,7 @@ class ControlRootState extends State<ControlRoot> {
 
   void _initControl() async {
     final initialized = Control.initControl(
-      debug: widget.debug ?? true,
+      debug: widget.debug,
       entries: widget.entries,
       initializers: {
         ...widget.initializers,

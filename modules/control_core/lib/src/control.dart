@@ -52,7 +52,7 @@ class Control {
   /// [modules] -
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
-    bool debug: true,
+    bool? debug,
     Map? entries,
     Map<Type, Initializer>? initializers,
     Injector? injector,
@@ -63,7 +63,7 @@ class Control {
       return false;
     }
 
-    factory.debug = debug;
+    factory.debug = debug ?? kDebugMode;
 
     entries ??= {};
     initializers ??= {};
