@@ -226,6 +226,8 @@ abstract class CoreWidget extends StatefulWidget
   void registerStateNotifier(dynamic object) {
     if (object is ObservableValue) {
       register(object.subscribe((value) => notifyState()));
+    } else if (object is ObservableChannel) {
+      register(object.subscribe(() => notifyState()));
     } else if (object is Listenable) {
       final callback = () => notifyState();
       object.addListener(callback);

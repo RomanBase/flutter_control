@@ -129,7 +129,7 @@ class FieldControl<T> extends ObservableModel<T?> {
       {T? initValue,
       Function? onError,
       void onDone()?,
-      bool cancelOnError: false,
+      bool cancelOnError = false,
       ValueConverter<T>? converter}) {
     final control = FieldControl(initValue);
 
@@ -174,7 +174,7 @@ class FieldControl<T> extends ObservableModel<T?> {
 
   /// Creates sub and stores reference for later dispose..
   FieldSubscription<T> _addSub<T>(StreamSubscription<T?> subscription,
-      {Function? onError, void onDone()?, bool cancelOnError: false}) {
+      {Function? onError, void onDone()?, bool cancelOnError = false}) {
     final sub = FieldSubscription<T>(subscription)
       ..onError(onError)
       ..onDone(onDone)
@@ -201,7 +201,7 @@ class FieldControl<T> extends ObservableModel<T?> {
   FieldSubscription subscribeTo(Stream stream,
       {Function? onError,
       void onDone()?,
-      bool cancelOnError: false,
+      bool cancelOnError = false,
       ValueConverter? converter}) {
     // ignore: cancel_subscriptions
     final subscription = stream.listen(
@@ -249,8 +249,8 @@ class FieldControl<T> extends ObservableModel<T?> {
   FieldSubscription<T> subscribeStream(void onData(T? event),
       {Function? onError,
       void onDone()?,
-      bool cancelOnError: false,
-      bool current: true}) {
+      bool cancelOnError = false,
+      bool current = true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
@@ -389,7 +389,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   StreamSubscription filterTo(FieldControl controller,
       {Function? onError,
       void onDone()?,
-      bool cancelOnError: false,
+      bool cancelOnError = false,
       ValueConverter? converter,
       Predicate<T>? filter}) {
     return subscribeStream(
@@ -417,7 +417,7 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   @override
   void setValue(Iterable<T>? items,
-      {bool notify: true, bool forceNotify: false}) {
+      {bool notify = true, bool forceNotify = false}) {
     _list.clear();
 
     if (items != null) {
@@ -516,7 +516,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 
   /// [Iterable.clear].
-  void clear({bool disposeItems: false}) {
+  void clear({bool disposeItems = false}) {
     if (disposeItems) {
       _list.forEach((item) {
         if (item is Disposable) {
@@ -780,7 +780,7 @@ class NumberControl<T extends num> extends FieldControl<T> {
   /// [FieldControl] of [num] with [min] - [max] clamping.
   /// [min] - default 0
   /// [max] - default 1
-  NumberControl.inRange({T? value, T? min, T? max, bool clamp: true}) {
+  NumberControl.inRange({T? value, T? min, T? max, bool clamp = true}) {
     this.clamp = clamp;
     setRange(min, max ?? _castValue(1));
     setValue(value);

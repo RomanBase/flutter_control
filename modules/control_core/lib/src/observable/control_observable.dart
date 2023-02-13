@@ -19,7 +19,7 @@ abstract class ObservableChannel implements Disposable, ObservableNotifier {
 abstract class ObservableValue<T> implements Disposable {
   T get value;
 
-  dynamic data;
+  dynamic internalData;
 
   ObservableValue<U> cast<U>() => this as ObservableValue<U>;
 
@@ -80,7 +80,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   final subs = <ControlSubscription<T>>[];
 
   @override
-  dynamic data;
+  dynamic internalData;
 
   bool _active = true;
 

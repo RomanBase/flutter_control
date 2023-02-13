@@ -16,7 +16,7 @@ class LazyInitializer<T> {
 
   bool _isDirty = true;
 
-  /// Is true if current [data] needs rebuild.
+  /// Is true if current [internalData] needs rebuild.
   bool get isDirty => _isDirty || !isActive;
 
   /// Default constructor

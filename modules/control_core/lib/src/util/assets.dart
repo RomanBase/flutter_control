@@ -3,7 +3,7 @@ part of control_core;
 class AssetPath {
   final String rootDir;
 
-  const AssetPath({this.rootDir: 'assets'});
+  const AssetPath({this.rootDir = 'assets'});
 
   /// Refers to assets/path
   String root(String path) =>

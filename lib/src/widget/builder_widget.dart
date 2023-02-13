@@ -63,7 +63,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
 
     if (widget.control != _observable) {
       // Mark for Dispose if observable is not same as [widget.control].
-      _observable!.data = DisposeMarker;
+      _observable!.internalData = DisposeMarker;
     }
 
     _sub = _observable!.subscribe(
@@ -103,7 +103,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
   }
 
   void _disableObservable() {
-    if (_observable?.data == DisposeMarker) {
+    if (_observable?.internalData == DisposeMarker) {
       DisposeHandler.disposeOf(_observable, this);
     }
 
@@ -178,7 +178,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
       final observable = ControlObservable.of(control);
       if (control != observable) {
         // Mark for Dispose if observable is not same as [widget.control].
-        observable.data = DisposeMarker;
+        observable.internalData = DisposeMarker;
       }
 
       _observables.add(observable);
@@ -230,7 +230,7 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
 
   void _disableObservables() {
     _observables.forEach((element) {
-      if (element.data == DisposeMarker) {
+      if (element.internalData == DisposeMarker) {
         DisposeHandler.disposeOf(element, this);
       }
     });

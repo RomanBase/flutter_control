@@ -25,14 +25,14 @@ mixin ObservableComponent<T> on ControlModel
   final _parent = ActionControl.empty<T>();
 
   @override
-  dynamic data;
+  dynamic internalData;
 
   @override
   T? get value => _parent.value;
 
   set value(T? value) => _parent.value = value;
 
-  void setValue(T? value, {bool notify: true, bool forceNotify: false}) =>
+  void setValue(T? value, {bool notify = true, bool forceNotify = false}) =>
       _parent.setValue(
         value,
         notify: notify,
@@ -41,7 +41,7 @@ mixin ObservableComponent<T> on ControlModel
 
   @override
   ControlSubscription<T?> subscribe(ValueCallback<T?> action,
-          {bool current: true, dynamic args}) =>
+          {bool current = true, dynamic args}) =>
       _parent.subscribe(
         action,
         current: current,

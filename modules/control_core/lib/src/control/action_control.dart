@@ -23,7 +23,7 @@ class ActionControl<T> extends ControlObservable<T> {
   static ActionControl<T> broadcast<T>(T value) =>
       _ActionControlBroadcast<T>._(value);
 
-  static ActionControl<T?> empty<T>({T? value, bool broadcast: true}) =>
+  static ActionControl<T?> empty<T>({T? value, bool broadcast = true}) =>
       broadcast
           ? _ActionControlBroadcast<T?>._(value)
           : ActionControl<T?>._(value);
