@@ -49,6 +49,8 @@ part 'src/navigator/control_navigator.dart';
 
 part 'src/navigator/route_control.dart';
 
+part 'src/navigator/route_store.dart';
+
 part 'src/scope.dart';
 
 part 'src/util/curve.dart';

@@ -262,7 +262,9 @@ class ControlRootSetup {
   /// Parent context.
   BuildContext? context;
 
-  RoutingProvider? get routing => ControlRoute.provider;
+  RoutingProvider? get routing => Control.get<RoutingProvider>();
+
+  RouteFactory? get generateRoute => (settings) => routing?.generate(settings);
 
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
   ObjectKey get _localKey => ObjectKey(session.hashCode ^

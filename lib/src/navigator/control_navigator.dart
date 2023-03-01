@@ -9,7 +9,7 @@ abstract class RouteNavigator {
   /// [replacement] - pushes route as replacement of current route.
   /// {@endtemplate}
   Future<dynamic> openRoute(Route route,
-      {bool root: false, bool replacement: false});
+      {bool root = false, bool replacement = false});
 
   /// {@template route-root}
   /// Clears current [Navigator] and opens new [Route].
@@ -21,7 +21,7 @@ abstract class RouteNavigator {
   /// Be default opens simple pop-up dialog.
   /// {@endtemplate}
   Future<dynamic> openDialog(WidgetBuilder builder,
-      {bool root: true, dynamic type});
+      {bool root = true, dynamic type});
 
   /// {@template route-back-root}
   /// Goes back in navigation stack until first [Route].
@@ -53,11 +53,11 @@ class ControlNavigator implements RouteNavigator {
 
   ControlNavigator(this.context);
 
-  BuildContext getContext({bool root: false}) =>
+  BuildContext getContext({bool root = false}) =>
       root ? ControlScope.root.context ?? context : context;
 
   @protected
-  NavigatorState getNavigator({bool root: false}) {
+  NavigatorState getNavigator({bool root = false}) {
     if (root && !ControlScope.root.isInitialized) {
       return Navigator.of(context, rootNavigator: true);
     }
