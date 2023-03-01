@@ -10,22 +10,28 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Control.initControl();
+    Control.initControl(initializers: {
+      CounterControl: (_) => CounterControl(),
+    });
 
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(
-        title: 'Flutter Demo Home Page',
-        model: TextModel(),
+      onGenerateRoute: (settings) => ControlRouteTransition(
+        settings: settings,
+        builder: (_) => MyHomePage(title: 'Flutter Demo'),
+        transition: CrossTransition.slide(
+          begin: Offset(-0.25, 0),
+          end: Offset(-0.25, 0),
+        ).buildRoute(),
       ),
     );
   }
 }
 
-class TextModel extends BaseModel with NotifierComponent {
+class CounterControl extends BaseControl with NotifierComponent {
   int counter = 0;
 
   void incrementCounter() {
@@ -34,22 +40,13 @@ class TextModel extends BaseModel with NotifierComponent {
   }
 }
 
-class MyHomePage extends BaseControlWidget {
+class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
   MyHomePage({
     super.key,
     required this.title,
-    required this.model,
   });
 
   final String title;
-  final TextModel model;
-
-  @override
-  void onInit(Map args) {
-    super.onInit(args);
-
-    registerStateNotifier(model);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,15 +61,34 @@ class MyHomePage extends BaseControlWidget {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              '${model.counter}',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ControlBuilder<dynamic>(
+                control: control,
+                builder: (context, value) {
+                  return Text(
+                    '${control.counter}',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  );
+                }),
+            ElevatedButton(
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
+                  .viaTransition(CrossTransition.route(
+                    background: CrossTransition.slide(
+                      begin: Offset(-0.25, 0),
+                      end: Offset(-0.25, 0),
+                    ),
+                    foreground: CrossTransition.slide(
+                      begin: Offset(1.0, 0),
+                      end: Offset(1.0, 0),
+                    ),
+                  ))
+                  .init()),
+              child: Text('open next'),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => model.incrementCounter(),
+        onPressed: () => control.incrementCounter(),
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),

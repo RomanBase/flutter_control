@@ -1,11 +1,10 @@
 part of flutter_control;
 
-typedef RouteWidgetBuilder = Route Function(
+typedef RouteBuilderFactory = Route<dynamic> Function(
     WidgetBuilder builder, RouteSettings settings);
-
-typedef RouteGenerateBuilder = Route? Function(RouteSettings settings);
-
-typedef RouteArgInitializer = dynamic Function(RouteArgs args);
+typedef RouteArgFactory = dynamic Function(RouteArgs args);
+typedef RouteTransitionFactory = Widget Function(
+    BuildContext context, ControlRouteTransitionSetup setup, Widget child);
 
 class RouteArgs extends ControlArgs {
   ControlRoute get route => get<ControlRoute>()!;
@@ -81,13 +80,13 @@ class RouteHandler {
   /// Creates copy of [RouteHandler] with given builder.
   ///
   /// @{macro route-route}
-  RouteHandler viaRoute(RouteWidgetBuilder builder) =>
+  RouteHandler viaRoute(RouteBuilderFactory builder) =>
       RouteHandler(navigator, routeProvider.viaRoute(builder));
 
   /// Creates copy of [RouteHandler] with given transition.
   ///
   /// @{macro route-transition}
-  RouteHandler viaTransition(RouteTransitionsBuilder transition) =>
+  RouteHandler viaTransition(RouteTransitionFactory transition) =>
       RouteHandler(navigator, routeProvider.viaTransition(transition));
 
   /// Creates copy of [RouteHandler] with given path name.
@@ -105,7 +104,7 @@ class RouteHandler {
 
   /// @{macro route-open}
   Future<dynamic>? openRoute(
-      {bool root: false, bool replacement: false, dynamic args}) {
+      {bool root = false, bool replacement = false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");
 
     _result = navigator.openRoute(
@@ -127,7 +126,7 @@ class RouteHandler {
   }
 
   /// @{macro route-dialog}
-  Future<dynamic> openDialog({bool root: true, dynamic type, dynamic args}) {
+  Future<dynamic> openDialog({bool root = true, dynamic type, dynamic args}) {
     printDebug("open dialog: ${routeProvider.identifier} from $navigator");
 
     _route = null;
@@ -224,11 +223,11 @@ class ControlRoute {
   InitWidgetBuilder? _builder;
 
   /// Custom Route builder.
-  RouteWidgetBuilder? _routeBuilder;
+  RouteBuilderFactory? _routeBuilder;
 
-  RouteArgInitializer? _pathBuilder;
+  RouteArgFactory? _pathBuilder;
 
-  RouteArgInitializer? _queryBuilder;
+  RouteArgFactory? _queryBuilder;
 
   /// Default private constructor.
   /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
@@ -253,7 +252,7 @@ class ControlRoute {
         RouteSettings(name: path ?? identifier, arguments: arguments);
 
     if (_routeBuilder != null) {
-      return _routeBuilder!(builder, routeSettings);
+      return _routeBuilder!.call(builder, routeSettings);
     }
 
     if (kIsWeb) {
@@ -288,7 +287,7 @@ class ControlRoute {
   /// {@template route-route}
   /// Setups new [routeBuilder] and returns copy of [ControlRoute] with new settings..
   /// {@endtemplate}
-  ControlRoute viaRoute(RouteWidgetBuilder routeBuilder) =>
+  ControlRoute viaRoute(RouteBuilderFactory routeBuilder) =>
       _copyWith(routeBuilder: routeBuilder);
 
   /// {@macro route-route}
@@ -305,7 +304,7 @@ class ControlRoute {
   /// Setups new [transition] with given [duration] and returns copy of [ControlRoute] with new settings..
   /// [ControlRouteTransition] is used as [PageRoute].
   /// {@endtemplate}
-  ControlRoute viaTransition(RouteTransitionsBuilder transition,
+  ControlRoute viaTransition(RouteTransitionFactory transition,
           [Duration duration = const Duration(milliseconds: 300)]) =>
       _copyWith(
           routeBuilder: (builder, settings) => ControlRouteTransition(
@@ -323,9 +322,7 @@ class ControlRoute {
   /// ```
   /// {@endtemplate}
   ControlRoute path(
-          {RouteArgInitializer? name,
-          RouteArgInitializer? query,
-          String? mask}) =>
+          {RouteArgFactory? name, RouteArgFactory? query, String? mask}) =>
       _copyWith(
         path: name,
         query: query,
@@ -344,9 +341,9 @@ class ControlRoute {
     dynamic identifier,
     String? mask,
     Object? arguments,
-    RouteWidgetBuilder? routeBuilder,
-    RouteArgInitializer? path,
-    RouteArgInitializer? query,
+    RouteBuilderFactory? routeBuilder,
+    RouteArgFactory? path,
+    RouteArgFactory? query,
   }) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
@@ -371,7 +368,7 @@ class ControlRouteTransition extends PageRoute {
   final WidgetBuilder builder;
 
   /// Builder of Transition.
-  final RouteTransitionsBuilder transition;
+  final RouteTransitionFactory transition;
 
   /// Duration of transition Animation.
   final Duration duration;
@@ -380,7 +377,7 @@ class ControlRouteTransition extends PageRoute {
   ControlRouteTransition({
     required this.builder,
     required this.transition,
-    this.duration: const Duration(milliseconds: 300),
+    this.duration = const Duration(milliseconds: 300),
     RouteSettings? settings,
   }) : super(settings: settings);
 
@@ -391,20 +388,97 @@ class ControlRouteTransition extends PageRoute {
   String? get barrierLabel => null;
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation,
-          Animation<double> secondaryAnimation) =>
-      builder(context);
-
-  @override
-  Widget buildTransitions(BuildContext context, Animation<double> animation,
-          Animation<double> secondaryAnimation, Widget child) =>
-      transition(context, animation, secondaryAnimation, child);
-
-  @override
   bool get maintainState => true;
 
   @override
   Duration get transitionDuration => duration;
+
+  @override
+  bool canTransitionTo(TransitionRoute<dynamic> nextRoute) =>
+      nextRoute is PageRoute;
+
+  @override
+  bool canTransitionFrom(TransitionRoute<dynamic> previousRoute) =>
+      previousRoute is PageRoute;
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation) =>
+      Semantics(
+        scopesRoute: true,
+        explicitChildNodes: true,
+        child: builder(context),
+      );
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation, Widget child) =>
+      transition(
+          context,
+          ControlRouteTransitionSetup._(
+            animation,
+            secondaryAnimation,
+            this,
+          ),
+          child);
+}
+
+class ControlRouteTransitionSetup {
+  final Animation<double> incomingAnimation;
+  final Animation<double> outgoingAnimation;
+  final ControlRouteTransition route;
+
+  RouteSettings? get settings => route.settings;
+
+  bool get root => route.isFirst;
+
+  bool get active => route.isActive;
+
+  bool get foregroundIncoming =>
+      (incomingAnimation.status == AnimationStatus.forward ||
+          incomingAnimation.isCompleted) &&
+      outgoingAnimation.isDismissed;
+
+  bool get foregroundOutgoing =>
+      (incomingAnimation.status == AnimationStatus.reverse ||
+          incomingAnimation.isDismissed) &&
+      outgoingAnimation.isDismissed;
+
+  bool get backgroundIncoming =>
+      (outgoingAnimation.status == AnimationStatus.reverse ||
+          outgoingAnimation.isDismissed) &&
+      incomingAnimation.isCompleted;
+
+  bool get backgroundOutgoing =>
+      (outgoingAnimation.status == AnimationStatus.forward ||
+          outgoingAnimation.isCompleted) &&
+      incomingAnimation.isCompleted;
+
+  bool get foregroundActive => outgoingAnimation.isDismissed;
+
+  bool get backgroundActive => incomingAnimation.isCompleted;
+
+  const ControlRouteTransitionSetup._(
+    this.incomingAnimation,
+    this.outgoingAnimation,
+    this.route,
+  );
+
+  ControlRouteTransitionSetup curved({
+    Curve? incomingCurve,
+    Curve? outgoingCurve,
+  }) =>
+      ControlRouteTransitionSetup._(
+        incomingCurve == null
+            ? this.incomingAnimation
+            : CurvedAnimation(
+                parent: this.incomingAnimation, curve: incomingCurve),
+        outgoingCurve == null
+            ? this.outgoingAnimation
+            : CurvedAnimation(
+                parent: this.outgoingAnimation, curve: outgoingCurve),
+        this.route,
+      );
 }
 
 /// Stores [ControlRoute] by identifier key - [RouteStore.routeIdentifier].
@@ -711,7 +785,7 @@ class _PathSegment {
 class RoutingProvider {
   final RouteStore parent;
 
-  RouteGenerateBuilder? onGenerate;
+  RouteFactory? onGenerate;
 
   ControlRootSetup? get setup => ControlScope.root.setup;
 
@@ -722,7 +796,7 @@ class RoutingProvider {
   RouteSettings? popSettings() => setup?.args.pop<RouteSettings>();
 
   Route? generate(RouteSettings settings,
-      {bool? active, RouteGenerateBuilder? onGenerate}) {
+      {bool? active, RouteFactory? onGenerate}) {
     if (onGenerate != null) {
       this.onGenerate = onGenerate;
     }

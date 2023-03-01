@@ -13,13 +13,15 @@ class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
   final WidgetInitializer initializer;
   final bool overrideNavigation;
+  final RouteBuilderFactory? route;
 
   /// Default constructor
   const NavigatorStack._({
     Key? key,
     required this.control,
     required this.initializer,
-    this.overrideNavigation: false,
+    this.overrideNavigation = false,
+    this.route,
   }) : super(key: key);
 
   /// Creates new [Navigator] and all underling Widgets will be pushed to this stack.
@@ -31,7 +33,8 @@ class NavigatorStack extends StatefulWidget {
   static Widget single({
     NavigatorControl? control,
     required WidgetBuilder builder,
-    bool overrideNavigation: false,
+    bool overrideNavigation = false,
+    RouteBuilderFactory? route,
   }) {
     control ??= NavigatorControl();
 
@@ -40,6 +43,7 @@ class NavigatorStack extends StatefulWidget {
       control: control,
       initializer: WidgetInitializer.of(builder),
       overrideNavigation: overrideNavigation,
+      route: route,
     );
   }
 
@@ -57,7 +61,7 @@ class NavigatorStack extends StatefulWidget {
     NavigatorStackControl? control,
     required List<NavigatorStack> items,
     StackGroupBuilder? builder,
-    bool overrideNavigation: true,
+    bool overrideNavigation = true,
   }) {
     return NavigatorStackGroup(
       control: control ?? NavigatorStackControl(),
@@ -81,13 +85,15 @@ class NavigatorStack extends StatefulWidget {
     NavigatorStackControl? control,
     required Map<NavItem, WidgetBuilder> items,
     StackGroupBuilder? builder,
-    bool overrideNavigation: true,
+    bool overrideNavigation = true,
+    RouteBuilderFactory? route,
   }) {
     final stack = <NavigatorStack>[];
 
     items.forEach((key, value) => stack.add(NavigatorStack.single(
           control: NavigatorControl(key: key),
           builder: value,
+          route: route,
         ) as NavigatorStack));
 
     return NavigatorStack.group(
@@ -110,6 +116,9 @@ class _NavigatorStackState extends State<NavigatorStack>
 
   NavigatorState? get navigator => _navigatorKey?.currentState;
 
+  WidgetBuilder get builder =>
+      (context) => widget.initializer.getWidget(context);
+
   @override
   void initState() {
     super.initState();
@@ -127,7 +136,6 @@ class _NavigatorStackState extends State<NavigatorStack>
   void didUpdateWidget(NavigatorStack oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    printDebug('update nav');
     _updateNavigator();
   }
 
@@ -144,8 +152,17 @@ class _NavigatorStackState extends State<NavigatorStack>
         ...widget.control.menu.observers,
       ],
       onGenerateRoute: (routeSettings) {
+        if (widget.route != null) {
+          return widget.route!.call(
+            builder,
+            routeSettings,
+          );
+        }
+
         return MaterialPageRoute(
-            builder: (context) => widget.initializer.getWidget(context));
+          builder: builder,
+          settings: routeSettings,
+        );
       },
     );
 
@@ -208,7 +225,7 @@ class NavigatorStackGroup extends StatefulWidget {
     required this.control,
     required this.items,
     this.builder,
-    this.overrideNavigation: true,
+    this.overrideNavigation = true,
   }) : super(key: ObjectKey(control)) {
     assert(items.length > 0);
   }

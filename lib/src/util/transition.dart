@@ -15,31 +15,70 @@ class CrossTransition {
   final AnimatedSwitcherTransitionBuilder transitionIn;
   final AnimatedSwitcherTransitionBuilder transitionOut;
 
-  AnimatedSwitcherTransitionBuilder build({bool reverse: false}) =>
-      (child, anim) => _builder(child, anim, reverse);
-
   /// [duration] - [Animation] length.
   /// [transition] - Builds Transition Widget based on input [Animation] and in/out Widgets.
   const CrossTransition({
-    this.duration: _kCrossDuration,
+    this.duration = _kCrossDuration,
     this.reverseDuration,
     required this.transitionIn,
     required this.transitionOut,
   });
 
   CrossTransition.single({
-    this.duration: _kCrossDuration,
+    this.duration = _kCrossDuration,
     this.reverseDuration,
     required AnimatedSwitcherTransitionBuilder transition,
   })  : transitionIn = transition,
         transitionOut = transition;
 
+  static RouteTransitionFactory route(
+          {required CrossTransition background,
+          required CrossTransition foreground,
+          bool reverse = false}) =>
+      (context, setup, child) {
+        if (setup.backgroundActive && setup.foregroundActive) {
+          return child;
+        }
+
+        if (setup.backgroundActive) {
+          if (setup.backgroundIncoming) {
+            return background.transitionIn
+                .call(child, ReverseAnimation(setup.outgoingAnimation));
+          }
+
+          if (setup.backgroundOutgoing) {
+            return background.transitionOut
+                .call(child, ReverseAnimation(setup.outgoingAnimation));
+          }
+        }
+
+        if (setup.foregroundActive) {
+          if (setup.foregroundIncoming) {
+            return foreground.transitionIn.call(child, setup.incomingAnimation);
+          }
+
+          if (setup.foregroundOutgoing) {
+            return foreground.transitionOut
+                .call(child, setup.incomingAnimation);
+          }
+        }
+
+        return child;
+      };
+
+  AnimatedSwitcherTransitionBuilder build({bool reverse = false}) =>
+      (child, anim) => _builder(child, anim, null, reverse);
+
+  RouteTransitionFactory buildRoute({bool reverse = false}) =>
+      route(background: this, foreground: this, reverse: reverse);
+
   Widget _builder(Widget child, Animation<double> animation,
+      Animation<double>? secondaryAnimation,
       [bool reverse = false]) {
     final animateForward = reverse
-        ? (animation.status == AnimationStatus.completed ||
+        ? (animation.status == AnimationStatus.dismissed ||
             animation.status == AnimationStatus.reverse)
-        : (animation.status == AnimationStatus.dismissed ||
+        : (animation.status == AnimationStatus.completed ||
             animation.status == AnimationStatus.forward);
 
     if (animateForward) {
@@ -52,8 +91,8 @@ class CrossTransition {
   factory CrossTransition.fade({
     Duration? duration,
     Duration? reverseDuration,
-    Curve curveIn: const IntervalCurve(Curves.easeIn, begin: 0.35),
-    Curve curveOut: const IntervalCurve(Curves.easeOut, begin: 0.35),
+    Curve curveIn = const IntervalCurve(Curves.easeIn, begin: 0.35),
+    Curve curveOut = const IntervalCurve(Curves.easeOut, begin: 0.35),
   }) =>
       CrossTransition(
         duration: duration ?? _kCrossDuration,
@@ -99,10 +138,10 @@ class CrossTransition {
   factory CrossTransition.slide({
     Duration? duration,
     Duration? reverseDuration,
-    Offset begin: const Offset(1.0, 0.0),
-    Offset end: const Offset(-1.0, 0.0),
-    Curve curveIn: Curves.easeIn,
-    Curve curveOut: Curves.easeOut,
+    Offset begin = const Offset(1.0, 0.0),
+    Offset end = const Offset(-1.0, 0.0),
+    Curve curveIn = Curves.easeIn,
+    Curve curveOut = Curves.easeOut,
   }) =>
       CrossTransition(
         duration: duration ?? _kCrossDuration,
@@ -128,12 +167,12 @@ class CrossTransition {
   factory CrossTransition.scale({
     Duration? duration,
     Duration? reverseDuration,
-    double begin: 1.25,
-    double end: 0.75,
-    Curve curveIn: Curves.easeIn,
-    Curve curveOut: Curves.easeOut,
-    Curve fadeIn: Curves.easeInQuad,
-    Curve fadeOut: Curves.easeOut,
+    double begin = 1.25,
+    double end = 0.75,
+    Curve curveIn = Curves.easeIn,
+    Curve curveOut = Curves.easeOut,
+    Curve fadeIn = Curves.easeInQuad,
+    Curve fadeOut = Curves.easeOut,
   }) =>
       CrossTransition(
         duration: duration ?? _kCrossDuration,
