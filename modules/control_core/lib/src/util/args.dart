@@ -84,6 +84,20 @@ class ControlArgs implements Disposable {
   T? get<T>({dynamic key, T? defaultValue}) =>
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
+  /// Returns object of given [key] or initialize [defaultValue] and stores that value to args store.
+  T? getOrInit<T>({dynamic key, T Function()? defaultValue}) {
+    final item = Parse.getArgFromMap<T>(_args, key: key);
+
+    if (item == null && defaultValue != null) {
+      final defaultItem = defaultValue.call();
+      add<T>(key: key, value: defaultItem);
+
+      return defaultItem;
+    }
+
+    return item;
+  }
+
   /// Returns all items for given [test].
   List<T> getAll<T>({Predicate? test}) {
     assert(test != null || T != dynamic);

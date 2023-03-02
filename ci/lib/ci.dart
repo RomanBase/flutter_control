@@ -56,5 +56,5 @@ Future pubGet() async {
 }
 
 Future dartfmt() async {
-  await shell.run('flutter dartfmt .');
+  await shell.run('dart format .');
 }

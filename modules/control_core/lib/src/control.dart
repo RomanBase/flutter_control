@@ -525,17 +525,17 @@ class ControlFactory with Disposable {
   /// [ControlFactory.init] uses this method to retrieve [Initializer].
   ///
   /// nullable
-  Initializer<T>? findInitializer<T>([Type? key]) {
+  Initializer<T?>? findInitializer<T>([Type? key]) {
     if (key != null && _initializers.containsKey(key)) {
-      return _initializers[key] as T Function(dynamic)?;
+      return _initializers[key] as Initializer<T?>;
     } else if (_initializers.containsKey(T)) {
-      return _initializers[T] as T Function(dynamic)?;
+      return _initializers[T] as Initializer<T?>;
     } else if (T != dynamic) {
       final key = _initializers.keys
           .firstWhere((item) => item is T, orElse: () => _InvalidKey);
 
       if (key != _InvalidKey) {
-        return _initializers[key] as T Function(dynamic)?;
+        return _initializers[key] as Initializer<T?>;
       }
     }
 
