@@ -1,3 +1,4 @@
+## [2.6.0] - Flutter 3.0
 ## [2.5.1] - Multiple libs
 Library is now separated to multiple modules:
  - control_core
