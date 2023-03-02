@@ -1,4 +1,7 @@
-import 'package:flutter_control/control.dart';
+import 'dart:math';
+
+import 'package:control_core/core.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 final factory = Control.factory;
@@ -18,6 +21,7 @@ void main() async {
     initializers: {
       _ArgModel: (_) => _ArgModel<String>(),
       _InjectModel: (_) => _InjectModel(),
+      _InitNullable: (_) => Random().nextBool() ? null : _InitNullable(),
     },
     injector: BaseInjector(),
   );
@@ -96,6 +100,8 @@ void main() async {
 
       expect(itemInject.initValue, isNotNull);
       expect(itemInject.itemValue, isNotNull);
+
+      print(Control.get<_InitNullable>() ?? 'nullable ok');
     });
 
     test('resolve', () {
@@ -274,6 +280,10 @@ class _InjectModel extends _InitModel {
     initValue = factory.init<_ArgModel>();
     itemValue = factory.get<BaseControl>();
   }
+}
+
+class _InitNullable extends BaseModel {
+  dynamic data;
 }
 
 class _SwapController extends BaseControl {}

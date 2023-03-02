@@ -10,9 +10,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Control.initControl(initializers: {
-      CounterControl: (_) => CounterControl(),
-    });
+    Control.initControl(
+      modules: [
+        RoutingModule([]),
+      ],
+      initializers: {
+        CounterControl: (_) => CounterControl(),
+      },
+    );
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -58,8 +63,8 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              'You have pushed the button this many times: ',
             ),
             ControlBuilder<dynamic>(
                 control: control,
