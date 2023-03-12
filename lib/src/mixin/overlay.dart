@@ -11,11 +11,7 @@ mixin OverlayControl on CoreWidget {
 
     final overlay = Overlay.of(context!);
 
-    if (overlay == null) {
-      return null;
-    }
-
-    if (getArgStore().containsKey(ObjectTag.of(key))) {
+    if (holder.argStore.containsKey(ObjectTag.of(key))) {
       return getOverlay(key);
     }
 
@@ -64,14 +60,14 @@ mixin OverlayControl on CoreWidget {
   }
 
   bool clearOverlays() {
-    final items = getArgStore().getAll<OverlayEntry>();
+    final items = holder.argStore.getAll<OverlayEntry>();
 
     if (items.isNotEmpty) {
       items.forEach((element) {
         element.remove();
       });
 
-      getArgStore().removeAll<OverlayEntry>();
+      holder.argStore.removeAll<OverlayEntry>();
 
       return true;
     }

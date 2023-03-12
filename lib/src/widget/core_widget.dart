@@ -43,13 +43,6 @@ class ControlArgHolder implements Disposable {
     }
   }
 
-  /// Adds [args] to internal args - [ControlArgs].
-  void set(dynamic args) => argStore.set(args);
-
-  /// Returns object based on given [Type] and [key] from internal args - [ControlArgs].
-  T? get<T>({dynamic key, T? defaultValue}) =>
-      Parse.getArg<T>(args, key: key, defaultValue: defaultValue);
-
   /// Returns all [ControlModel]s from internal args - [ControlArgs].
   /// If none found, empty List is returned.
   List<ControlModel> findControls() => argStore.getAll<ControlModel>();
@@ -98,7 +91,7 @@ abstract class CoreWidget extends StatefulWidget
   ///
   /// Check [ControlWidget] and [StateboundWidget].
   CoreWidget({super.key, dynamic args}) {
-    holder.set(args);
+    holder.argStore.set(args);
   }
 
   @override
@@ -158,45 +151,55 @@ abstract class CoreWidget extends StatefulWidget
   }
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
-  BuildContext? getContext({bool root: false}) =>
+  BuildContext? getContext({bool root = false}) =>
       root ? ControlScope.root.context ?? context : context;
 
   /// Returns [ControlModel] by given [T] or [key] from current UI Tree
   T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
       scope.get<T>(key: key, args: args);
 
-  /// Returns raw internal arg store.
-  /// Typically not used directly.
-  /// Check:
-  ///  - [addArg]
-  ///  - [setArg]
-  ///  - [getArg]
-  ///  - [removeArg]
-  ///  to modify arguments..
-  ControlArgs getArgStore() => holder.argStore;
-
   /// Adds given [args] to this Widget's internal arg store.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
   ///
   /// Check [setArg] for more 'set' options.
   /// Internally uses [ControlArgs]. Check [ControlArgs.set].
-  /// Use [getArgStore] to get raw access to [ControlArgs].
-  void addArg(dynamic args) => holder.set(args);
+  /// Use [holder.argStore] to get raw access to [ControlArgs].
+  void addArg(dynamic args) => holder.argStore.set(args);
 
   /// Adds given [args] to this Widget's internal arg store.
   /// [args] can be whatever - [Map], [List], [Object], or any primitive.
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.set].
-  /// Use [getArgStore] to get raw access to [ControlArgs].
+  /// Use [holder.argStore] to get raw access to [ControlArgs].
   void setArg<T>({dynamic key, required dynamic value}) =>
       holder.argStore.add<T>(key: key, value: value);
 
   /// Returns value by given [key] and [Type] from this Widget's internal arg store.
   ///
   /// Internally uses [ControlArgs]. Check [ControlArgs.get].
-  /// Use [getArgStore] to get raw access to [ControlArgs].
+  /// Use [holder.argStore] to get raw access to [ControlArgs].
   T? getArg<T>({dynamic key, T? defaultValue}) =>
-      holder.get<T>(key: key, defaultValue: defaultValue);
+      holder.argStore.get<T>(key: key, defaultValue: defaultValue);
+
+  /// Returns value by given [key] and [Type] from this Widget's internal arg store.
+  /// If object is not found, then widget will [init] and store it to args.
+  /// Object is also registered for dispose.
+  ///
+  /// Internally uses [ControlArgs]. Check [ControlArgs.getOrInit].
+  /// Use [holder.argStore] to get raw access to [ControlArgs].
+  T? mount<T>({dynamic key, T Function()? init, bool stateNotifier = false}) {
+    final value = holder.argStore.getOrInit<T>(key: key, defaultValue: init);
+
+    if (value is Disposable) {
+      if (stateNotifier) {
+        registerStateNotifier(value);
+      } else {
+        register(value);
+      }
+    }
+
+    return value;
+  }
 
   /// Removes given [arg] from this Widget's internal arg store.
   ///
@@ -274,11 +277,13 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
       _objects = <Disposable?>[];
     }
 
-    if (object is ReferenceCounter) {
-      object.addReference(this);
-    }
+    if (!_objects!.contains(object)) {
+      if (object is ReferenceCounter) {
+        object.addReference(this);
+      }
 
-    _objects!.add(object);
+      _objects!.add(object);
+    }
   }
 
   /// Unregisters object to dispose from this State.

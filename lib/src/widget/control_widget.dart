@@ -190,7 +190,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
   void initControls() {
     controls = widget.initControls();
 
-    widget.holder.set(controls!.toSet());
+    widget.holder.argStore.set(controls!.toSet());
 
     controls!.forEach((control) {
       if (control is ReferenceCounter) {

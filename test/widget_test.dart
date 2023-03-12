@@ -8,10 +8,10 @@ void main() {
     test('args', () {
       final holder = ControlArgHolder();
 
-      holder.set({String: 'arg1', 'key': 'arg2'});
-      holder.set({String: 'arg3'});
-      holder.set(10);
-      holder.set([1.0, true]);
+      holder.argStore.set({String: 'arg1', 'key': 'arg2'});
+      holder.argStore.set({String: 'arg3'});
+      holder.argStore.set(10);
+      holder.argStore.set([1.0, true]);
 
       expect(holder.args.length, 5);
       expect(Parse.getArg<String>(holder.args), isNot('arg1'));
