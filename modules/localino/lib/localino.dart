@@ -19,19 +19,48 @@ part 'src/localization.dart';
 
 part 'src/provider.dart';
 
+part 'src/remote.dart';
+
 typedef LocalizationExtractor = String Function(
     Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
+class LocalinoOptions {
+  final String assetsPath;
+  final LocalinoConfig? config;
+
+  LocalinoSetup? setup;
+
+  LocalinoOptions({this.assetsPath = 'assets/localization', this.config});
+
+  Future<LocalinoConfig> toConfig() async {
+    if (config != null) {
+      printDebug('Initializing Localino from Config');
+      return config!;
+    }
+
+    printDebug('Initializing Localino from Setup');
+    setup = await LocalinoSetup.loadAssets(assetsPath);
+
+    return setup!.toConfig();
+  }
+}
+
 class LocalinoModule extends ControlModule<Localino> {
-  final LocalinoConfig config;
+  final LocalinoOptions options;
 
   @override
   Map<Type, Initializer> get subModules => {
         ConfigModule: (_) => ConfigModule(),
       };
 
-  LocalinoModule(this.config, {bool? debug}) {
+  @override
+  Map get entries => {
+        ...super.entries,
+        LocalinoRemote: LocalinoRemote(),
+      };
+
+  LocalinoModule(this.options, {bool? debug}) {
     initModule();
     module!.debug = debug ?? Control.debug;
   }
@@ -41,28 +70,35 @@ class LocalinoModule extends ControlModule<Localino> {
     super.initModule();
 
     if (!isInitialized) {
-      module = Localino(config.fallbackLocale, config.toAssets());
-      module!.main = true;
+      module = Localino._()..main = true;
     }
   }
 
   @override
-  Future? init() => config.initLocale
-      ? module!.init(
-          loadDefaultLocale: config.loadDefaultLocale,
-          handleSystemLocale: config.handleSystemLocale,
-          stableLocale: config.stableLocale,
-        )
-      : null;
+  Future? init() async {
+    final config = await options.toConfig();
 
-  static Future<bool> initWithControl(LocalinoConfig config,
+    module!._setup(
+        config.fallbackLocale, config.toAssets(), options.setup?.locales);
+
+    return config.initLocale
+        ? module!.init(
+            loadDefaultLocale: config.loadDefaultLocale,
+            handleSystemLocale: config.handleSystemLocale,
+            stableLocale: config.stableLocale,
+          )
+        : null;
+  }
+
+  static Future<bool> standalone(LocalinoOptions options,
       {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
+        printDebug('Localino (main) can be initialized only once.');
         return false;
       }
 
-      final module = LocalinoModule(config, debug: debug);
+      final module = LocalinoModule(options, debug: debug);
       module.initStore(includeSubModules: true);
 
       await module.initWithSubModules(args: args);
@@ -71,7 +107,7 @@ class LocalinoModule extends ControlModule<Localino> {
     }
 
     return ControlModule.initControl(
-      LocalinoModule(config, debug: debug),
+      LocalinoModule(options, debug: debug),
       args: args,
       debug: debug,
     );

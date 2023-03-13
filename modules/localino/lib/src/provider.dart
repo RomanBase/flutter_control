@@ -12,10 +12,14 @@ mixin LocalinoProvider {
           ValueCallback<LocalinoArgs?> callback) =>
       BroadcastProvider.subscribe<LocalinoArgs>(Localino, callback);
 
+  /// Returns instance of [Localino] from [Control] store.
   static Localino get instance => Control.get<Localino>()!;
 
   /// Shortcut for delegate of default [Localino].
   static LocalinoDelegate get delegate => instance.delegate;
+
+  /// Returns instance of [LocalinoRemote] from [Control] store.
+  static LocalinoRemote get remote => Control.get<LocalinoRemote>()!;
 
   /// Delegate of [Localino] for the widget tree that corresponds to the given [context].
   ///

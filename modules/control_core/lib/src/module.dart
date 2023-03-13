@@ -39,7 +39,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     modules.forEach((element) {
       element.subModules.forEach((key, value) {
         if (!output.any((element) => element.key == key)) {
-          output.addAll(_fillModules([value(null)]));
+          output.addAll(_fillModules([value.call(null)]));
         }
       });
     });

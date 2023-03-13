@@ -1,12 +1,67 @@
 part of localino;
 
+class LocalinoSetup {
+  final String space;
+  final String project;
+  final String access;
+  final String version;
+  final String asset;
+  final Map<String, DateTime> locales;
+  final Map<String, dynamic> init;
+
+  const LocalinoSetup({
+    this.space = 'public',
+    required this.project,
+    required this.access,
+    this.version = 'latest',
+    this.asset = 'assets/localization/{locale}.json',
+    this.init = const {},
+    this.locales = const {},
+  });
+
+  LocalinoConfig toConfig() => LocalinoConfig(
+        defaultLocale: init['default_locale'],
+        stableLocale: init['stable_locale'],
+        initLocale: init['auto_init'] ?? true,
+        loadDefaultLocale: init['load_default'] ?? true,
+        handleSystemLocale: init['handle_system'] ?? false,
+        handleRemoteLocale: init['handle_remote'] ?? false,
+        locales: locales.map((key, value) =>
+            MapEntry(key, Parse.format(asset, {'locale': key}))),
+      );
+
+  static Future<LocalinoSetup> loadAssets(
+      [String path = 'assets/localization']) async {
+    if (path.endsWith('/')) {
+      path = path.substring(0, path.length - 1);
+    }
+
+    final json = await rootBundle.loadString('$path/setup.json', cache: false);
+    final data = jsonDecode(json);
+
+    return LocalinoSetup(
+      space: data['space'],
+      project: data['project'],
+      access: data['access'],
+      asset: '$path/{locale}.json',
+      locales: Parse.toKeyMap<String, DateTime>(
+          data['locales'], (key, value) => key as String,
+          converter: (value) => Parse.date(value) ?? DateTime.now().toUtc()),
+      init: data['init'] ?? {},
+    );
+  }
+}
+
 /// Map of supported locales, default locale and loading rules.
 ///
 /// Config is passed to [Control.initControl] to init [Localino].
 class LocalinoConfig {
+  static String get systemLocale =>
+      WidgetsBinding.instance.window.locale.toString();
+
   static LocalinoConfig get empty => LocalinoConfig(
         locales: {
-          WidgetsBinding.instance.window.locale.toString(): null,
+          systemLocale: null,
         },
       );
 
@@ -28,9 +83,13 @@ class LocalinoConfig {
   /// Check to handle system locale.
   final bool handleSystemLocale;
 
+  /// Check to handle remote locale.
+  /// More info at [LocalinoRemote].
+  final bool handleRemoteLocale;
+
   /// Returns default of first locale key.
   String get fallbackLocale =>
-      defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : 'en');
+      defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : systemLocale);
 
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
   /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalinoAsset.map] for easier setup.
@@ -41,9 +100,10 @@ class LocalinoConfig {
     this.defaultLocale,
     this.stableLocale,
     required this.locales,
-    this.initLocale: true,
-    this.loadDefaultLocale: true,
-    this.handleSystemLocale: false,
+    this.initLocale = true,
+    this.loadDefaultLocale = true,
+    this.handleSystemLocale = false,
+    this.handleRemoteLocale = false,
   });
 
   /// Converts Map of [locales] to List of [LocalinoAsset]s.
@@ -59,6 +119,8 @@ class LocalinoConfig {
 
 /// Defines language and asset path to file with localization data.
 class LocalinoAsset {
+  static const empty = const LocalinoAsset('#', null);
+
   /// Locale key.
   /// It's preferred to use iso2 (en) or unicode (en_US) standard.
   final String locale;
@@ -72,8 +134,6 @@ class LocalinoAsset {
 
   /// Checks validity of [locale] and [path]
   bool get isValid => path != null;
-
-  static const empty = const LocalinoAsset('#', null);
 
   /// [locale] - It's preferred to use iso2 (en) or unicode (en_US) standard.
   /// [path] - Asset path to file with localization data (json).
@@ -114,7 +174,7 @@ class LocalinoAsset {
   /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static Map<String, String> map(
-      {AssetPath path: const AssetPath(), required List<String> locales}) {
+      {AssetPath path = const AssetPath(), required List<String> locales}) {
     final map = Map<String, String>();
 
     locales.forEach((locale) =>
@@ -126,7 +186,7 @@ class LocalinoAsset {
   /// Builds a List of [LocalinoAsset] by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static List<LocalinoAsset> list(
-      {AssetPath path: const AssetPath(), required List<String> locales}) {
+      {AssetPath path = const AssetPath(), required List<String> locales}) {
     final localizationAssets = <LocalinoAsset>[];
 
     locales.forEach((locale) => localizationAssets.add(
@@ -144,7 +204,7 @@ class LocalinoAsset {
 /// Defines result of localization change.
 class LocalinoArgs {
   /// Requested locale.
-  final String? locale;
+  final String locale;
 
   /// Source of locale to load from. Asset path, runtime, network or any other.
   final String source;
@@ -158,9 +218,9 @@ class LocalinoArgs {
 
   LocalinoArgs({
     required this.locale,
-    this.source: 'runtime',
-    this.isActive: false,
-    this.changed: false,
+    this.source = 'runtime',
+    this.isActive = false,
+    this.changed = false,
   });
 
   @override
