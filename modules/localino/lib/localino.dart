@@ -42,7 +42,7 @@ class LocalinoOptions {
     printDebug('Initializing Localino from Setup');
     setup = await LocalinoSetup.loadAssets(assetsPath);
 
-    return setup!.toConfig();
+    return setup!.config;
   }
 }
 
@@ -57,7 +57,7 @@ class LocalinoModule extends ControlModule<Localino> {
   @override
   Map get entries => {
         ...super.entries,
-        LocalinoRemote: LocalinoRemote(),
+        LocalinoRemote: LocalinoRemote(options: options.setup?.options),
       };
 
   LocalinoModule(this.options, {bool? debug}) {
@@ -79,7 +79,7 @@ class LocalinoModule extends ControlModule<Localino> {
     final config = await options.toConfig();
 
     module!._setup(
-        config.fallbackLocale, config.toAssets(), options.setup?.locales);
+        config.fallbackLocale, config.toAssets());
 
     return config.initLocale
         ? module!.init(

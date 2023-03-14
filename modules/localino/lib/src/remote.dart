@@ -25,11 +25,19 @@ abstract class LocalinoRemoteApi {
 }
 
 class LocalinoRemote with PrefsProvider {
-  Localino get _localino => LocalinoProvider.instance;
+  LocalinoRemoteOptions? options;
 
-  LocalinoRemoteApi? get _api => Control.get<LocalinoRemoteApi>();
+  Localino? _instance;
+
+  Localino get instance => _instance ?? LocalinoProvider.instance;
+
+  set instance(Localino? instance) => _instance = instance;
+
+  LocalinoRemoteApi? get _api => Control.get<LocalinoRemoteApi>(args: options);
 
   Disposable? _sub;
+
+  LocalinoRemote({Localino? instance, this.options}) : _instance = instance;
 
   bool _ensureModule() {
     assert(
@@ -61,14 +69,8 @@ class LocalinoRemote with PrefsProvider {
     return false;
   }
 
-  DateTime? lastUpdate(String locale) {
-    final config = _localino.getLocalSync();
-
-    return config[locale];
-  }
-
   Future<bool> fetchTranslations({String? locale, DateTime? timestamp}) async {
-    locale ??= _localino.locale;
+    locale ??= instance.locale;
     printDebug('Localino: fetch remote locale: $locale');
     if (!_ensureModule()) {
       return false;
@@ -83,7 +85,7 @@ class LocalinoRemote with PrefsProvider {
     });
 
     if (result.isNotEmpty) {
-      _localino.updateLocalSync({locale: now});
+      updateLocalSync({locale: now});
     }
 
     _updateLocalization(locale, result);
@@ -96,8 +98,30 @@ class LocalinoRemote with PrefsProvider {
   }
 
   void _updateLocalization(String locale, Map<String, dynamic> translations) {
-    if (_localino.locale == locale) {
-      _localino.setData(translations);
+    if (instance.locale == locale) {
+      instance.setData(translations);
     }
   }
+
+  DateTime? lastUpdate(String locale) => getLocalSync()[locale];
+
+  Map<String, DateTime> getLocalSync() => prefs.getJson(Localino.preference_key_sync);
+
+  void updateLocalSync(Map<String, DateTime> locales) {
+    final data = getLocalSync();
+
+    bool changed = false;
+    locales.forEach((key, value) {
+      if (!data.containsKey(key) || data[key]!.isBefore(value)) {
+        data[key] = value;
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      prefs.setJson(Localino.preference_key_sync, data);
+    }
+  }
+
+  void clearLocalSync() => prefs.setJson(Localino.preference_key_sync, null);
 }

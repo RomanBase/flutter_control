@@ -8,6 +8,9 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Key of shared preference where config is stored.
   static const String preference_key_sync = 'control_locale_sync';
 
+  /// Current localization data.
+  final _data = <String, dynamic>{};
+
   /// Default locale.
   /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   late String defaultLocale;
@@ -15,9 +18,6 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// List of available localization assets.
   /// [LocalinoAsset] defines language and asset path to file with localization data.
   late List<LocalinoAsset> assets;
-
-  /// Current localization data.
-  final _data = <String, dynamic>{};
 
   /// Checks if this localization is main and will broadcast [LocalinoArgs] changes with [Localino] key.
   /// Only one localization should be main !
@@ -80,34 +80,10 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       ..assets = assets;
   }
 
-  void _setup(String defaultLocale, List<LocalinoAsset> assets, Map<String, DateTime>? sync) {
+  void _setup(String defaultLocale, List<LocalinoAsset> assets) {
     this.defaultLocale = defaultLocale;
     this.assets = assets;
-
-    if (sync != null) {
-      updateLocalSync(sync);
-    }
   }
-
-  Map<String, DateTime> getLocalSync() => prefs.getJson(Localino.preference_key_sync);
-
-  void updateLocalSync(Map<String, DateTime> locales) {
-    final data = getLocalSync();
-
-    bool changed = false;
-    locales.forEach((key, value) {
-      if (!data.containsKey(key) || data[key]!.isBefore(value)) {
-        data[key] = value;
-        changed = true;
-      }
-    });
-
-    if (changed) {
-      prefs.setJson(Localino.preference_key_sync, data);
-    }
-  }
-
-  void clearLocalSync() => prefs.setJson(Localino.preference_key_sync, null);
 
   /// Should be called first.
   /// Loads initial localization data - [getSystemLocale] is used to get preferred locale.

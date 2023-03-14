@@ -1,0 +1,34 @@
+name: localino_live
+description: A new Flutter project.
+version: 0.9.0
+homepage: localino.app
+
+environment:
+  sdk: '>=2.17.0 <3.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # https://pub.dev/packages/control_core
+  control_core: ">=0.9.5 <1.0.0"
+
+  # https://pub.dev/packages/control_core
+  localino: ">=0.9.1 <1.0.0"
+
+  # https://pub.dev/packages/http
+  http: ">=0.13.5 <1.0.0"
+
+  # https://pub.dev/packages/path_provider
+  path_provider: ">=2.0.0 <3.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+dependency_overrides:
+  localino:
+    path: ../../modules/localino
+
+

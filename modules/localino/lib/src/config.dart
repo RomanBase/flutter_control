@@ -1,5 +1,19 @@
 part of localino;
 
+class LocalinoRemoteOptions {
+  final String space;
+  final String project;
+  final String access;
+  final String version;
+
+  const LocalinoRemoteOptions({
+    this.space = 'public',
+    required this.project,
+    required this.access,
+    this.version = 'latest',
+  });
+}
+
 class LocalinoSetup {
   final String space;
   final String project;
@@ -19,19 +33,24 @@ class LocalinoSetup {
     this.locales = const {},
   });
 
-  LocalinoConfig toConfig() => LocalinoConfig(
+  LocalinoRemoteOptions get options => LocalinoRemoteOptions(
+        space: space,
+        project: project,
+        access: access,
+        version: version,
+      );
+
+  LocalinoConfig get config => LocalinoConfig(
         defaultLocale: init['default_locale'],
         stableLocale: init['stable_locale'],
         initLocale: init['auto_init'] ?? true,
         loadDefaultLocale: init['load_default'] ?? true,
         handleSystemLocale: init['handle_system'] ?? false,
         handleRemoteLocale: init['handle_remote'] ?? false,
-        locales: locales.map((key, value) =>
-            MapEntry(key, Parse.format(asset, {'locale': key}))),
+        locales: locales.map((key, value) => MapEntry(key, Parse.format(asset, {'locale': key}))),
       );
 
-  static Future<LocalinoSetup> loadAssets(
-      [String path = 'assets/localization']) async {
+  static Future<LocalinoSetup> loadAssets([String path = 'assets/localization']) async {
     if (path.endsWith('/')) {
       path = path.substring(0, path.length - 1);
     }
@@ -44,9 +63,7 @@ class LocalinoSetup {
       project: data['project'],
       access: data['access'],
       asset: '$path/{locale}.json',
-      locales: Parse.toKeyMap<String, DateTime>(
-          data['locales'], (key, value) => key as String,
-          converter: (value) => Parse.date(value) ?? DateTime.now().toUtc()),
+      locales: Parse.toKeyMap<String, DateTime>(data['locales'], (key, value) => key as String, converter: (value) => Parse.date(value) ?? DateTime.now().toUtc()),
       init: data['init'] ?? {},
     );
   }
@@ -56,8 +73,7 @@ class LocalinoSetup {
 ///
 /// Config is passed to [Control.initControl] to init [Localino].
 class LocalinoConfig {
-  static String get systemLocale =>
-      WidgetsBinding.instance.window.locale.toString();
+  static String get systemLocale => WidgetsBinding.instance.window.locale.toString();
 
   static LocalinoConfig get empty => LocalinoConfig(
         locales: {
@@ -88,8 +104,7 @@ class LocalinoConfig {
   final bool handleRemoteLocale;
 
   /// Returns default of first locale key.
-  String get fallbackLocale =>
-      defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : systemLocale);
+  String get fallbackLocale => defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : systemLocale);
 
   /// [defaultLocale] - Default (not preferred) locale. This locale can contains non-translatable values (links, etc.).
   /// [locales] - Map of localization assets {'locale', 'path'}. Use [LocalinoAsset.map] for easier setup.
@@ -110,8 +125,7 @@ class LocalinoConfig {
   List<LocalinoAsset> toAssets() {
     final localizationAssets = <LocalinoAsset>[];
 
-    locales.forEach((key, value) => localizationAssets
-        .add(LocalinoAsset(LocalinoAsset.normalizeLocaleKey(key), value)));
+    locales.forEach((key, value) => localizationAssets.add(LocalinoAsset(LocalinoAsset.normalizeLocaleKey(key), value)));
 
     return localizationAssets;
   }
@@ -168,29 +182,24 @@ class LocalinoAsset {
   /// en -> en
   /// en-US -> en_US
   /// en-US-419 -> en_US_419
-  static String normalizeLocaleKey(String locale) =>
-      locale.replaceAll('-', '_');
+  static String normalizeLocaleKey(String locale) => locale.replaceAll('-', '_');
 
   /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
-  static Map<String, String> map(
-      {AssetPath path = const AssetPath(), required List<String> locales}) {
+  static Map<String, String> map({AssetPath path = const AssetPath(), required List<String> locales}) {
     final map = Map<String, String>();
 
-    locales.forEach((locale) =>
-        map[normalizeLocaleKey(locale)] = path.localization(locale));
+    locales.forEach((locale) => map[normalizeLocaleKey(locale)] = path.localization(locale));
 
     return map;
   }
 
   /// Builds a List of [LocalinoAsset] by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
-  static List<LocalinoAsset> list(
-      {AssetPath path = const AssetPath(), required List<String> locales}) {
+  static List<LocalinoAsset> list({AssetPath path = const AssetPath(), required List<String> locales}) {
     final localizationAssets = <LocalinoAsset>[];
 
-    locales.forEach((locale) => localizationAssets.add(
-        LocalinoAsset(normalizeLocaleKey(locale), path.localization(locale))));
+    locales.forEach((locale) => localizationAssets.add(LocalinoAsset(normalizeLocaleKey(locale), path.localization(locale))));
 
     return localizationAssets;
   }
