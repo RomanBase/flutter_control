@@ -21,7 +21,8 @@ part 'src/provider.dart';
 
 part 'src/remote.dart';
 
-typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(
+    Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoOptions {
@@ -30,7 +31,8 @@ class LocalinoOptions {
 
   LocalinoSetup? setup;
 
-  LocalinoOptions({this.assetsPath = 'assets/localization', this.config, this.setup});
+  LocalinoOptions(
+      {this.assetsPath = 'assets/localization', this.config, this.setup});
 
   Future<LocalinoConfig> toConfig() async {
     if (config != null) {
@@ -83,7 +85,8 @@ class LocalinoModule extends ControlModule<Localino> {
   Future? init() async {
     final config = await options.toConfig();
 
-    module!._setup(config.fallbackLocale, config.toAssets());
+    module!._setup(config.fallbackLocale, config.toAssets(),
+        () => Control.get<LocalinoRemote>()!.loadLocalTranslations());
 
     return config.initLocale
         ? module!.init(
@@ -94,7 +97,8 @@ class LocalinoModule extends ControlModule<Localino> {
         : null;
   }
 
-  static Future<bool> standalone(LocalinoOptions options, {Map? args, bool? debug}) async {
+  static Future<bool> standalone(LocalinoOptions options,
+      {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         printDebug('Localino (main) can be initialized only once.');

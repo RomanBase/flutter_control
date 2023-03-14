@@ -186,7 +186,8 @@ class ControlRootScope {
   ///
   /// [args] - Arguments to child Builders and Widgets.
   /// [clearNavigator] - Clears root [Navigator].
-  bool setAppState(AppState? state, {dynamic args, bool clearNavigator= true}) {
+  bool setAppState(AppState? state,
+      {dynamic args, bool clearNavigator = true}) {
     if (clearNavigator) {
       try {
         Navigator.of(context!).popUntil((route) => route.isFirst);
@@ -201,7 +202,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.init]
   ///
   /// Checks [setAppState] for more info.
-  bool setInitState({dynamic args, bool clearNavigator= true}) => setAppState(
+  bool setInitState({dynamic args, bool clearNavigator = true}) => setAppState(
         AppState.init,
         args: args,
         clearNavigator: clearNavigator,
@@ -210,7 +211,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.auth]
   ///
   /// Checks [setAppState] for more info.
-  bool setAuthState({dynamic args, bool clearNavigator= true}) => setAppState(
+  bool setAuthState({dynamic args, bool clearNavigator = true}) => setAppState(
         AppState.auth,
         args: args,
         clearNavigator: clearNavigator,
@@ -219,7 +220,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.onboarding]
   ///
   /// Checks [setAppState] for more info.
-  bool setOnboardingState({dynamic args, bool clearNavigator= true}) =>
+  bool setOnboardingState({dynamic args, bool clearNavigator = true}) =>
       setAppState(
         AppState.onboarding,
         args: args,
@@ -229,7 +230,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.main]
   ///
   /// Checks [setAppState] for more info.
-  bool setMainState({dynamic args, bool clearNavigator= true}) => setAppState(
+  bool setMainState({dynamic args, bool clearNavigator = true}) => setAppState(
         AppState.main,
         args: args,
         clearNavigator: clearNavigator,
@@ -238,7 +239,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.background]
   ///
   /// Checks [setAppState] for more info.
-  bool setBackgroundState({dynamic args, bool clearNavigator= true}) =>
+  bool setBackgroundState({dynamic args, bool clearNavigator = true}) =>
       setAppState(
         AppState.background,
         args: args,
@@ -399,14 +400,14 @@ class ControlRoot extends StatefulWidget {
   const ControlRoot({
     this.debug,
     this.localization,
-    this.entries= const {},
-    this.initializers= const {},
+    this.entries = const {},
+    this.initializers = const {},
     this.injector,
-    this.routes= const [],
+    this.routes = const [],
     this.theme,
     this.transition,
-    this.initState= AppState.init,
-    this.states= const [],
+    this.initState = AppState.init,
+    this.states = const [],
     required this.app,
     this.initAsync,
     this.onSetupChanged,
@@ -525,7 +526,9 @@ class ControlRootState extends State<ControlRoot> {
       injector: widget.injector,
       modules: [
         ConfigModule(),
-        LocalinoModule(widget.localization ?? LocalinoOptions(config: LocalinoConfig.empty),
+        LocalinoModule(
+            widget.localization ??
+                LocalinoOptions(config: LocalinoConfig.empty),
             debug: widget.debug),
         RoutingModule(widget.routes),
       ],

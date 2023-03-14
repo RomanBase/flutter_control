@@ -16,9 +16,11 @@ part 'src/local_repo.dart';
 part 'src/remote_repo.dart';
 
 class LocalinoLive {
-  static LocalinoRemoteApi instance(LocalinoRemoteOptions options) => _LocalinoLiveApi(options);
+  static LocalinoRemoteApi instance(LocalinoRemoteOptions options) =>
+      _LocalinoLiveApi(options);
 
   static Map<Type, Initializer> get initializers => {
-        LocalinoRemoteApi: (args) => instance(Parse.getArg<LocalinoRemoteOptions>(args)!),
+        LocalinoRemoteApi: (args) =>
+            instance(Parse.getArg<LocalinoRemoteOptions>(args)!),
       };
 }

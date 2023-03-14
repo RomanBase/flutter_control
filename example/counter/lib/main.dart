@@ -29,7 +29,9 @@ class MyApp extends StatelessWidget {
     );
 
     Control.factory.onReady()?.then((value) {
-      LocalinoProvider.remote.fetchTranslations().then((value) => printDebug(value));
+      LocalinoProvider.remote
+          .loadRemoteTranslations()
+          .then((value) => printDebug(value));
     });
 
     return MaterialApp(
@@ -67,6 +69,13 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
   final String title;
 
   @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    registerStateNotifier(LocalinoProvider.instance);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -88,7 +97,8 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                   );
                 }),
             ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
+                      builder: (_) => MyHomePage(title: 'Next Page'))
                   .viaTransition(CrossTransition.route(
                     background: CrossTransition.slide(
                       begin: Offset(-0.25, 0),
