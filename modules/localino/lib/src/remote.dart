@@ -71,12 +71,19 @@ class LocalinoRemote with PrefsProvider {
 
   Future<bool> fetchTranslations({String? locale, DateTime? timestamp}) async {
     locale ??= instance.locale;
-    printDebug('Localino: fetch remote locale: $locale');
+    timestamp ??= lastUpdate(locale);
+
+    printDebug('Localino: fetch remote locale: $locale $timestamp | ${options?.space}, ${options?.project}');
     if (!_ensureModule()) {
       return false;
     }
 
-    timestamp ??= lastUpdate(locale);
+    if (locale == LocalinoAsset.empty.locale) {
+      printDebug('Localino: fetch aborted with invalid locale: $locale');
+      return false;
+    }
+
+    printDebug(_getLocalSync());
 
     final now = DateTime.now().toUtc();
     final result = await _api!.getTranslations(locale, timestamp: timestamp).catchError((err) {
@@ -85,16 +92,15 @@ class LocalinoRemote with PrefsProvider {
     });
 
     if (result.isNotEmpty) {
-      updateLocalSync({locale: now});
+      _updateLocalSync({locale: now});
+      _updateLocalization(locale, result);
     }
-
-    _updateLocalization(locale, result);
 
     await _api!.storeLocalCache(locale, result).catchError((err) {
       printDebug(err);
     });
 
-    return true;
+    return result.isNotEmpty;
   }
 
   void _updateLocalization(String locale, Map<String, dynamic> translations) {
@@ -103,12 +109,12 @@ class LocalinoRemote with PrefsProvider {
     }
   }
 
-  DateTime? lastUpdate(String locale) => getLocalSync()[locale];
+  DateTime? lastUpdate(String locale) => _getLocalSync()[locale];
 
-  Map<String, DateTime> getLocalSync() => prefs.getJson(Localino.preference_key_sync);
+  Map<String, DateTime> _getLocalSync() => Parse.toKeyMap<String, DateTime>(prefs.getJson(Localino.preference_key_sync), (key, value) => key as String);
 
-  void updateLocalSync(Map<String, DateTime> locales) {
-    final data = getLocalSync();
+  void _updateLocalSync(Map<String, DateTime> locales) {
+    final data = _getLocalSync();
 
     bool changed = false;
     locales.forEach((key, value) {
@@ -123,5 +129,5 @@ class LocalinoRemote with PrefsProvider {
     }
   }
 
-  void clearLocalSync() => prefs.setJson(Localino.preference_key_sync, null);
+  void _clearLocalSync() => prefs.setJson(Localino.preference_key_sync, null);
 }

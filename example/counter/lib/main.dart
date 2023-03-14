@@ -1,4 +1,5 @@
 import 'package:flutter_control/control.dart';
+import 'package:localino_live/localino_live.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,11 +14,23 @@ class MyApp extends StatelessWidget {
     Control.initControl(
       modules: [
         RoutingModule([]),
+        LocalinoModule(LocalinoOptions(
+          setup: LocalinoSetup(
+            space: 'apino',
+            project: 'control',
+            locales: {'en_US': DateTime(2000)},
+          ),
+        )),
       ],
       initializers: {
         CounterControl: (_) => CounterControl(),
+        ...LocalinoLive.initializers,
       },
     );
+
+    Control.factory.onReady()?.then((value) {
+      LocalinoProvider.remote.fetchTranslations().then((value) => printDebug(value));
+    });
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -75,8 +88,7 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                   );
                 }),
             ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
-                      builder: (_) => MyHomePage(title: 'Next Page'))
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
                   .viaTransition(CrossTransition.route(
                     background: CrossTransition.slide(
                       begin: Offset(-0.25, 0),
@@ -88,7 +100,7 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                     ),
                   ))
                   .init()),
-              child: Text('open next'),
+              child: Text(localize('app_name')),
             ),
           ],
         ),

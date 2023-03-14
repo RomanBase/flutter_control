@@ -1,13 +1,13 @@
 part of localino_live;
 
-class LocalinoLiveApi implements LocalinoRemoteApi {
+class _LocalinoLiveApi implements LocalinoRemoteApi {
   _RemoteRepo get remoteRepo => _RemoteRepo();
 
   _LocalRepo get localRepo => _LocalRepo();
 
   final LocalinoRemoteOptions options;
 
-  LocalinoLiveApi(this.options);
+  _LocalinoLiveApi(this.options);
 
   //TODO: config not implemented on Localino side
   @override

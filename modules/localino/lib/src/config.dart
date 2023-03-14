@@ -26,7 +26,7 @@ class LocalinoSetup {
   const LocalinoSetup({
     this.space = 'public',
     required this.project,
-    required this.access,
+    this.access = 'token',
     this.version = 'latest',
     this.asset = 'assets/localization/{locale}.json',
     this.init = const {},

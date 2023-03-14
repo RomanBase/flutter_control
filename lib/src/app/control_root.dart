@@ -147,6 +147,9 @@ class ControlRootScope {
   /// Returns current [ControlRootSetup] of [ControlRoot].
   ControlRootSetup? get setup => _rootKey.currentState?._setup;
 
+  /// Returns current [AppState] of [ControlRoot].
+  AppState? get state => _rootKey.currentState?._setup.state;
+
   /// Notifies state of [ControlRoot].
   /// To change [AppState] use [setAppState].
   bool notifyControlState([ControlArgs? args]) {
@@ -183,7 +186,7 @@ class ControlRootScope {
   ///
   /// [args] - Arguments to child Builders and Widgets.
   /// [clearNavigator] - Clears root [Navigator].
-  bool setAppState(AppState? state, {dynamic args, bool clearNavigator: true}) {
+  bool setAppState(AppState? state, {dynamic args, bool clearNavigator= true}) {
     if (clearNavigator) {
       try {
         Navigator.of(context!).popUntil((route) => route.isFirst);
@@ -198,7 +201,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.init]
   ///
   /// Checks [setAppState] for more info.
-  bool setInitState({dynamic args, bool clearNavigator: true}) => setAppState(
+  bool setInitState({dynamic args, bool clearNavigator= true}) => setAppState(
         AppState.init,
         args: args,
         clearNavigator: clearNavigator,
@@ -207,7 +210,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.auth]
   ///
   /// Checks [setAppState] for more info.
-  bool setAuthState({dynamic args, bool clearNavigator: true}) => setAppState(
+  bool setAuthState({dynamic args, bool clearNavigator= true}) => setAppState(
         AppState.auth,
         args: args,
         clearNavigator: clearNavigator,
@@ -216,7 +219,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.onboarding]
   ///
   /// Checks [setAppState] for more info.
-  bool setOnboardingState({dynamic args, bool clearNavigator: true}) =>
+  bool setOnboardingState({dynamic args, bool clearNavigator= true}) =>
       setAppState(
         AppState.onboarding,
         args: args,
@@ -226,7 +229,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.main]
   ///
   /// Checks [setAppState] for more info.
-  bool setMainState({dynamic args, bool clearNavigator: true}) => setAppState(
+  bool setMainState({dynamic args, bool clearNavigator= true}) => setAppState(
         AppState.main,
         args: args,
         clearNavigator: clearNavigator,
@@ -235,7 +238,7 @@ class ControlRootScope {
   /// Changes [AppState] to [AppState.background]
   ///
   /// Checks [setAppState] for more info.
-  bool setBackgroundState({dynamic args, bool clearNavigator: true}) =>
+  bool setBackgroundState({dynamic args, bool clearNavigator= true}) =>
       setAppState(
         AppState.background,
         args: args,
@@ -340,7 +343,7 @@ class ControlRoot extends StatefulWidget {
   final bool? debug;
 
   /// [Control.initControl]
-  final LocalinoConfig? localization;
+  final LocalinoOptions? localization;
 
   /// [Control.initControl]
   final Map entries;
@@ -382,7 +385,7 @@ class ControlRoot extends StatefulWidget {
   /// Notifies about [AppState] changes and animates Widget swapping.
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [localization] - Custom config for [BaseLocalization]. Map of supported locales, default locale and loading rules.
+  /// [localization] - Custom config for [Localino]. Assets, default locale and loading rules.
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
   /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection. Currently not used a lot...
@@ -396,14 +399,14 @@ class ControlRoot extends StatefulWidget {
   const ControlRoot({
     this.debug,
     this.localization,
-    this.entries: const {},
-    this.initializers: const {},
+    this.entries= const {},
+    this.initializers= const {},
     this.injector,
-    this.routes: const [],
+    this.routes= const [],
     this.theme,
     this.transition,
-    this.initState: AppState.init,
-    this.states: const [],
+    this.initState= AppState.init,
+    this.states= const [],
     required this.app,
     this.initAsync,
     this.onSetupChanged,
@@ -432,7 +435,7 @@ class ControlRootState extends State<ControlRoot> {
   /// [AppState] - case:transition Map of [ControlRoot.states].
   Map<dynamic, CrossTransition>? _transitions;
 
-  /// Subscription to global broadcast of [BaseLocalization] events.
+  /// Subscription to global broadcast of [Localino] events.
   BroadcastSubscription? _localeSub;
 
   /// Subscription to global broadcast of [ThemeControl] events.
@@ -522,7 +525,7 @@ class ControlRootState extends State<ControlRoot> {
       injector: widget.injector,
       modules: [
         ConfigModule(),
-        LocalinoModule(widget.localization ?? LocalinoConfig.empty,
+        LocalinoModule(widget.localization ?? LocalinoOptions(config: LocalinoConfig.empty),
             debug: widget.debug),
         RoutingModule(widget.routes),
       ],

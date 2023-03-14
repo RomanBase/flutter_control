@@ -48,7 +48,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
 
   /// Returns currently loaded locale.
-  String get locale => _locale ?? '#';
+  String get locale => _locale ?? defaultLocale;
 
   /// Returns currently loaded locale.
   Locale? get currentLocale => getLocale(locale);
@@ -97,6 +97,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
     String? stableLocale,
   }) async {
     if (!hasValidAsset) {
+      printDebug('Localino initialization failed: no valid asset found.');
       return LocalinoArgs(
         locale: '#',
         isActive: false,
@@ -113,14 +114,18 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
     LocalinoArgs? args;
 
     if (stableLocale != null) {
+      printDebug('Localino initializing stable locale: $stableLocale');
       args = await loadLocalizationData(stableLocale);
     }
 
     if (loadDefaultLocale) {
+      printDebug('Localino initializing default locale: $defaultLocale');
       args = await loadDefaultLocalization();
     }
 
-    if (!isSystemLocaleActive(nullOk: false)) {
+    final systemLocale = getSystemLocale();
+    if (!isSystemLocaleActive(nullOk: false) && systemLocale != defaultLocale) {
+      printDebug('Localino initializing system locale: $systemLocale}');
       args = await changeToSystemLocale();
     }
 
@@ -235,6 +240,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Result of localization change is send to global broadcast with [Localino] key.
   Future<LocalinoArgs> changeLocale(String locale, {bool preferred = true}) async {
     if (debug && locale == 'debug') {
+      printDebug('Localino setting up DEBUG locale: #');
       return _setDebugLocale();
     }
 
@@ -293,7 +299,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
     loading = true;
 
     if (!isLocalizationAvailable(locale)) {
-      print('localization not available: $locale');
+      print('Localization not available: $locale');
       loading = false;
       return LocalinoArgs(
         locale: locale,
@@ -303,8 +309,9 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       );
     }
 
-    if (isLocaleEqual(this.locale, locale)) {
+    if (isLocaleEqual(_locale, locale)) {
       loading = false;
+      print('Localization is already loaded: $locale');
       return LocalinoArgs(
         locale: locale,
         isActive: true,
@@ -323,6 +330,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Loads localization from asset file for given [locale] and [asset].
   Future<LocalinoArgs> _loadAssetLocalization(String locale, LocalinoAsset? asset) async {
     if (asset == null || !asset.isValid) {
+      print('Localization asset is not valid: $asset');
       return LocalinoArgs(
         locale: locale,
         isActive: false,
@@ -338,7 +346,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       if (data != null) {
         data.forEach((key, value) => _data[key] = value);
 
-        print('localization changed to: $asset');
+        print('Localization changed to: $asset');
 
         final args = LocalinoArgs(
           locale: asset.locale,
@@ -353,7 +361,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       printDebug(ex.toString());
     }
 
-    print('localization failed to change: $asset');
+    print('Localization failed to change: $asset');
 
     return LocalinoArgs(
       locale: locale,

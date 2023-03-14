@@ -14,9 +14,7 @@ class _RemoteRepo {
         'Accept': '*/*',
       };
 
-  HttpClient get _httpClient => HttpClient()..connectionTimeout = Duration(seconds: 10);
-
-  IOClient get _client => IOClient(_httpClient);
+  http.Client get _client => http.Client();
 
   Future<http.Response> getSpace(String space) => _client.get(spaceUrl(space), headers: headers);
 

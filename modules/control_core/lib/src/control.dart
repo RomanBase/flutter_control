@@ -56,7 +56,7 @@ class Control {
     Map? entries,
     Map<Type, Initializer>? initializers,
     Injector? injector,
-    List<ControlModule> modules: const [],
+    List<ControlModule> modules= const [],
     Future Function()? initAsync,
   }) {
     if (isInitialized) {
