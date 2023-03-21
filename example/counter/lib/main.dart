@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Control.initControl(
+      debug: true,
       modules: [
         RoutingModule([]),
         LocalinoModule(LocalinoOptions(
@@ -29,9 +30,7 @@ class MyApp extends StatelessWidget {
     );
 
     Control.factory.onReady()?.then((value) {
-      LocalinoProvider.remote
-          .loadRemoteTranslations()
-          .then((value) => printDebug(value));
+      LocalinoProvider.remote.loadRemoteTranslations().then((value) => printDebug(value));
     });
 
     return MaterialApp(
@@ -97,8 +96,7 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                   );
                 }),
             ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
-                      builder: (_) => MyHomePage(title: 'Next Page'))
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
                   .viaTransition(CrossTransition.route(
                     background: CrossTransition.slide(
                       begin: Offset(-0.25, 0),

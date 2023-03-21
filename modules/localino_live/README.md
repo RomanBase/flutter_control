@@ -1,39 +1,41 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Localino Live - implementation of LocalinoRemoteApi via Localino REST API (https://api.localino.app/v1).
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+Loads localization asset based on current or preferred locale.\
+Formatted as Json/Map. Handles single strings, maps and lists, plurals and simple formatting.\
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```dart
+import 'package:localino/localino.dart';
+```
+
+Localino has multiple ways how to init. One of the ways is to via standalone module and simple config options.
+
+```dart
+LocalinoModule.standalone(LocalinoOptions(
+    setup: LocalinoSetup(
+      space: 'custom_space_id',
+      project: 'custom_project_id',
+    ),
+));
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
 ```dart
-const like = 'sample';
+LocalinoProvider.instance.localize('localization_key');
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Localino is build as module for [Control].
+
+```dart
+Control.initControl(
+  modules: [
+    LocalinoModule(...)  
+  ],
+);
+```
