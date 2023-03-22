@@ -21,7 +21,8 @@ part 'src/provider.dart';
 
 part 'src/remote.dart';
 
-typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(
+    Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoOptions {
@@ -75,7 +76,8 @@ class LocalinoModule extends ControlModule<Localino> {
 
   @override
   Map<Type, Initializer> get initializers => {
-        if (options.remote != null) LocalinoRemoteApi: (args) => options.remote!.call(args),
+        if (options.remote != null)
+          LocalinoRemoteApi: (args) => options.remote!.call(args),
       };
 
   LocalinoModule(this.options, {bool? debug}) {
@@ -119,7 +121,8 @@ class LocalinoModule extends ControlModule<Localino> {
         : null;
   }
 
-  static Future<bool> standalone(LocalinoOptions options, {Map? args, bool? debug}) async {
+  static Future<bool> standalone(LocalinoOptions options,
+      {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         printDebug('Localino (main) can be initialized only once.');

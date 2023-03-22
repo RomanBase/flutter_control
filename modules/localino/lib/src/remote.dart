@@ -9,7 +9,8 @@ abstract class LocalinoRemoteApi {
   /// Filter [timestamp] to specify border and return only changes.
   /// Filter [version] to fetch versioned translations.
   /// {'app_name': 'Super app', 'another_key': 'another translation'}
-  Future<Map<String, dynamic>> getTranslations(String locale, {DateTime? timestamp, String? version});
+  Future<Map<String, dynamic>> getTranslations(String locale,
+      {DateTime? timestamp, String? version});
 
   /// Returns config for given [locale] from remote server.
   /// Filter [timestamp] to specify border and return only changes.
@@ -21,7 +22,8 @@ abstract class LocalinoRemoteApi {
   Future<Map<String, dynamic>> loadLocalCache(String locale);
 
   /// Stores [translations] to local cache.
-  Future<void> storeLocalCache(String locale, Map<String, dynamic> translations, [DateTime? timestamp]);
+  Future<void> storeLocalCache(String locale, Map<String, dynamic> translations,
+      [DateTime? timestamp]);
 }
 
 class LocalinoRemote with PrefsProvider implements Disposable {
@@ -59,7 +61,10 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return _api != null;
   }
 
-  void initialize({Map<String, DateTime>? locales, bool remoteSync = false, bool initialFetch = true}) {
+  void initialize(
+      {Map<String, DateTime>? locales,
+      bool remoteSync = false,
+      bool initialFetch = true}) {
     _enable = _api != null;
 
     if (locales != null) {
@@ -95,7 +100,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return _enable;
   }
 
-  Future<bool> loadRemoteTranslations({String? locale, DateTime? timestamp}) async {
+  Future<bool> loadRemoteTranslations(
+      {String? locale, DateTime? timestamp}) async {
     if (!_ensureModule()) {
       return false;
     }
@@ -103,7 +109,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     locale ??= instance.locale;
     timestamp ??= lastUpdate(locale);
 
-    printDebug('Localino: fetch remote locale: $locale $timestamp | ${options?.space}, ${options?.project}');
+    printDebug(
+        'Localino: fetch remote locale: $locale $timestamp | ${options?.space}, ${options?.project}');
 
     if (locale == LocalinoAsset.empty.locale) {
       printDebug('Localino: fetch aborted with invalid locale: $locale');
@@ -111,7 +118,9 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     }
 
     final now = DateTime.now().toUtc();
-    final result = await _api!.getTranslations(locale, timestamp: timestamp).catchError((err) {
+    final result = await _api!
+        .getTranslations(locale, timestamp: timestamp)
+        .catchError((err) {
       printDebug(err);
       return <String, dynamic>{};
     });
@@ -133,7 +142,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
       return {};
     }
 
-    final data = await _api!.loadLocalCache(locale ?? instance.locale).catchError((err) {
+    final data =
+        await _api!.loadLocalCache(locale ?? instance.locale).catchError((err) {
       printDebug(err);
       return <String, dynamic>{};
     });
@@ -149,7 +159,10 @@ class LocalinoRemote with PrefsProvider implements Disposable {
 
   DateTime? lastUpdate(String locale) => _getLocalSync()[locale];
 
-  Map<String, DateTime> _getLocalSync() => Parse.toKeyMap<String, DateTime>(prefs.getJson(Localino.preference_key_sync), (key, value) => key as String, converter: (value) => Parse.date(value)!);
+  Map<String, DateTime> _getLocalSync() => Parse.toKeyMap<String, DateTime>(
+      prefs.getJson(Localino.preference_key_sync),
+      (key, value) => key as String,
+      converter: (value) => Parse.date(value)!);
 
   void _updateLocalSync(Map<String, DateTime> locales) {
     final data = _getLocalSync();
@@ -163,7 +176,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (changed) {
-      prefs.setJson(Localino.preference_key_sync, data.map((key, value) => MapEntry(key, value.toIso8601String())));
+      prefs.setJson(Localino.preference_key_sync,
+          data.map((key, value) => MapEntry(key, value.toIso8601String())));
     }
   }
 
@@ -191,7 +205,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (changed) {
-      prefs.setJson(Localino.preference_key_sync, data.map((key, value) => MapEntry(key, value.toIso8601String())));
+      prefs.setJson(Localino.preference_key_sync,
+          data.map((key, value) => MapEntry(key, value.toIso8601String())));
     }
   }
 
