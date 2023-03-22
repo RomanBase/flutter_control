@@ -1,20 +1,18 @@
 part of localino_live;
 
 class _RemoteRepo {
-  static const url = 'api.localino.app';
+  static const url = 'https://api.localino.app/$version';
   static const version = 'v1';
 
-  Uri spaceUrl(String space) => Uri.https(url, '$version/$space');
+  Uri spaceUrl(String space) => Uri.parse('$url/$space');
 
   Uri projectUrl(String space, String project) =>
-      Uri.https(url, '$version/$space/$project');
+      Uri.parse('$url/$space/$project');
 
   Uri localeUrl(String space, String project, String locale,
           [int? timestamp]) =>
-      Uri.https(
-          url,
-          '$version/$space/$project/locale/$locale' +
-              (timestamp == null ? '' : '?timestamp=$timestamp'));
+      Uri.parse('$url/$space/$project/locale/$locale' +
+          (timestamp == null ? '' : '?timestamp=$timestamp'));
 
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',

@@ -11,13 +11,13 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Current localization data.
   final _data = <String, dynamic>{};
 
-  /// Default locale.
-  /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
-  late String defaultLocale;
-
   /// List of available localization assets.
   /// [LocalinoAsset] defines language and asset path to file with localization data.
   late List<LocalinoAsset> assets;
+
+  /// Default locale.
+  /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
+  String defaultLocale = WidgetsBinding.instance.window.locale.toString();
 
   Future<Map<String, dynamic>> Function()? localData;
 

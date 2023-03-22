@@ -56,7 +56,7 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
       return response.json;
     }
 
-    throw response;
+    throw response.body;
   }
 
   @override

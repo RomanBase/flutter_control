@@ -109,13 +109,13 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     locale ??= instance.locale;
     timestamp ??= lastUpdate(locale);
 
-    printDebug(
-        'Localino: fetch remote locale: $locale $timestamp | ${options?.space}, ${options?.project}');
-
     if (locale == LocalinoAsset.empty.locale) {
-      printDebug('Localino: fetch aborted with invalid locale: $locale');
+      printDebug('LocalinoRemote: fetch aborted with invalid locale: $locale');
       return false;
     }
+
+    printDebug(
+        'LocalinoRemote: fetch remote locale: $locale $timestamp | ${options?.space}, ${options?.project}');
 
     final now = DateTime.now().toUtc();
     final result = await _api!
@@ -126,12 +126,16 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (result.isNotEmpty) {
+      printDebug('LocalinoRemote: ${result.length} updated');
+
       _updateLocalSync({locale: timestamp = now});
       _updateLocalization(locale, result);
 
       await _api!.storeLocalCache(locale, result, timestamp).catchError((err) {
         printDebug(err);
       });
+    } else {
+      printDebug('LocalinoRemote: no changes found');
     }
 
     return result.isNotEmpty;
