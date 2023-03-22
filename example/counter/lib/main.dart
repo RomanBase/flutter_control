@@ -15,23 +15,24 @@ class MyApp extends StatelessWidget {
       debug: true,
       modules: [
         RoutingModule([]),
-        LocalinoModule(LocalinoOptions(
-          setup: LocalinoSetup(
-            space: 'apino',
-            project: 'control',
-            locales: {'en_US': DateTime(2000)},
+        LocalinoModule(
+          LocalinoOptions(
+            setup: LocalinoSetup(
+              space: 'apino',
+              project: 'control',
+              locales: {
+                'en_US': DateTime(2000),
+              },
+            ),
+            remote: LocalinoLive.remote,
+            remoteSync: true,
           ),
-        )),
+        ),
       ],
       initializers: {
         CounterControl: (_) => CounterControl(),
-        ...LocalinoLive.initializers,
       },
     );
-
-    Control.factory.onReady()?.then((value) {
-      LocalinoProvider.remote.loadRemoteTranslations().then((value) => printDebug(value));
-    });
 
     return MaterialApp(
       title: 'Flutter Demo',
@@ -84,6 +85,9 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text(
+              LocalinoProvider.instance.localize('local_key'),
+            ),
             Text(
               'You have pushed the button this many times: ',
             ),

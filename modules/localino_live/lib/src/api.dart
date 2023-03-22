@@ -12,8 +12,7 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
   //TODO: config not implemented on Localino side
   @override
   Future<Map<String, dynamic>> getRemoteConfig() async {
-    final response =
-        await remoteRepo.getProject(options.space, options.project);
+    final response = await remoteRepo.getProject(options.space, options.project);
 
     if (response.isValid) {
       return response.json;
@@ -24,8 +23,7 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
 
   @override
   Future<List<String>> getLocales() async {
-    final response =
-        await remoteRepo.getProject(options.space, options.project);
+    final response = await remoteRepo.getProject(options.space, options.project);
 
     if (response.isValid) {
       final json = response.json;
@@ -47,10 +45,8 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
 
   //TODO: version not implemented on Localino side
   @override
-  Future<Map<String, dynamic>> getTranslations(String locale,
-      {DateTime? timestamp, String? version}) async {
-    final response = await remoteRepo.getLocale(options.space, options.project,
-        locale, timestamp?.toUtc().millisecondsSinceEpoch);
+  Future<Map<String, dynamic>> getTranslations(String locale, {DateTime? timestamp, String? version}) async {
+    final response = await remoteRepo.getLocale(options.space, options.project, locale, timestamp?.toUtc().millisecondsSinceEpoch);
 
     if (response.isValid) {
       return response.json;
@@ -60,16 +56,17 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
   }
 
   @override
-  Future<Map<String, dynamic>> loadLocalCache(String locale) =>
-      localRepo.loadLocaleFromCache(options.space, locale);
+  Future<Map<String, dynamic>> loadLocalCache(String locale) => localRepo.loadLocaleFromCache(options.space, locale);
 
   @override
-  Future<void> storeLocalCache(
-      String locale, Map<String, dynamic> translations) async {
+  Future<void> storeLocalCache(String locale, Map<String, dynamic> translations, [DateTime? timestamp]) async {
     if (translations.isEmpty) {
       await localRepo.deleteLocaleCache(options.space, locale);
     } else {
-      await localRepo.storeLocaleToCache(options.space, locale, translations);
+      final data = await loadLocalCache(locale);
+      data.addAll(translations);
+
+      await localRepo.storeLocaleToCache(options.space, locale, data);
     }
   }
 }

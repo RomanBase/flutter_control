@@ -28,6 +28,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/
+    - assets/images/
+    - assets/localization/
+
 dependency_overrides:
   control_core:
     path: ../../modules/control_core

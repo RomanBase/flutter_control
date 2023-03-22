@@ -21,18 +21,24 @@ part 'src/provider.dart';
 
 part 'src/remote.dart';
 
-typedef LocalizationExtractor = String Function(
-    Map map, String locale, String defaultLocale);
+typedef LocalizationExtractor = String Function(Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoOptions {
   final String assetsPath;
   final LocalinoConfig? config;
+  final Initializer<LocalinoRemoteApi>? remote;
+  final bool remoteSync;
 
   LocalinoSetup? setup;
 
-  LocalinoOptions(
-      {this.assetsPath = 'assets/localization', this.config, this.setup});
+  LocalinoOptions({
+    this.assetsPath = 'assets/localization',
+    this.config,
+    this.setup,
+    this.remote,
+    this.remoteSync = false,
+  });
 
   Future<LocalinoConfig> toConfig() async {
     if (config != null) {
@@ -67,6 +73,11 @@ class LocalinoModule extends ControlModule<Localino> {
         LocalinoRemote: LocalinoRemote(options: options.setup?.options),
       };
 
+  @override
+  Map<Type, Initializer> get initializers => {
+        if (options.remote != null) LocalinoRemoteApi: (args) => options.remote!.call(args),
+      };
+
   LocalinoModule(this.options, {bool? debug}) {
     initModule();
     module!.debug = debug ?? Control.debug;
@@ -84,12 +95,23 @@ class LocalinoModule extends ControlModule<Localino> {
   @override
   Future? init() async {
     final config = await options.toConfig();
+    final localino = module!;
+    final remote = Control.get<LocalinoRemote>()!;
 
-    module!._setup(config.fallbackLocale, config.toAssets(),
-        () => Control.get<LocalinoRemote>()!.loadLocalTranslations());
+    localino._setup(
+      config.fallbackLocale,
+      config.toAssets(),
+      () => remote.loadLocalTranslations(),
+    );
+
+    remote.initialize(
+      locales: options.setup?.locales,
+      remoteSync: options.remoteSync,
+      initialFetch: false,
+    );
 
     return config.initLocale
-        ? module!.init(
+        ? localino.init(
             loadDefaultLocale: config.loadDefaultLocale,
             handleSystemLocale: config.handleSystemLocale,
             stableLocale: config.stableLocale,
@@ -97,8 +119,7 @@ class LocalinoModule extends ControlModule<Localino> {
         : null;
   }
 
-  static Future<bool> standalone(LocalinoOptions options,
-      {Map? args, bool? debug}) async {
+  static Future<bool> standalone(LocalinoOptions options, {Map? args, bool? debug}) async {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(Localino)) {
         printDebug('Localino (main) can be initialized only once.');
