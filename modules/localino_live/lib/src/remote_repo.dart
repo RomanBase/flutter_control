@@ -1,6 +1,7 @@
 part of localino_live;
 
 class _RemoteRepo {
+  //gcloud https://localino-app-rfwxdzufva-ew.a.run.app
   static const url = 'https://api.localino.app/$version';
   static const version = 'v1';
 
@@ -17,6 +18,7 @@ class _RemoteRepo {
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',
         'Accept': '*/*',
+        'Access-Control-Allow-Origin': '*',
       };
 
   http.Client get _client => http

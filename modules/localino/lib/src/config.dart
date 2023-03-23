@@ -61,13 +61,16 @@ class LocalinoSetup {
     final data = jsonDecode(json);
 
     return LocalinoSetup(
-      space: data['space'],
+      space: data['space'] ?? 'public',
       project: data['project'],
-      access: data['access'],
-      asset: '$path/{locale}.json',
+      access: data['access'] ?? 'none',
+      asset: data['asset'] ?? '$path/{locale}.json',
+      version: data['version'] ?? 'latest',
       locales: Parse.toKeyMap<String, DateTime>(
-          data['locales'], (key, value) => key as String,
-          converter: (value) => Parse.date(value) ?? DateTime.now().toUtc()),
+        data['locales'],
+        (key, value) => key as String,
+        converter: (value) => Parse.date(value) ?? DateTime.now().toUtc(),
+      ),
       init: data['init'] ?? {},
     );
   }

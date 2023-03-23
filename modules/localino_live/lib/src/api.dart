@@ -56,16 +56,27 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
       return response.json;
     }
 
-    throw response.body;
+    throw response.headers;
   }
 
   @override
-  Future<Map<String, dynamic>> loadLocalCache(String locale) =>
-      localRepo.loadLocaleFromCache(options.space, locale);
+  Future<Map<String, dynamic>> loadLocalCache(String locale) async {
+    if (kIsWeb) {
+      printDebug('Localino Live cache is not supported on web');
+      return {};
+    }
+
+    return localRepo.loadLocaleFromCache(options.space, locale);
+  }
 
   @override
   Future<void> storeLocalCache(String locale, Map<String, dynamic> translations,
       [DateTime? timestamp]) async {
+    if (kIsWeb) {
+      printDebug('Localino Live cache is not supported on web');
+      return;
+    }
+
     if (translations.isEmpty) {
       await localRepo.deleteLocaleCache(options.space, locale);
     } else {

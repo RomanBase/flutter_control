@@ -17,13 +17,6 @@ class MyApp extends StatelessWidget {
         RoutingModule([]),
         LocalinoModule(
           LocalinoOptions(
-            setup: LocalinoSetup(
-              space: 'apino',
-              project: 'control',
-              locales: {
-                'en_US': DateTime(2000),
-              },
-            ),
             remote: LocalinoLive.remote,
             remoteSync: true,
           ),

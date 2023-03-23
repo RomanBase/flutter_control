@@ -71,7 +71,7 @@ class LocalinoModule extends ControlModule<Localino> {
   @override
   Map get entries => {
         ...super.entries,
-        LocalinoRemote: LocalinoRemote(options: options.setup?.options),
+        LocalinoRemote: LocalinoRemote(),
       };
 
   @override
@@ -99,6 +99,8 @@ class LocalinoModule extends ControlModule<Localino> {
     final config = await options.toConfig();
     final localino = module!;
     final remote = Control.get<LocalinoRemote>()!;
+
+    remote.options = options.setup?.options;
 
     localino._setup(
       config.fallbackLocale,

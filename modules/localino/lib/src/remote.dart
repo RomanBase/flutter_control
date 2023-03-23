@@ -169,6 +169,10 @@ class LocalinoRemote with PrefsProvider implements Disposable {
       converter: (value) => Parse.date(value)!);
 
   void _updateLocalSync(Map<String, DateTime> locales) {
+    if (kIsWeb) {
+      return;
+    }
+
     final data = _getLocalSync();
 
     bool changed = false;

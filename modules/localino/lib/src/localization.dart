@@ -83,11 +83,8 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   Localino.instance(this.defaultLocale, this.assets);
 
   /// Creates new localization object based on this localization settings.
-  Localino instanceOf(List<LocalinoAsset> assets) {
-    return Localino._()
-      ..defaultLocale = defaultLocale
-      ..assets = assets;
-  }
+  Localino instanceOf(List<LocalinoAsset> assets) =>
+      Localino.instance(defaultLocale, assets);
 
   void _setup(String defaultLocale, List<LocalinoAsset> assets,
       Future<Map<String, dynamic>> Function() localData) {
