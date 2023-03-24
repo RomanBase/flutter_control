@@ -46,25 +46,26 @@ class LocalinoSetup {
         initLocale: init['auto_init'] ?? true,
         loadDefaultLocale: init['load_default'] ?? true,
         handleSystemLocale: init['handle_system'] ?? false,
-        handleRemoteLocale: init['handle_remote'] ?? false,
         locales: locales.map((key, value) =>
             MapEntry(key, Parse.format(asset, {'locale': key}))),
       );
 
   static Future<LocalinoSetup> loadAssets(
-      [String path = 'assets/localization']) async {
-    if (path.endsWith('/')) {
-      path = path.substring(0, path.length - 1);
-    }
-
-    final json = await rootBundle.loadString('$path/setup.json', cache: false);
+      [String path = 'assets/localization/setup.json']) async {
+    final json = await rootBundle.loadString(path, cache: false);
     final data = jsonDecode(json);
 
+    assert(data is Map, 'Invalid setup at $path:\n$json');
+    assert(data.containsKey('space'),
+        'Invalid setup: SPACE variable not found in $path');
+    assert(data.containsKey('project'),
+        'Invalid setup: PROJECT variable not found in $path');
+
     return LocalinoSetup(
-      space: data['space'] ?? 'public',
+      space: data['space'],
       project: data['project'],
       access: data['access'] ?? 'none',
-      asset: data['asset'] ?? '$path/{locale}.json',
+      asset: data['asset'] ?? 'assets/localization/{locale}.json',
       version: data['version'] ?? 'latest',
       locales: Parse.toKeyMap<String, DateTime>(
         data['locales'],
@@ -107,10 +108,6 @@ class LocalinoConfig {
   /// Check to handle system locale.
   final bool handleSystemLocale;
 
-  /// Check to handle remote locale.
-  /// More info at [LocalinoRemote].
-  final bool handleRemoteLocale;
-
   /// Returns default of first locale key.
   String get fallbackLocale =>
       defaultLocale ?? (locales.isNotEmpty ? locales.keys.first : systemLocale);
@@ -127,7 +124,6 @@ class LocalinoConfig {
     this.initLocale = true,
     this.loadDefaultLocale = true,
     this.handleSystemLocale = false,
-    this.handleRemoteLocale = false,
   });
 
   /// Converts Map of [locales] to List of [LocalinoAsset]s.

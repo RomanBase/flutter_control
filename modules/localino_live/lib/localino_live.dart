@@ -25,4 +25,16 @@ class LocalinoLive {
         LocalinoRemoteApi: (args) =>
             instance(Parse.getArg<LocalinoRemoteOptions>(args)!),
       };
+
+  static LocalinoOptions options({
+    String assetsPath = 'assets/localization',
+    LocalinoSetup? setup,
+    bool remoteSync = true,
+  }) =>
+      LocalinoOptions(
+        assetsPath: assetsPath,
+        setup: setup,
+        remote: remote,
+        remoteSync: remoteSync,
+      );
 }
