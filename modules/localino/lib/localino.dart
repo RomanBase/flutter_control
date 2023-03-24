@@ -26,7 +26,7 @@ typedef LocalizationExtractor = String Function(
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 
 class LocalinoOptions {
-  final String assetsPath;
+  final String path;
   final LocalinoConfig? config;
   final Initializer<LocalinoRemoteApi>? remote;
   final bool remoteSync;
@@ -34,7 +34,7 @@ class LocalinoOptions {
   LocalinoSetup? setup;
 
   LocalinoOptions({
-    this.assetsPath = 'assets/localization',
+    this.path = 'assets/localization/setup.json',
     this.config,
     this.setup,
     this.remote,
@@ -49,7 +49,9 @@ class LocalinoOptions {
 
     if (setup == null) {
       printDebug('Initializing Localino from Assets Setup');
-      setup = await LocalinoSetup.loadAssets(assetsPath).catchError((err) {
+      await LocalinoSetup.loadAssets(path).then((value) {
+        setup = value;
+      }).catchError((err) {
         printDebug(err);
       });
     } else {

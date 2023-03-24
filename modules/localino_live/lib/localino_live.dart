@@ -27,12 +27,12 @@ class LocalinoLive {
       };
 
   static LocalinoOptions options({
-    String assetsPath = 'assets/localization',
+    String path = 'assets/localization/setup.json',
     LocalinoSetup? setup,
     bool remoteSync = true,
   }) =>
       LocalinoOptions(
-        assetsPath: assetsPath,
+        path: path,
         setup: setup,
         remote: remote,
         remoteSync: remoteSync,

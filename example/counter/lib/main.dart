@@ -16,10 +16,7 @@ class MyApp extends StatelessWidget {
       modules: [
         RoutingModule([]),
         LocalinoModule(
-          LocalinoOptions(
-            remote: LocalinoLive.remote,
-            remoteSync: true,
-          ),
+          LocalinoLive.options(),
         ),
       ],
       initializers: {

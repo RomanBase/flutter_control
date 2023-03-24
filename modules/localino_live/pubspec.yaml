@@ -28,4 +28,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+dependency_overrides:
+  localino:
+    path: ../localino
+
 
