@@ -1,28 +1,24 @@
 part of localino;
 
 abstract class LocalinoRemoteApi {
-  /// Returns list of active locales from remote server.
-  /// ['en_US', 'es_ES', 'cs_CZ']
-  Future<List<String>> getLocales();
+  /// Returns setup for given [space] and [project] from remote server.
+  /// Filter [timestamp] to specify border and return only changes.
+  Future<Map<String, dynamic>> getRemoteSetup(String space, String project);
 
   /// Returns translations for given [locale] from remote server.
   /// Filter [timestamp] to specify border and return only changes.
   /// Filter [version] to fetch versioned translations.
   /// {'app_name': 'Super app', 'another_key': 'another translation'}
-  Future<Map<String, dynamic>> getTranslations(String locale,
+  Future<Map<String, dynamic>> getRemoteTranslations(String locale,
       {DateTime? timestamp, String? version});
-
-  /// Returns config for given [locale] from remote server.
-  /// Filter [timestamp] to specify border and return only changes.
-  /// {'app_name': 'Super app', 'another_key': 'another translation'}
-  Future<Map<String, dynamic>> getRemoteConfig();
 
   /// Returns translations for given [locale] from local cache.
   /// {'app_name': 'Super app', 'another_key': 'another translation'}
-  Future<Map<String, dynamic>> loadLocalCache(String locale);
+  Future<Map<String, dynamic>> getLocalCache(String locale);
 
-  /// Stores [translations] to local cache.
-  Future<void> storeLocalCache(String locale, Map<String, dynamic> translations,
+  /// Stores [translations] for given [locale] to local cache.
+  /// Provide empty Map to clear cache for given [locale].
+  Future<void> setLocalCache(String locale, Map<String, dynamic> translations,
       [DateTime? timestamp]);
 }
 
@@ -89,18 +85,18 @@ class LocalinoRemote with PrefsProvider implements Disposable {
 
     _sub = LocalinoProvider.subscribe((value) {
       if (value != null && value.changed) {
-        loadRemoteTranslations(locale: value.locale);
+        getRemoteTranslations(locale: value.locale);
       }
     });
 
     if (initialFetch) {
-      return loadRemoteTranslations();
+      return getRemoteTranslations();
     }
 
     return _enable;
   }
 
-  Future<bool> loadRemoteTranslations(
+  Future<bool> getRemoteTranslations(
       {String? locale, DateTime? timestamp}) async {
     if (!_ensureModule()) {
       return false;
@@ -119,7 +115,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
 
     final now = DateTime.now().toUtc();
     final result = await _api!
-        .getTranslations(locale, timestamp: timestamp)
+        .getRemoteTranslations(locale, timestamp: timestamp)
         .catchError((err) {
       printDebug(err);
       return <String, dynamic>{};
@@ -131,7 +127,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
       _updateLocalSync({locale: timestamp = now});
       _updateLocalization(locale, result);
 
-      await _api!.storeLocalCache(locale, result, timestamp).catchError((err) {
+      await _api!.setLocalCache(locale, result, timestamp).catchError((err) {
         printDebug(err);
       });
     } else {
@@ -141,13 +137,13 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return result.isNotEmpty;
   }
 
-  Future<Map<String, dynamic>> loadLocalTranslations({String? locale}) async {
+  Future<Map<String, dynamic>> getLocalTranslations({String? locale}) async {
     if (!_ensureModule()) {
       return {};
     }
 
     final data =
-        await _api!.loadLocalCache(locale ?? instance.locale).catchError((err) {
+        await _api!.getLocalCache(locale ?? instance.locale).catchError((err) {
       printDebug(err);
       return <String, dynamic>{};
     });
@@ -199,7 +195,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     bool changed = false;
     data.forEach((key, value) async {
       if (!locales.containsKey(key) || value.isBefore(locales[key]!)) {
-        await _api!.storeLocalCache(key, {});
+        await _api!.setLocalCache(key, {});
         data[key] = value;
         changed = true;
       }
