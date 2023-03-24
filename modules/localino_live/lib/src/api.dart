@@ -9,45 +9,21 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
 
   _LocalinoLiveApi(this.options);
 
-  //TODO: config not implemented on Localino side
   @override
-  Future<Map<String, dynamic>> getRemoteConfig() async {
-    final response =
-        await remoteRepo.getProject(options.space, options.project);
+  Future<Map<String, dynamic>> getRemoteSetup(
+      String space, String project) async {
+    final response = await remoteRepo.getSetup(space, project);
 
     if (response.isValid) {
       return response.json;
     }
 
-    throw response;
-  }
-
-  @override
-  Future<List<String>> getLocales() async {
-    final response =
-        await remoteRepo.getProject(options.space, options.project);
-
-    if (response.isValid) {
-      final json = response.json;
-
-      return Parse.toList(json['locale'], converter: (data) {
-        final country = data['country_code'];
-        final language = data['language_code']!;
-
-        if (country != null) {
-          return '${country}_${language}';
-        }
-
-        return language;
-      });
-    }
-
-    throw response;
+    throw response.body;
   }
 
   //TODO: version not implemented on Localino side
   @override
-  Future<Map<String, dynamic>> getTranslations(String locale,
+  Future<Map<String, dynamic>> getRemoteTranslations(String locale,
       {DateTime? timestamp, String? version}) async {
     final response = await remoteRepo.getLocale(options.space, options.project,
         locale, timestamp?.toUtc().millisecondsSinceEpoch);
@@ -56,34 +32,36 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
       return response.json;
     }
 
-    throw response.headers;
+    throw response.body;
   }
 
   @override
-  Future<Map<String, dynamic>> loadLocalCache(String locale) async {
+  Future<Map<String, dynamic>> getLocalCache(String locale) async {
     if (kIsWeb) {
-      printDebug('Localino Live cache is not supported on web');
+      printDebug('LocalinoLive cache is not supported on web');
       return {};
     }
 
-    return localRepo.loadLocaleFromCache(options.space, locale);
+    return localRepo.loadLocaleFromCache(
+        options.space, options.project, locale);
   }
 
   @override
-  Future<void> storeLocalCache(String locale, Map<String, dynamic> translations,
+  Future<void> setLocalCache(String locale, Map<String, dynamic> translations,
       [DateTime? timestamp]) async {
     if (kIsWeb) {
-      printDebug('Localino Live cache is not supported on web');
+      printDebug('LocalinoLive cache is not supported on web');
       return;
     }
 
     if (translations.isEmpty) {
-      await localRepo.deleteLocaleCache(options.space, locale);
+      await localRepo.deleteLocaleCache(options.space, options.project, locale);
     } else {
-      final data = await loadLocalCache(locale);
+      final data = await getLocalCache(locale);
       data.addAll(translations);
 
-      await localRepo.storeLocaleToCache(options.space, locale, data);
+      await localRepo.storeLocaleToCache(
+          options.space, options.project, locale, data);
     }
   }
 }

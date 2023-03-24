@@ -1,10 +1,10 @@
 part of localino_live;
 
 class _LocalRepo {
-  Future<Uri> localePath(String space, String locale) async {
+  Future<Uri> localePath(String space, String project, String locale) async {
     final dir = await path.getTemporaryDirectory();
 
-    return Uri.parse('${dir.path}/localino/${space}_${locale}');
+    return Uri.parse('${dir.path}/localino/${space}_${project}_${locale}');
   }
 
   Future<File> write(Uri path, Uint8List bytes) async {
@@ -40,17 +40,17 @@ class _LocalRepo {
     await file.delete(recursive: true);
   }
 
-  Future<void> storeLocaleToCache(
-      String space, String locale, Map<String, dynamic> translations) async {
-    final path = await localePath(space, locale);
+  Future<void> storeLocaleToCache(String space, String project, String locale,
+      Map<String, dynamic> translations) async {
+    final path = await localePath(space, project, locale);
 
     await write(
         path, Uint8List.fromList(utf8.encode(jsonEncode(translations))));
   }
 
   Future<Map<String, dynamic>> loadLocaleFromCache(
-      String space, String locale) async {
-    final path = await localePath(space, locale);
+      String space, String project, String locale) async {
+    final path = await localePath(space, project, locale);
 
     final result = await read(path);
 
@@ -61,8 +61,9 @@ class _LocalRepo {
     return {};
   }
 
-  Future<void> deleteLocaleCache(String space, String locale) async {
-    final path = await localePath(space, locale);
+  Future<void> deleteLocaleCache(
+      String space, String project, String locale) async {
+    final path = await localePath(space, project, locale);
 
     await delete(path);
   }

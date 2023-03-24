@@ -1,7 +1,7 @@
 part of localino_live;
 
 class _RemoteRepo {
-  //gcloud https://localino-app-rfwxdzufva-ew.a.run.app
+  //gcloud origin url: https://localino-app-rfwxdzufva-ew.a.run.app
   static const url = 'https://api.localino.app/$version';
   static const version = 'v1';
 
@@ -9,6 +9,9 @@ class _RemoteRepo {
 
   Uri projectUrl(String space, String project) =>
       Uri.parse('$url/$space/$project');
+
+  Uri setupUrl(String space, String project) =>
+      Uri.parse('$url/$space/$project/setup');
 
   Uri localeUrl(String space, String project, String locale,
           [int? timestamp]) =>
@@ -18,17 +21,18 @@ class _RemoteRepo {
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',
         'Accept': '*/*',
-        'Access-Control-Allow-Origin': '*',
       };
 
-  http.Client get _client => http
-      .Client(); //https://stackoverflow.com/questions/65630743/how-to-solve-flutter-web-api-cors-error-only-with-dart-code/66879350#66879350
+  http.Client get _client => http.Client();
 
   Future<http.Response> getSpace(String space) =>
       _client.get(spaceUrl(space), headers: headers);
 
   Future<http.Response> getProject(String space, String project) =>
       _client.get(projectUrl(space, project), headers: headers);
+
+  Future<http.Response> getSetup(String space, String project) =>
+      _client.get(setupUrl(space, project), headers: headers);
 
   Future<http.Response> getLocale(String space, String project, String locale,
           [int? timestamp]) =>
