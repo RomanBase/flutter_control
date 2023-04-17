@@ -19,7 +19,7 @@ void main() {
     await Control.factory.onReady();
 
     expect(initialized, isTrue);
-    expect(LocalinoProvider.instance.assets.length, 2);
+    expect(LocalinoProvider.instance.availableLocales.length, 2);
     expect(LocalinoProvider.instance, isNotNull);
     expect(LocalinoProvider.remote, isNotNull);
 
@@ -44,7 +44,7 @@ void main() {
     await Control.factory.onReady();
 
     expect(initialized, isTrue);
-    expect(LocalinoProvider.instance.assets.length, 2);
+    expect(LocalinoProvider.instance.availableLocales.length, 2);
     expect(LocalinoProvider.instance, isNotNull);
     expect(LocalinoProvider.remote, isNotNull);
 

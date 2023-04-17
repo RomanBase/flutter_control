@@ -34,7 +34,7 @@ class LocalinoDelegate extends LocalizationsDelegate<Localino> {
   List<Locale> supportedLocales() {
     final list = <Locale>[];
 
-    localization.assets.forEach((asset) {
+    localization._assets.forEach((asset) {
       list.add(asset.toLocale());
     });
 

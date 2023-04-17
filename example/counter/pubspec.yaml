@@ -10,8 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_control:
-    path: ../../
+  flutter_control: 2.6.3
 
   localino_live:
     path: ../../modules/localino_live
@@ -32,12 +31,4 @@ flutter:
     - assets/
     - assets/localization/
 
-dependency_overrides:
-  control_core:
-    path: ../../modules/control_core
 
-  control_config:
-    path: ../../modules/control_config
-
-  localino:
-    path: ../../modules/localino

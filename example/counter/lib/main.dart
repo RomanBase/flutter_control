@@ -31,6 +31,10 @@ class MyApp extends StatelessWidget {
           ).buildRoute(),
         ),
       ),
+      onSetupChanged: (setup) async {
+        printDebug(setup.localization!.locale);
+      },
+      initAsync: () async => await Future.delayed(Duration(seconds: 1)),
     );
   }
 }
@@ -84,8 +88,7 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                   );
                 }),
             ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
-                      builder: (_) => MyHomePage(title: 'Next Page'))
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
                   .viaTransition(CrossTransition.route(
                     background: CrossTransition.slide(
                       begin: Offset(-0.25, 0),

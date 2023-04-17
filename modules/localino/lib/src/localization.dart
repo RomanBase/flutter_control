@@ -13,7 +13,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// List of available localization assets.
   /// [LocalinoAsset] defines language and asset path to file with localization data.
-  late List<LocalinoAsset> assets;
+  final _assets = <LocalinoAsset>[];
 
   /// Default locale.
   /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
@@ -49,6 +49,9 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// The full system-reported supported locales of the device.
   List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
 
+  /// Returns list of available locales based on given assets.
+  Iterable<String> get availableLocales => _assets.map((e) => e.locale);
+
   /// Returns currently loaded locale.
   String get locale => _locale ?? defaultLocale;
 
@@ -69,7 +72,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   bool get isActive => _data.length > 0;
 
   /// Is [true] if any [LocalinoAsset] is valid.
-  bool get hasValidAsset => assets.any((element) => element.isValid);
+  bool get hasValidAsset => _assets.any((element) => element.isValid);
 
   /// Is [true] if localization can load default locale data.
   bool get isDirty => !loading && !isActive && hasValidAsset;
@@ -77,10 +80,12 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Json/Map based localization.
   ///
   /// [defaultLocale] - should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
-  /// [assets] - defines locales and asset path to files with localization data.
+  /// [_assets] - defines locales and asset path to files with localization data.
   Localino._();
 
-  Localino.instance(this.defaultLocale, this.assets);
+  Localino.instance(this.defaultLocale, List<LocalinoAsset> assets) {
+    this._assets.addAll(assets);
+  }
 
   /// Creates new localization object based on this localization settings.
   Localino instanceOf(List<LocalinoAsset> assets) =>
@@ -89,7 +94,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   void _setup(String defaultLocale, List<LocalinoAsset> assets,
       Future<Map<String, dynamic>> Function() localData) {
     this.defaultLocale = defaultLocale;
-    this.assets = assets;
+    this._assets.addAll(assets);
     this.localData = localData;
   }
 
@@ -434,7 +439,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       return null;
     }
 
-    for (final asset in assets) {
+    for (final asset in _assets) {
       if (asset.locale == locale) {
         return asset;
       }
@@ -447,7 +452,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
     final iso2Locale = locale.substring(0, 2);
 
-    for (final asset in assets) {
+    for (final asset in _assets) {
       if (asset.iso2Locale == iso2Locale) {
         return asset;
       }
