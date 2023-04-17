@@ -3,7 +3,7 @@
   "space": "apino",
   "project": "control",
   "asset": "assets/localization/{locale}.json",
-  "access": "token",
+  "access": "{token}",
   "locales": {
     "en_US": "2023-03-14T21:57:36.420Z",
     "cs_CZ": "2023-03-11T13:47:50.182Z"

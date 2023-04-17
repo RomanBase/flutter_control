@@ -1,3 +1,6 @@
-## 1.0.0
+## [0.9.3] Remote and Local API
+## [0.9.0] Initial Implementation of Localino
 
-- Initial version.
+---
+
+## [Pre-release] Part of `flutter_control` as `BaseLocalization`

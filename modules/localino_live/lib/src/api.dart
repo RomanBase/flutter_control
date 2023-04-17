@@ -1,7 +1,7 @@
 part of localino_live;
 
 class _LocalinoLiveApi implements LocalinoRemoteApi {
-  _RemoteRepo get remoteRepo => _RemoteRepo();
+  _RemoteRepo get remoteRepo => _RemoteRepo(options.access);
 
   _LocalRepo get localRepo => _LocalRepo();
 

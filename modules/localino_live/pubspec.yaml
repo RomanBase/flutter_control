@@ -1,7 +1,7 @@
 name: localino_live
 description: Implementation of LocalinoRemoteApi via Localino REST API.
 homepage: https://localino.app
-version: 0.1.3+1
+version: 0.1.4
 
 
 environment:
@@ -16,7 +16,7 @@ dependencies:
   control_core: ">=0.9.5 <1.0.0"
 
   # https://pub.dev/packages/localino
-  localino: ">=0.9.3 <1.0.0"
+  localino: ">=0.9.3+1 <1.0.0"
 
   # https://pub.dev/packages/http
   http: ">=0.13.5 <1.0.0"
@@ -27,9 +27,5 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-dependency_overrides:
-  localino:
-    path: ../localino
 
 

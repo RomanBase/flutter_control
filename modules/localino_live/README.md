@@ -1,4 +1,4 @@
-Localino Live - implementation of LocalinoRemoteApi via Localino REST API (https://api.localino.app/v1).
+Localino Live - implementation of LocalinoRemoteApi via Localino REST API (https://api.localino.app).
 
 ## Features
 
@@ -39,3 +39,5 @@ Control.initControl(
   ],
 );
 ```
+
+Localino is hosted at https://localino.app

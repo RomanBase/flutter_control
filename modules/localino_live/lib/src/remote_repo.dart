@@ -5,6 +5,10 @@ class _RemoteRepo {
   static const url = 'https://api.localino.app/$version';
   static const version = 'v1';
 
+  final String? token;
+
+  const _RemoteRepo(this.token);
+
   Uri spaceUrl(String space) => Uri.parse('$url/$space');
 
   Uri projectUrl(String space, String project) =>
@@ -21,6 +25,7 @@ class _RemoteRepo {
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',
         'Accept': '*/*',
+        if (token != null) 'Access': token!,
       };
 
   http.Client get _client => http.Client();
