@@ -11,31 +11,25 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    Control.initControl(
+    return ControlRoot(
       debug: true,
-      modules: [
-        RoutingModule([]),
-        LocalinoModule(
-          LocalinoLive.options(),
-        ),
-      ],
+      localization: LocalinoLive.options(),
       initializers: {
         CounterControl: (_) => CounterControl(),
       },
-    );
-
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      onGenerateRoute: (settings) => ControlRouteTransition(
-        settings: settings,
-        builder: (_) => MyHomePage(title: 'Flutter Demo'),
-        transition: CrossTransition.slide(
-          begin: Offset(-0.25, 0),
-          end: Offset(-0.25, 0),
-        ).buildRoute(),
+      app: (context, setup) => MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        onGenerateRoute: (settings) => ControlRouteTransition(
+          settings: settings,
+          builder: (_) => MyHomePage(title: 'Flutter Demo'),
+          transition: CrossTransition.slide(
+            begin: Offset(-0.25, 0),
+            end: Offset(-0.25, 0),
+          ).buildRoute(),
+        ),
       ),
     );
   }
