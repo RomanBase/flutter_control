@@ -17,19 +17,24 @@ class MyApp extends StatelessWidget {
       initializers: {
         CounterControl: (_) => CounterControl(),
       },
-      app: (context, setup) => MaterialApp(
+      states: [
+        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.main.build((context) => MyHomePage(title: 'Flutter Demo')),
+      ],
+      app: (setup, home) => MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
         onGenerateRoute: (settings) => ControlRouteTransition(
           settings: settings,
-          builder: (_) => MyHomePage(title: 'Flutter Demo'),
+          builder: (_) => home,
           transition: CrossTransition.slide(
             begin: Offset(-0.25, 0),
             end: Offset(-0.25, 0),
           ).buildRoute(),
         ),
+        supportedLocales: setup.supportedLocales,
       ),
       onSetupChanged: (setup) async {
         printDebug(setup.localization!.locale);
