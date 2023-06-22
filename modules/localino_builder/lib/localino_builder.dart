@@ -41,11 +41,14 @@ class LocalinoBuilder extends Builder {
     }
   }
 
-  void _storeSetup(String asset, String data) => _writeAsString(_fileJson(asset, 'setup'), data);
+  void _storeSetup(String asset, String data) =>
+      _writeAsString(_fileJson(asset, 'setup'), data);
 
-  void _storeLocale(String asset, String locale, String data) => _writeAsString(_fileJson(asset, locale), data);
+  void _storeLocale(String asset, String locale, String data) =>
+      _writeAsString(_fileJson(asset, locale), data);
 
-  File _fileJson(String asset, String name) => File('./${asset.replaceFirst('{locale}', name)}');
+  File _fileJson(String asset, String name) =>
+      File('./${asset.replaceFirst('{locale}', name)}');
 
   void _writeAsString(File file, String text) {
     if (!file.existsSync()) {

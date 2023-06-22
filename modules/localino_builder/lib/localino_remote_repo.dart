@@ -14,11 +14,16 @@ class LocalinoRemoteRepo {
 
   Uri spaceUrl(String space) => Uri.parse('$url/$space');
 
-  Uri projectUrl(String space, String project) => Uri.parse('$url/$space/$project');
+  Uri projectUrl(String space, String project) =>
+      Uri.parse('$url/$space/$project');
 
-  Uri setupUrl(String space, String project) => Uri.parse('$url/$space/$project/setup');
+  Uri setupUrl(String space, String project) =>
+      Uri.parse('$url/$space/$project/setup');
 
-  Uri localeUrl(String space, String project, String locale, [int? timestamp]) => Uri.parse('$url/$space/$project/locale/$locale' + (timestamp == null ? '' : '?timestamp=$timestamp'));
+  Uri localeUrl(String space, String project, String locale,
+          [int? timestamp]) =>
+      Uri.parse('$url/$space/$project/locale/$locale' +
+          (timestamp == null ? '' : '?timestamp=$timestamp'));
 
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',
@@ -39,7 +44,8 @@ class LocalinoRemoteRepo {
   }
 
   Future<String> getProject() async {
-    final response = await _client.get(projectUrl(space, project), headers: headers);
+    final response =
+        await _client.get(projectUrl(space, project), headers: headers);
 
     if (response.isValid) {
       return response.body;
@@ -49,7 +55,8 @@ class LocalinoRemoteRepo {
   }
 
   Future<String> getSetup() async {
-    final response = await _client.get(setupUrl(space, project), headers: headers);
+    final response =
+        await _client.get(setupUrl(space, project), headers: headers);
 
     if (response.isValid) {
       return response.body;
@@ -59,7 +66,8 @@ class LocalinoRemoteRepo {
   }
 
   Future<String> getLocale(String locale, [int? timestamp]) async {
-    final response = await _client.get(localeUrl(space, project, locale, timestamp), headers: headers);
+    final response = await _client
+        .get(localeUrl(space, project, locale, timestamp), headers: headers);
 
     if (response.isValid) {
       return response.body;

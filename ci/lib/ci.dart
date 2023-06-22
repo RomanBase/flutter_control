@@ -1,7 +1,13 @@
 import 'package:process_run/shell.dart';
 
 final shell = Shell().cd('../');
-final modules = ['control_core', 'control_config', 'localino', 'localino_live'];
+final modules = [
+  'control_core',
+  'control_config',
+  'localino',
+  'localino_live',
+  'localino_builder',
+];
 
 final examples = [
   'test_example',

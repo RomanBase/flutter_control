@@ -18,7 +18,8 @@ class MyApp extends StatelessWidget {
         CounterControl: (_) => CounterControl(),
       },
       states: [
-        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.init
+            .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MyHomePage(title: 'Flutter Demo')),
       ],
       app: (setup, home) => MaterialApp(
@@ -93,7 +94,8 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                   );
                 }),
             ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(builder: (_) => MyHomePage(title: 'Next Page'))
+              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
+                      builder: (_) => MyHomePage(title: 'Next Page'))
                   .viaTransition(CrossTransition.route(
                     background: CrossTransition.slide(
                       begin: Offset(-0.25, 0),
