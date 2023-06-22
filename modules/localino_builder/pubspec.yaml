@@ -1,0 +1,21 @@
+name: localino_builder
+description: A new Flutter project.
+version: 0.1.0+1
+
+environment:
+  sdk: '>=2.19.2 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # https://pub.dev/packages/http
+  http: ">=0.13.5 <1.0.0"
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  build: 2.4.0
+
+flutter:

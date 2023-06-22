@@ -19,6 +19,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  # dart run build_runner build
+  build_runner: 2.3.3
+
+  localino_builder:
+    path: ../../modules/localino_builder
+
 # The following section is specific to Flutter packages.
 flutter:
 

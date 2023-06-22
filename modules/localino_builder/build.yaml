@@ -1,0 +1,12 @@
+builders:
+  localino_builder:
+    import: "package:localino_builder/build.dart"
+    builder_factories: [ "build" ]
+    build_extensions: {".dart": [".g.dart"]}
+    auto_apply: dependents
+    build_to: cache
+    defaults:
+      options:
+        space: "your space id"
+        project: "your project id"
+        access: "your api key"

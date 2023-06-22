@@ -30,7 +30,7 @@ LocalinoProvider.instance.localize('localization_key');
 
 ## Additional information
 
-Localino is build as module for [Control].
+By default Localino is build as module for [Control].
 
 ```dart
 Control.initControl(
@@ -39,3 +39,12 @@ Control.initControl(
   ],
 );
 ```
+
+---
+
+Localino can be used as standalone package to manage assets localization. But true power comes with other packages:
+
+Localino Admin: [localino.app](https://localino.app)
+Localino Flutter: [localino](https://pub.dev/packages/localino)
+Localino Live: [localino_live](https://pub.dev/packages/localino_live)
+Localino Builder: [localino_builder](https://pub.dev/packages/localino_builder)
