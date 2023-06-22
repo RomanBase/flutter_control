@@ -1,5 +1,6 @@
 name: localino_builder
-description: A new Flutter project.
+description: Builder to download and store json translations via Localino REST API.
+homepage: https://localino.app
 version: 0.1.0+1
 
 environment:
