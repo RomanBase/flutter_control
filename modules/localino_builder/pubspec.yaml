@@ -13,10 +13,10 @@ dependencies:
   # https://pub.dev/packages/http
   http: ">=0.13.5 <1.0.0"
 
+  build: ">=2.0.0 <3.0.0"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  build: 2.4.0
 
 flutter:
