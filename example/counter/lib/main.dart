@@ -13,7 +13,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      localization: LocalinoLive.options(),
+      localization: LocalinoLive.options(
+        remoteSync: true,
+      ),
       initializers: {
         CounterControl: (_) => CounterControl(),
       },
@@ -40,7 +42,6 @@ class MyApp extends StatelessWidget {
       onSetupChanged: (setup) async {
         printDebug(setup.localization!.locale);
       },
-      initAsync: () async => await Future.delayed(Duration(seconds: 1)),
     );
   }
 }

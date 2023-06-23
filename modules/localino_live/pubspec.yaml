@@ -1,7 +1,7 @@
 name: localino_live
 description: Implementation of LocalinoRemoteApi via Localino REST API.
 homepage: https://localino.app
-version: 0.1.4
+version: 0.1.5
 
 
 environment:

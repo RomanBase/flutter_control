@@ -38,6 +38,6 @@ class LocalinoDelegate extends LocalizationsDelegate<Localino> {
       list.add(asset.toLocale());
     });
 
-    return list;
+    return list.isEmpty ? WidgetsBinding.instance.window.locales : list;
   }
 }

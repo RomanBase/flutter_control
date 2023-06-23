@@ -1,13 +1,14 @@
 part of localino_live;
 
-class _RemoteRepo {
+class LocalinoRemoteRepo {
   //gcloud origin url: https://localino-app-rfwxdzufva-ew.a.run.app
   static const url = 'https://api.localino.app/$version';
   static const version = 'v1';
 
   final String? token;
+  final http.Client? client;
 
-  const _RemoteRepo(this.token);
+  const LocalinoRemoteRepo._(this.token, [this.client]);
 
   Uri spaceUrl(String space) => Uri.parse('$url/$space');
 
@@ -28,7 +29,7 @@ class _RemoteRepo {
         if (token != null) 'Access': token!,
       };
 
-  http.Client get _client => http.Client();
+  http.Client get _client => client ?? http.Client();
 
   Future<http.Response> getSpace(String space) =>
       _client.get(spaceUrl(space), headers: headers);

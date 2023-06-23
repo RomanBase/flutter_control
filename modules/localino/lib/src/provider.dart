@@ -21,6 +21,9 @@ mixin LocalinoProvider {
   /// Returns instance of [LocalinoRemote] from [Control] store.
   static LocalinoRemote get remote => Control.get<LocalinoRemote>()!;
 
+  /// Returns instance of [LocalinoRemoteApi] from [Control] store.
+  static LocalinoRemoteApi get repo => Control.get<LocalinoRemoteApi>()!;
+
   /// Delegate of [Localino] for the widget tree that corresponds to the given [context].
   ///
   /// Note: usable only with [LocalizationsDelegate]. If delegate is not specified use [Control.localization] instead.

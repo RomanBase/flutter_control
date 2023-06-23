@@ -31,10 +31,10 @@ targets:
 
 ## Usage
 
-Just run `build_runner` to download your translations into asset folder.
+Just run `build_runner` to download your translations into assets folder.
 
 ```
-flutter pub run build_runner build
+dart run build_runner build
 ```
 
 ## Additional information

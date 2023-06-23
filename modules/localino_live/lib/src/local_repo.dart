@@ -1,6 +1,8 @@
 part of localino_live;
 
-class _LocalRepo {
+class LocalinoLocalRepo {
+  LocalinoLocalRepo._();
+
   Future<Uri> localePath(String space, String project, String locale) async {
     final dir = await path.getTemporaryDirectory();
 

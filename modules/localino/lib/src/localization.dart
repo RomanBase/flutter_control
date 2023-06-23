@@ -19,6 +19,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
   String defaultLocale = WidgetsBinding.instance.window.locale.toString();
 
+  /// Callback to load translations from local cache.
   Future<Map<String, dynamic>> Function()? localData;
 
   /// Checks if this localization is main and will broadcast [LocalinoArgs] changes with [Localino] key.
@@ -56,11 +57,12 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   String get locale => _locale ?? defaultLocale;
 
   /// Returns currently loaded locale.
-  Locale? get currentLocale => getLocale(locale);
+  Locale get currentLocale =>
+      getLocale(locale) ?? WidgetsBinding.instance.window.locale;
 
   /// Returns best possible country code based on [currentLocale] and [deviceLocale].
   String? get currentCountry =>
-      currentLocale?.countryCode ??
+      currentLocale.countryCode ??
       (_locale == null
               ? deviceLocale
               : deviceLocales.firstWhere(
@@ -83,14 +85,16 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// [_assets] - defines locales and asset path to files with localization data.
   Localino._();
 
+  /// Creates new localization instance.
   Localino.instance(this.defaultLocale, List<LocalinoAsset> assets) {
     this._assets.addAll(assets);
   }
 
-  /// Creates new localization object based on this localization settings.
+  /// Creates new localization instance based on current settings.
   Localino instanceOf(List<LocalinoAsset> assets) =>
       Localino.instance(defaultLocale, assets);
 
+  /// Used to initialize [main] instance of Localino from [LocalinoModule].
   void _setup(String defaultLocale, List<LocalinoAsset> assets,
       Future<Map<String, dynamic>> Function() localData) {
     this.defaultLocale = defaultLocale;
@@ -256,6 +260,8 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Result of localization change is send to global broadcast with [Localino] key.
   Future<LocalinoArgs> changeLocale(String locale,
       {bool preferred = true}) async {
+    locale = LocalinoAsset.normalizeLocaleKey(locale);
+
     if (debug && locale == 'debug') {
       printDebug('Localino setting up DEBUG locale: #');
       return _setDebugLocale();

@@ -191,6 +191,13 @@ class LocalinoAsset {
   static String normalizeLocaleKey(String locale) =>
       locale.replaceAll('-', '_');
 
+  /// Normalize localization identifier.
+  /// en -> en
+  /// en_US -> en-US
+  /// en_US_419 -> en-US-419
+  static String normalizeLocaleTag(String locale) =>
+      locale.replaceAll('_', '-');
+
   /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static Map<String, String> map(

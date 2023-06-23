@@ -22,6 +22,7 @@ void main() {
     expect(LocalinoProvider.instance.availableLocales.length, 2);
     expect(LocalinoProvider.instance, isNotNull);
     expect(LocalinoProvider.remote, isNotNull);
+    expect(LocalinoProvider.remote.enabled, isFalse);
 
     Control.factory.dispose();
   });
@@ -47,6 +48,7 @@ void main() {
     expect(LocalinoProvider.instance.availableLocales.length, 2);
     expect(LocalinoProvider.instance, isNotNull);
     expect(LocalinoProvider.remote, isNotNull);
+    expect(LocalinoProvider.remote.enabled, isFalse);
 
     Control.factory.dispose();
   });

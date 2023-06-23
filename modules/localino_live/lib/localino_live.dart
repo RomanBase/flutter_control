@@ -15,26 +15,32 @@ part 'src/local_repo.dart';
 part 'src/remote_repo.dart';
 
 class LocalinoLive {
+  LocalinoLive._();
+
   static LocalinoRemoteApi instance(LocalinoRemoteOptions options) =>
       _LocalinoLiveApi(options);
 
-  static Initializer<LocalinoRemoteApi> get remote =>
+  static LocalinoRemoteRepo repo(String token, [http.Client? client]) =>
+      LocalinoRemoteRepo._(token, client);
+
+  static LocalinoLocalRepo cache() => LocalinoLocalRepo._();
+
+  static Initializer<LocalinoRemoteApi> get _remote =>
       (args) => instance(Parse.getArg<LocalinoRemoteOptions>(args)!);
 
   static Map<Type, Initializer> get initializers => {
-        LocalinoRemoteApi: (args) =>
-            instance(Parse.getArg<LocalinoRemoteOptions>(args)!),
+        LocalinoRemoteApi: _remote,
       };
 
   static LocalinoOptions options({
     String path = 'assets/localization/setup.json',
     LocalinoSetup? setup,
-    bool remoteSync = true,
+    bool remoteSync = false,
   }) =>
       LocalinoOptions(
         path: path,
         setup: setup,
-        remote: remote,
+        remote: _remote,
         remoteSync: remoteSync,
       );
 }
