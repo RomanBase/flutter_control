@@ -15,6 +15,10 @@ mixin OverlayControl on CoreWidget {
       return getOverlay(key);
     }
 
+    if (key is GlobalKey && parentKey == null) {
+      parentKey = key;
+    }
+
     final box = (parentKey?.currentState?.context.findRenderObject() ??
         context!.findRenderObject()) as RenderBox;
     final location = box.localToGlobal(Offset.zero);
