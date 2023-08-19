@@ -2,12 +2,16 @@ part of control_core;
 
 typedef DisposeMarker = Function();
 
-/// Standard dispose implementation.
+/// Mark Object as Disposable to let other know, that this Object can hold some resources that needs to be to invalidated and cleared.
 mixin Disposable {
   /// Used to clear and dispose object.
   /// After this method call is object typically unusable and ready for GC.
   /// Can be called multiple times!
   void dispose();
+}
+
+extension DisposableExt on Disposable {
+  void disposeWith(DisposeObserver observer) => observer.registerDispose(this);
 }
 
 /// Handles dispose in multiple ways.
@@ -40,7 +44,7 @@ mixin DisposeHandler implements Disposable {
 
   /// Just soft dispose - stop loading / subscriptions etc.
   /// For example called when List item hides and is recycled.
-  /// Also useful when Control is used with multiple Widgets to prevent final [dispose].
+  /// Also useful when Control is used with multiple Widgets to prevent fatal [dispose].
   void softDispose() {}
 
   @override
@@ -105,12 +109,30 @@ mixin ReferenceCounter on DisposeHandler {
   }
 }
 
+mixin DisposeObserver on ControlModel {
+  final _toDispose = <Disposable>[];
+
+  void registerDispose(Disposable item) => _toDispose.add(item);
+
+  void unregisterDispose(Disposable item) => _toDispose.remove(item);
+
+  bool isRegisteredForDispose(Disposable item) => _toDispose.contains(item);
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _toDispose.forEach((element) => element.dispose());
+    _toDispose.clear();
+  }
+}
+
 /// {@template disposable-client}
 /// Propagates `thread` notifications that can be canceled.
 ///
 /// For example can be used to represent Image upload Stream that can be canceled.
 /// {@endtemplate}
-class DisposableClientBase implements Disposable {
+class _DisposableClient implements Disposable {
   /// Parent of this disposer.
   final dynamic parent;
 
@@ -125,7 +147,7 @@ class DisposableClientBase implements Disposable {
 
   /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
-  DisposableClientBase({this.parent});
+  _DisposableClient({this.parent});
 
   /// Finishes this token and notifies [onFinish] listener.
   void finish() => onFinish?.call();
@@ -141,7 +163,7 @@ class DisposableClientBase implements Disposable {
 
 /// {@macro disposable-client}
 /// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
-class DisposableClient extends DisposableClientBase {
+class DisposableClient extends _DisposableClient {
   /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
   DisposableClient({dynamic parent}) : super(parent: parent);
@@ -152,8 +174,8 @@ class DisposableClient extends DisposableClientBase {
 
 /// {@macro disposable-client}
 /// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
-class DisposableToken extends DisposableClientBase {
-  final DisposableClientBase _client;
+class DisposableToken extends _DisposableClient {
+  final _DisposableClient _client;
 
   @override
   dynamic get parent => _client.parent;
@@ -197,7 +219,7 @@ class DisposableToken extends DisposableClientBase {
     dynamic data,
   }) =>
       DisposableToken(
-        DisposableClientBase(
+        _DisposableClient(
           parent: parent,
         )
           ..onCancel = onCancel

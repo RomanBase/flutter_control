@@ -36,7 +36,7 @@ import 'package:control_core/core.dart';
         LocalinoModule(LocalinoConfig.empty),  
       ],
       initAsync: () async {
-        loadPreAppConfig();
+        loadAppConfig();
       },
     );
 ```
