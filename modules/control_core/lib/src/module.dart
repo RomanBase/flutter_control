@@ -53,7 +53,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     }
   }
 
-  void initStore({bool includeSubModules: false}) {
+  void initStore({bool includeSubModules = false}) {
     _initModuleStore(this);
 
     if (includeSubModules) {

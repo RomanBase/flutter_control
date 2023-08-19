@@ -34,7 +34,7 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
     required FieldControl<T> control,
     required ControlWidgetBuilder<T?> builder,
     WidgetBuilder? noData,
-    bool nullOk: false,
+    bool nullOk = false,
   }) : super(
             control: control,
             builder: (context, snapshot) {
@@ -62,7 +62,7 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>?> {
     required FieldControl<List<T>> control,
     required ControlWidgetBuilder<List<T>> builder,
     WidgetBuilder? noData,
-    bool nullOk: false,
+    bool nullOk = false,
   }) : super(
           control: control,
           builder: (context, snapshot) {

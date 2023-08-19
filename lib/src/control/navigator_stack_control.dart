@@ -24,9 +24,9 @@ class NavItem {
     this.iconBuilder,
     this.titleBuilder,
     this.data,
-    this.selected: false,
+    this.selected = false,
     this.onSelected,
-    this.observers: const [],
+    this.observers = const [],
   });
 
   factory NavItem.static({
@@ -35,7 +35,7 @@ class NavItem {
     String? title,
     Object? data,
     ValueGetter<bool>? onSelected,
-    List<NavigatorObserver> observers: const [],
+    List<NavigatorObserver> observers = const [],
   }) =>
       NavItem(
         key: key,
@@ -188,7 +188,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
 
   int? _initialIndex;
 
-  NavigatorStackControl({int? initialPageIndex, this.reloadOnReselect: true}) {
+  NavigatorStackControl({int? initialPageIndex, this.reloadOnReselect = true}) {
     _initialIndex = initialPageIndex;
     _pageIndex.value = _initialIndex ?? 0;
   }

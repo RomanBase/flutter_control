@@ -4,13 +4,15 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  flutter_control: 2.6.3
+  flutter_control:
+    path: ../../
 
   localino_live:
     path: ../../modules/localino_live
@@ -20,7 +22,7 @@ dev_dependencies:
     sdk: flutter
 
   # dart run build_runner build
-  build_runner: 2.3.3
+  build_runner: 2.4.6
 
   localino_builder:
     path: ../../modules/localino_builder

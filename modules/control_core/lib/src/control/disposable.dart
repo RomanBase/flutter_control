@@ -3,7 +3,7 @@ part of control_core;
 typedef DisposeMarker = Function();
 
 /// Standard dispose implementation.
-abstract class Disposable {
+mixin Disposable {
   /// Used to clear and dispose object.
   /// After this method call is object typically unusable and ready for GC.
   /// Can be called multiple times!

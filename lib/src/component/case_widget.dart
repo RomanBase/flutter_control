@@ -36,9 +36,9 @@ class CaseWidget<T> extends StatefulWidget {
     this.placeholder,
     this.transition,
     this.transitions,
-    this.autoKey: true,
-    this.reverseOrder: false,
-    this.reverseAnimation: false,
+    this.autoKey = true,
+    this.reverseOrder = false,
+    this.reverseAnimation = false,
   }) : super(key: key);
 
   static Widget builder<T>({
@@ -48,7 +48,7 @@ class CaseWidget<T> extends StatefulWidget {
     WidgetBuilder? placeholder,
     CrossTransition? transition,
     Map<T, CrossTransition>? transitions,
-    bool autoKey: true,
+    bool autoKey = true,
     ValueGetter<bool>? reverseOrder,
     ValueGetter<bool>? reverseAnimation,
   }) =>

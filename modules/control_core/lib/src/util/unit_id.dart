@@ -38,7 +38,7 @@ class UnitId {
   /// 1 - b
   /// 26 - aa
   /// 27 - ab
-  static String charId(int index, {int digitOffset: 0}) =>
+  static String charId(int index, {int digitOffset = 0}) =>
       cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
 
   /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds 4 random chars to end of String.
@@ -50,7 +50,7 @@ class UnitId {
   }
 
   /// Returns random String with given [length] and settings.
-  static String randomId({int length: 8, String sequence: az}) {
+  static String randomId({int length = 8, String sequence = az}) {
     final output = randomFromSequence(length, sequence);
 
     return output;

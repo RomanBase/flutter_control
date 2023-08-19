@@ -5,7 +5,7 @@ mixin OverlayControl on CoreWidget {
     required dynamic key,
     required Widget Function(Rect parent) builder,
     GlobalKey? parentKey,
-    bool barrierDismissible: true,
+    bool barrierDismissible = true,
   }) {
     assert(isInitialized);
 

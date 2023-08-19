@@ -25,7 +25,7 @@ class BroadcastSubscriptionArgs<T> {
 
   const BroadcastSubscriptionArgs({
     required this.key,
-    this.nullOk: true,
+    this.nullOk = true,
   });
 
   BroadcastSubscription<T> createSubscription() =>
@@ -57,7 +57,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   @override
   BroadcastSubscription subscribe(
     ValueCallback action, {
-    bool current: true,
+    bool current = true,
     dynamic args,
   }) {
     final sub = createSubscription(args);
@@ -95,8 +95,8 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   BroadcastSubscription<T> subscribeTo<T>(
     dynamic key,
     ValueChanged<T?> onData, {
-    bool current: true,
-    bool nullOk: true,
+    bool current = true,
+    bool nullOk = true,
   }) {
     assert(key != null);
 
@@ -117,8 +117,8 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   /// Returns [BroadcastSubscription] to control and close subscription.
   BroadcastSubscription<T> subscribeOf<T>(
     ValueChanged<T?> onData, {
-    bool current: true,
-    bool nullOk: true,
+    bool current = true,
+    bool nullOk = true,
   }) {
     assert(T != dynamic);
 
@@ -151,7 +151,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   int broadcast<T>({
     dynamic key,
     required dynamic value,
-    bool store: false,
+    bool store = false,
   }) {
     key = Control.factory.keyOf<T>(key: key, value: value);
     int count = 0;
@@ -202,7 +202,7 @@ class BroadcastSubscription<T> extends ControlSubscription<T> {
 
   /// Default constructor.
   /// Only [ControlBroadcast] can initialize sub.
-  BroadcastSubscription._(this.key, {this.nullOk: true});
+  BroadcastSubscription._(this.key, {this.nullOk = true});
 
   /// Checks if [key] and [value] is eligible for this subscription.
   bool isValidForBroadcast(dynamic key, dynamic value) =>

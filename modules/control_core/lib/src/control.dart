@@ -113,7 +113,7 @@ class Control {
   /// [Control] provides static call for this function via [Control.get].
   ///
   /// nullable
-  static T? get<T>({dynamic key, dynamic args, bool withInjector: true}) =>
+  static T? get<T>({dynamic key, dynamic args, bool withInjector = true}) =>
       factory.get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Stores [value] with given [key] in [ControlFactory].
@@ -138,7 +138,7 @@ class Control {
       factory.init(key: key, args: args);
 
   static T? initOf<T>(
-      {dynamic key, T? value, dynamic args, bool store: false}) {
+      {dynamic key, T? value, dynamic args, bool store = false}) {
     final val = get<T>(key: key);
 
     if (val != null) {
@@ -158,7 +158,7 @@ class Control {
   /// [Initializable.init] is called only when [args] are not null.
   ///
   /// [Control] provides static call for this function via [Control.inject].
-  static void inject<T>(dynamic item, {dynamic args, bool store: false}) =>
+  static void inject<T>(dynamic item, {dynamic args, bool store = false}) =>
       factory.inject(item, args: args, withInjector: true, withArgs: true);
 
   /// Executes sequence of functions to retrieve expected object.
@@ -176,7 +176,7 @@ class Control {
   /// Set [dispose] to dispose removed object/s.
   ///
   /// Returns number of removed items.
-  static int remove<T>({dynamic key, bool dispose: false}) =>
+  static int remove<T>({dynamic key, bool dispose = false}) =>
       factory.remove<T>(key: key, dispose: dispose);
 }
 
@@ -209,7 +209,7 @@ class BroadcastProvider {
   /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
   ///
   /// Returns number of notified subs.
-  static void broadcast<T>({dynamic key, dynamic value, bool store: false}) =>
+  static void broadcast<T>({dynamic key, dynamic value, bool store = false}) =>
       Control.broadcast.broadcast<T>(key: key, value: value, store: store);
 
   /// Sends event to global event stream.
@@ -413,7 +413,7 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.get].
   ///
   /// nullable
-  T? get<T>({dynamic key, dynamic args, bool withInjector: false}) {
+  T? get<T>({dynamic key, dynamic args, bool withInjector = true}) {
     final useExactKey = key != null;
     key = keyOf<T>(key: key);
 
@@ -492,7 +492,7 @@ class ControlFactory with Disposable {
   ///
   /// [Control] provides static call for this function via [Control.inject].
   void inject<T>(dynamic item,
-      {dynamic args, bool withInjector: true, bool withArgs: true}) {
+      {dynamic args, bool withInjector = true, bool withArgs = true}) {
     if (withInjector && _injector != null) {
       _injector!.inject<T?>(item, args);
     }
@@ -550,7 +550,7 @@ class ControlFactory with Disposable {
   /// [Control] provides static call for this function via [Control.remove].
   ///
   /// Returns number of removed items.
-  int remove<T>({dynamic key, bool dispose: false}) {
+  int remove<T>({dynamic key, bool dispose = false}) {
     key = keyOf<T>(key: key);
 
     assert(key != null);
@@ -587,7 +587,7 @@ class ControlFactory with Disposable {
   /// Set [dispose] to dispose removed object/s.
   ///
   /// Basically calls [ControlFactory.remove] and [ControlFactory.set].
-  void swap<T>({dynamic key, required dynamic value, bool dispose: false}) {
+  void swap<T>({dynamic key, required dynamic value, bool dispose = false}) {
     key = keyOf<T>(key: key, value: value);
 
     remove<T>(key: key, dispose: dispose);
@@ -682,7 +682,7 @@ class ControlFactory with Disposable {
     return true;
   }
 
-  void printDebugStore({bool items: true, bool initializers: true}) {
+  void printDebugStore({bool items = true, bool initializers = true}) {
     if (items) {
       printDebug('--- Items ---');
       _items.forEach((key, value) => value == this

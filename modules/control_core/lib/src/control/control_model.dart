@@ -69,6 +69,11 @@ class BaseControl extends ControlModel {
   /// Reload model and data.
   Future<void> reload() async {}
 
+  /// Invalidates Control and sets [isInitialized] to false.
+  void invalidate() {
+    _isInitialized = false;
+  }
+
   @override
   @mustCallSuper
   void dispose() {

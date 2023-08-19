@@ -39,18 +39,18 @@ class ControlPrefs {
 
   void setBool(String key, bool? value) => prefs?.setBool(key, value ?? false);
 
-  bool getBool(String key, {bool defaultValue: false}) =>
+  bool getBool(String key, {bool defaultValue = false}) =>
       prefs?.getBool(key) ?? defaultValue;
 
   void setInt(String key, int? value) => prefs?.setInt(key, value ?? 0);
 
-  int getInt(String key, {int defaultValue: 0}) =>
+  int getInt(String key, {int defaultValue = 0}) =>
       prefs?.getInt(key) ?? defaultValue;
 
   void setDouble(String key, double? value) =>
       prefs?.setDouble(key, value ?? 0.0);
 
-  double getDouble(String key, {double defaultValue: 0.0}) =>
+  double getDouble(String key, {double defaultValue = 0.0}) =>
       prefs?.getDouble(key) ?? defaultValue;
 
   void setJson(String key, dynamic value) =>

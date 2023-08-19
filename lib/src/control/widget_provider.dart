@@ -36,7 +36,7 @@ abstract class WidgetInitializer implements Disposable {
 
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
-  Widget getWidget(BuildContext context, {forceInit: false, dynamic args}) {
+  Widget getWidget(BuildContext context, {forceInit = false, dynamic args}) {
     if (forceInit || _widget == null || !isValid()) {
       _widget = initWidget(context, args: args);
     }

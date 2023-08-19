@@ -156,7 +156,7 @@ class Parse {
   /// [num] - milliseconds or seconds - [isSec] `true`
   /// [String] - ISO formatted date and time.
   /// Timestamp or any other object with `toDate` method.
-  static DateTime? date(dynamic value, {bool inSec: false}) {
+  static DateTime? date(dynamic value, {bool inSec = false}) {
     if (value is num) {
       return DateTime.fromMillisecondsSinceEpoch(
           inSec ? value * 1000 as int : value as int);
@@ -176,7 +176,7 @@ class Parse {
   /// Tries to parse value into [String].
   ///
   /// If none found, then [defaultValue] is returned.
-  static String string(dynamic value, {String defaultValue: ''}) {
+  static String string(dynamic value, {String defaultValue = ''}) {
     if (value is String) {
       return value;
     }
@@ -193,7 +193,7 @@ class Parse {
   /// null, int, double, bool, String
   ///
   /// If none found, then [defaultValue] is returned.
-  static int toInteger(dynamic value, {int defaultValue: 0}) {
+  static int toInteger(dynamic value, {int defaultValue = 0}) {
     if (value is int) {
       return value;
     }
@@ -224,7 +224,7 @@ class Parse {
   /// null, int, double, bool, String.
   ///
   /// If none found, then [defaultValue] is returned.
-  static double toDouble(dynamic value, {double defaultValue: 0.0}) {
+  static double toDouble(dynamic value, {double defaultValue = 0.0}) {
     if (value is double) {
       return value;
     }
@@ -253,7 +253,7 @@ class Parse {
   /// null, int, double, bool, String.
   ///
   /// If none found, then [defaultValue] is returned.
-  static bool toBool(dynamic value, {bool defaultValue: false}) {
+  static bool toBool(dynamic value, {bool defaultValue = false}) {
     if (value is bool) {
       return value;
     }
@@ -382,7 +382,7 @@ class Parse {
   static List<T> toList<T>(dynamic value,
       {ValueConverter<T>? converter,
       EntryConverter<T>? entryConverter,
-      bool hardCast: false}) {
+      bool hardCast = false}) {
     final items = <T>[];
     Map? valueMap;
 
@@ -463,7 +463,7 @@ class Parse {
   static Map<dynamic, T> toMap<T>(dynamic value,
       {ValueConverter<T>? converter,
       EntryConverter<T>? entryConverter,
-      bool hardCast: false}) {
+      bool hardCast = false}) {
     final items = Map<dynamic, T>();
 
     if (value == null) {

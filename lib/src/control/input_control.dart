@@ -145,7 +145,7 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Submits first possible field with [done] event.
   /// Submits whole chain if [all] is set.
-  void chainSubmit({bool all: false}) {
+  void chainSubmit({bool all = false}) {
     validate();
 
     if (_onDone != null) {
@@ -192,7 +192,7 @@ class InputControl extends TextEditingController with DisposeHandler {
   /// Validates continuous chain. Typically called on first item in chain..
   /// Set [unfocus] to [unfocusChain] - Unfocus corresponding [Widget]s in chain.
   /// Returns 'true' if all controls are valid.
-  bool validateChain({bool unfocus: true}) {
+  bool validateChain({bool unfocus = true}) {
     if (_next == null) {
       return validate();
     }
@@ -223,7 +223,7 @@ class InputControl extends TextEditingController with DisposeHandler {
   ///   - next event
   /// And sets validity.
   /// [focus] stays unchanged.
-  void clean({bool validity: true}) {
+  void clean({bool validity = true}) {
     text = null;
     error = null;
     _onDone = null;

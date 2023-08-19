@@ -26,7 +26,7 @@ class LazyInitializer<T> {
 
   /// Sets builder if none [isActive].
   /// [override] to override current builder even if [isActive] and clears current value.
-  bool set({required ValueGetter<T> builder, bool override: false}) {
+  bool set({required ValueGetter<T> builder, bool override = false}) {
     if (isDirty || override) {
       _value = null;
       _isDirty = false;

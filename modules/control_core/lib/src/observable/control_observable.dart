@@ -25,7 +25,7 @@ abstract class ObservableValue<T> implements Disposable {
 
   ControlSubscription<T> subscribe(
     ValueCallback<T?> action, {
-    bool current: true,
+    bool current = true,
     dynamic args,
   });
 
@@ -50,7 +50,7 @@ abstract class ObservableModel<T> extends ObservableValue<T>
 
   set value(T value) => setValue(value);
 
-  void setValue(T value, {bool notify: true, bool forceNotify: false});
+  void setValue(T value, {bool notify = true, bool forceNotify = false});
 }
 
 class _ObservableHandler<T> extends ObservableValue<T> {
@@ -178,7 +178,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @override
-  void setValue(T value, {bool notify: true, bool forceNotify: false}) {
+  void setValue(T value, {bool notify = true, bool forceNotify = false}) {
     if (_value == value) {
       if (forceNotify) {
         this.notify();
@@ -196,7 +196,7 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T> action,
-      {bool current: true, dynamic args}) {
+      {bool current = true, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
 

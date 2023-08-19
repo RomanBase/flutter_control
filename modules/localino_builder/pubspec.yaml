@@ -4,16 +4,15 @@ homepage: https://localino.app
 version: 0.1.0+1
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  # https://pub.dev/packages/http
-  http: ">=0.13.5 <1.0.0"
-
-  build: ">=2.0.0 <3.0.0"
+  http: any
+  build: any
 
 dev_dependencies:
   flutter_test:

@@ -10,8 +10,8 @@ class IntervalCurve extends Curve {
 
   const IntervalCurve(
     this.curve, {
-    this.begin: 0.0,
-    this.end: 1.0,
+    this.begin = 0.0,
+    this.end = 1.0,
   });
 
   @override

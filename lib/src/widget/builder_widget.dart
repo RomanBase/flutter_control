@@ -142,7 +142,7 @@ class ControlBuilderGroup extends StatefulWidget {
     super.key,
     required this.controls,
     required this.builder,
-    this.passControls: false,
+    this.passControls = false,
   });
 
   @override

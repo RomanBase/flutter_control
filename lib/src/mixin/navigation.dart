@@ -64,7 +64,7 @@ mixin RouteControl on CoreWidget implements RouteNavigator {
 
   @override
   Future<dynamic> openRoute(Route route,
-          {bool root: false, bool replacement: false}) =>
+          {bool root = false, bool replacement = false}) =>
       navigator.openRoute(route, root: root, replacement: replacement);
 
   @override
@@ -72,7 +72,7 @@ mixin RouteControl on CoreWidget implements RouteNavigator {
 
   @override
   Future<dynamic> openDialog(WidgetBuilder builder,
-          {bool root: true, dynamic type}) =>
+          {bool root = true, dynamic type}) =>
       navigator.openDialog(builder, root: root, type: type);
 
   @override

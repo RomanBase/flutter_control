@@ -6,40 +6,7 @@ class InputField extends ControllableWidget<InputControl> {
   final String? hint;
   final Color? color;
   final InputDecoration? decoration;
-  final InputBuilder? builder;
-
-  static InputBuilder text({
-    TextInputType keyboardType: TextInputType.text,
-    TextInputAction? action,
-    TextStyle? style,
-    VoidCallback? onSubmit,
-    bool autofocus: false,
-    int? lines,
-    TextAlign textAlign: TextAlign.start,
-  }) =>
-      (context, scope, decoration) {
-        return TextField(
-          controller: scope,
-          onChanged: scope.change,
-          onSubmitted: (text) {
-            onSubmit?.call();
-            scope.submit(text);
-          },
-          autofocus: autofocus,
-          focusNode: scope.focus,
-          decoration: decoration,
-          keyboardType: keyboardType,
-          textInputAction: action ??
-              (scope.isNextChained
-                  ? TextInputAction.next
-                  : TextInputAction.done),
-          obscureText: scope.obscure,
-          style: style ?? Theme.of(context).textTheme.bodyText1,
-          textAlign: textAlign,
-          maxLines: lines == null ? 1 : null,
-          expands: lines != null,
-        );
-      };
+  final InputBuilder builder;
 
   InputField({
     Key? key,
@@ -48,7 +15,7 @@ class InputField extends ControllableWidget<InputControl> {
     this.hint,
     this.decoration,
     this.color,
-    this.builder,
+    required this.builder,
   }) : super(
           control,
           key: key,
@@ -75,9 +42,9 @@ class InputField extends ControllableWidget<InputControl> {
                   UnderlineInputBorder(borderSide: BorderSide(color: cursor)),
               disabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: cursor.withOpacity(0.25))),
-              labelStyle: theme.textTheme.bodyText1!
+              labelStyle: theme.textTheme.bodyLarge!
                   .copyWith(color: cursor.withOpacity(0.5)),
-              hintStyle: theme.textTheme.bodyText1!
+              hintStyle: theme.textTheme.bodyLarge!
                   .copyWith(color: cursor.withOpacity(0.5)),
             ))
         .copyWith(
@@ -86,7 +53,7 @@ class InputField extends ControllableWidget<InputControl> {
       errorText: (!control.isValid) ? control.error : null,
     );
 
-    return (builder ?? text())(
+    return builder.call(
       context,
       control,
       _decoration,

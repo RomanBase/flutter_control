@@ -85,7 +85,7 @@ class ControlTheme {
 
   Color get tertiaryColor => scheme.tertiary;
 
-  Color get backgroundColor => data.backgroundColor;
+  Color get backgroundColor => scheme.background;
 
   Color get backgroundTintColor => data.scaffoldBackgroundColor;
 
@@ -149,7 +149,7 @@ class ControlTheme {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }
 
-  void resetPreferredTheme({bool loadSystemTheme: false}) {
+  void resetPreferredTheme({bool loadSystemTheme = false}) {
     config.resetPreferred();
 
     if (loadSystemTheme) {
@@ -161,7 +161,7 @@ class ControlTheme {
 
   ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(this));
 
-  ControlTheme changeTheme(dynamic key, {bool preferred: true}) {
+  ControlTheme changeTheme(dynamic key, {bool preferred = true}) {
     if (config.contains(key)) {
       config = config.copyWith(theme: key);
       final theme = config.getCurrentTheme(this);
@@ -216,7 +216,7 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
       defaultValue: Parse.name(initTheme));
 
   static Brightness get platformBrightness =>
-      SchedulerBinding.instance.window.platformBrightness;
+      PlatformDispatcher.instance.platformBrightness;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({

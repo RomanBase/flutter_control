@@ -75,7 +75,7 @@ class StackControl<T> extends ObservableModel<T?> {
 
   /// Pushes whole [stack].
   /// Set [clearOrigin] to clear previous stack.
-  void pushStack(Iterable<T?> stack, {bool clearOrigin: false}) {
+  void pushStack(Iterable<T?> stack, {bool clearOrigin = false}) {
     if (clearOrigin) {
       _stack.clear();
     }
