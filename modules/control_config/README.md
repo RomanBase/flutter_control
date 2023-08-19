@@ -8,7 +8,7 @@ class UserPrefs with PrefsProvider {
   
   String get userId => prefs.get('user_id');
   
-  set userId(String value) => prefs.set('user_id', '123');
+  set userId(String value) => prefs.set('user_id', value);
 }
 ```
 
