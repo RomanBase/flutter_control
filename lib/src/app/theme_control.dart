@@ -121,7 +121,7 @@ class ControlTheme {
 
   ThemeData get data => _data ?? (_data = Theme.of(context));
 
-  AssetPath get assets => _asset ?? (_asset = AssetPath());
+  AssetPath get assets => _asset ?? (_asset = const AssetPath());
 
   ColorScheme get scheme => data.colorScheme;
 
@@ -139,6 +139,10 @@ class ControlTheme {
   ControlTheme(this._context);
 
   void invalidate(BuildContext context) {
+    if (context == _context) {
+      return;
+    }
+
     _data = null;
     _device = null;
     _context = context;
@@ -288,13 +292,16 @@ mixin ThemeProvider<T extends ControlTheme> {
   @protected
   final T theme = of<T>(ControlScope.root.context!);
 
-  /// Instance of [AssetPath].
-  ///
+  /// Reference to [ColorScheme] of current [Theme].
+  @protected
+  ColorScheme get colorScheme => theme.scheme;
+
+  /// Reference to [AssetPath] of current [ControlTheme].
   /// Custom [AssetPath] can be set to [ControlTheme].
   @protected
   AssetPath get assets => theme.assets;
 
-  /// Instance of [Device].
+  /// Reference to [Device] of current [ControlTheme].
   /// Wrapper of [MediaQuery].
   @protected
   Device get device => theme.device;
