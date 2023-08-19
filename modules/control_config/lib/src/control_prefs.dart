@@ -13,8 +13,6 @@ class ControlPrefs {
 
   Future<SharedPreferences?> mount() async {
     if (!mounted) {
-      //impossible to mount in pure Dart environment..
-      //only iOS and Android right now..
       try {
         prefs = await SharedPreferences.getInstance();
       } catch (e) {
@@ -37,26 +35,66 @@ class ControlPrefs {
     return result;
   }
 
-  void setBool(String key, bool? value) => prefs?.setBool(key, value ?? false);
+  void setBool(String key, bool? value) {
+    if(value == null){
+      prefs?.remove(key);
+      return;
+    }
+
+    prefs?.setBool(key, value);
+  }
 
   bool getBool(String key, {bool defaultValue = false}) =>
       prefs?.getBool(key) ?? defaultValue;
 
-  void setInt(String key, int? value) => prefs?.setInt(key, value ?? 0);
+  void setInt(String key, int? value) {
+    if(value == null){
+      prefs?.remove(key);
+      return;
+    }
+
+    prefs?.setInt(key, value);
+  }
 
   int getInt(String key, {int defaultValue = 0}) =>
       prefs?.getInt(key) ?? defaultValue;
 
-  void setDouble(String key, double? value) =>
-      prefs?.setDouble(key, value ?? 0.0);
+  void setDouble(String key, double? value) {
+    if(value == null){
+      prefs?.remove(key);
+      return;
+    }
+
+    prefs?.setDouble(key, value);
+  }
 
   double getDouble(String key, {double defaultValue = 0.0}) =>
       prefs?.getDouble(key) ?? defaultValue;
 
-  void setJson(String key, dynamic value) =>
-      prefs?.setString(key, jsonEncode(value ?? {}));
+  void setJson(String key, dynamic value) {
+    if(value == null){
+      prefs?.remove(key);
+      return;
+    }
 
-  dynamic getJson(String key) => jsonDecode(get(key, defaultValue: '{}')!);
+    prefs?.setString(key, jsonEncode(value));
+  }
+
+  T? getJson<T>(String key, {ValueConverter<T>? converter}) {
+    final raw = get(key);
+
+    if(raw == null){
+      return null;
+    }
+
+    final json = jsonDecode(raw);
+
+    if(converter == null){
+      return json;
+    }
+
+    return converter.call(json);
+  }
 }
 
 mixin PrefsProvider {

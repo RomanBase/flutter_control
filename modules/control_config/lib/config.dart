@@ -25,7 +25,7 @@ class ConfigModule extends ControlModule<ControlPrefs> {
   @override
   Future? init() => module!.init();
 
-  static bool initControl() {
+  static bool standalone() {
     if (Control.isInitialized) {
       if (Control.factory.containsKey(ControlPrefs)) {
         return false;
