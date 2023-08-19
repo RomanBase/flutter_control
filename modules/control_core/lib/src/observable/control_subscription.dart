@@ -21,11 +21,20 @@ class ControlSubscription<T> implements Disposable {
     _callback = callback;
   }
 
-  void filter(Predicate<T>? filter) => _filter = filter;
+  ControlSubscription<T> filter(Predicate<T>? filter) {
+    _filter = filter;
+    return this;
+  }
 
-  void until(Predicate<T>? predicate) => _until = predicate;
+  ControlSubscription<T> until(Predicate<T>? predicate) {
+    _until = predicate;
+    return this;
+  }
 
-  void once() => _until = (value) => true;
+  ControlSubscription<T> once() {
+    _until = (value) => true;
+    return this;
+  }
 
   bool closePass(T value) => _until?.call(value) ?? false;
 
