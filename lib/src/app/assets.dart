@@ -1,5 +1,6 @@
-part of control_core;
+part of flutter_control;
 
+//TODO [v1]: AssetControl Lib - Builder
 class AssetPath {
   final String rootDir;
 

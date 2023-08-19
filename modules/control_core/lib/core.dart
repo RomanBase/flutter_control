@@ -41,8 +41,6 @@ part 'src/observable/observable_helpers.dart';
 
 part 'src/util/args.dart';
 
-part 'src/util/assets.dart';
-
 part 'src/util/future_block.dart';
 
 part 'src/util/lazy_initializer.dart';

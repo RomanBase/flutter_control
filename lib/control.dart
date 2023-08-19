@@ -15,6 +15,8 @@ export 'package:control_core/core.dart';
 export 'package:flutter/material.dart';
 export 'package:localino/localino.dart';
 
+part 'src/app/assets.dart';
+
 part 'src/app/control_root.dart';
 
 part 'src/app/device.dart';
