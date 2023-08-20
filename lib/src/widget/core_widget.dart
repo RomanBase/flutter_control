@@ -364,7 +364,7 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
   /// Current value of state.
   U? value;
 
-  void notifyValue(U value) {
+  void notifyValue(U? value) {
     if (isDirty) {
       this.value = value;
     } else {

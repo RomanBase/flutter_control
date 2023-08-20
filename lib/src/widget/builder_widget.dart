@@ -1,7 +1,7 @@
 part of flutter_control;
 
-/// Experimental version of unified [ControlWidgetBuilder].
-/// Supports [ControlObservable] - [ActionControl], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
+/// Subscribes to given [control] and notifies [builder] when object changes.
+/// [control] object is typically: [ObservableValue] like [ActionControl] or [ObservableComponent], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
 class ControlBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
   final dynamic control;
@@ -23,13 +23,15 @@ class ControlBuilder<T> extends StatefulWidget {
   });
 
   @override
-  _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
+  State createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
+class _ControlBuilderState<T> extends ValueState<ControlBuilder<dynamic>, T> {
   Disposable? _sub;
 
   ObservableValue<dynamic>? _observable;
+
+  bool isTypeSet = true;
 
   T? _mapValue() {
     dynamic val;
@@ -40,7 +42,7 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
       val = widget.control;
     }
 
-    if (val == null && T == dynamic) {
+    if (val == null && !isTypeSet) {
       val = _observable?.value ?? widget.control;
     }
 
@@ -54,6 +56,10 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T?> {
   @override
   void initState() {
     super.initState();
+
+    // [TODO]: do something about it! :D
+    // AWFUL HACK: for unknown reason default generic Type is Object? instead of dynamic
+    isTypeSet = '$T' != 'Object?' || T == dynamic;
 
     _initSub();
   }
