@@ -21,6 +21,8 @@ part 'src/provider.dart';
 
 part 'src/remote.dart';
 
+const _defaultAssetsLocation = 'assets/localization/{locale}.json';
+
 typedef LocalizationExtractor = String Function(
     Map map, String locale, String defaultLocale);
 typedef LocalizationParser = dynamic Function(dynamic data, String? locale);

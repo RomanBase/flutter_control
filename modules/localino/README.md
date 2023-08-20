@@ -12,30 +12,53 @@ import 'package:localino/localino.dart';
 ```
 
 Localino has multiple ways how to init. One of the ways is to via standalone module and simple config options.
-
 ```dart
-LocalinoModule.standalone(LocalinoOptions(
-    config: LocalinoConfig(locales: {
-        'en_US': 'assets/localization/en_US.json',
-        'es_ES': 'assets/localization/es_ES.json',
-    }),
-));
+    LocalinoModule.standalone(LocalinoOptions(
+        config: LocalinoConfig(
+        locales: LocalinoAsset.map(locales: [
+                'en',
+                'cs',
+            ]),
+        ),
+    ));
 ```
 
-## Usage
-
+Initialization with [localino_builder] and [localino_live] where config is loaded from assets folder.
 ```dart
-LocalinoProvider.instance.localize('localization_key');
+    LocalinoModule.standalone(LocalinoLive.options(
+        remoteSync: true,
+    ));
 ```
 
-## Additional information
+Sub-Localization Object to store other data (like international state names, tel. phones, etc.) based on parent (main) Localization instance.
+```dart
+    Localino subLocalization = LocalinoProvider.instance.instanceOf(assets);
+```
 
-By default Localino is build as module for [Control].
+---
+
+Mixin provider:
+```dart
+class CustomObject with LocalinoProvider {
+  
+  String name = localize('name');
+}
+```
+
+Instance:
+```dart
+ String name = LocalinoProvider.instance.localize('name');
+```
+
+---
+
+By default Localino is build as module for [Control] and uses [control_config] to store preferences (chosen locale).
 
 ```dart
 Control.initControl(
   modules: [
-    LocalinoModule(...)  
+    ConfigModule(),
+    LocalinoModule(options)
   ],
 );
 ```

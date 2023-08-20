@@ -36,7 +36,7 @@ class ControlPrefs {
   }
 
   void setBool(String key, bool? value) {
-    if(value == null){
+    if (value == null) {
       prefs?.remove(key);
       return;
     }
@@ -48,7 +48,7 @@ class ControlPrefs {
       prefs?.getBool(key) ?? defaultValue;
 
   void setInt(String key, int? value) {
-    if(value == null){
+    if (value == null) {
       prefs?.remove(key);
       return;
     }
@@ -60,7 +60,7 @@ class ControlPrefs {
       prefs?.getInt(key) ?? defaultValue;
 
   void setDouble(String key, double? value) {
-    if(value == null){
+    if (value == null) {
       prefs?.remove(key);
       return;
     }
@@ -72,7 +72,7 @@ class ControlPrefs {
       prefs?.getDouble(key) ?? defaultValue;
 
   void setJson(String key, dynamic value) {
-    if(value == null){
+    if (value == null) {
       prefs?.remove(key);
       return;
     }
@@ -83,13 +83,13 @@ class ControlPrefs {
   T? getJson<T>(String key, {ValueConverter<T>? converter}) {
     final raw = get(key);
 
-    if(raw == null){
+    if (raw == null) {
       return null;
     }
 
     final json = jsonDecode(raw);
 
-    if(converter == null){
+    if (converter == null) {
       return json;
     }
 

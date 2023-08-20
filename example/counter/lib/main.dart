@@ -3,6 +3,19 @@ import 'package:localino_live/localino_live.dart';
 
 void main() {
   runApp(const MyApp());
+
+  final g1 = Generic();
+  final g2 = Generic((value) {});
+
+  print('${g1.generic} x ${g2.generic}');
+}
+
+class Generic<T> {
+  final Function(T)? callback;
+
+  const Generic([this.callback]);
+
+  Type get generic => T;
 }
 
 class MyApp extends StatelessWidget {
@@ -26,22 +39,12 @@ class MyApp extends StatelessWidget {
       ],
       app: (setup, home) => MaterialApp(
         title: 'Flutter Demo',
+        home: home,
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        onGenerateRoute: (settings) => ControlRouteTransition(
-          settings: settings,
-          builder: (_) => home,
-          transition: CrossTransition.slide(
-            begin: Offset(-0.25, 0),
-            end: Offset(-0.25, 0),
-          ).buildRoute(),
-        ),
         supportedLocales: setup.supportedLocales,
       ),
-      onSetupChanged: (setup) async {
-        printDebug(setup.localization!.locale);
-      },
     );
   }
 }
@@ -64,13 +67,6 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
   final String title;
 
   @override
-  void onInit(Map args) {
-    super.onInit(args);
-
-    registerStateNotifier(LocalinoProvider.instance);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -81,34 +77,21 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              LocalinoProvider.instance.localize('local_key'),
+              LocalinoProvider.instance.localize('action_add'),
             ),
             Text(
               'You have pushed the button this many times: ',
             ),
-            ControlBuilder<dynamic>(
-                control: control,
-                builder: (context, value) {
-                  return Text(
-                    '${control.counter}',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  );
-                }),
-            ElevatedButton(
-              onPressed: () => openRoute(ControlRoute.build<MyHomePage>(
-                      builder: (_) => MyHomePage(title: 'Next Page'))
-                  .viaTransition(CrossTransition.route(
-                    background: CrossTransition.slide(
-                      begin: Offset(-0.25, 0),
-                      end: Offset(-0.25, 0),
-                    ),
-                    foreground: CrossTransition.slide(
-                      begin: Offset(1.0, 0),
-                      end: Offset(1.0, 0),
-                    ),
-                  ))
-                  .init()),
-              child: Text(localize('app_name')),
+            ControlBuilder(
+              control: control,
+              builder: (context, value) => Text(
+                '${control.counter}',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
+              noData: (_) => Text(
+                'N${control.counter}',
+                style: Theme.of(context).textTheme.headlineMedium,
+              ),
             ),
           ],
         ),

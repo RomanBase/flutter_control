@@ -1,7 +1,7 @@
 name: localino_builder
 description: Builder to download and store json translations via Localino REST API.
 homepage: https://localino.app
-version: 0.1.0+1
+version: 1.0.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

@@ -28,7 +28,7 @@ class LocalinoSetup {
     required this.project,
     this.access = 'token',
     this.version = 'latest',
-    this.asset = 'assets/localization/{locale}.json',
+    this.asset = _defaultAssetsLocation,
     this.init = const {},
     this.locales = const {},
   });
@@ -65,7 +65,7 @@ class LocalinoSetup {
       space: data['space'],
       project: data['project'],
       access: data['access'] ?? 'none',
-      asset: data['asset'] ?? 'assets/localization/{locale}.json',
+      asset: data['asset'] ?? _defaultAssetsLocation,
       version: data['version'] ?? 'latest',
       locales: Parse.toKeyMap<String, DateTime>(
         data['locales'],
@@ -82,7 +82,7 @@ class LocalinoSetup {
 /// Config is passed to [Control.initControl] to init [Localino].
 class LocalinoConfig {
   static String get systemLocale =>
-      WidgetsBinding.instance.window.locale.toString();
+      PlatformDispatcher.instance.locale.toString();
 
   static LocalinoConfig get empty => LocalinoConfig(
         locales: {
@@ -201,11 +201,11 @@ class LocalinoAsset {
   /// Builds a Map of {locale, path} by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static Map<String, String> map(
-      {AssetPath path = const AssetPath(), required List<String> locales}) {
+      {String assets = _defaultAssetsLocation, required List<String> locales}) {
     final map = Map<String, String>();
 
-    locales.forEach((locale) =>
-        map[normalizeLocaleKey(locale)] = path.localization(locale));
+    locales.forEach((locale) => map[normalizeLocaleKey(locale)] =
+        Parse.format(assets, {'locale': locale}));
 
     return map;
   }
@@ -213,11 +213,11 @@ class LocalinoAsset {
   /// Builds a List of [LocalinoAsset] by providing asset [path] and list of [locales].
   /// Default asset path is ./assets/localization/{locale}.json
   static List<LocalinoAsset> list(
-      {AssetPath path = const AssetPath(), required List<String> locales}) {
+      {String assets = _defaultAssetsLocation, required List<String> locales}) {
     final localizationAssets = <LocalinoAsset>[];
 
-    locales.forEach((locale) => localizationAssets.add(
-        LocalinoAsset(normalizeLocaleKey(locale), path.localization(locale))));
+    locales.forEach((locale) => localizationAssets.add(LocalinoAsset(
+        normalizeLocaleKey(locale), Parse.format(assets, {'locale': locale}))));
 
     return localizationAssets;
   }
