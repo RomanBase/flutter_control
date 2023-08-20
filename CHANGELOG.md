@@ -1,5 +1,5 @@
-## [2.6.3] - localino and localino_live integration
-## [2.6.0] - Flutter 3.0
+## [3.0.0] - Flutter & Dart 3.0
+## [2.6.3] - Localino and localino_live integration
 ## [2.5.1] - Multiple libs
 Library is now separated to multiple modules:
  - control_core
