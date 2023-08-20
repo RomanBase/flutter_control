@@ -100,6 +100,8 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
       setState(() {
         _updateCurrentWidget();
       });
+    } else if ((context as Element).dirty) {
+      _updateCurrentWidget();
     }
   }
 

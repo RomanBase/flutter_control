@@ -77,20 +77,17 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              LocalinoProvider.instance.localize('action_add'),
-            ),
-            Text(
               'You have pushed the button this many times: ',
             ),
             ControlBuilder(
               control: control,
-              builder: (context, value) => Text(
-                '${control.counter}',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              noData: (_) => Text(
-                'N${control.counter}',
-                style: Theme.of(context).textTheme.headlineMedium,
+              builder: (context, value) => Column(
+                children: [
+                  Text(
+                    '${control.counter}',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
               ),
             ),
           ],
