@@ -50,10 +50,13 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterControl extends BaseControl with NotifierComponent {
+  final counter2 = ActionControl.broadcast<int>(0);
+
   int counter = 0;
 
   void incrementCounter() {
     counter++;
+    counter2.value--;
     notify();
   }
 }
@@ -85,6 +88,17 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                 children: [
                   Text(
                     '${control.counter}',
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
+              ),
+            ),
+            ControlBuilder<int>(
+              control: control.counter2,
+              builder: (context, value) => Column(
+                children: [
+                  Text(
+                    '$value',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ],

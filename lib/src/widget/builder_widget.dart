@@ -23,10 +23,10 @@ class ControlBuilder<T> extends StatefulWidget {
   });
 
   @override
-  State createState() => _ControlBuilderState<T>();
+  _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends ValueState<ControlBuilder<dynamic>, T> {
+class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
   Disposable? _sub;
 
   ObservableValue<dynamic>? _observable;
