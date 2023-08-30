@@ -50,13 +50,13 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterControl extends BaseControl with NotifierComponent {
-  final counter2 = ActionControl.broadcast<int>(0);
+  final counter2 = ActionControl.empty<int>();
 
   int counter = 0;
 
   void incrementCounter() {
     counter++;
-    counter2.value--;
+    counter2.value = counter;
     notify();
   }
 }
@@ -84,25 +84,72 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
             ),
             ControlBuilder(
               control: control,
-              builder: (context, value) => Column(
-                children: [
-                  Text(
-                    '${control.counter}',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                ],
+              builder: (context, value) => Text(
+                '${control.counter}',
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
             ),
-            ControlBuilder<int>(
-              control: control.counter2,
-              builder: (context, value) => Column(
-                children: [
-                  Text(
-                    '$value',
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ControlBuilder<int>(
+                  control: control.counter2,
+                  builder: (context, value) => Column(
+                    children: [
+                      Text(
+                        '$value',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ],
+                  ),
+                  noData: (_) => Text(
+                    '---',
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
-                ],
-              ),
+                ),
+                SizedBox(
+                  width: 32.0,
+                ),
+                ControlBuilder(
+                  control: control.counter2,
+                  builder: (context, value) => Column(
+                    children: [
+                      Text(
+                        value is int ? '$value' : '---',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 32.0,
+                ),
+                ControlBuilder<dynamic>(
+                  control: control.counter2,
+                  builder: (context, value) => Column(
+                    children: [
+                      Text(
+                        value is int ? '$value' : '---',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 32.0,
+                ),
+                ControlBuilder<CounterControl>(
+                  control: control,
+                  builder: (context, value) => Column(
+                    children: [
+                      Text(
+                        value.counter > 0 ? '${value.counter}' : '---',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

@@ -57,9 +57,9 @@ class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
   void initState() {
     super.initState();
 
-    // [TODO]: do something about it! :D
+    // [TODO]: do something about it
     // AWFUL HACK: for unknown reason default generic Type is Object? instead of dynamic
-    isTypeSet = '$T' != 'Object?' || T == dynamic;
+    isTypeSet = '$T' != 'Object?' && T != dynamic;
 
     _initSub();
   }
