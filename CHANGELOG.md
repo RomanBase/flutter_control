@@ -1,4 +1,4 @@
-## [3.0.0] - Flutter & Dart 3.0
+## [3.0.1] - Flutter & Dart 3.0
 ## [2.6.3] - Localino and localino_live integration
 ## [2.5.1] - Multiple libs
 Library is now separated to multiple modules:
