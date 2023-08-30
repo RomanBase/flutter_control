@@ -1,6 +1,6 @@
 name: control_core
 description: Control Core is base library for flutter_control and other control modules.
-version: 1.0.0
+version: 1.0.0+1
 
 homepage: https://github.com/romanbase/flutter_control
 
