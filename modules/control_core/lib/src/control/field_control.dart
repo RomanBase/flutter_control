@@ -304,7 +304,7 @@ class FieldControl<T> extends ObservableModel<T?> {
 }
 
 /// Standard [Sink] for [FieldControl].
-class FieldSink<T> extends Sink<T> {
+class FieldSink<T> implements Sink<T> {
   /// Parent [FieldControl] to pass value in.
   FieldControl? _target;
 
