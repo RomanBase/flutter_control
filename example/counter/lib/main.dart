@@ -18,6 +18,10 @@ class Generic<T> {
   Type get generic => T;
 }
 
+class UITheme extends ControlTheme {
+  UITheme(super.context);
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -26,24 +30,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      localization: LocalinoLive.options(
-        remoteSync: true,
-      ),
-      initializers: {
-        CounterControl: (_) => CounterControl(),
+      /*localization: LocalinoLive.options(
+        remoteSync: false,
+      ),*/
+      entries: {
+        CounterControl: CounterControl(),
       },
+      theme: ThemeConfig<UITheme>(
+        builder: (context) => UITheme(context as BuildContext),
+        themes: {
+          Brightness.light: (theme) => ThemeData(primarySwatch: Colors.blue),
+          Brightness.dark: (theme) => ThemeData(primarySwatch: Colors.orange),
+        },
+      ),
       states: [
-        AppState.init
-            .build((context) => InitLoader.of(builder: (_) => Container())),
-        AppState.main.build((context) => MyHomePage(title: 'Flutter Demo')),
+        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.main.build((context) => MenuPage()),
       ],
       app: (setup, home) => MaterialApp(
         title: 'Flutter Demo',
         home: home,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        supportedLocales: setup.supportedLocales,
+        theme: setup.theme,
+        //supportedLocales: setup.supportedLocales,
       ),
     );
   }
@@ -61,7 +69,21 @@ class CounterControl extends BaseControl with NotifierComponent {
   }
 }
 
-class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
+class MenuPage extends ControlWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: NavigatorStack.menu(
+        items: {
+          NavItem(key: '1'): (_) => MyHomePage(title: 'Flutter Demo 1'),
+          NavItem(key: '2'): (_) => MyHomePage(title: 'Flutter Demo 2'),
+        },
+      ),
+    );
+  }
+}
+
+class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, ThemeProvider {
   MyHomePage({
     super.key,
     required this.title,
@@ -82,11 +104,28 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
             Text(
               'You have pushed the button this many times: ',
             ),
-            ControlBuilder(
-              control: control,
-              builder: (context, value) => Text(
-                '${control.counter}',
-                style: Theme.of(context).textTheme.headlineMedium,
+            CaseWidget(
+              activeCase: 'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+              builders: {
+                'light': (_) => Container(
+                      color: theme.primaryColor,
+                      child: Text('light'),
+                    ),
+                'dark': (_) => Container(
+                      color: theme.primaryColor,
+                      child: Text('dark'),
+                    ),
+              },
+              placeholder: (_) => Text('default'),
+            ),
+            Container(
+              color: theme.primaryColor,
+              child: ControlBuilder(
+                control: control,
+                builder: (context, value) => Text(
+                  '${control.counter}',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
               ),
             ),
             Row(
@@ -94,13 +133,12 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
               children: [
                 ControlBuilder<int>(
                   control: control.counter2,
-                  builder: (context, value) => Column(
-                    children: [
-                      Text(
-                        '$value',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                    ],
+                  builder: (context, value) => Container(
+                    color: theme.primaryColor,
+                    child: Text(
+                      '$value',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
                   noData: (_) => Text(
                     '---',
@@ -112,13 +150,12 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                 ),
                 ControlBuilder(
                   control: control.counter2,
-                  builder: (context, value) => Column(
-                    children: [
-                      Text(
-                        value is int ? '$value' : '---',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                    ],
+                  builder: (context, value) => Container(
+                    color: theme.primaryColor,
+                    child: Text(
+                      value is int ? '$value' : '---',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -126,13 +163,12 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                 ),
                 ControlBuilder<dynamic>(
                   control: control.counter2,
-                  builder: (context, value) => Column(
-                    children: [
-                      Text(
-                        value is int ? '$value' : '---',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                    ],
+                  builder: (context, value) => Container(
+                    color: theme.primaryColor,
+                    child: Text(
+                      value is int ? '$value' : '---',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
                 ),
                 SizedBox(
@@ -140,13 +176,12 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
                 ),
                 ControlBuilder<CounterControl>(
                   control: control,
-                  builder: (context, value) => Column(
-                    children: [
-                      Text(
-                        value.counter > 0 ? '${value.counter}' : '---',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                    ],
+                  builder: (context, value) => Container(
+                    color: theme.primaryColor,
+                    child: Text(
+                      value.counter > 0 ? '${value.counter}' : '---',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
                 ),
               ],
@@ -155,7 +190,10 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => control.incrementCounter(),
+        onPressed: () {
+          //control.incrementCounter();
+          theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
