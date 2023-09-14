@@ -10,7 +10,7 @@ const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
 
 /// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
 /// Accessed via [ControlRootScope].
-const _appKey = GlobalObjectKey(AppWidgetBuilder);
+const _appKey = GlobalObjectKey(WidgetsApp);
 
 /// Main Widget builder.
 /// [setup] - Active App settings - theme, localization, and mainly [setup.key].
@@ -255,7 +255,7 @@ class ControlRootSetup {
   final args = ControlArgs();
 
   /// App key for [WidgetsApp] Widget. This key is same as [ControlRootScope.appKey].
-  Key? key;
+  GlobalObjectKey? key;
 
   /// Current [AppState].
   AppState? state;
@@ -265,16 +265,6 @@ class ControlRootSetup {
 
   /// Parent context.
   BuildContext? context;
-
-  RoutingProvider? get routing => Control.get<RoutingProvider>();
-
-  RouteFactory? get generateRoute => (settings) => routing?.generate(settings);
-
-  /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
-  ObjectKey get _localKey => ObjectKey(session.hashCode ^
-      (localization?.locale.hashCode ?? 0xFF) ^
-      state.hashCode ^
-      (style?.data.hashCode ?? 0xFF));
 
   /// Setup for actual [ControlRoot] and [ControlRootScope].
   /// [key] - [_appKey] - [ControlRootScope.appKey].
@@ -288,6 +278,14 @@ class ControlRootSetup {
     this.style,
     this.context,
   });
+
+  RoutingProvider? get routing => Control.get<RoutingProvider>();
+
+  RouteFactory? get generateRoute => (settings) => routing?.generate(settings);
+
+  /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
+  ValueKey<String> get localKey => ValueKey(
+      '${state.runtimeType}-${ThemeConfig.preferredTheme}-$locale-$session');
 
   /// Returns active [ThemeData] of [ControlTheme].
   ThemeData get theme => style!.data;
@@ -321,7 +319,7 @@ class ControlRootSetup {
 
   /// Creates copy of current setup.
   ControlRootSetup copyWith({
-    Key? key,
+    GlobalObjectKey? key,
     AppState? state,
     ControlTheme? style,
     BuildContext? context,
@@ -551,13 +549,13 @@ class ControlRootState extends State<ControlRoot> {
     _setup.context = context;
     _setup.state = _args.get<AppState>();
 
-    printDebug('BUILD CONTROL - ${_setup._localKey}');
+    printDebug('BUILD CONTROL - ${_setup.localKey.value}');
+    printDebug('BUILD APP - ${_setup.key?.value}');
 
-    return Container(
-      key: _setup._localKey,
-      child: widget.app(
-        _setup,
-        Builder(builder: (context) {
+    return widget.app.call(
+      _setup,
+      Builder(
+        builder: (context) {
           _context.value = context;
 
           widget.onBuild?.call(context);
@@ -571,8 +569,9 @@ class ControlRootState extends State<ControlRoot> {
             placeholder: (_) => Container(
               color: Theme.of(context).canvasColor,
             ),
+            soft: false,
           );
-        }),
+        },
       ),
     );
   }

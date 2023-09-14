@@ -136,7 +136,7 @@ class ControlTheme {
 
   late ThemeConfig config;
 
-  ControlTheme(this._context);
+  ControlTheme([this._context]);
 
   void invalidate(BuildContext context) {
     if (context == _context) {
@@ -206,21 +206,20 @@ typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(
 class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   static const preference_key = 'control_theme';
 
+  static String get preferredTheme => PrefsProvider.instance
+      .get(ThemeConfig.preference_key, defaultValue: 'default')!;
+
+  static Brightness get platformBrightness =>
+      PlatformDispatcher.instance.platformBrightness;
+
   final Initializer<T>? builder;
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
-  Initializer get _defaultBuilder =>
-      (context) => ControlTheme(context as BuildContext);
+  Initializer get _defaultBuilder => (_) => ControlTheme();
 
   Initializer<T> get initializer =>
-      (context) => (builder ?? _defaultBuilder)(context)..config = this;
-
-  String? get preferredThemeName => prefs.get(ThemeConfig.preference_key,
-      defaultValue: Parse.name(initTheme));
-
-  static Brightness get platformBrightness =>
-      PlatformDispatcher.instance.platformBrightness;
+      (args) => (builder ?? _defaultBuilder).call(args)..config = this;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({
@@ -252,24 +251,14 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 
   ThemeData getCurrentTheme(T control) => getTheme(initTheme, control);
 
-  ThemeData getSystemTheme(T control) => getTheme(preferredThemeName, control);
+  ThemeData getSystemTheme(T control) => getTheme(preferredTheme, control);
 
   void setAsPreferred() =>
       prefs.set(ThemeConfig.preference_key, Parse.name(initTheme));
 
   void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
-  U? getPreferredKey<U>([dynamic enums]) {
-    final dynamic key = prefs.get(ThemeConfig.preference_key);
-
-    if (enums != null) {
-      return Parse.toEnum<U>(key, enums);
-    }
-
-    return key;
-  }
-
-  bool isPreferred(dynamic key) => preferredThemeName == Parse.name(key);
+  bool isPreferred(dynamic key) => preferredTheme == Parse.name(key);
 
   ThemeConfig<T> copyWith({
     dynamic theme,
@@ -281,8 +270,8 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
       );
 }
 
-mixin ThemeProvider<T extends ControlTheme> {
-  static T of<T extends ControlTheme>(BuildContext context) =>
+mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
+  static T of<T extends ControlTheme>([BuildContext? context]) =>
       Control.init<ControlTheme>(args: context) as T;
 
   /// Instance of requested [ControlTheme].
@@ -290,7 +279,7 @@ mixin ThemeProvider<T extends ControlTheme> {
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T theme = of<T>(ControlScope.root.context!);
+  final T theme = of<T>();
 
   /// Reference to [ColorScheme] of current [Theme].
   @protected
@@ -306,8 +295,17 @@ mixin ThemeProvider<T extends ControlTheme> {
   @protected
   Device get device => theme.device;
 
-  /// Invalidates current [ControlTheme] with given [context].
-  void invalidateTheme(BuildContext context) {
-    theme.invalidate(context);
+  @override
+  void onInit(Map args) {
+    theme.invalidate(context!);
+
+    super.onInit(args);
+  }
+
+  @override
+  void onDependencyChanged() {
+    theme.invalidate(context!);
+
+    super.onDependencyChanged();
   }
 }

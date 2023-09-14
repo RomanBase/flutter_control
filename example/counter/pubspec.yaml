@@ -11,6 +11,11 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
+  intl: 0.18.1
+
   flutter_control:
     path: ../../
 

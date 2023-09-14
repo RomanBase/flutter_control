@@ -9,17 +9,14 @@ class InputField extends ControllableWidget<InputControl> {
   final InputBuilder builder;
 
   InputField({
-    Key? key,
-    required InputControl control,
+    super.key,
+    required super.control,
     this.label,
     this.hint,
     this.decoration,
     this.color,
     required this.builder,
-  }) : super(
-          control,
-          key: key,
-        );
+  });
 
   @override
   void onInit(Map args) {

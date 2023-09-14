@@ -5,9 +5,9 @@ part of flutter_control;
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
-  ControllableWidget(
-    this.control, {
+  ControllableWidget({
     super.key,
+    required this.control,
   }) : assert(control != null);
 
   @override

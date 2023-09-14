@@ -1,5 +1,7 @@
 import 'package:flutter_control/control.dart';
 import 'package:localino_live/localino_live.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,9 +20,7 @@ class Generic<T> {
   Type get generic => T;
 }
 
-class UITheme extends ControlTheme {
-  UITheme(super.context);
-}
+class UITheme extends ControlTheme {}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -30,34 +30,50 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControlRoot(
       debug: true,
-      /*localization: LocalinoLive.options(
-        remoteSync: false,
-      ),*/
+      localization: LocalinoLive.options(
+        remoteSync: true,
+      ),
       entries: {
         CounterControl: CounterControl(),
       },
       theme: ThemeConfig<UITheme>(
-        builder: (context) => UITheme(context as BuildContext),
+        builder: (_) => UITheme(),
         themes: {
           Brightness.light: (theme) => ThemeData(primarySwatch: Colors.blue),
           Brightness.dark: (theme) => ThemeData(primarySwatch: Colors.orange),
         },
       ),
       states: [
-        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.init
+            .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
       ],
       app: (setup, home) => MaterialApp(
+        key: setup.key,
         title: 'Flutter Demo',
         home: home,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: child!,
+        ),
         theme: setup.theme,
-        //supportedLocales: setup.supportedLocales,
+        locale: setup.locale,
+        supportedLocales: setup.supportedLocales,
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
       ),
+      onSetupChanged: (setup) async {
+        Intl.defaultLocale = setup.locale.toString();
+      },
     );
   }
 }
 
 class CounterControl extends BaseControl with NotifierComponent {
+  final loading = LoadingControl();
   final counter2 = ActionControl.empty<int>();
 
   int counter = 0;
@@ -83,7 +99,8 @@ class MenuPage extends ControlWidget {
   }
 }
 
-class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, ThemeProvider {
+class MyHomePage extends SingleControlWidget<CounterControl>
+    with RouteControl, ThemeProvider, LocalinoProvider {
   MyHomePage({
     super.key,
     required this.title,
@@ -104,12 +121,28 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
             Text(
               'You have pushed the button this many times: ',
             ),
+            LoadingBuilder(
+              control: control.loading,
+              initial: (_) => CaseWidget(
+                activeCase:
+                    'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+                builders: {
+                  'light': (_) => CaseTest(),
+                  'dark': (_) => Container(
+                        color: theme.primaryColor,
+                        child: Text('dark'),
+                      ),
+                },
+                placeholder: (_) => Text('default'),
+              ),
+            ),
             CaseWidget(
-              activeCase: 'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+              activeCase:
+                  'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
-                      child: Text('light'),
+                      child: Text(localize('light')),
                     ),
                 'dark': (_) => Container(
                       color: theme.primaryColor,
@@ -191,12 +224,23 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          //control.incrementCounter();
-          theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          control.incrementCounter();
+          //theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          //LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
+    );
+  }
+}
+
+class CaseTest extends BaseControlWidget with ThemeProvider, LocalinoProvider {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: theme.primaryColor,
+      child: Text(localize('light')),
     );
   }
 }
