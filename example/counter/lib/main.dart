@@ -29,14 +29,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ControlRoot.initControl(
-      debug: true,
-      localization: LocalinoLive.options(
-        remoteSync: false,
-      ),
-      entries: {
-        CounterControl: CounterControl(),
-      },
-    );
+        debug: true,
+        localization: LocalinoLive.options(
+          remoteSync: false,
+        ),
+        entries: {
+          CounterControl: CounterControl(),
+        },
+        initAsync: () async {
+          await Future.delayed(Duration(seconds: 1));
+        });
 
     return ControlRoot(
       theme: ThemeConfig<UITheme>(
@@ -55,26 +57,23 @@ class MyApp extends StatelessWidget {
             .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
       ],
-      app: (setup, home) {
-        printDebug('Build Material App - ${setup.theme}');
-        return MaterialApp(
-          key: setup.key,
-          title: 'Flutter Demo',
-          home: home,
-          builder: (context, child) => MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-            child: child!,
-          ),
-          theme: setup.theme,
-          locale: setup.locale,
-          supportedLocales: setup.supportedLocales,
-          localizationsDelegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-        );
-      },
+      app: (setup, home) => MaterialApp(
+        key: setup.key,
+        title: 'Flutter Demo',
+        home: home,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: child!,
+        ),
+        theme: setup.theme,
+        locale: setup.locale,
+        supportedLocales: setup.supportedLocales,
+        localizationsDelegates: [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+      ),
       onSetupChanged: (setup) async {
         Intl.defaultLocale = setup.locale.toString();
       },
@@ -237,11 +236,8 @@ class MyHomePage extends SingleControlWidget<CounterControl>
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           control.incrementCounter();
-          //theme.changeTheme('light');
-          ThemeProvider.of().changeTheme(
-              PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light'
-                  ? Brightness.dark
-                  : Brightness.light);
+          theme.changeTheme('light');
+          //ThemeProvider.of().changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
           //LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
         },
         tooltip: 'Increment',
@@ -254,7 +250,7 @@ class MyHomePage extends SingleControlWidget<CounterControl>
 class CaseTest extends StatelessWidget with LocalinoProvider {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = ThemeProvider.of(context);
 
     return Container(
       color: theme.primaryColor,

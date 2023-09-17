@@ -269,7 +269,14 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 }
 
 mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
-  static T of<T extends ControlTheme>() => Control.get<ControlTheme>() as T;
+  static T of<T extends ControlTheme>([BuildContext? context]) {
+    if (context == null) {
+      return Control.get<ControlTheme>() as T;
+    }
+
+    return (Control.init<ControlTheme>(args: context) as T)
+      ..invalidate(context);
+  }
 
   static BroadcastSubscription<ControlTheme> subscribe(
       ValueCallback<ControlTheme?> callback) {
@@ -297,7 +304,7 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
   @protected
   Device get device => theme.device;
 
-/*@override
+  @override
   void onInit(Map args) {
     theme.invalidate(context!);
 
@@ -309,5 +316,5 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
     theme.invalidate(context!);
 
     super.onDependencyChanged();
-  }*/
+  }
 }

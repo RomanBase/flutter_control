@@ -295,9 +295,6 @@ class ControlRoot extends StatefulWidget {
   /// Config of [ControlTheme] and list of available [ThemeData].
   final ThemeConfig? theme;
 
-  /// [Control.initControl]
-  final Future Function()? initAsync;
-
   /// Default transition
   final CrossTransition? transition;
 
@@ -331,7 +328,6 @@ class ControlRoot extends StatefulWidget {
     this.initState = AppState.init,
     this.states = const [],
     required this.app,
-    this.initAsync,
     this.onSetupChanged,
   }) : super(key: ControlRootScope._rootKey);
 
@@ -392,9 +388,11 @@ class ControlRootState extends State<ControlRoot> {
     _args[AppState] = widget.initState;
 
     if (widget.theme != null) {
-      _setup.style = widget.theme?.initializer(context);
+      _setup.style = widget.theme!.initializer(context);
       _setup.style?.setDefaultTheme();
       Control.set<ControlTheme>(value: _setup.style);
+      Control.factory
+          .setInitializer<ControlTheme>(initializer: widget.theme!.initializer);
     }
 
     _states = _AppStateBuilder.fillBuilders(widget.states);
