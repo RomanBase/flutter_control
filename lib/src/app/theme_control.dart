@@ -115,7 +115,7 @@ class ControlTheme {
   AssetPath? _asset;
 
   @protected
-  BuildContext get context => _context ?? ControlScope.root.context!;
+  BuildContext get context => _context!;
 
   Device get device => _device ?? (_device = Device.of(context));
 
@@ -138,19 +138,15 @@ class ControlTheme {
 
   ControlTheme([this._context]);
 
-  void invalidate(BuildContext context) {
-    if (context == _context) {
-      return;
-    }
-
+  ThemeData invalidate(BuildContext? context) {
     _data = null;
     _device = null;
-    _context = context;
-  }
 
-  static BroadcastSubscription<ControlTheme> subscribe(
-      ValueCallback<ControlTheme?> callback) {
-    return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
+    if (context != null) {
+      _context = context;
+    }
+
+    return data;
   }
 
   void resetPreferredTheme({bool loadSystemTheme = false}) {
@@ -163,7 +159,7 @@ class ControlTheme {
 
   void setDefaultTheme() => data = config.getCurrentTheme(this);
 
-  ControlTheme setSystemTheme() => pushTheme(config.getSystemTheme(this));
+  void setSystemTheme() => data = config.getSystemTheme(this);
 
   ControlTheme changeTheme(dynamic key, {bool preferred = true}) {
     if (config.contains(key)) {
@@ -183,11 +179,13 @@ class ControlTheme {
   ControlTheme pushTheme(ThemeData theme) {
     if (theme != data) {
       data = theme;
-      BroadcastProvider.broadcast<ControlTheme>(value: this);
+      notifyTheme();
     }
 
     return this;
   }
+
+  void notifyTheme() => BroadcastProvider.broadcast<ControlTheme>(value: this);
 
   @override
   bool operator ==(other) {
@@ -271,8 +269,12 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 }
 
 mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
-  static T of<T extends ControlTheme>([BuildContext? context]) =>
-      Control.init<ControlTheme>(args: context) as T;
+  static T of<T extends ControlTheme>() => Control.get<ControlTheme>() as T;
+
+  static BroadcastSubscription<ControlTheme> subscribe(
+      ValueCallback<ControlTheme?> callback) {
+    return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
+  }
 
   /// Instance of requested [ControlTheme].
   /// Override [themeScope] to receive correct [ThemeData].
@@ -295,7 +297,7 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
   @protected
   Device get device => theme.device;
 
-  @override
+/*@override
   void onInit(Map args) {
     theme.invalidate(context!);
 
@@ -307,5 +309,5 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
     theme.invalidate(context!);
 
     super.onDependencyChanged();
-  }
+  }*/
 }

@@ -1,17 +1,5 @@
 part of flutter_control;
 
-/// Holder of current root context.
-/// Accessed via [ControlRootScope].
-final _context = ActionControl.empty<BuildContext>();
-
-/// Key of [ControlRoot] Widget. Set by framework.
-/// Accessed via [ControlRootScope].
-const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
-
-/// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
-/// Accessed via [ControlRootScope].
-const _appKey = GlobalObjectKey(WidgetsApp);
-
 /// Main Widget builder.
 /// [setup] - Active App settings - theme, localization, and mainly [setup.key].
 /// It's expected, that [WidgetsApp] Widget will be returned.
@@ -19,9 +7,9 @@ typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup, Widget home);
 
 /// Setup of [AppState].
 /// Holds case [key], [builder] and [transition]
-class AppStateSetup {
+class _AppStateBuilder {
   /// Case key of [AppState].
-  final dynamic key;
+  final AppState key;
 
   /// Case builder for this state.
   final WidgetBuilder builder;
@@ -33,29 +21,31 @@ class AppStateSetup {
   /// [key] - Case representing [AppState].
   /// [builder] - Builder for given case.
   /// [transition] - Animation from previous Widget to given case.
-  const AppStateSetup(this.key, this.builder, this.transition);
+  const _AppStateBuilder(this.key, this.builder, this.transition);
 
   /// Returns case:builder entry.
-  MapEntry<dynamic, WidgetBuilder> get builderEntry => MapEntry(key, builder);
+  MapEntry<AppState, WidgetBuilder> get builderEntry => MapEntry(key, builder);
 
   /// Returns case:transition entry.
-  MapEntry<dynamic, CrossTransition> get transitionEntry =>
+  MapEntry<AppState, CrossTransition> get transitionEntry =>
       MapEntry(key, transition!);
 
   /// Builds case:builder map for given states.
-  static Map<dynamic, WidgetBuilder> fillBuilders(List<AppStateSetup> items) =>
+  static Map<AppState, WidgetBuilder> fillBuilders(
+          List<_AppStateBuilder> items) =>
       items
           .asMap()
-          .map<dynamic, WidgetBuilder>((key, value) => value.builderEntry);
+          .map<AppState, WidgetBuilder>((key, value) => value.builderEntry);
 
   /// Builds case:transition map for given states.
-  static Map<dynamic, CrossTransition> fillTransitions(
-          List<AppStateSetup> items) =>
+  static Map<AppState, CrossTransition> fillTransitions(
+          List<_AppStateBuilder> items) =>
       items
           .where((item) => item.transition != null)
           .toList()
           .asMap()
-          .map<dynamic, CrossTransition>((key, value) => value.transitionEntry);
+          .map<AppState, CrossTransition>(
+              (key, value) => value.transitionEntry);
 }
 
 /// Representation of App State handled by [ControlRoot].
@@ -78,14 +68,15 @@ class AppState {
 
   const AppState();
 
-  AppStateSetup build(WidgetBuilder builder, {CrossTransition? transition}) =>
-      AppStateSetup(
-        this, //TODO: this or key ???
+  _AppStateBuilder build(WidgetBuilder builder,
+          {CrossTransition? transition}) =>
+      _AppStateBuilder(
+        this,
         builder,
         transition,
       );
 
-  dynamic get key => this.runtimeType;
+  Type get key => this.runtimeType;
 
   operator ==(dynamic other) => other is AppState && other.key == key;
 
@@ -112,15 +103,18 @@ class _AppStateMain extends AppState {
 /// Holds [appKey] and [rootKey], this keys are pointing to [WidgetsApp] and [ControlRoot] Widgets.
 /// Also holds current root [context]. This context can be changed within Widget Tree, but it's highly recommended to point this context to any top level Widget.
 class ControlRootScope {
+  /// Key of [ControlRoot] Widget. Set by framework.
+  /// Accessed via [ControlRootScope].
+  static const _rootKey = GlobalObjectKey<ControlRootState>(ControlRoot);
+
+  static BuildContext? _rootContext;
+
   /// Gives access to global variables like [appKey] and [rootKey].
   /// Also global root [context] is accessible via this object.
   const ControlRootScope.main();
 
   /// Key of [ControlRoot] Widget. Set by framework.
   GlobalKey<ControlRootState> get rootKey => _rootKey;
-
-  /// Key passed to [ControlRootSetup] to be used as key for [WidgetsApp] Widget.
-  GlobalKey get appKey => _appKey;
 
   /// Returns [ControlRoot] Widget if is initialized.
   ControlRoot? get rootWidget => _rootKey.currentWidget as ControlRoot?;
@@ -131,48 +125,30 @@ class ControlRootScope {
   /// Returns current root context.
   /// Default context set by framework don't have access to [Scaffold].
   /// This context is also changed when [AppState] is changed.
-  BuildContext? get context => _context.value;
+  BuildContext? get context => _rootContext;
 
   /// Sets new root context.
   /// Typically set [BuildContext] with access to root [Scaffold].
   /// This context is also changed when [AppState] is changed.
-  set context(BuildContext? context) => _context.value = context;
+  set context(BuildContext? context) {
+    _rootContext = context;
+    printDebug('Root Context Changed: $context');
+  }
 
   /// Checks if [ControlRoot] is initialized and root [BuildContext] is available.
   bool get isInitialized => rootKey.currentState != null && context != null;
-
-  /// Subscribe to listen about [BuildContext] changes.
-  ObservableValue get rootContextSub => ObservableValue.of(_context);
 
   /// Returns current [ControlRootSetup] of [ControlRoot].
   ControlRootSetup? get setup => _rootKey.currentState?._setup;
 
   /// Returns current [AppState] of [ControlRoot].
-  AppState? get state => _rootKey.currentState?._setup.state;
+  AppState? get state => _rootKey.currentState?._args.get<AppState>();
 
   /// Notifies state of [ControlRoot].
   /// To change [AppState] use [setAppState].
   bool notifyControlState([ControlArgs? args]) {
     if (rootKey.currentState != null && rootKey.currentState!.mounted) {
       rootKey.currentState!.notifyState(args);
-
-      return true;
-    }
-
-    printDebug('ControlRoot is not in Widget Tree! [ControlScope.rootKey]');
-    printDebug('Trying to notify ControlScope.scopeKey ..');
-
-    final currentState = appKey.currentState;
-
-    if (currentState != null && currentState.mounted) {
-      if (currentState is ControlRootState) {
-        currentState.notifyState(args);
-      } else {
-        printDebug(
-            'Found State is not StateNotifier, Trying to call setState directly..');
-        // ignore: invalid_use_of_protected_member
-        appKey.currentState!.setState(() {});
-      }
 
       return true;
     }
@@ -254,12 +230,6 @@ class ControlRootSetup {
 
   final args = ControlArgs();
 
-  /// App key for [WidgetsApp] Widget. This key is same as [ControlRootScope.appKey].
-  GlobalObjectKey? key;
-
-  /// Current [AppState].
-  AppState? state;
-
   /// Current [ControlTheme].
   ControlTheme? style;
 
@@ -267,17 +237,10 @@ class ControlRootSetup {
   BuildContext? context;
 
   /// Setup for actual [ControlRoot] and [ControlRootScope].
-  /// [key] - [_appKey] - [ControlRootScope.appKey].
-  /// [state] - Active app state.
-  /// [args] - Arguments passed with state change.
-  /// [style] - Active theme.
-  /// [context] - Parent context.
-  ControlRootSetup({
-    this.key,
-    this.state,
-    this.style,
-    this.context,
-  });
+  ControlRootSetup._();
+
+  /// Current [AppState].
+  AppState get state => ControlRootScope.main().state ?? AppState.init;
 
   RoutingProvider? get routing => Control.get<RoutingProvider>();
 
@@ -285,16 +248,18 @@ class ControlRootSetup {
 
   /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
   ValueKey<String> get localKey => ValueKey(
-      '${state.runtimeType}-${ThemeConfig.preferredTheme}-$locale-$session');
+      '${state.runtimeType}-${ThemeConfig.preferredTheme}-${locale ?? ''}-$session');
+
+  GlobalObjectKey get key => GlobalObjectKey(this);
 
   /// Returns active [ThemeData] of [ControlTheme].
   ThemeData get theme => style!.data;
 
   /// Reference to [BaseLocalization] to provide actual localization settings.
-  Localino? get localization => LocalinoProvider.instance;
+  Localino? get localization => Control.get<Localino>();
 
   /// Current app locale that can be passed to [WidgetsApp.locale].
-  Locale? get locale => localization!.currentLocale;
+  Locale? get locale => localization?.currentLocale;
 
   /// Localization delegate for [WidgetsApp.localizationsDelegates].
   /// Pass this delegate only if using [LocalizationsDelegate] type of localization.
@@ -316,20 +281,6 @@ class ControlRootSetup {
 
     return defaultValue;
   }
-
-  /// Creates copy of current setup.
-  ControlRootSetup copyWith({
-    GlobalObjectKey? key,
-    AppState? state,
-    ControlTheme? style,
-    BuildContext? context,
-  }) =>
-      ControlRootSetup(
-        key: key ?? this.key,
-        state: state ?? this.state,
-        style: style ?? this.style,
-        context: context ?? this.context,
-      )..args.set(args);
 }
 
 /// Typically root Widget of whole Application.
@@ -340,21 +291,6 @@ class ControlRootSetup {
 class ControlRoot extends StatefulWidget {
   /// [Control.initControl]
   final bool? debug;
-
-  /// [Control.initControl]
-  final LocalinoOptions? localization;
-
-  /// [Control.initControl]
-  final Map entries;
-
-  /// [Control.initControl]
-  final Map<Type, Initializer> initializers;
-
-  /// [Control.initControl]
-  final Injector? injector;
-
-  /// [Control.initControl]
-  final List<ControlRoute> routes;
 
   /// Config of [ControlTheme] and list of available [ThemeData].
   final ThemeConfig? theme;
@@ -369,7 +305,7 @@ class ControlRoot extends StatefulWidget {
   final AppState initState;
 
   /// List of app states. Widget builders and transitions.
-  final List<AppStateSetup> states;
+  final List<_AppStateBuilder> states;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
@@ -377,18 +313,11 @@ class ControlRoot extends StatefulWidget {
 
   final Future Function(ControlRootSetup setup)? onSetupChanged;
 
-  final ValueCallback<BuildContext>? onBuild;
-
   /// Root [Widget] of whole app.
   /// Initializes [Control] and handles localization and theme changes.
   /// Notifies about [AppState] changes and animates Widget swapping.
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [localization] - Custom config for [Localino]. Assets, default locale and loading rules.
-  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
-  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
-  /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection. Currently not used a lot...
-  /// [routes] - Set of routes for [RouteStore]. Use [ControlRoute.build] to build routes and [ControlRoute.of] to retrieve route. It's possible to alter route with new settings, path or transition.
   /// [theme] - Custom config for [ControlTheme]. Map of supported themes, default theme and custom [ControlTheme] builder.
   /// [initState] - Initial app state. Default value is [AppState.init].
   /// [states] - List of app states. [AppState.main] is by default considered as main home [Widget]. Use [AppState.main.build] to create app state. Change state by calling [Control.root().setAppState].
@@ -397,11 +326,6 @@ class ControlRoot extends StatefulWidget {
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   const ControlRoot({
     this.debug,
-    this.localization,
-    this.entries = const {},
-    this.initializers = const {},
-    this.injector,
-    this.routes = const [],
     this.theme,
     this.transition,
     this.initState = AppState.init,
@@ -409,24 +333,43 @@ class ControlRoot extends StatefulWidget {
     required this.app,
     this.initAsync,
     this.onSetupChanged,
-    this.onBuild,
-  }) : super(key: _rootKey);
+  }) : super(key: ControlRootScope._rootKey);
 
   @override
   State<StatefulWidget> createState() => ControlRootState();
+
+  static Future<bool> initControl({
+    bool? debug,
+    Map<dynamic, dynamic>? entries,
+    Map<Type, Initializer>? initializers,
+    LocalinoOptions? localization,
+    List<ControlRoute>? routes,
+    Future Function()? initAsync,
+  }) async {
+    final initialized = Control.initControl(
+      debug: debug,
+      entries: entries,
+      initializers: initializers,
+      modules: [
+        ConfigModule(),
+        if (localization != null) LocalinoModule(localization, debug: debug),
+        if (routes != null) RoutingModule(routes),
+      ],
+      initAsync: initAsync,
+    );
+
+    return initialized;
+  }
 }
 
 /// [State] of [ControlRoot].
 /// Handles localization, theme and App state changes.
 class ControlRootState extends State<ControlRoot> {
   /// Active setup, theme, localization and state.
-  final _setup = ControlRootSetup();
+  final _setup = ControlRootSetup._();
 
   /// Combination of current State and args passed during State change.
   ControlArgs get _args => _setup.args;
-
-  /// Default theme config. Used to build [ControlTheme].
-  late ThemeConfig _theme;
 
   /// [AppState] - case:builder Map of [ControlRoot.states].
   late Map<dynamic, WidgetBuilder> _states;
@@ -444,60 +387,39 @@ class ControlRootState extends State<ControlRoot> {
   void initState() {
     super.initState();
 
-    _context.value = context;
+    ControlRootScope._rootContext = context;
 
     _args[AppState] = widget.initState;
 
-    _states = AppStateSetup.fillBuilders(widget.states);
-    _transitions = AppStateSetup.fillTransitions(widget.states);
-
-    final initState = widget.initState.build(
-      (context) => InitLoader.of(
-        builder: (context) => Container(
-          color: Theme.of(context).canvasColor,
-          child: Center(
-            child: CircularProgressIndicator(
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (!_states.containsKey(initState.key)) {
-      _states[initState.key] = initState.builder;
+    if (widget.theme != null) {
+      _setup.style = widget.theme?.initializer(context);
+      _setup.style?.setDefaultTheme();
+      Control.set<ControlTheme>(value: _setup.style);
     }
 
-    _theme = widget.theme ??
-        ThemeConfig(
-          builder: (context) => ControlTheme(context as BuildContext),
-          initTheme: ThemeConfig.platformBrightness,
-          themes: {
-            Brightness.light: (_) => ThemeData.light(),
-            Brightness.dark: (_) => ThemeData.dark(),
-          },
-        );
+    _states = _AppStateBuilder.fillBuilders(widget.states);
+    _transitions = _AppStateBuilder.fillTransitions(widget.states);
 
-    _setup.key = _appKey;
-    _setup.style = _theme.initializer(context)..setDefaultTheme();
-
-    _themeSub = ControlTheme.subscribe((value) {
-      _notifyState(() {
-        _setup.style = value;
-      }, true);
+    _themeSub = ThemeProvider.subscribe((value) {
+      _setup.style = value;
+      _notifyState(() {}, true);
     });
 
     _localeSub = LocalinoProvider.subscribe((args) {
-      if (args!.changed) {
+      if (args?.changed ?? true) {
         _notifyState(() {}, true);
       }
     });
 
-    _initControl();
+    _init();
   }
 
-  void notifyState([state]) {
+  void _init() async {
+    await PrefsProvider.instance.mount();
+    _setup.style?.setSystemTheme();
+  }
+
+  void notifyState([dynamic state]) {
     _notifyState(() {
       if (state is ControlArgs) {
         _args.combine(state);
@@ -513,52 +435,15 @@ class ControlRootState extends State<ControlRoot> {
     setState(state);
   }
 
-  void _initControl() async {
-    final initialized = Control.initControl(
-      debug: widget.debug,
-      entries: widget.entries,
-      initializers: {
-        ...widget.initializers,
-        ControlTheme: _theme.initializer,
-      },
-      injector: widget.injector,
-      modules: [
-        ConfigModule(),
-        LocalinoModule(
-            widget.localization ??
-                LocalinoOptions(config: LocalinoConfig.empty),
-            debug: widget.debug),
-        RoutingModule(widget.routes),
-      ],
-      initAsync: () => FutureBlock.wait([
-        _loadTheme(),
-        widget.initAsync?.call(),
-      ]),
-    );
-
-    if (initialized) {
-      await Control.factory.onReady();
-      _notifyState(() {}, true);
-    }
-  }
-
-  Future<void> _loadTheme() async => _setup.style!.setSystemTheme();
-
   @override
   Widget build(BuildContext context) {
-    _setup.context = context;
-    _setup.state = _args.get<AppState>();
-
     printDebug('BUILD CONTROL - ${_setup.localKey.value}');
-    printDebug('BUILD APP - ${_setup.key?.value}');
 
     return widget.app.call(
       _setup,
       Builder(
         builder: (context) {
-          _context.value = context;
-
-          widget.onBuild?.call(context);
+          ControlRootScope._rootContext = context;
 
           return CaseWidget(
             key: ObjectKey(_setup.session),
@@ -566,9 +451,7 @@ class ControlRootState extends State<ControlRoot> {
             builders: _states,
             transition: widget.transition,
             transitions: _transitions,
-            placeholder: (_) => Container(
-              color: Theme.of(context).canvasColor,
-            ),
+            placeholder: (_) => Container(),
             soft: false,
           );
         },
@@ -585,5 +468,29 @@ class ControlRootState extends State<ControlRoot> {
 
     _themeSub?.dispose();
     _themeSub = null;
+  }
+}
+
+class Rebuilder extends StatelessWidget {
+  final Widget child;
+
+  const Rebuilder({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    rebuild(context);
+
+    return child;
+  }
+
+  static void rebuild(BuildContext context) =>
+      _rebuildElement(context as Element);
+
+  static void _rebuildElement(Element element) {
+    element.markNeedsBuild();
+    element.visitChildren(_rebuildElement);
   }
 }

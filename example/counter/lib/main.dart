@@ -28,18 +28,25 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ControlRoot(
+    ControlRoot.initControl(
       debug: true,
       localization: LocalinoLive.options(
-        remoteSync: true,
+        remoteSync: false,
       ),
       entries: {
         CounterControl: CounterControl(),
       },
+    );
+
+    return ControlRoot(
       theme: ThemeConfig<UITheme>(
         builder: (_) => UITheme(),
         themes: {
-          Brightness.light: (theme) => ThemeData(primarySwatch: Colors.blue),
+          Brightness.light: (theme) => ThemeData(
+              primarySwatch:
+                  (Control.get<CounterControl>()?.counter ?? 0) % 2 == 0
+                      ? Colors.green
+                      : Colors.red),
           Brightness.dark: (theme) => ThemeData(primarySwatch: Colors.orange),
         },
       ),
@@ -48,23 +55,26 @@ class MyApp extends StatelessWidget {
             .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
       ],
-      app: (setup, home) => MaterialApp(
-        key: setup.key,
-        title: 'Flutter Demo',
-        home: home,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: child!,
-        ),
-        theme: setup.theme,
-        locale: setup.locale,
-        supportedLocales: setup.supportedLocales,
-        localizationsDelegates: [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-      ),
+      app: (setup, home) {
+        printDebug('Build Material App - ${setup.theme}');
+        return MaterialApp(
+          key: setup.key,
+          title: 'Flutter Demo',
+          home: home,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+            child: child!,
+          ),
+          theme: setup.theme,
+          locale: setup.locale,
+          supportedLocales: setup.supportedLocales,
+          localizationsDelegates: [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+        );
+      },
       onSetupChanged: (setup) async {
         Intl.defaultLocale = setup.locale.toString();
       },
@@ -112,7 +122,9 @@ class MyHomePage extends SingleControlWidget<CounterControl>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(title +
+            ' ${localization.locale}' +
+            ' / ${PrefsProvider.instance.get(ThemeConfig.preference_key)}'),
       ),
       body: Center(
         child: Column(
@@ -142,7 +154,7 @@ class MyHomePage extends SingleControlWidget<CounterControl>
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
-                      child: Text(localize('light')),
+                      child: Text(localize('action_add_localization')),
                     ),
                 'dark': (_) => Container(
                       color: theme.primaryColor,
@@ -225,7 +237,11 @@ class MyHomePage extends SingleControlWidget<CounterControl>
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           control.incrementCounter();
-          //theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          //theme.changeTheme('light');
+          ThemeProvider.of().changeTheme(
+              PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light'
+                  ? Brightness.dark
+                  : Brightness.light);
           //LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
         },
         tooltip: 'Increment',
@@ -235,12 +251,14 @@ class MyHomePage extends SingleControlWidget<CounterControl>
   }
 }
 
-class CaseTest extends BaseControlWidget with ThemeProvider, LocalinoProvider {
+class CaseTest extends StatelessWidget with LocalinoProvider {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       color: theme.primaryColor,
-      child: Text(localize('light')),
+      child: Text(localize('action_add_localization')),
     );
   }
 }
