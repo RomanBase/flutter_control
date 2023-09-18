@@ -29,16 +29,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ControlRoot.initControl(
-        debug: true,
-        localization: LocalinoLive.options(
-          remoteSync: false,
-        ),
-        entries: {
-          CounterControl: CounterControl(),
-        },
-        initAsync: () async {
-          await Future.delayed(Duration(seconds: 1));
-        });
+      debug: true,
+      localization: LocalinoLive.options(
+        remoteSync: false,
+      ),
+      entries: {
+        CounterControl: CounterControl(),
+      },
+      initAsync: () async {
+        await Future.delayed(Duration(seconds: 1));
+      },
+    );
 
     return ControlRoot(
       theme: ThemeConfig<UITheme>(
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         AppState.init
             .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
+        AppState.onboarding.build((context) => MyHomePage(title: 'Onboarding')),
       ],
       app: (setup, home) => MaterialApp(
         key: setup.key,
@@ -110,12 +112,12 @@ class MenuPage extends ControlWidget {
 
 class MyHomePage extends SingleControlWidget<CounterControl>
     with RouteControl, ThemeProvider, LocalinoProvider {
+  final String title;
+
   MyHomePage({
     super.key,
     required this.title,
   });
-
-  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -135,8 +137,8 @@ class MyHomePage extends SingleControlWidget<CounterControl>
             LoadingBuilder(
               control: control.loading,
               initial: (_) => CaseWidget(
-                activeCase:
-                    'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+                activeCase: 'light',
+                //PrefsProvider.instance.get(ThemeConfig.preference_key),
                 builders: {
                   'light': (_) => CaseTest(),
                   'dark': (_) => Container(
@@ -229,6 +231,15 @@ class MyHomePage extends SingleControlWidget<CounterControl>
                   ),
                 ),
               ],
+            ),
+            ElevatedButton(
+              onPressed: () {
+                ControlScope.root.setAppState(
+                    ControlScope.root.state == AppState.main
+                        ? AppState.onboarding
+                        : AppState.main);
+              },
+              child: Text('${ControlScope.root.state}'),
             ),
           ],
         ),

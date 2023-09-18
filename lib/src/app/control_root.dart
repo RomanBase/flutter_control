@@ -142,7 +142,7 @@ class ControlRootScope {
   ControlRootSetup? get setup => _rootKey.currentState?._setup;
 
   /// Returns current [AppState] of [ControlRoot].
-  AppState? get state => _rootKey.currentState?._args.get<AppState>();
+  AppState? get state => _rootKey.currentState?.args.get<AppState>();
 
   /// Notifies state of [ControlRoot].
   /// To change [AppState] use [setAppState].
@@ -228,16 +228,15 @@ class ControlRootScope {
 class ControlRootSetup {
   final session = UnitId.randomId();
 
-  final args = ControlArgs();
-
-  /// Current [ControlTheme].
-  ControlTheme? style;
-
-  /// Parent context.
-  BuildContext? context;
-
   /// Setup for actual [ControlRoot] and [ControlRootScope].
   ControlRootSetup._();
+
+  ControlRootState? get rootState => ControlRootScope._rootKey.currentState;
+
+  ControlArgs get args => rootState?.args ?? ControlArgs();
+
+  /// Returns active [ThemeData] of [ControlTheme].
+  ThemeData? get theme => rootState?.style?.data;
 
   /// Current [AppState].
   AppState get state => ControlRootScope.main().state ?? AppState.init;
@@ -245,15 +244,6 @@ class ControlRootSetup {
   RoutingProvider? get routing => Control.get<RoutingProvider>();
 
   RouteFactory? get generateRoute => (settings) => routing?.generate(settings);
-
-  /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
-  ValueKey<String> get localKey => ValueKey(
-      '${state.runtimeType}-${ThemeConfig.preferredTheme}-${locale ?? ''}-$session');
-
-  GlobalObjectKey get key => GlobalObjectKey(this);
-
-  /// Returns active [ThemeData] of [ControlTheme].
-  ThemeData get theme => style!.data;
 
   /// Reference to [BaseLocalization] to provide actual localization settings.
   Localino? get localization => Control.get<Localino>();
@@ -281,6 +271,12 @@ class ControlRootSetup {
 
     return defaultValue;
   }
+
+  /// Key for wrapping Widget. This key is combination of some setup properties, so Widget Tree can decide if is time to rebuild.
+  ValueKey<String> get localKey => ValueKey(
+      '${state.runtimeType}-${ThemeConfig.preferredTheme}-${locale ?? ''}-$session');
+
+  GlobalObjectKey get key => GlobalObjectKey(this);
 }
 
 /// Typically root Widget of whole Application.
@@ -364,8 +360,10 @@ class ControlRootState extends State<ControlRoot> {
   /// Active setup, theme, localization and state.
   final _setup = ControlRootSetup._();
 
-  /// Combination of current State and args passed during State change.
-  ControlArgs get _args => _setup.args;
+  final args = ControlArgs();
+
+  /// Current [ControlTheme].
+  ControlTheme? style;
 
   /// [AppState] - case:builder Map of [ControlRoot.states].
   late Map<dynamic, WidgetBuilder> _states;
@@ -385,27 +383,26 @@ class ControlRootState extends State<ControlRoot> {
 
     ControlRootScope._rootContext = context;
 
-    _args[AppState] = widget.initState;
+    args[AppState] = widget.initState;
 
     if (widget.theme != null) {
-      _setup.style = widget.theme!.initializer(context);
-      _setup.style?.setDefaultTheme();
-      Control.set<ControlTheme>(value: _setup.style);
       Control.factory
           .setInitializer<ControlTheme>(initializer: widget.theme!.initializer);
+      style = Control.init<ControlTheme>();
+      style?.setDefaultTheme();
     }
 
     _states = _AppStateBuilder.fillBuilders(widget.states);
     _transitions = _AppStateBuilder.fillTransitions(widget.states);
 
     _themeSub = ThemeProvider.subscribe((value) {
-      _setup.style = value;
-      _notifyState(() {}, true);
+      style = value;
+      _notifyState(true);
     });
 
     _localeSub = LocalinoProvider.subscribe((args) {
       if (args?.changed ?? true) {
-        _notifyState(() {}, true);
+        _notifyState(true);
       }
     });
 
@@ -414,23 +411,23 @@ class ControlRootState extends State<ControlRoot> {
 
   void _init() async {
     await PrefsProvider.instance.mount();
-    _setup.style?.setSystemTheme();
+    style?.setSystemTheme();
   }
 
-  void notifyState([dynamic state]) {
-    _notifyState(() {
-      if (state is ControlArgs) {
-        _args.combine(state);
-      }
-    }, state != null);
+  void notifyState([ControlArgs? state]) {
+    if (state != null) {
+      args.combine(state);
+    }
+
+    _notifyState(state != null);
   }
 
-  void _notifyState(VoidCallback state, [bool changed = false]) async {
+  void _notifyState([bool changed = false]) async {
     if (changed && widget.onSetupChanged != null) {
       await widget.onSetupChanged!.call(_setup);
     }
 
-    setState(state);
+    setState(() {});
   }
 
   @override
@@ -469,26 +466,25 @@ class ControlRootState extends State<ControlRoot> {
   }
 }
 
-class Rebuilder extends StatelessWidget {
-  final Widget child;
-
-  const Rebuilder({
-    super.key,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    rebuild(context);
-
-    return child;
-  }
-
-  static void rebuild(BuildContext context) =>
-      _rebuildElement(context as Element);
-
-  static void _rebuildElement(Element element) {
-    element.markNeedsBuild();
-    element.visitChildren(_rebuildElement);
-  }
-}
+// class Rebuilder extends StatelessWidget {
+//   final Widget child;
+//
+//   const Rebuilder({
+//     super.key,
+//     required this.child,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     rebuild(context);
+//
+//     return child;
+//   }
+//
+//   static void rebuild(BuildContext context) => _rebuildElement(context as Element);
+//
+//   static void _rebuildElement(Element element) {
+//     element.markNeedsBuild();
+//     element.visitChildren(_rebuildElement);
+//   }
+// }

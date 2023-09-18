@@ -114,6 +114,10 @@ class ControlTheme {
   ThemeData? _data;
   AssetPath? _asset;
 
+  bool get isValid => _context != null || _data != null;
+
+  bool get isStandalone => _context == null && _data != null;
+
   @protected
   BuildContext get context => _context!;
 
@@ -185,7 +189,8 @@ class ControlTheme {
     return this;
   }
 
-  void notifyTheme() => BroadcastProvider.broadcast<ControlTheme>(value: this);
+  void notifyTheme() => BroadcastProvider.broadcast<ControlTheme>(
+      value: Control.init<ControlTheme>()?..data = data);
 
   @override
   bool operator ==(other) {
@@ -269,13 +274,11 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 }
 
 mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
-  static T of<T extends ControlTheme>([BuildContext? context]) {
-    if (context == null) {
-      return Control.get<ControlTheme>() as T;
-    }
+  static T of<T extends ControlTheme>(BuildContext context) {
+    final theme = Control.init<ControlTheme>() as T;
+    theme.invalidate(context);
 
-    return (Control.init<ControlTheme>(args: context) as T)
-      ..invalidate(context);
+    return theme;
   }
 
   static BroadcastSubscription<ControlTheme> subscribe(
@@ -288,7 +291,7 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T theme = of<T>();
+  final T theme = Control.init<ControlTheme>() as T;
 
   /// Reference to [ColorScheme] of current [Theme].
   @protected
