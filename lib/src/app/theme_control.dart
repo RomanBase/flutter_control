@@ -119,7 +119,7 @@ class ControlTheme {
   bool get isStandalone => _context == null && _data != null;
 
   @protected
-  BuildContext get context => _context!;
+  BuildContext get context => _context ?? ControlScope.root.context!;
 
   Device get device => _device ?? (_device = Device.of(context));
 
