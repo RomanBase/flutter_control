@@ -254,7 +254,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     control.initControls(
         _items.map((page) => page.control).toList(growable: false));
     control.setPageIndex(control.currentPageIndex);
-    control.currentControl.selected = true;
+    control.currentControl?.selected = true;
 
     if (control.onPagesInitialized != null) {
       control.onPagesInitialized!();

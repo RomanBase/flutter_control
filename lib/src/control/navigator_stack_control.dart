@@ -162,9 +162,9 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
       isValid ? _items!.map((item) => item.menu).toList(growable: false) : [];
 
   /// Returns current controller - based on [currentPageIndex].
-  NavigatorControl get currentControl => _items![currentPageIndex];
+  NavigatorControl? get currentControl => _items?[currentPageIndex];
 
-  NavItem? get currentMenu => currentControl.menu;
+  NavItem? get currentMenu => currentControl?.menu;
 
   bool get isValid => _items != null && _items!.length > 0;
 
@@ -233,13 +233,13 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
       }
 
       if (reloadOnReselect) {
-        currentControl.reload();
+        currentControl?.reload();
       }
 
       return;
     }
 
-    currentControl.selected = false;
+    currentControl?.selected = false;
 
     index = index.clamp(0, _items!.length - 1);
 
@@ -250,7 +250,7 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
     }
 
     _pageIndex.setValue(index);
-    currentControl.selected = true;
+    currentControl?.selected = true;
   }
 
   void setPageByItem(NavItem item) => setPageIndex(menuItems.indexOf(item));
@@ -267,19 +267,24 @@ class NavigatorStackControl extends BaseControl with ObservableComponent {
     final rootIndex = _initialIndex ?? 0;
 
     if (currentPageIndex != rootIndex) {
-      if (!currentControl.navigateBack()) {
+      if (!(currentControl?.navigateBack() ?? true)) {
         setPageIndex(rootIndex);
       }
 
       return true;
     }
 
-    return currentControl.navigateBack();
+    return currentControl?.navigateBack() ?? true;
   }
 
   /// Helper function for [WillPopScope].
   /// Returns negation of [navigateBack] as Future.
   Future<bool> popScope() async => !navigateBack();
+
+  void clear() {
+    _items = null;
+    _pageIndex.value = 0;
+  }
 
   @override
   void softDispose() {

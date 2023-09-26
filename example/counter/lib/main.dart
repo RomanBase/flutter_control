@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_control/control.dart';
 import 'package:localino_live/localino_live.dart';
 
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
         },
       ),
       states: [
-        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.init
+            .build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
       ],
       app: (setup, home) => MaterialApp(
@@ -69,21 +71,60 @@ class CounterControl extends BaseControl with NotifierComponent {
   }
 }
 
+final nav = NavigatorStackControl();
+int count = 2;
+
 class MenuPage extends ControlWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NavigatorStack.menu(
-        items: {
-          NavItem(key: '1'): (_) => MyHomePage(title: 'Flutter Demo 1'),
-          NavItem(key: '2'): (_) => MyHomePage(title: 'Flutter Demo 2'),
-        },
+      body: Column(
+        children: [
+          Expanded(
+            child: NavigatorStack.menu(
+              control: nav,
+              items: {
+                ...Parse.toKeyMap(
+                  List.generate(count, (index) => NavItem(key: index)),
+                  (key, value) => value,
+                  converter: (value) =>
+                      (_) => MyHomePage(title: 'Flutter Demo ${value.key}'),
+                ),
+              },
+            ),
+          ),
+          Row(
+            children: [
+              ...List.generate(
+                count,
+                (e) => Expanded(
+                  child: CupertinoButton(
+                    onPressed: () => nav.setPageIndex(e),
+                    child: Text(e.toString()),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Container(
+            margin: EdgeInsets.only(bottom: 32.0),
+            child: ElevatedButton(
+              onPressed: () {
+                nav.clear();
+                count++;
+                notifyState();
+              },
+              child: Text('add page'),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, ThemeProvider {
+class MyHomePage extends SingleControlWidget<CounterControl>
+    with RouteControl, ThemeProvider {
   MyHomePage({
     super.key,
     required this.title,
@@ -105,7 +146,8 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
               'You have pushed the button this many times: ',
             ),
             CaseWidget(
-              activeCase: 'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+              activeCase:
+                  'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
@@ -191,8 +233,11 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          //control.incrementCounter();
-          theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          control.incrementCounter();
+          theme.changeTheme(
+              PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light'
+                  ? Brightness.dark
+                  : Brightness.light);
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
