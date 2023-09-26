@@ -144,11 +144,7 @@ abstract class CoreWidget extends StatefulWidget
   /// Called whenever dependency of Widget is changed.
   /// Check [State.didChangeDependencies] for more info.
   @protected
-  void onDependencyChanged() {
-    if (this is ThemeProvider) {
-      (this as ThemeProvider).invalidateTheme(context!);
-    }
-  }
+  void onDependencyChanged() {}
 
   /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
   BuildContext? getContext({bool root = false}) =>

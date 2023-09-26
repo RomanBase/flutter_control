@@ -24,6 +24,8 @@ class CaseWidget<T> extends StatefulWidget {
 
   final bool reverseAnimation;
 
+  final bool soft;
+
   /// Resolves what to show by [activeCase].
   /// Every [Widget] has custom case [T] key and is build only if case is active.
   /// Only one [Widget] is shown at given time.
@@ -39,6 +41,7 @@ class CaseWidget<T> extends StatefulWidget {
     this.autoKey = true,
     this.reverseOrder = false,
     this.reverseAnimation = false,
+    this.soft = true,
   }) : super(key: key);
 
   static Widget builder<T>({
@@ -102,6 +105,10 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
       });
     } else if ((context as Element).dirty) {
       _updateCurrentWidget();
+    } else if (widget.soft) {
+      setState(() {
+        _updateCurrentWidget();
+      });
     }
   }
 
@@ -117,10 +124,8 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
 
     if (widget.autoKey) {
       currentWidget = KeyedSubtree(
-        key: currentWidget.key != null
-            ? ValueKey(currentWidget.key)
-            : ValueKey(ObjectTag.of(this)
-                .variant(widget.activeCase ?? UnitId.nextId())),
+        key: ValueKey(
+            ObjectTag.of(this).variant(widget.activeCase ?? UnitId.nextId())),
         child: currentWidget,
       );
     }

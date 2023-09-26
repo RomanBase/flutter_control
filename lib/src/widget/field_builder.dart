@@ -81,7 +81,17 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>?> {
 
 /// Extended [FieldStreamBuilder] version specified to build [LoadingStatus] states.
 /// Internally uses [CaseWidget] to animate Widget crossing.
-class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
+class LoadingBuilder extends ControllableWidget<LoadingControl> {
+  final WidgetBuilder? initial;
+  final WidgetBuilder? progress;
+  final WidgetBuilder? done;
+  final WidgetBuilder? error;
+  final WidgetBuilder? outdated;
+  final WidgetBuilder? unknown;
+  final WidgetBuilder? general;
+  final CrossTransition? transition;
+  final Map<LoadingStatus, CrossTransition>? transitions;
+
   /// Builds Widget based on current [LoadingStatus].
   /// Uses [CaseWidget] to handle current state and Widget animation.
   ///
@@ -97,37 +107,36 @@ class LoadingBuilder extends FieldStreamBuilder<LoadingStatus?> {
   ///  'null' is considered as [LoadingStatus.initial].
   LoadingBuilder({
     super.key,
-    required LoadingControl control,
-    WidgetBuilder? initial,
-    WidgetBuilder? progress,
-    WidgetBuilder? done,
-    WidgetBuilder? error,
-    WidgetBuilder? outdated,
-    WidgetBuilder? unknown,
-    WidgetBuilder? general,
-    CrossTransition? transition,
-    Map<LoadingStatus, CrossTransition>? transitions,
-  }) : super(
-          control: control,
-          builder: (context, snapshot) {
-            final state =
-                snapshot.hasData ? snapshot.data : LoadingStatus.initial;
+    required super.control,
+    this.initial,
+    this.progress,
+    this.done,
+    this.error,
+    this.outdated,
+    this.unknown,
+    this.general,
+    this.transition,
+    this.transitions,
+  });
 
-            return CaseWidget(
-              activeCase: state,
-              builders: {
-                if (initial != null) LoadingStatus.initial: initial,
-                LoadingStatus.progress: progress ??
-                    (context) => Center(child: CircularProgressIndicator()),
-                if (done != null) LoadingStatus.done: done,
-                if (error != null) LoadingStatus.error: error,
-                if (outdated != null) LoadingStatus.outdated: outdated,
-                if (unknown != null) LoadingStatus.unknown: unknown,
-              },
-              placeholder: general ?? (context) => Container(),
-              transition: CrossTransition.fadeOutFadeIn(),
-              transitions: transitions,
-            );
-          },
-        );
+  @override
+  Widget build(BuildContext context) {
+    final state = control.value;
+
+    return CaseWidget(
+      activeCase: state,
+      builders: {
+        if (initial != null) LoadingStatus.initial: initial!,
+        LoadingStatus.progress:
+            progress ?? (context) => Center(child: CircularProgressIndicator()),
+        if (done != null) LoadingStatus.done: done!,
+        if (error != null) LoadingStatus.error: error!,
+        if (outdated != null) LoadingStatus.outdated: outdated!,
+        if (unknown != null) LoadingStatus.unknown: unknown!,
+      },
+      placeholder: general ?? (context) => Container(),
+      transition: transition ?? CrossTransition.fadeOutFadeIn(),
+      transitions: transitions,
+    );
+  }
 }

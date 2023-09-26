@@ -122,7 +122,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (result.isNotEmpty) {
-      printDebug('LocalinoRemote: ${result.length} updated');
+      printDebug('LocalinoRemote [$locale]: ${result.length} updated');
 
       _updateLocalSync({locale: timestamp = now});
       _updateLocalization(locale, result);
@@ -131,7 +131,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
         printDebug(err);
       });
     } else {
-      printDebug('LocalinoRemote: no changes found');
+      printDebug('LocalinoRemote [$locale]: no changes found');
     }
 
     return result.isNotEmpty;
