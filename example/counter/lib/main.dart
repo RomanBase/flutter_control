@@ -1,5 +1,7 @@
 import 'package:flutter_control/control.dart';
 import 'package:localino_live/localino_live.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +21,7 @@ class Generic<T> {
 }
 
 class UITheme extends ControlTheme {
-  UITheme(super.context);
+  UITheme();
 }
 
 class MyApp extends StatelessWidget {
@@ -110,7 +112,8 @@ class MenuPage extends ControlWidget {
   }
 }
 
-class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, ThemeProvider {
+class MyHomePage extends SingleControlWidget<CounterControl>
+    with RouteControl, ThemeProvider {
   MyHomePage({
     super.key,
     required this.title,
@@ -149,7 +152,8 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
               ),
             ),
             CaseWidget(
-              activeCase: 'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+              activeCase:
+                  'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
@@ -245,7 +249,10 @@ class MyHomePage extends SingleControlWidget<CounterControl> with RouteControl, 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           //control.incrementCounter();
-          theme.changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          theme.changeTheme(
+              PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light'
+                  ? Brightness.dark
+                  : Brightness.light);
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),

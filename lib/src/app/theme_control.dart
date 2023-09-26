@@ -316,7 +316,9 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
 
   @override
   void onDependencyChanged() {
-    theme.invalidate(context!);
+    if (context != null) {
+      theme.invalidate(context);
+    }
 
     super.onDependencyChanged();
   }

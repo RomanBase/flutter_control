@@ -14,7 +14,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  intl: 0.18.1
+  intl: 0.18.0
 
   flutter_control:
     path: ../../
