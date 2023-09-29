@@ -201,17 +201,6 @@ class _NavigatorStackState extends State<NavigatorStack>
 typedef StackGroupBuilder = Widget Function(
     BuildContext context, int index, List<NavigatorStack> items);
 
-class StackGroupBuilders {
-  static StackGroupBuilder get stack => (context, index, items) => IndexedStack(
-        key: ObjectKey('page_stack'),
-        index: index,
-        children: items,
-      );
-
-  static StackGroupBuilder get single =>
-      (context, index, items) => items[index];
-}
-
 /// [NavigatorStack]
 /// [NavigatorControl]
 /// [NavigatorStackControl]
@@ -330,8 +319,12 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     return ControlBuilder<int?>(
       control: widget.control.pageIndex,
       builder: (context, index) {
-        final stack = (widget.builder ?? StackGroupBuilders.stack)(
-            context, index ?? 0, _items);
+        final stack = widget.builder?.call(context, index ?? 0, _items) ??
+            IndexedStack(
+              key: ObjectKey(this),
+              index: index,
+              children: _items,
+            );
 
         if (widget.overrideNavigation) {
           return WillPopScope(

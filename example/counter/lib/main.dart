@@ -1,7 +1,7 @@
 import 'package:flutter_control/control.dart';
 import 'package:localino_live/localino_live.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,17 +12,15 @@ void main() {
   print('${g1.generic} x ${g2.generic}');
 }
 
-class Generic<T> {
+class Generic<T> extends BaseModel {
   final Function(T)? callback;
 
-  const Generic([this.callback]);
+  Generic([this.callback]);
 
   Type get generic => T;
 }
 
-class UITheme extends ControlTheme {
-  UITheme();
-}
+class UITheme extends ControlTheme {}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -35,6 +33,10 @@ class MyApp extends StatelessWidget {
       localization: LocalinoLive.options(
         remoteSync: false,
       ),
+      initializers: {
+        Generic: (_) => Generic(),
+        MenuControl: (_) => MenuControl(),
+      },
       entries: {
         CounterControl: CounterControl(),
       },
@@ -98,28 +100,85 @@ class CounterControl extends BaseControl with NotifierComponent {
   }
 }
 
-class MenuPage extends ControlWidget {
+class MenuControl extends NavigatorStackControl with LazyControl {
+  bool swapped = false;
+
+  void swap() {
+    swapped = !swapped;
+    Control.get<CounterControl>()?.incrementCounter();
+    ThemeProvider.of(ControlRootScope.main().context!)
+        .changeTheme(Brightness.light);
+  }
+}
+
+class MenuPage extends SingleControlWidget<MenuControl>
+    with ThemeProvider<UITheme> {
+  @override
+  Widget build(BuildContext context) {
+    printDebug('rebuild main page - $theme');
+    return Scaffold(
+      body: Column(
+        children: [
+          Expanded(
+            child: NavigatorStack.menu(
+              control: control,
+              items: control.swapped
+                  ? {
+                      NavItem(key: '2'): (_) => SecondPage(),
+                      NavItem(key: '1'): (_) =>
+                          MyHomePage(title: 'Flutter Demo 1'),
+                      NavItem(key: '3'): (_) =>
+                          MyHomePage(title: 'Flutter Demo 2'),
+                    }
+                  : {
+                      NavItem(key: '1'): (_) =>
+                          MyHomePage(title: 'Flutter Demo 1'),
+                      NavItem(key: '2'): (_) => SecondPage(),
+                    },
+            ),
+          ),
+          Row(
+            children: [
+              Text('swap: ${control.swapped}'),
+              ...control.menuItems.map((e) => Text('${e.key}')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SecondPage extends SingleControlWidget<Generic> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NavigatorStack.menu(
-        items: {
-          NavItem(key: '1'): (_) => MyHomePage(title: 'Flutter Demo 1'),
-          NavItem(key: '2'): (_) => MyHomePage(title: 'Flutter Demo 2'),
-        },
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('$control'),
+            ElevatedButton(
+              onPressed: () {
+                Control.get<MenuControl>()?.swap();
+              },
+              child: Text('swap'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class MyHomePage extends SingleControlWidget<CounterControl>
-    with RouteControl, ThemeProvider {
+    with RouteControl, ThemeProvider, LocalinoProvider {
+  final String title;
+
   MyHomePage({
     super.key,
     required this.title,
   });
-
-  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +216,7 @@ class MyHomePage extends SingleControlWidget<CounterControl>
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
-                      child: Text('light'),
+                      child: Text(localize('action_add_localization')),
                     ),
                 'dark': (_) => Container(
                       color: theme.primaryColor,
@@ -243,16 +302,21 @@ class MyHomePage extends SingleControlWidget<CounterControl>
               },
               child: Text('${ControlScope.root.state}'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Control.get<MenuControl>()?.swap();
+              },
+              child: Text('swap'),
+            ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          //control.incrementCounter();
-          theme.changeTheme(
-              PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light'
-                  ? Brightness.dark
-                  : Brightness.light);
+          control.incrementCounter();
+          theme.changeTheme('light');
+          //ThemeProvider.of().changeTheme(PrefsProvider.instance.get(ThemeConfig.preference_key) == 'light' ? Brightness.dark : Brightness.light);
+          //LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
