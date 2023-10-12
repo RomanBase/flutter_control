@@ -232,6 +232,8 @@ class InputControl extends TextEditingController with DisposeHandler {
     _isValid = validity;
   }
 
+  void validity(bool value) => _isValid = value;
+
   @override
   void softDispose() {
     super.softDispose();
