@@ -7,7 +7,7 @@ typedef AppWidgetBuilder = Widget Function(ControlRootSetup setup, Widget home);
 
 /// Setup of [AppState].
 /// Holds case [key], [builder] and [transition]
-class _AppStateBuilder {
+class AppStateBuilder {
   /// Case key of [AppState].
   final AppState key;
 
@@ -21,7 +21,7 @@ class _AppStateBuilder {
   /// [key] - Case representing [AppState].
   /// [builder] - Builder for given case.
   /// [transition] - Animation from previous Widget to given case.
-  const _AppStateBuilder(this.key, this.builder, this.transition);
+  const AppStateBuilder(this.key, this.builder, this.transition);
 
   /// Returns case:builder entry.
   MapEntry<AppState, WidgetBuilder> get builderEntry => MapEntry(key, builder);
@@ -32,14 +32,14 @@ class _AppStateBuilder {
 
   /// Builds case:builder map for given states.
   static Map<AppState, WidgetBuilder> fillBuilders(
-          List<_AppStateBuilder> items) =>
+          List<AppStateBuilder> items) =>
       items
           .asMap()
           .map<AppState, WidgetBuilder>((key, value) => value.builderEntry);
 
   /// Builds case:transition map for given states.
   static Map<AppState, CrossTransition> fillTransitions(
-          List<_AppStateBuilder> items) =>
+          List<AppStateBuilder> items) =>
       items
           .where((item) => item.transition != null)
           .toList()
@@ -68,9 +68,8 @@ class AppState {
 
   const AppState();
 
-  _AppStateBuilder build(WidgetBuilder builder,
-          {CrossTransition? transition}) =>
-      _AppStateBuilder(
+  AppStateBuilder build(WidgetBuilder builder, {CrossTransition? transition}) =>
+      AppStateBuilder(
         this,
         builder,
         transition,
@@ -298,7 +297,7 @@ class ControlRoot extends StatefulWidget {
   final AppState initState;
 
   /// List of app states. Widget builders and transitions.
-  final List<_AppStateBuilder> states;
+  final List<AppStateBuilder> states;
 
   /// Function to typically builds [WidgetsApp] or [MaterialApp] or [CupertinoApp].
   /// Builder provides [Key] and [home] widget.
@@ -392,8 +391,8 @@ class ControlRootState extends State<ControlRoot> {
       style?.setDefaultTheme();
     }
 
-    _states = _AppStateBuilder.fillBuilders(widget.states);
-    _transitions = _AppStateBuilder.fillTransitions(widget.states);
+    _states = AppStateBuilder.fillBuilders(widget.states);
+    _transitions = AppStateBuilder.fillTransitions(widget.states);
 
     _themeSub = ThemeProvider.subscribe((value) {
       style = value;
