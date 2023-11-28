@@ -18,8 +18,14 @@ class Control {
   /// Just hidden constructor.
   Control._();
 
+  /// Creates new standalone instance of Control Factory.
+  static ControlFactory newFactory() => ControlFactory._();
+
+  /// Instance of Main Factory.
+  static final ControlFactory _instance = ControlFactory._();
+
   /// Returns instance of [ControlFactory].
-  static ControlFactory get factory => ControlFactory._instance;
+  static ControlFactory get factory => _instance;
 
   /// Checks if [ControlFactory] is initialized.
   ///
@@ -229,9 +235,6 @@ class BroadcastProvider {
 ///
 /// It's preferred to use more powerful [Control.initControl] to initialize and fill this Factory.
 class ControlFactory with Disposable {
-  /// Instance of Factory.
-  static final ControlFactory _instance = ControlFactory._();
-
   /// Factory is singleton.
   /// Just hidden constructor.
   ControlFactory._();
@@ -401,6 +404,10 @@ class ControlFactory with Disposable {
 
     return key;
   }
+
+  /// Callable class
+  T? call<T>({dynamic key, dynamic args, bool withInjector = true}) =>
+      get<T>(key: key, args: args, withInjector: withInjector);
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
