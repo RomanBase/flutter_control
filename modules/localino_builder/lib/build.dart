@@ -2,7 +2,7 @@ import 'package:build/build.dart';
 import 'package:localino_builder/localino_builder.dart';
 
 Builder build(BuilderOptions options) {
-  print('LOCALINO Builder Started');
+  print('Localino Builder Started');
 
   return LocalinoBuilder(
     options.config['space'],
