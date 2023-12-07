@@ -29,7 +29,7 @@ part 'src/injector.dart';
 
 part 'src/module.dart';
 
-part 'src/object_tag.dart';
+part 'src/util/object_tag.dart';
 
 part 'src/observable/control_observable.dart';
 
@@ -49,7 +49,7 @@ part 'src/util/parser.dart';
 
 part 'src/util/unit_id.dart';
 
-typedef Initializer<T> = T Function(Object? args);
+typedef InitFactory<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);
 
 typedef ValueConverter<T> = T Function(dynamic value);

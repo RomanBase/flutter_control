@@ -52,11 +52,31 @@ class Device {
   Offset toPxOffset(Offset offset) => Offset(toPx(offset.dx), toPx(offset.dy));
 
   T onOrientation<T>(
-      {Initializer<T>? portrait, Initializer<T>? landscape, dynamic args}) {
+      {InitFactory<T>? portrait, InitFactory<T>? landscape, dynamic args}) {
     if (this.portrait) {
       return portrait!(args);
     }
 
     return landscape!(args);
+  }
+
+  static T? onPlatform<T>({
+    T Function()? android,
+    T Function()? ios,
+    T Function()? web,
+    T Function()? desktop,
+    T Function()? defaultValue,
+  }) {
+    if (kIsWeb) {
+      return (web ?? defaultValue)?.call();
+    }
+
+    if (Platform.isAndroid) {
+      return android?.call();
+    } else if (Platform.isIOS) {
+      return ios?.call();
+    }
+
+    return (desktop ?? defaultValue)?.call();
   }
 }

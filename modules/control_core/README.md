@@ -12,11 +12,10 @@ import 'package:control_core/core.dart';
 ---
 
 **Flutter Control Core**
-- `Control` Main static class. Initializes `ControlFactory` and provides easy access to most of core [Control] objects like `BaseLocalization`, `RouteStore`, `ControlBroadcast`, etc..
-- `ControlFactory` Initializes and can store Controls, Models and other Objects. Works as Service Locator and Storage.\
+- `Control` is main static class that creates new instance of `ControlFactory`.
+- `ControlFactory` Initializes and stores Controls, Models and other Objects. Works as a direct Service Locator.\
   Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
-  Factory is one and only Singleton in this Library.\
-  Core objects of Flutter Control are stored in Factory's Storage by default (`Control.initControl`) and are accessible by their `Type` or via Providers.
+  This Factory is one and only Singleton in this Library.\
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
 
@@ -25,18 +24,15 @@ import 'package:control_core/core.dart';
       entries: {
         CounterListControl: CounterListControl(),
       },
-      initializers: {
+      factories: {
         CounterModel: (_) => CounterModel(),
         CounterDetailControl: (args) => CounterDetailControl(model: Parse.getArg<CounterModel>(args)),
       },
-      routes: [
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
-      ],
       modules: [
-        LocalinoModule(LocalinoConfig.empty),  
+        LocalinoModule(LocalinoOptions()),  
       ],
       initAsync: () async {
-        loadAppConfig();
+        await loadAppConfig();
       },
     );
 ```
@@ -48,7 +44,7 @@ import 'package:control_core/core.dart';
   `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
 
 - `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
-  With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
+  With `ControlBuilder` and `ControlBuilderGroup` on the Widget side ([flutter_control] library). These universal builder widgets can handle all possible types of Notifiers.
 
 - `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
   Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\

@@ -1,12 +1,12 @@
 name: control_core
-description: Control Core is base library for flutter_control and other control modules.
-version: 1.0.0+1
+description: Control Core is direct Service Locator and Observable Handler. Also comes with multiple utilities.
+version: 1.1.0
 
 homepage: https://github.com/romanbase/flutter_control
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.0.0"
+  flutter: '>=3.0.0'
 
 dependencies:
   flutter:

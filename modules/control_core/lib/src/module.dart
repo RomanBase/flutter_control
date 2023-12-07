@@ -9,19 +9,19 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
 
   Map get entries => {key: module};
 
-  Map<Type, Initializer> get initializers => {};
+  Map<Type, InitFactory> get factories => {};
 
   bool get preInit => priority > 0;
 
   bool get isInitialized => module != null;
 
-  Map<Type, Initializer> get subModules => {};
+  Map<Type, InitFactory> get subModules => {};
 
   static bool initControl(ControlModule module, {Map? args, bool? debug}) =>
       Control.initControl(
         debug: debug ?? true,
         modules: [
-          ...module.getInactiveSubmodules(args: args),
+          ...module.getInactiveSubmodules(Control.factory, args: args),
           module,
         ],
       );
@@ -53,37 +53,38 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     }
   }
 
-  void initStore({bool includeSubModules = false}) {
-    _initModuleStore(this);
+  void initStore(ControlFactory factory, {bool includeSubModules = false}) {
+    _initModuleStore(factory, this);
 
     if (includeSubModules) {
-      getInactiveSubmodules().forEach((element) {
-        _initModuleStore(element);
+      getInactiveSubmodules(factory).forEach((element) {
+        _initModuleStore(factory, element);
       });
     }
   }
 
-  static void _initModuleStore(ControlModule module) {
+  static void _initModuleStore(ControlFactory factory, ControlModule module) {
     if (module.entries.isNotEmpty) {
       module.entries.forEach((key, value) {
-        Control.set(key: key, value: value);
+        factory.set(key: key, value: value);
       });
     }
 
-    if (module.initializers.isNotEmpty) {
-      module.initializers.forEach((key, value) {
-        Control.factory.setInitializer(key: key, initializer: value);
+    if (module.factories.isNotEmpty) {
+      module.factories.forEach((key, value) {
+        factory.add(key: key, init: value);
       });
     }
   }
 
-  List<ControlModule> getInactiveSubmodules({Map? args}) {
+  List<ControlModule> getInactiveSubmodules(ControlFactory factory,
+      {Map? args}) {
     final modules = <ControlModule>[];
 
     if (subModules.isNotEmpty) {
-      if (Control.isInitialized) {
+      if (factory.isInitialized) {
         subModules.forEach((key, value) {
-          if (!Control.factory.containsKey(key)) {
+          if (!factory.containsKey(key)) {
             modules.add(value(args));
           }
         });
@@ -97,10 +98,10 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     return modules;
   }
 
-  Future initWithSubModules({Map? args}) async {
+  Future initWithSubModules(ControlFactory factory, {Map? args}) async {
     final modules = [
       this,
-      ...getInactiveSubmodules(args: args),
+      ...getInactiveSubmodules(factory, args: args),
     ];
 
     modules.sort();

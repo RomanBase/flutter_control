@@ -18,7 +18,7 @@ void main() async {
       _InjectModel: _InjectModel(),
       'key': 'value',
     },
-    initializers: {
+    factories: {
       _ArgModel: (_) => _ArgModel<String>(),
       _InjectModel: (_) => _InjectModel(),
       _InitNullable: (_) => Random().nextBool() ? null : _InitNullable(),

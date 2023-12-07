@@ -1,6 +1,6 @@
 name: flutter_control
 description: Flutter Control is complex library to maintain App and State management, Dependency Injection, Navigation with Routing, Localization and more..
-version: 3.0.3+1
+version: 3.1.0
 
 homepage: https://github.com/romanbase/flutter_control
 
@@ -13,13 +13,13 @@ dependencies:
     sdk: flutter
 
   # https://pub.dev/packages/control_core
-  control_core: ">=1.0.0 <2.0.0"
+  control_core: ">=1.1.0 <2.0.0"
 
   # https://pub.dev/packages/control_config
   control_config: ">=1.0.0 <2.0.0"
 
   # https://pub.dev/packages/localino
-  localino: ">=1.0.0 <2.0.0"
+  localino: ">=1.1.0 <2.0.0"
 
 dev_dependencies:
   flutter_test:

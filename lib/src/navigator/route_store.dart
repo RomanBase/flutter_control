@@ -4,7 +4,7 @@ class RoutingModule extends ControlModule<RouteStore> {
   final List<ControlRoute> routes;
 
   @override
-  Map<Type, Initializer> get initializers => {
+  Map<Type, InitFactory> get factories => {
         RoutingProvider: (_) => Control.get<RouteStore>()?.routing,
       };
 

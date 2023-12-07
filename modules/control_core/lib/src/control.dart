@@ -53,14 +53,14 @@ class Control {
   ///
   /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
-  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
+  /// [factories] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection.
   /// [modules] -
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   static bool initControl({
     bool? debug,
     Map? entries,
-    Map<Type, Initializer>? initializers,
+    Map<Type, InitFactory>? factories,
     Injector? injector,
     List<ControlModule> modules = const [],
     Future Function()? initAsync,
@@ -72,7 +72,7 @@ class Control {
     factory.debug = debug ?? kDebugMode;
 
     entries ??= {};
-    initializers ??= {};
+    factories ??= {};
 
     modules = ControlModule.fillModules(modules);
 
@@ -81,9 +81,9 @@ class Control {
         for (ControlModule module in modules) ...module.entries,
         ...entries,
       },
-      initializers: {
-        for (ControlModule module in modules) ...module.initializers,
-        ...initializers,
+      factories: {
+        for (ControlModule module in modules) ...module.factories,
+        ...factories,
       },
       injector: injector,
       initAsync: () async {
@@ -125,9 +125,13 @@ class Control {
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
-  /// Returns [key] of stored [value].
-  static dynamic set<T>({dynamic key, required dynamic value}) =>
+  /// Returns [key] of the stored [value].
+  static dynamic set<T>({dynamic key, required T value}) =>
       factory.set<T>(key: key, value: value);
+
+  /// Stores [init] Factory for later use - [Control.init] or [Control.get].
+  static dynamic add<T>({dynamic key, required InitFactory<T> init}) =>
+      factory.add<T>(key: key, init: init);
 
   /// Returns new object of requested [Type] via initializer in [ControlFactory].
   /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
@@ -135,7 +139,7 @@ class Control {
   /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
   /// In most of cases is preferred to use more powerful [ControlFactory.get].
   ///
-  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.setInitializer].
+  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.add].
   ///
   /// [Control] provides static call for this function via [Control.init].
   ///
@@ -143,28 +147,11 @@ class Control {
   static T? init<T>({Type? key, dynamic args}) =>
       factory.init(key: key, args: args);
 
-  static T? initOf<T>(
-      {dynamic key, T? value, dynamic args, bool store = false}) {
-    final val = get<T>(key: key);
-
-    if (val != null) {
-      return val;
-    }
-
-    if (value != null && store) {
-      set<T>(key: key, value: value);
-      inject(value, args: args);
-    }
-
-    return value;
-  }
-
   /// Injects and initializes given [item] with [args].
-
   /// [Initializable.init] is called only when [args] are not null.
   ///
   /// [Control] provides static call for this function via [Control.inject].
-  static void inject<T>(dynamic item, {dynamic args, bool store = false}) =>
+  static void inject<T>(dynamic item, {dynamic args}) =>
       factory.inject(item, args: args, withInjector: true, withArgs: true);
 
   /// Executes sequence of functions to retrieve expected object.
@@ -246,8 +233,8 @@ class ControlFactory with Disposable {
 
   /// Stored Initializers for object construction.
   /// [key] is [Type] - typically interface or dynamic models.
-  /// [value] is [Initializer] for concrete object.
-  final _initializers = Map<Type, Initializer>();
+  /// [value] is [InitFactory] for concrete object.
+  final _factory = Map<Type, InitFactory>();
 
   /// Instance of default [ControlBroadcast].
   /// [BroadcastProvider] uses this instance.
@@ -272,17 +259,26 @@ class ControlFactory with Disposable {
   /// Use [onReady] to listen this completer.
   Completer? _completer = Completer();
 
+  /// Callable class
+  T? call<T>({dynamic key, dynamic args, bool withInjector = true}) =>
+      get<T>(key: key, args: args, withInjector: withInjector);
+
+  /// Completes when Factory is initialized including [async] load (localization, prefs, etc.).
+  ///
+  /// Returns [Future] of init [Completer].
+  Future<void>? onReady() async => _completer?.future;
+
   /// Initializes Factory and given objects.
   ///
   /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
-  /// [initializers] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
+  /// [factories] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
   /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   ///
   /// Factory can be initialized just once - until [ControlFactory.clear] is executed.
   bool initialize(
       {Map? entries,
-      Map<Type, Initializer>? initializers,
+      Map<Type, InitFactory>? factories,
       Injector? injector,
       Future Function()? initAsync}) {
     if (_initialized) {
@@ -300,8 +296,8 @@ class ControlFactory with Disposable {
       _items.addAll(entries);
     }
 
-    if (initializers != null) {
-      _initializers.addAll(initializers);
+    if (factories != null) {
+      _factory.addAll(factories);
     }
 
     _items.forEach((key, value) {
@@ -334,10 +330,9 @@ class ControlFactory with Disposable {
     _completer = null;
   }
 
-  /// Completes when Factory is initialized including [async] load (localization, prefs, etc.).
-  ///
-  /// Returns [Future] of init [Completer].
-  Future<void>? onReady() async => _completer?.future;
+  void registerFeature(ControlModule module,
+          {bool includeSubModules = false}) =>
+      module.initStore(this, includeSubModules: includeSubModules);
 
   /// Resolve [key] for given args.
   ///
@@ -367,27 +362,25 @@ class ControlFactory with Disposable {
     }
   }
 
-  /// Stores initializer for later use - [init] or [get].
-  void setInitializer<T>({Type? key, required Initializer<T> initializer}) {
+  /// Stores [init] Factory for later use - [ControlFactory.init] or [ControlFactory.get].
+  void add<T>({Type? key, required InitFactory<T> init}) {
     key ??= T;
 
     assert(() {
-      if (_initializers.containsKey(key)) {
+      if (_factory.containsKey(key)) {
         printDebug(
             'Factory already contains key: $key. Value of this key will be override.');
       }
       return true;
     }());
 
-    _initializers[key] = initializer;
+    _factory[key] = init;
   }
 
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Returns [key] of stored [value].
-  ///
-  /// [Control] provides static call for this function via [Control.set].
   dynamic set<T>({dynamic key, required dynamic value}) {
     key = keyOf<T>(key: key, value: value);
 
@@ -405,10 +398,6 @@ class ControlFactory with Disposable {
     return key;
   }
 
-  /// Callable class
-  T? call<T>({dynamic key, dynamic args, bool withInjector = true}) =>
-      get<T>(key: key, args: args, withInjector: withInjector);
-
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
   /// Set [withInjector] to re-inject stored object.
@@ -416,10 +405,6 @@ class ControlFactory with Disposable {
   /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
   /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
   /// And when initialized object is [LazyControl] then this object is stored into Factory.
-  ///
-  /// [Control] provides static call for this function via [Control.get].
-  ///
-  /// nullable
   T? get<T>({dynamic key, dynamic args, bool withInjector = true}) {
     final useExactKey = key != null;
     key = keyOf<T>(key: key);
@@ -472,7 +457,7 @@ class ControlFactory with Disposable {
   /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
   /// In most of cases is preferred to use more powerful [ControlFactory.get].
   ///
-  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.setInitializer].
+  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.add].
   ///
   /// [Control] provides static call for this function via [Control.init].
   ///
@@ -527,22 +512,22 @@ class ControlFactory with Disposable {
     return get<T>(key: key, args: args) ?? defaultValue;
   }
 
-  /// Finds and returns [Initializer] of given [Type].
+  /// Finds and returns [InitFactory] of given [Type].
   ///
-  /// [ControlFactory.init] uses this method to retrieve [Initializer].
+  /// [ControlFactory.init] uses this method to retrieve [InitFactory].
   ///
   /// nullable
-  Initializer<T?>? findInitializer<T>([Type? key]) {
-    if (key != null && _initializers.containsKey(key)) {
-      return _initializers[key] as Initializer<T?>;
-    } else if (_initializers.containsKey(T)) {
-      return _initializers[T] as Initializer<T?>;
+  InitFactory<T?>? findInitializer<T>([Type? key]) {
+    if (key != null && _factory.containsKey(key)) {
+      return _factory[key] as InitFactory<T?>;
+    } else if (_factory.containsKey(T)) {
+      return _factory[T] as InitFactory<T?>;
     } else if (T != dynamic) {
-      final key = _initializers.keys
+      final key = _factory.keys
           .firstWhere((item) => item is T, orElse: () => _InvalidKey);
 
       if (key != _InvalidKey) {
-        return _initializers[key] as Initializer<T?>;
+        return _factory[key] as InitFactory<T?>;
       }
     }
 
@@ -604,14 +589,14 @@ class ControlFactory with Disposable {
   /// Removes initializer of given [key].
   /// Returns true if initializer is removed.
   bool removeInitializer(Type key) {
-    return _initializers.remove(key) != null;
+    return _factory.remove(key) != null;
   }
 
   /// Swaps initializers in Factory.
-  /// Basically calls [ControlFactory.removeInitializer] and [ControlFactory.setInitializer].
-  void swapInitializer<T>(Initializer<T> initializer) {
+  /// Basically calls [ControlFactory.removeInitializer] and [ControlFactory.add].
+  void swapInitializer<T>(InitFactory<T> initializer) {
     removeInitializer(T);
-    setInitializer<T>(initializer: initializer);
+    add<T>(init: initializer);
   }
 
   /// Checks if key/type/object is in Factory.
@@ -621,13 +606,9 @@ class ControlFactory with Disposable {
     }
 
     if (value is Type) {
-      if (containsKey(value)) {
-        return true;
-      }
-
       //TODO: subtype
       if (_items.values.any((item) => item.runtimeType == value) ||
-          _initializers.keys.any((item) => item.runtimeType == value)) {
+          _factory.keys.any((item) => item.runtimeType == value)) {
         return true;
       }
     }
@@ -642,7 +623,7 @@ class ControlFactory with Disposable {
   ///
   /// Returns true if [key] is found.
   bool containsKey(dynamic key) =>
-      _items.containsKey(key) || key is Type && _initializers.containsKey(key);
+      _items.containsKey(key) || key is Type && _factory.containsKey(key);
 
   /// Checks if Type is in Factory.
   /// Looks to store and initializers.
@@ -657,7 +638,7 @@ class ControlFactory with Disposable {
       }
     }
 
-    return _initializers.containsKey(T);
+    return _factory.containsKey(T);
   }
 
   /// Clears whole Factory - all stored objects, initializers and injector.
@@ -682,7 +663,7 @@ class ControlFactory with Disposable {
     });
 
     _items.clear();
-    _initializers.clear();
+    _factory.clear();
     _initialized = false;
     _injector = null;
 
@@ -694,13 +675,13 @@ class ControlFactory with Disposable {
       printDebug('--- Items ---');
       _items.forEach((key, value) => value == this
           ? printDebug(
-              '$runtimeType - $isInitialized | ${_items.length} | ${_initializers.length} | $hashCode')
+              '$runtimeType - $isInitialized | ${_items.length} | ${_factory.length} | $hashCode')
           : printDebug('$key - $value'));
     }
 
     if (initializers) {
       printDebug('--- Initializers ---');
-      _initializers.forEach((key, value) => printDebug('$key - $value'));
+      _factory.forEach((key, value) => printDebug('$key - $value'));
     }
   }
 
@@ -710,7 +691,7 @@ class ControlFactory with Disposable {
 
     buffer.writeln('--- $runtimeType --- $isInitialized --- $hashCode');
     buffer.writeln('--- Items --- ${_items.length}');
-    buffer.writeln('--- Initializers --- ${_initializers.length}');
+    buffer.writeln('--- Initializers --- ${_factory.length}');
 
     return buffer.toString();
   }

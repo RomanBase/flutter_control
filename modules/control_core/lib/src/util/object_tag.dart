@@ -12,24 +12,6 @@ class ObjectTag {
 
   factory ObjectTag.next() => ObjectTag._(UnitId.nextId());
 
-  /*factory ObjectTag.key(Key? key) {
-    Object? object;
-
-    if (key != null) {
-      if (key is ObjectKey) {
-        object = key.value;
-      } else if (key is ValueKey) {
-        object = key.value;
-      } else if (key is GlobalObjectKey) {
-        object = key.value;
-      } else {
-        object = key;
-      }
-    }
-
-    return ObjectTag.of(object);
-  }*/
-
   ObjectTag variant(Object variant) =>
       ObjectTag._(value.hashCode ^ variant.hashCode);
 
@@ -45,8 +27,4 @@ class ObjectTag {
   String toString() {
     return 'tag: $hashCode';
   }
-}
-
-extension KeyExt on Key {
-  //ValueKey variant(Object value) => ObjectTag.key(this).variant(value).key;
 }

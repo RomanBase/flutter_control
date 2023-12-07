@@ -30,7 +30,7 @@ typedef LocalizationParser = dynamic Function(dynamic data, String? locale);
 class LocalinoOptions {
   final String path;
   final LocalinoConfig? config;
-  final Initializer<LocalinoRemoteApi>? remote;
+  final InitFactory<LocalinoRemoteApi>? remote;
   final bool remoteSync;
 
   LocalinoSetup? setup;
@@ -68,7 +68,7 @@ class LocalinoModule extends ControlModule<Localino> {
   final LocalinoOptions options;
 
   @override
-  Map<Type, Initializer> get subModules => {
+  Map<Type, InitFactory> get subModules => {
         ConfigModule: (_) => ConfigModule(),
       };
 
@@ -79,7 +79,7 @@ class LocalinoModule extends ControlModule<Localino> {
       };
 
   @override
-  Map<Type, Initializer> get initializers => {
+  Map<Type, InitFactory> get factories => {
         if (options.remote != null)
           LocalinoRemoteApi: (args) => options.remote!.call(args),
       };
@@ -136,9 +136,9 @@ class LocalinoModule extends ControlModule<Localino> {
       }
 
       final module = LocalinoModule(options, debug: debug);
-      module.initStore(includeSubModules: true);
+      module.initStore(Control.factory, includeSubModules: true);
 
-      await module.initWithSubModules(args: args);
+      await module.initWithSubModules(Control.factory, args: args);
 
       return true;
     }

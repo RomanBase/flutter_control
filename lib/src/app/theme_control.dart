@@ -210,18 +210,18 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   static const preference_key = 'control_theme';
 
   static String get preferredTheme => PrefsProvider.instance
-      .get(ThemeConfig.preference_key, defaultValue: 'default')!;
+      .get(ThemeConfig.preference_key, defaultValue: 'auto')!;
 
   static Brightness get platformBrightness =>
       PlatformDispatcher.instance.platformBrightness;
 
-  final Initializer<T>? builder;
+  final InitFactory<T>? builder;
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer<T>> themes;
 
-  Initializer get _defaultBuilder => (_) => ControlTheme();
+  InitFactory get _defaultBuilder => (_) => ControlTheme();
 
-  Initializer<T> get initializer =>
+  InitFactory<T> get initializer =>
       (args) => (builder ?? _defaultBuilder).call(args)..config = this;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].

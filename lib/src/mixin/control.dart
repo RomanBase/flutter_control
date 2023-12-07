@@ -1,7 +1,7 @@
 part of flutter_control;
 
 mixin ControlsComponent on CoreWidget {
-  Initializer get initComponents;
+  InitFactory get initComponents;
 
   Map get component => holder.args;
 

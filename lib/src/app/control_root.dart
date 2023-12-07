@@ -284,9 +284,6 @@ class ControlRootSetup {
 ///
 /// Only one [ControlRoot] is allowed in Widget Tree !
 class ControlRoot extends StatefulWidget {
-  /// [Control.initControl]
-  final bool? debug;
-
   /// Config of [ControlTheme] and list of available [ThemeData].
   final ThemeConfig? theme;
 
@@ -317,7 +314,6 @@ class ControlRoot extends StatefulWidget {
   /// [app] - Builder of App - return [WidgetsApp] is expected ([MaterialApp], [CupertinoApp]). Provides [ControlRootSetup] and home [Widget]. Use [setup.key] as App key to prevent unnecessary rebuilds and disposes !
   /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
   const ControlRoot({
-    this.debug,
     this.theme,
     this.transition,
     this.initState = AppState.init,
@@ -332,7 +328,7 @@ class ControlRoot extends StatefulWidget {
   static Future<bool> initControl({
     bool? debug,
     Map<dynamic, dynamic>? entries,
-    Map<Type, Initializer>? initializers,
+    Map<Type, InitFactory>? initializers,
     LocalinoOptions? localization,
     List<ControlRoute>? routes,
     Future Function()? initAsync,
@@ -340,7 +336,7 @@ class ControlRoot extends StatefulWidget {
     final initialized = Control.initControl(
       debug: debug,
       entries: entries,
-      initializers: initializers,
+      factories: initializers,
       modules: [
         ConfigModule(),
         if (localization != null) LocalinoModule(localization, debug: debug),
@@ -385,8 +381,7 @@ class ControlRootState extends State<ControlRoot> {
     args[AppState] = widget.initState;
 
     if (widget.theme != null) {
-      Control.factory
-          .setInitializer<ControlTheme>(initializer: widget.theme!.initializer);
+      Control.add<ControlTheme>(init: widget.theme!.initializer);
       style = Control.init<ControlTheme>();
       style?.setDefaultTheme();
     }

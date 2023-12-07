@@ -62,7 +62,7 @@ class RouteHandler {
   ///
   /// @{macro route-path}
   RouteHandler path(
-          {Initializer<dynamic>? name, Initializer<dynamic>? query}) =>
+          {InitFactory<dynamic>? name, InitFactory<dynamic>? query}) =>
       RouteHandler(navigator, routeProvider.path(path: name, query: query));
 
   /// Creates copy of [RouteHandler] with given identifier.

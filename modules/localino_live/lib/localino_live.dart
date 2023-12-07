@@ -25,10 +25,10 @@ class LocalinoLive {
 
   static LocalinoLocalRepo cache() => LocalinoLocalRepo._();
 
-  static Initializer<LocalinoRemoteApi> get _remote =>
+  static InitFactory<LocalinoRemoteApi> get _remote =>
       (args) => instance(Parse.getArg<LocalinoRemoteOptions>(args)!);
 
-  static Map<Type, Initializer> get initializers => {
+  static Map<Type, InitFactory> get initializers => {
         LocalinoRemoteApi: _remote,
       };
 

@@ -26,7 +26,7 @@ void main() {
   });
 
   test('typedefs', () {
-    Initializer<TestInitWidget> initializer =
+    InitFactory<TestInitWidget> initializer =
         (args) => TestInitWidget(args: args);
     ValueCallback<String> valueCallback = (value) => expect(value, 'value');
     ValueConverter<String> valueConverter = (value) => value.toString();
