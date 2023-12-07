@@ -32,7 +32,7 @@ class ConfigModule extends ControlModule<ControlPrefs> {
       }
 
       final module = ConfigModule();
-      module.initStore();
+      module.initStore(Control.factory);
 
       return true;
     }

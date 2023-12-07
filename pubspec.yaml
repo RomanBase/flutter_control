@@ -16,7 +16,7 @@ dependencies:
   control_core: ">=1.1.0 <2.0.0"
 
   # https://pub.dev/packages/control_config
-  control_config: ">=1.0.0 <2.0.0"
+  control_config: ">=1.1.0 <2.0.0"
 
   # https://pub.dev/packages/localino
   localino: ">=1.1.0 <2.0.0"
