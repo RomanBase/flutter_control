@@ -177,7 +177,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   int broadcastEvent<T>({dynamic key}) => broadcast<T>(key: key, value: null);
 
   @override
-  void notify() => broadcast(key: value?.key, value: value?.value);
+  void notify() => broadcast(value: value);
 
   @override
   void clear() {
