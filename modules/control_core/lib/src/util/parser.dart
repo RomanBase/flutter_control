@@ -596,13 +596,8 @@ class Parse {
 
   /// Converts [value] and additional [data] into Map of arguments.
   /// Check [ControlArgs] for more info.
-  static Map toArgs(dynamic value, {dynamic data}) {
-    final buildArgs = ControlArgs(value);
-
-    buildArgs.set(data);
-
-    return buildArgs.data;
-  }
+  static Map toArgs(dynamic value, {dynamic data}) =>
+      (ControlArgs.of(value)..set(data)).data;
 
   /// Tries to return item of given [key] or [Type].
   /// If none found, then [defaultValue] is returned.
