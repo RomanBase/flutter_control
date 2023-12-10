@@ -743,7 +743,7 @@ class Parse {
 extension ObjectExtension on Object {
   ObjectTag asTag() => ObjectTag.of(hashCode);
 
-  ControlArgs asArg() => ControlArgs(this);
+  ControlArgs asArg() => ControlArgs.of(this);
 }
 
 extension MapExtension on Map {

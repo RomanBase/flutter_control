@@ -191,7 +191,11 @@ class FieldControl<T> extends ObservableModel<T?> {
   /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
   /// Returns [Future] to await and register other callbacks.
   Future onFuture(Future future, {ValueConverter? converter}) => future
-      .then((value) => setValue(converter == null ? value : converter(value)));
+          .then(
+              (value) => setValue(converter == null ? value : converter(value)))
+          .catchError((err) {
+        printDebug(err);
+      });
 
   /// Subscribes this field to given [Stream].
   /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.

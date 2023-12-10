@@ -3,19 +3,16 @@ part of control_core;
 /// Stores data as arguments based on [key] - [value] pairs.
 class ControlArgs implements Disposable {
   /// Map of stored data.
-  final _args = Map();
+  final Map _args;
 
   /// Returns currently stored data.
   /// Mostly used by framework. Do not modify this data directly !
   /// Consider using [ControlArgs.set], [ControlArgs.get], [ControlArgs.add] functions or [] operators.
   Map get data => _args;
 
-  /// Stores data as arguments.
-  /// Can store any type of data - [Map], [Iterable], [Object]..
-  /// [ControlArgs.set] parses input data and stores them as key: value pair.
-  ControlArgs([dynamic args]) {
-    set(args);
-  }
+  const ControlArgs(this._args);
+
+  factory ControlArgs.of([dynamic args]) => ControlArgs({})..set(args);
 
   /// Returns object of given [key] or null.
   dynamic operator [](dynamic key) => _args.getArg(key: key);
@@ -71,7 +68,7 @@ class ControlArgs implements Disposable {
   /// Combines this store with given [args].
   /// Returns new [ControlArgs] that contains both [args].
   ControlArgs merge(ControlArgs args) {
-    final store = ControlArgs(this);
+    final store = ControlArgs.of(this);
     store._args.addAll(args._args);
 
     return store;
@@ -85,7 +82,7 @@ class ControlArgs implements Disposable {
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
   /// Returns object of given [key] or initialize [defaultValue] and stores that value to args store.
-  T? getOrInit<T>({dynamic key, T Function()? defaultValue}) {
+  T? getWithFactory<T>({dynamic key, T Function()? defaultValue}) {
     final item = Parse.getArgFromMap<T>(_args, key: key);
 
     if (item == null && defaultValue != null) {
