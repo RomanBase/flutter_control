@@ -87,5 +87,6 @@ Future runAsync(dynamic parent, Future<void> Function() action) async {
   await action();
   final duration = DateTime.now().difference(timestamp);
   final inSec = duration.inSeconds > 0;
-  print('CI $parent --- END | ${inSec ? duration.inSeconds : duration.inMilliseconds}${inSec ? 's' : 'ms'}');
+  print(
+      'CI $parent --- END | ${inSec ? duration.inSeconds : duration.inMilliseconds}${inSec ? 's' : 'ms'}');
 }
