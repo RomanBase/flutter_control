@@ -29,7 +29,7 @@ class ControlArgHolder implements Disposable {
 
   /// [ControlArgs] that holds current args of [Widget] and [State].
   ControlArgs get argStore =>
-      _state?.args ?? _cache ?? (_cache = ControlArgs());
+      _state?.args ?? _cache ?? (_cache = ControlArgs.of());
 
   /// Initializes holder with given [state].
   /// [args] are smoothly transferred between State and Cache based on current Widget lifecycle.
@@ -181,10 +181,11 @@ abstract class CoreWidget extends StatefulWidget
   /// If object is not found, then widget will [init] and store it to args.
   /// Object is also registered for dispose.
   ///
-  /// Internally uses [ControlArgs]. Check [ControlArgs.getOrInit].
+  /// Internally uses [ControlArgs]. Check [ControlArgs.getWithFactory].
   /// Use [holder.argStore] to get raw access to [ControlArgs].
   T? mount<T>({dynamic key, T Function()? init, bool stateNotifier = false}) {
-    final value = holder.argStore.getOrInit<T>(key: key, defaultValue: init);
+    final value =
+        holder.argStore.getWithFactory<T>(key: key, defaultValue: init);
 
     if (value is Disposable) {
       if (stateNotifier) {
@@ -211,14 +212,14 @@ abstract class CoreWidget extends StatefulWidget
   void register(Disposable? object) {
     assert(isInitialized);
 
-    holder.state!.register(object);
+    holder.state?.register(object);
   }
 
   @protected
   void unregister(Disposable? object) {
     assert(isInitialized);
 
-    holder.state!.unregister(object);
+    holder.state?.unregister(object);
   }
 
   @protected
@@ -227,21 +228,14 @@ abstract class CoreWidget extends StatefulWidget
       register(object.subscribe((value) => notifyState()));
     } else if (object is ObservableChannel) {
       register(object.subscribe(() => notifyState()));
-    } else if (object is Listenable) {
-      final callback = () => notifyState();
-      object.addListener(callback);
-      register(DisposableClient(parent: object)
-        ..onDispose = () => object.removeListener(callback));
-    } else if (object is Stream) {
-      register(FieldControl.of(object).subscribe((value) => notifyState()));
-    } else if (object is Future) {
-      register((FieldControl()..onFuture(object))
-          .subscribe((value) => notifyState()));
+    } else if (object is Stream || object is Future || object is Listenable) {
+      register(
+          ControlObservable.of(object).subscribe((value) => notifyState()));
     }
   }
 
   @protected
-  void notifyState() => holder.state!.notifyState();
+  void notifyState() => holder.state?.notifyState();
 
   @override
   void dispose() {}
@@ -253,7 +247,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   ControlArgs? _args;
 
   /// Args used via [ControlArgHolder].
-  ControlArgs get args => _args ?? (_args = ControlArgs());
+  ControlArgs get args => _args ?? (_args = ControlArgs.of());
 
   /// Checks is State is initialized and [CoreWidget.onInit] is called just once.
   bool _stateInitialized = false;
@@ -313,7 +307,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     if (!_stateInitialized) {
       _stateInitialized = true;
-      widget.onInit(_args!.data);
+      widget.onInit(args.data);
     }
 
     widget.onDependencyChanged();

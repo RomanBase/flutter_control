@@ -158,7 +158,7 @@ abstract class ControlWidget extends CoreWidget
   /// Specific control is determined by [Type] and [key].
   /// [args] - Arguments to pass to [ControlModel].
   T? getControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
-      Control.resolve<T>(ControlArgs(controls).merge(holder.argStore).data,
+      Control.resolve<T>(ControlArgs.of(controls).merge(holder.argStore).data,
           key: key, args: args ?? holder.args);
 
   /// [StatelessWidget.build]

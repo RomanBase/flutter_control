@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       localization: LocalinoLive.options(
         remoteSync: false,
       ),
-      initializers: {
+      factories: {
         Generic: (_) => Generic(),
         MenuControl: (_) => MenuControl(),
       },

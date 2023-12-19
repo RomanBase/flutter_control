@@ -232,7 +232,7 @@ class ControlRootSetup {
 
   ControlRootState? get rootState => ControlRootScope._rootKey.currentState;
 
-  ControlArgs get args => rootState?.args ?? ControlArgs();
+  ControlArgs get args => rootState?.args ?? ControlArgs.of();
 
   /// Returns active [ThemeData] of [ControlTheme].
   ThemeData? get theme => rootState?.style?.data;
@@ -328,19 +328,21 @@ class ControlRoot extends StatefulWidget {
   static Future<bool> initControl({
     bool? debug,
     Map<dynamic, dynamic>? entries,
-    Map<Type, InitFactory>? initializers,
+    Map<Type, InitFactory>? factories,
     LocalinoOptions? localization,
-    List<ControlRoute>? routes,
+    List<ControlModule>? modules,
+    RoutingStoreProvider? routes,
     Future Function()? initAsync,
   }) async {
     final initialized = Control.initControl(
       debug: debug,
       entries: entries,
-      factories: initializers,
+      factories: factories,
       modules: [
         ConfigModule(),
+        if (modules != null) ...modules,
         if (localization != null) LocalinoModule(localization, debug: debug),
-        if (routes != null) RoutingModule(routes),
+        if (routes != null) RoutingModule(routes.routes),
       ],
       initAsync: initAsync,
     );
@@ -355,7 +357,7 @@ class ControlRootState extends State<ControlRoot> {
   /// Active setup, theme, localization and state.
   final _setup = ControlRootSetup._();
 
-  final args = ControlArgs();
+  final args = ControlArgs.of();
 
   /// Current [ControlTheme].
   ControlTheme? style;

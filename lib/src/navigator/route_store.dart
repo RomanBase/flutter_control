@@ -1,11 +1,36 @@
 part of flutter_control;
 
+class RoutingStoreProvider {
+  List<ControlRoute> get routes => [];
+
+  RoutingStoreProvider();
+
+  factory RoutingStoreProvider.of(
+          {List<ControlRoute> routes = const [],
+          List<RoutingStoreProvider> providers = const []}) =>
+      _RoutingStoreProvider(
+        [
+          ...routes,
+          ...providers.map((e) => e.routes).fold([], (a, b) => [...a, ...b]),
+        ],
+      );
+
+  void register(RouteStore store) => store.addRoutes(routes);
+}
+
+class _RoutingStoreProvider extends RoutingStoreProvider {
+  @override
+  final List<ControlRoute> routes;
+
+  _RoutingStoreProvider(this.routes);
+}
+
 class RoutingModule extends ControlModule<RouteStore> {
   final List<ControlRoute> routes;
 
   @override
   Map<Type, InitFactory> get factories => {
-        RoutingProvider: (_) => Control.get<RouteStore>()?.routing,
+        RoutingProvider: (_) => module?.routing,
       };
 
   RoutingModule(this.routes) {
@@ -21,7 +46,7 @@ class RoutingModule extends ControlModule<RouteStore> {
   }
 
   @override
-  Future? init() => null;
+  Future init() async {}
 }
 
 class RouteArgs extends ControlArgs {
@@ -372,7 +397,7 @@ class RoutingProvider {
       return null;
     }
 
-    final args = ControlArgs(settings.arguments);
+    final args = ControlArgs.of(settings.arguments);
 
     final controlRoute = parent.getRoute(path);
 
