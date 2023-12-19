@@ -23,7 +23,7 @@ class ConfigModule extends ControlModule<ControlPrefs> {
   }
 
   @override
-  Future? init() => module!.init();
+  Future init() => module!.init();
 
   static bool standalone() {
     if (Control.isInitialized) {

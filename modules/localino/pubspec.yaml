@@ -1,7 +1,7 @@
 name: localino
 description: Json based localization.
 homepage: https://localino.app
-version: 1.1.0
+version: 1.2.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   # https://pub.dev/packages/control_core
-  control_core: ">=1.1.0 <2.0.0"
+  control_core: ">=1.2.0 <2.0.0"
 
   # https://pub.dev/packages/control_config
   control_config: ">=1.0.0 <2.0.0"

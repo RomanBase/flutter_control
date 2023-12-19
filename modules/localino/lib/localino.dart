@@ -99,7 +99,7 @@ class LocalinoModule extends ControlModule<Localino> {
   }
 
   @override
-  Future? init() async {
+  Future init() async {
     final config = await options.toConfig();
     final localino = module!;
     final remote = Control.get<LocalinoRemote>()!;
