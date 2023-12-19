@@ -1,7 +1,7 @@
 part of flutter_control;
 
-class RoutingStoreProvider {
-  List<ControlRoute> get routes => [];
+abstract class RoutingStoreProvider {
+  List<ControlRoute> get routes;
 
   RoutingStoreProvider();
 
@@ -14,8 +14,6 @@ class RoutingStoreProvider {
           ...providers.map((e) => e.routes).fold([], (a, b) => [...a, ...b]),
         ],
       );
-
-  void register(RouteStore store) => store.addRoutes(routes);
 }
 
 class _RoutingStoreProvider extends RoutingStoreProvider {
