@@ -330,8 +330,7 @@ class ControlFactory with Disposable {
     _completer = null;
   }
 
-  void registerFeature(ControlModule module,
-          {bool includeSubModules = false}) =>
+  void registerModule(ControlModule module, {bool includeSubModules = false}) =>
       module.initStore(this, includeSubModules: includeSubModules);
 
   /// Resolve [key] for given args.

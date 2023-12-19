@@ -118,7 +118,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
     ]);
   }
 
-  Future? init();
+  Future init();
 
   int compareTo(ControlModule other) {
     if (priority > other.priority) {
@@ -129,4 +129,18 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
 
     return 0;
   }
+}
+
+class ControlProvider extends ControlModule<void> {
+  @override
+  Type get key => runtimeType;
+
+  @override
+  ControlProvider get module => this;
+
+  @override
+  Map get entries => {};
+
+  @override
+  Future init() async {}
 }
