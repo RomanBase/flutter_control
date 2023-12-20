@@ -53,7 +53,7 @@ class RouteArgs extends ControlArgs {
   RouteMask get mask => get<RouteMask>()!;
 
   RouteArgs._(ControlRoute route, RouteMask mask, [dynamic args])
-      : super(args) {
+      : super(ControlArgs.of(args).data) {
     add(value: route);
     add(value: mask);
   }
