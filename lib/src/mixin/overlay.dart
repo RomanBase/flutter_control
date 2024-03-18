@@ -2,37 +2,34 @@ part of flutter_control;
 
 mixin OverlayControl on CoreWidget {
   OverlayEntry? showOverlay({
+    required CoreContext context,
     required dynamic key,
     required Widget Function(Rect parent) builder,
     GlobalKey? parentKey,
     bool barrierDismissible = true,
   }) {
-    assert(isInitialized);
+    final overlay = Overlay.of(context);
 
-    final overlay = Overlay.of(context!);
-
-    if (holder.argStore.containsKey(ObjectTag.of(key))) {
-      return getOverlay(key);
+    if (context.args.containsKey(ObjectTag.of(key))) {
+      return getOverlay(context, key);
     }
 
     if (key is GlobalKey && parentKey == null) {
       parentKey = key;
     }
 
-    final box = (parentKey?.currentState?.context.findRenderObject() ??
-        context!.findRenderObject()) as RenderBox;
+    final box = (parentKey?.currentState?.context.findRenderObject() ?? context.findRenderObject()) as RenderBox;
     final location = box.localToGlobal(Offset.zero);
     final size = box.size;
 
-    final child = builder(
-        Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
+    final child = builder(Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
 
     final entry = OverlayEntry(
       builder: (_) => barrierDismissible
           ? Stack(
               children: [
                 GestureDetector(
-                  onTap: () => hideOverlay(key),
+                  onTap: () => hideOverlay(context, key),
                 ),
                 child,
               ],
@@ -40,22 +37,21 @@ mixin OverlayControl on CoreWidget {
           : child,
     );
 
-    setArg(key: ObjectTag.of(key), value: entry);
+    context.args.add(key: ObjectTag.of(key), value: entry);
 
     overlay.insert(entry);
 
     return entry;
   }
 
-  OverlayEntry? getOverlay(dynamic key) =>
-      getArg<OverlayEntry>(key: ObjectTag.of(key));
+  OverlayEntry? getOverlay(CoreContext context, dynamic key) => context.args.get<OverlayEntry>(key: ObjectTag.of(key));
 
-  bool hideOverlay(dynamic key) {
-    final overlay = getOverlay(key);
+  bool hideOverlay(CoreContext context, dynamic key) {
+    final overlay = getOverlay(context, key);
 
     if (overlay != null) {
       overlay.remove();
-      removeArg(key: ObjectTag.of(key));
+      context.args.remove(key: ObjectTag.of(key));
 
       return true;
     }
@@ -63,15 +59,15 @@ mixin OverlayControl on CoreWidget {
     return false;
   }
 
-  bool clearOverlays() {
-    final items = holder.argStore.getAll<OverlayEntry>();
+  bool clearOverlays(CoreContext context) {
+    final items = context.args.getAll<OverlayEntry>();
 
     if (items.isNotEmpty) {
       items.forEach((element) {
         element.remove();
       });
 
-      holder.argStore.removeAll<OverlayEntry>();
+      context.args.removeAll<OverlayEntry>();
 
       return true;
     }

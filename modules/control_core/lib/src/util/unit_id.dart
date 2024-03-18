@@ -10,6 +10,14 @@ class UnitId {
       'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789';
   static const hex = '0123456789ABCDEF';
 
+  static String get units => aZn;
+
+  static String get instanceId => randomId(length: 4, sequence: aZn);
+
+  static int instanceCounter = 0;
+
+  static VoidCallback? onChanged;
+
   /// Cycles through given [sequence] and builds String based on given [index] number.
   ///
   /// For [UnitId.aZ] sequence results are:
@@ -41,12 +49,16 @@ class UnitId {
   static String charId(int index, {int digitOffset = 0}) =>
       cycleId(index + _digitCycleOffset(digitOffset, az.length), az);
 
-  /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds 4 random chars to end of String.
-  /// [UnitId.aZn] is used as input - so result is case sensitive and with numbers.
+  /// Returns [UnitId.cycleId] of current [microsecondsSinceEpoch] and adds [instanceId] and [instanceCounter] to the end of the String.
+  /// [UnitId.units] is used as an input.
   static String nextId() {
     final stamp = DateTime.now().toUtc().microsecondsSinceEpoch;
 
-    return cycleId(stamp, aZn) + randomId(length: 4, sequence: aZn);
+    final id = '${cycleId(stamp, units)}_${instanceId}_${++instanceCounter}';
+
+    onChanged?.call();
+
+    return id;
   }
 
   /// Returns random String with given [length] and settings.

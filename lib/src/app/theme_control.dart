@@ -87,32 +87,21 @@ class ControlTheme {
 
   Color get backgroundColor => scheme.background;
 
-  Color get backgroundTintColor => data.scaffoldBackgroundColor;
+  Color get backgroundTintColor => scheme.surfaceVariant;
 
   Color get errorColor => scheme.error;
 
-  Color get activeColor => data.toggleableActiveColor;
-
-  Color get accentColorPrimary => scheme.onPrimary;
-
-  Color get accentColorSecondary => scheme.onSecondary;
-
-  Color get accentColorTertiary => scheme.onTertiary;
-
   ////////////////////////////////////////////////////////////////////////////////
 
-  Size get toolbarAreaSize =>
-      Size(device.width, device.topBorderSize + barHeight);
+  Size get toolbarAreaSize => Size(device.width, device.topBorderSize + barHeight);
 
-  Size get menuAreaSize =>
-      Size(device.width, device.bottomBorderSize + barHeight);
+  Size get menuAreaSize => Size(device.width, device.bottomBorderSize + barHeight);
 
   ////////////////////////////////////////////////////////////////////////////////
 
   BuildContext? _context;
   Device? _device;
   ThemeData? _data;
-  AssetPath? _asset;
 
   bool get isValid => _context != null || _data != null;
 
@@ -125,12 +114,7 @@ class ControlTheme {
 
   ThemeData get data => _data ?? (_data = Theme.of(context));
 
-  AssetPath get assets => _asset ?? (_asset = const AssetPath());
-
   ColorScheme get scheme => data.colorScheme;
-
-  @protected
-  set assets(AssetPath value) => _asset = value;
 
   @protected
   set data(ThemeData value) => _data = value;
@@ -189,31 +173,25 @@ class ControlTheme {
     return this;
   }
 
-  void notifyTheme() => BroadcastProvider.broadcast<ControlTheme>(
-      value: Control.init<ControlTheme>()?..data = data);
+  void notifyTheme() => BroadcastProvider.broadcast<ControlTheme>(value: Control.init<ControlTheme>()?..data = data);
 
   @override
   bool operator ==(other) {
-    return other is ControlTheme &&
-        data == other.data &&
-        this.runtimeType == other.runtimeType;
+    return other is ControlTheme && data == other.data && this.runtimeType == other.runtimeType;
   }
 
   @override
   int get hashCode => data.hashCode;
 }
 
-typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(
-    T control);
+typedef ThemeInitializer<T extends ControlTheme> = ThemeData Function(T control);
 
 class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   static const preference_key = 'control_theme';
 
-  static String get preferredTheme => PrefsProvider.instance
-      .get(ThemeConfig.preference_key, defaultValue: 'auto')!;
+  static String get preferredTheme => PrefsProvider.instance.get(ThemeConfig.preference_key, defaultValue: 'auto')!;
 
-  static Brightness get platformBrightness =>
-      PlatformDispatcher.instance.platformBrightness;
+  static Brightness get platformBrightness => PlatformDispatcher.instance.platformBrightness;
 
   final InitFactory<T>? builder;
   final dynamic initTheme;
@@ -221,8 +199,7 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 
   InitFactory get _defaultBuilder => (_) => ControlTheme();
 
-  InitFactory<T> get initializer =>
-      (args) => (builder ?? _defaultBuilder).call(args)..config = this;
+  InitFactory<T> get initializer => (args) => (builder ?? _defaultBuilder).call(args)..config = this;
 
   /// [builder] - Initializer of [ControlTheme]. Set this initializer only if providing custom, extended version of [ControlTheme].
   const ThemeConfig({
@@ -234,16 +211,13 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
   bool contains(dynamic key) {
     key = Parse.name(key);
 
-    return themes.keys.firstWhere((item) => Parse.name(item) == key,
-            orElse: () => null) !=
-        null;
+    return themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null) != null;
   }
 
   ThemeData getTheme(dynamic key, T control) {
     key = Parse.name(key);
 
-    key = themes.keys
-        .firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme);
 
     if (themes.containsKey(key)) {
       return themes[key]!(control);
@@ -256,8 +230,7 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
 
   ThemeData getSystemTheme(T control) => getTheme(preferredTheme, control);
 
-  void setAsPreferred() =>
-      prefs.set(ThemeConfig.preference_key, Parse.name(initTheme));
+  void setAsPreferred() => prefs.set(ThemeConfig.preference_key, Parse.name(initTheme));
 
   void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
@@ -273,7 +246,7 @@ class ThemeConfig<T extends ControlTheme> with PrefsProvider {
       );
 }
 
-mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
+extension ThemeProvider<T extends ControlTheme> on CoreContext {
   static T of<T extends ControlTheme>(BuildContext context) {
     final theme = Control.init<ControlTheme>() as T;
     theme.invalidate(context);
@@ -281,8 +254,7 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
     return theme;
   }
 
-  static BroadcastSubscription<ControlTheme> subscribe(
-      ValueCallback<ControlTheme?> callback) {
+  static BroadcastSubscription<ControlTheme> subscribe(ValueCallback<ControlTheme?> callback) {
     return BroadcastProvider.subscribe<ControlTheme>(ControlTheme, callback);
   }
 
@@ -291,35 +263,14 @@ mixin ThemeProvider<T extends ControlTheme> on CoreWidget {
   ///
   /// Custom [ControlTheme] builder can be set during [ControlRoot] initialization.
   @protected
-  final T theme = Control.init<ControlTheme>() as T;
+  T get theme => args.getWithFactory<T>(defaultValue: () => (Control.init<ControlTheme>() as T)..invalidate(this))!;
 
   /// Reference to [ColorScheme] of current [Theme].
   @protected
-  ColorScheme get colorScheme => theme.scheme;
-
-  /// Reference to [AssetPath] of current [ControlTheme].
-  /// Custom [AssetPath] can be set to [ControlTheme].
-  @protected
-  AssetPath get assets => theme.assets;
+  ColorScheme get scheme => theme.scheme;
 
   /// Reference to [Device] of current [ControlTheme].
   /// Wrapper of [MediaQuery].
   @protected
   Device get device => theme.device;
-
-  @override
-  void onInit(Map args) {
-    theme.invalidate(context!);
-
-    super.onInit(args);
-  }
-
-  @override
-  void onDependencyChanged() {
-    if (context != null) {
-      theme.invalidate(context);
-    }
-
-    super.onDependencyChanged();
-  }
 }

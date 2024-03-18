@@ -21,15 +21,11 @@ abstract class WidgetInitializer implements Disposable {
 
   bool get isInitialized => _widget != null;
 
-  BuildContext? parent;
-
   WidgetInitializer();
 
-  factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) =>
-      _WidgetWrapBuilder(builder)..data = data;
+  factory WidgetInitializer.of(WidgetBuilder builder, [Object? data]) => _WidgetWrapBuilder(builder)..data = data;
 
-  factory WidgetInitializer.initOf(InitWidgetBuilder builder, [Object? data]) =>
-      _WidgetInitBuilder(builder)..data = data;
+  factory WidgetInitializer.initOf(InitWidgetBuilder builder, [Object? data]) => _WidgetInitBuilder(builder)..data = data;
 
   /// Widget initialization - typically called just once.
   /// Or when new initialization is forced.
@@ -39,27 +35,17 @@ abstract class WidgetInitializer implements Disposable {
   /// Returns current Widget or tries to initialize new one.
   /// [forceInit] to re-init widget.
   Widget getWidget(BuildContext context, {forceInit = false, dynamic args}) {
-    if (forceInit || parent != context || _widget == null || !isValid()) {
-      parent = context;
+    if (forceInit || _widget == null) {
       _widget = initWidget(context, args: args);
     }
 
     return _widget!;
   }
 
-  bool isValid() {
-    if (_widget is ControlWidget) {
-      return (_widget as ControlWidget).isValid;
-    }
-
-    return true;
-  }
-
   Map _buildArgs(dynamic args) => Parse.toArgs(args, data: data);
 
   /// Wraps initializer into [WidgetBuilder].
-  WidgetBuilder wrap({dynamic args}) =>
-      (context) => getWidget(context, args: args);
+  WidgetBuilder wrap({dynamic args}) => (context) => getWidget(context, args: args);
 
   void clear() {
     _widget = null;

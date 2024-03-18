@@ -5,14 +5,14 @@ part of flutter_control;
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
-  ControllableWidget({
+  const ControllableWidget({
     super.key,
     required this.control,
   }) : assert(control != null);
 
   @override
-  void onInit(Map args) {
-    super.onInit(args);
+  void onInit(Map args, CoreContext context) {
+    super.onInit(args, context);
 
     if (control is ControlModel) {
       (control as ControlModel).register(this);
@@ -20,7 +20,7 @@ abstract class ControllableWidget<T> extends CoreWidget {
   }
 
   @override
-  State<StatefulWidget> createState() => _ControllableState<T>();
+  CoreState<CoreWidget> createState() => _ControllableState<T>();
 
   Widget build(BuildContext context);
 }

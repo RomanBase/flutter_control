@@ -8,14 +8,13 @@ import 'package:control_core/core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:localino/localino.dart';
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
 export 'package:flutter/material.dart';
 export 'package:localino/localino.dart';
-
-part 'src/app/assets.dart';
 
 part 'src/app/control_root.dart';
 
@@ -69,6 +68,5 @@ part 'src/widget/core_widget.dart';
 
 part 'src/widget/field_builder.dart';
 
-typedef ControlWidgetBuilder<T> = Widget Function(
-    BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
 typedef InitWidgetBuilder = Widget Function(InitBuilderArgs args);

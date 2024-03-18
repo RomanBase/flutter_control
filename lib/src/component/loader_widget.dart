@@ -87,7 +87,7 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
   InitLoader({
     T? control,
     required this.builder,
-  }) : super(args: control);
+  }) : super(initArgs: ControlArgs.of(control).data);
 
   factory InitLoader.of({
     Future<dynamic> Function(InitLoaderControl)? load,
@@ -103,8 +103,8 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(CoreContext context, T control) {
     return WidgetInitializer.of((context) => builder(context), control)
-        .getWidget(context, args: holder.args);
+        .getWidget(context, args: context.args);
   }
 }

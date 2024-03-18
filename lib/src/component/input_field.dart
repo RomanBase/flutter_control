@@ -19,8 +19,8 @@ class InputField extends ControllableWidget<InputControl> {
   });
 
   @override
-  void onInit(Map args) {
-    super.onInit(args);
+  void onInit(Map args, CoreContext context) {
+    super.onInit(args, context);
   }
 
   @override

@@ -1,39 +1,5 @@
 part of flutter_control;
 
-mixin ControlsComponent on CoreWidget {
-  InitFactory get initComponents;
-
-  Map get component => holder.args;
-
-  @override
-  void onInit(Map args) {
-    super.onInit(args);
-
-    dynamic components = initComponents.call(args);
-
-    if (!(components is Map)) {
-      components =
-          Parse.toKeyMap(components, (key, value) => value.runtimeType);
-    }
-
-    holder.argStore.set(components);
-
-    components.forEach((key, control) {
-      if (control is Disposable) {
-        register(control);
-      }
-
-      if (control is Initializable) {
-        control.init(holder.args);
-      }
-
-      if (control is TickerComponent && this is TickerProvider) {
-        control.provideTicker(this as TickerProvider);
-      }
-    });
-  }
-}
-
 /// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [ControllableWidget].
 /// Enables to construct [AnimationController] and control animations.
 ///

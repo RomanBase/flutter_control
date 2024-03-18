@@ -4,9 +4,12 @@ abstract class BaseControlWidget extends CoreWidget {
   Widget build(BuildContext context);
 
   @override
-  State<StatefulWidget> createState() => BaseControlState();
+  CoreState<CoreWidget> createState() => BaseControlState();
 
-  BaseControlWidget({Key? key}) : super(key: key);
+  const BaseControlWidget({
+    super.key,
+    super.initArgs,
+  });
 }
 
 class BaseControlState extends CoreState<BaseControlWidget> {
@@ -18,29 +21,28 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 /// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
 ///
 /// {@macro control-widget}
-abstract class SingleControlWidget<T extends ControlModel?>
-    extends ControlWidget {
+abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidgetBase {
   /// specific [key] under which is [ControlModel] stored in [ControlFactory].
   dynamic get factoryKey => null;
 
-  /// Initialized [ControlModel], This objects is stored in [controls] List at first place.
-  T get control => controls[0] as T;
-
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
-  SingleControlWidget({super.key, super.args});
+  const SingleControlWidget({
+    super.key,
+    super.initArgs,
+  });
 
   @override
-  List<ControlModel> initControls() {
-    final control = initControl();
+  List<ControlModel> initControls(CoreContext context) {
+    final control = initControl(context);
 
     if (control == null) {
       throw 'NULL Control - $this';
     }
 
     if (autoMountControls) {
-      final controls = holder.findControls();
+      final controls = context.args.getAll<ControlModel>();
 
-      if (controls.contains(control)) {
+      if (controls.length > 1 && controls.contains(control)) {
         controls.remove(control);
       }
 
@@ -57,7 +59,24 @@ abstract class SingleControlWidget<T extends ControlModel?>
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
-  T? initControl() => getControl<T>(key: factoryKey);
+  T? initControl(CoreContext context) => context.getControl<T>(key: factoryKey);
+
+  @override
+  Widget rebuild(CoreContext context) => build(context, (context.state as ControlState).controls![0] as T);
+
+  Widget build(CoreContext context, T control);
+}
+
+abstract class ControlWidget extends _ControlWidgetBase {
+  const ControlWidget({
+    super.key,
+    super.initArgs,
+  });
+
+  @override
+  Widget rebuild(CoreContext context) => build(context);
+
+  Widget build(CoreContext context);
 }
 
 /// {@template control-widget}
@@ -78,22 +97,7 @@ abstract class SingleControlWidget<T extends ControlModel?>
 ///
 /// Also check [ControllableWidget] an abstract Widget focused to build smaller Widgets controlled by [ObservableModel] and [BaseModel].
 /// {@endtemplate}
-abstract class ControlWidget extends CoreWidget
-    with LocalinoProvider
-    implements Initializable, Disposable {
-  /// Widget's [State]
-  /// It's available just after [ControlState] is initialized.
-  @protected
-  ControlState? get state => holder.state as ControlState<ControlWidget>?;
-
-  /// List of [ControlModel]s initialized via [initControls].
-  /// Set [autoMountControls] to automatically init all Models passed through [args].
-  @protected
-  List<ControlModel?> get controls => state?.controls ?? [];
-
-  /// Checks if [controls] is not empty.
-  bool get hasControl => controls.isNotEmpty;
-
+abstract class _ControlWidgetBase extends CoreWidget {
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
   /// By default set to 'false'.
   bool get autoMountControls => false;
@@ -101,9 +105,9 @@ abstract class ControlWidget extends CoreWidget
   /// Focused to handle Pages or complex Widgets.
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
-  ControlWidget({
+  const _ControlWidgetBase({
     super.key,
-    super.args,
+    super.initArgs,
   });
 
   /// This is a place where to fill all required [ControlModel]s for this Widget.
@@ -117,11 +121,10 @@ abstract class ControlWidget extends CoreWidget
   ///
   /// Returns [controls] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls() =>
-      autoMountControls ? holder.findControls() : [];
+  List<ControlModel> initControls(CoreContext context) => autoMountControls ? context.args.getAll<ControlModel>() : [];
 
   @override
-  ControlState<ControlWidget> createState() => ControlState();
+  CoreState createState() => ControlState();
 
   /// Called during [State] initialization.
   /// Widget will subscribe to all [controls].
@@ -129,54 +132,38 @@ abstract class ControlWidget extends CoreWidget
   @protected
   @mustCallSuper
   void onInitState(ControlState state) {
-    assert(isInitialized);
-
-    if (controls.isEmpty) {
+    if (state.controls == null || state.controls!.isEmpty) {
       printDebug('no controls found - onInitState');
       return;
     }
 
-    controls.remove(null);
-    controls.forEach((control) {
-      control!.init(holder.args);
+    state.controls?.remove(null);
+    state.controls?.forEach((control) {
+      control.init(state.args.data);
       control.register(this);
 
       if (control is ObservableComponent) {
-        registerStateNotifier(control);
+        state.element.registerStateNotifier(control);
       }
     });
   }
-
-  @override
-  void notifyState([dynamic state]) => this.state?.notifyState(state);
 
   /// Callback from [State] when state is notified.
   @protected
   void onStateChanged(dynamic state) {}
 
-  /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
-  /// Specific control is determined by [Type] and [key].
-  /// [args] - Arguments to pass to [ControlModel].
-  T? getControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
-      Control.resolve<T>(ControlArgs.of(controls).merge(holder.argStore).data,
-          key: key, args: args ?? holder.args);
-
-  /// [StatelessWidget.build]
-  /// [StatefulWidget.build]
   @protected
-  Widget build(BuildContext context);
+  Widget rebuild(CoreContext context);
 
   /// Disposes and removes all [controls].
   /// Check [DisposeHandler] for different dispose strategies.
-  @override
-  @mustCallSuper
   void dispose() {
     printDebug('dispose: ${this.runtimeType.toString()}');
   }
 }
 
 /// [State] of [ControlWidget]
-class ControlState<U extends ControlWidget> extends CoreState<U> {
+class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
   List<ControlModel>? controls;
 
   @override
@@ -188,9 +175,9 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
   }
 
   void initControls() {
-    controls = widget.initControls();
+    controls = widget.initControls(element);
 
-    widget.holder.argStore.set(controls!.toSet());
+    element.args.set(controls!.toSet());
 
     controls!.forEach((control) {
       if (control is ReferenceCounter) {
@@ -209,7 +196,7 @@ class ControlState<U extends ControlWidget> extends CoreState<U> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.build(context);
+  Widget build(BuildContext context) => widget.rebuild(element);
 
   /// Disposes and removes all [controls].
   /// Controller can prevent disposing [BaseControl.preventDispose].

@@ -1,253 +1,54 @@
 part of flutter_control;
 
-/// Holds arguments from Widget and State.
-/// Helps to transfer arguments between Widget Tree rebuilds and resurrection of State.
-class ControlArgHolder implements Disposable {
-  /// Manually updated validity. Mostly corresponds to [State] availability.
-  bool _valid = true;
-
-  /// Holds args when [State] disposes and [Widget] goes off screen.
-  ControlArgs? _cache;
-
-  /// Current [State] of [Widget].
-  CoreState? _state;
-
-  /// Returns current [State] of [Widget].
-  CoreState? get state => _state;
-
-  /// Checks if [Widget] with current [State] is valid.
-  bool get isValid => _valid;
-
-  /// Checks if arguments cache is used and [State] is not currently available.
-  bool get isCacheActive => _cache != null;
-
-  /// Checks if [State] is available.
-  bool get initialized => _state != null;
-
-  /// Current args of [Widget] and [State].
-  Map get args => argStore.data;
-
-  /// [ControlArgs] that holds current args of [Widget] and [State].
-  ControlArgs get argStore =>
-      _state?.args ?? _cache ?? (_cache = ControlArgs.of());
-
-  /// Initializes holder with given [state].
-  /// [args] are smoothly transferred between State and Cache based on current Widget lifecycle.
-  void init(CoreState? state) {
-    _state = state;
-    _valid = true;
-
-    if (_cache != null) {
-      argStore.set(_cache);
-      _cache = null;
-    }
-  }
-
-  /// Returns all [ControlModel]s from internal args - [ControlArgs].
-  /// If none found, empty List is returned.
-  List<ControlModel> findControls() => argStore.getAll<ControlModel>();
-
-  /// Copy corresponding State and args from [oldHolder].
-  void copy(ControlArgHolder oldHolder) {
-    if (oldHolder.initialized) {
-      init(oldHolder.state);
-    }
-
-    argStore.set(oldHolder.argStore);
-  }
-
-  @override
-  void dispose() {
-    _cache = argStore;
-    _valid = false;
-    _state = null;
-  }
-}
-
 /// Base abstract Widget that controls [State], stores [args] and keeps Widget/State in harmony though lifecycle of Widget.
 /// [CoreWidget] extends [StatefulWidget] and completely solves [State] specific flow. This solution helps to use it like [StatelessWidget], but with benefits of [StatefulWidget].
 ///
 /// This Widget comes with [TickerControl] and [SingleTickerControl] mixin to create [Ticker] and provide access to [vsync]. Then use [ControlModel] with [TickerComponent] to get access to [TickerProvider].
 ///
 /// [ControlWidget] - Can subscribe to multiple [ControlModel]s and is typically used for Pages and complex Widgets.
-abstract class CoreWidget extends StatefulWidget
-    implements Initializable, Disposable {
-  final holder = ControlArgHolder();
-
-  ControlScope get scope => ControlScope.of(this);
-
-  /// Returns 'true' if [State] is hooked and [WidgetControlHolder] is initialized.
-  bool get isInitialized => holder.initialized;
-
-  /// Returns 'true' if [Widget] is active and [WidgetControlHolder] is not disposed.
-  /// Widget is valid even when is not initialized yet.
-  bool get isValid => holder.isValid;
-
-  /// Returns [BuildContext] of current [State] if is available.
-  BuildContext? get context => holder.state?.context;
+abstract class CoreWidget extends StatefulWidget {
+  final Map initArgs;
 
   /// Base Control Widget that handles [State] flow.
   /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
   ///
-  /// Check [ControlWidget] and [StateboundWidget].
-  CoreWidget({super.key, dynamic args}) {
-    holder.argStore.set(args);
-  }
+  /// Check [ControlWidget] and [ControllableWidget].
+  const CoreWidget({
+    super.key,
+    this.initArgs = const {},
+  });
 
   @override
+  CoreContext createElement() => CoreContext(this, initArgs);
+
+  @override
+  CoreState createState();
+
+  void initRuntime(CoreContext context) {}
+
   @protected
   @mustCallSuper
-  void init(Map args) => addArg(args);
-
-  @protected
-  void onInit(Map args) {}
-
-  /// Updates holder with arguments and checks if is [State] valid.
-  /// Returns 'true' if [State] of this Widget is OK.
-  bool _updateHolder(CoreWidget oldWidget) {
-    holder.copy(oldWidget.holder);
-
-    return !holder.initialized;
+  void onInit(Map args, CoreContext context) {
+    //TODO: get args from global initializer or route settings
   }
 
   /// Called whenever Widget needs update.
   /// Check [State.didUpdateWidget] for more info.
   void onUpdate(CoreWidget oldWidget) {}
 
-  /// Executed when [State] is changed and new [state] is available.
-  /// Widget will try to resurrect State and injects args from 'cache' in [holder].
-  @protected
-  @mustCallSuper
-  void onStateUpdate(CoreWidget oldWidget, CoreState state) {
-    _notifyHolder(state);
-  }
-
-  /// Initializes and sets given [state].
-  @protected
-  void _notifyHolder(CoreState state) {
-    assert(() {
-      if (holder.initialized && holder.state != state) {
-        printDebug('state re-init of: ${this.runtimeType.toString()}');
-        printDebug('old state: ${holder.state}');
-        printDebug('new state: $state');
-      }
-      return true;
-    }());
-
-    if (holder.state == state) {
-      return;
-    }
-
-    holder.init(state);
-  }
-
   /// Called whenever dependency of Widget is changed.
   /// Check [State.didChangeDependencies] for more info.
   @protected
-  void onDependencyChanged() {}
+  void onDependencyChanged(CoreContext context) {}
 
-  /// Returns [BuildContext] of this [Widget] or 'root' context from [ControlRootScope].
-  BuildContext? getContext({bool root = false}) =>
-      root ? ControlScope.root.context ?? context : context;
-
-  /// Returns [ControlModel] by given [T] or [key] from current UI Tree
-  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
-      scope.get<T>(key: key, args: args);
-
-  /// Adds given [args] to this Widget's internal arg store.
-  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
-  ///
-  /// Check [setArg] for more 'set' options.
-  /// Internally uses [ControlArgs]. Check [ControlArgs.set].
-  /// Use [holder.argStore] to get raw access to [ControlArgs].
-  void addArg(dynamic args) => holder.argStore.set(args);
-
-  /// Adds given [args] to this Widget's internal arg store.
-  /// [args] can be whatever - [Map], [List], [Object], or any primitive.
-  ///
-  /// Internally uses [ControlArgs]. Check [ControlArgs.set].
-  /// Use [holder.argStore] to get raw access to [ControlArgs].
-  void setArg<T>({dynamic key, required dynamic value}) =>
-      holder.argStore.add<T>(key: key, value: value);
-
-  /// Returns value by given [key] and [Type] from this Widget's internal arg store.
-  ///
-  /// Internally uses [ControlArgs]. Check [ControlArgs.get].
-  /// Use [holder.argStore] to get raw access to [ControlArgs].
-  T? getArg<T>({dynamic key, T? defaultValue}) =>
-      holder.argStore.get<T>(key: key, defaultValue: defaultValue);
-
-  /// Returns value by given [key] and [Type] from this Widget's internal arg store.
-  /// If object is not found, then widget will [init] and store it to args.
-  /// Object is also registered for dispose.
-  ///
-  /// Internally uses [ControlArgs]. Check [ControlArgs.getWithFactory].
-  /// Use [holder.argStore] to get raw access to [ControlArgs].
-  T? mount<T>({dynamic key, T Function()? init, bool stateNotifier = false}) {
-    final value =
-        holder.argStore.getWithFactory<T>(key: key, defaultValue: init);
-
-    if (value is Disposable) {
-      if (stateNotifier) {
-        registerStateNotifier(value);
-      } else {
-        register(value);
-      }
-    }
-
-    return value;
-  }
-
-  /// Removes given [arg] from this Widget's internal arg store.
-  ///
-  /// Internally uses [ControlArgs]. Check [ControlArgs.remove].
-  /// Use [getArgStore] to get raw access to [ControlArgs].
-  void removeArg<T>({dynamic key}) => holder.argStore.remove<T>(key: key);
-
-  /// Registers object to lifecycle of [State].
-  ///
-  /// Widget with State must be initialized before executing this function - check [isInitialized].
-  /// It's safe to register objects in/after [onInit] function.
-  @protected
-  void register(Disposable? object) {
-    assert(isInitialized);
-
-    holder.state?.register(object);
-  }
-
-  @protected
-  void unregister(Disposable? object) {
-    assert(isInitialized);
-
-    holder.state?.unregister(object);
-  }
-
-  @protected
-  void registerStateNotifier(dynamic object) {
-    if (object is ObservableValue) {
-      register(object.subscribe((value) => notifyState()));
-    } else if (object is ObservableChannel) {
-      register(object.subscribe(() => notifyState()));
-    } else if (object is Stream || object is Future || object is Listenable) {
-      register(
-          ControlObservable.of(object).subscribe((value) => notifyState()));
-    }
-  }
-
-  @protected
-  void notifyState() => holder.state?.notifyState();
-
-  @override
-  void dispose() {}
+  void onDispose() {}
 }
 
 /// [State] of [CoreWidget].
 abstract class CoreState<T extends CoreWidget> extends State<T> {
-  /// Args used via [ControlArgHolder].
-  ControlArgs? _args;
+  CoreContext get element => context as CoreContext;
 
-  /// Args used via [ControlArgHolder].
-  ControlArgs get args => _args ?? (_args = ControlArgs.of());
+  ControlArgs get args => element.args;
 
   /// Checks is State is initialized and [CoreWidget.onInit] is called just once.
   bool _stateInitialized = false;
@@ -289,8 +90,6 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   @mustCallSuper
   void initState() {
     super.initState();
-
-    widget._notifyHolder(this);
   }
 
   void notifyState() {
@@ -307,23 +106,17 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     if (!_stateInitialized) {
       _stateInitialized = true;
-      widget.onInit(args.data);
+      widget.onInit(args.data, element);
     }
 
-    widget.onDependencyChanged();
+    widget.onDependencyChanged(element);
   }
 
   @override
   void didUpdateWidget(T oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final updateState = widget._updateHolder(oldWidget);
-
     widget.onUpdate(oldWidget);
-
-    if (updateState) {
-      widget.onStateUpdate(oldWidget, this);
-    }
   }
 
   @override
@@ -331,7 +124,6 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
     super.dispose();
 
     _stateInitialized = false;
-    widget.holder.dispose();
 
     _objects?.forEach((element) {
       if (element is DisposeHandler) {
@@ -343,7 +135,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     _objects = null;
 
-    widget.dispose();
+    widget.onDispose();
   }
 }
 
@@ -365,41 +157,96 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
   }
 }
 
-/// Debug printer of [CoreWidget] lifecycle.
-mixin CoreWidgetDebugPrinter on CoreWidget {
-  @override
-  void init(Map args) {
-    printDebug('CORE $this: init --- $args');
-    super.init(args);
-  }
+class CoreContext extends StatefulElement {
+  final args = ControlArgs({});
 
   @override
-  void onInit(Map args) {
-    printDebug('CORE $this: on init --- $args');
-    super.onInit(args);
+  CoreState get state => super.state as CoreState;
+
+  CoreContext(super.widget, Map initArgs) {
+    args.set(initArgs);
+
+    (widget as CoreWidget).initRuntime(this);
   }
 
-  @override
-  void onUpdate(CoreWidget oldWidget) {
-    printDebug('CORE $this: on update --- $oldWidget');
-    super.onUpdate(oldWidget);
+  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
+    if (args.containsKey(key ?? T)) {
+      return args.get<T>(key: key);
+    }
+
+    return this.init<T>(key: key, value: value, stateNotifier: stateNotifier);
   }
 
-  @override
-  void onStateUpdate(CoreWidget oldWidget, CoreState<CoreWidget> state) {
-    printDebug('CORE $this: on state update --- $oldWidget | $state');
-    super.onStateUpdate(oldWidget, state);
+  /// Registers object to lifecycle of [State].
+  ///
+  /// Widget with State must be initialized before executing this function - check [isInitialized].
+  /// It's safe to register objects in/after [onInit] function.
+  @protected
+  void register(Disposable? object) {
+    state.register(object);
   }
 
-  @override
-  void onDependencyChanged() {
-    printDebug('CORE $this: dependency changed');
-    super.onDependencyChanged();
+  @protected
+  void unregister(Disposable? object) {
+    state.unregister(object);
   }
 
-  @override
-  void dispose() {
-    printDebug('CORE $this: dispose');
-    super.dispose();
+  @protected
+  void registerStateNotifier(dynamic object) {
+    if (object is ObservableValue) {
+      register(object.subscribe((value) => notifyState()));
+    } else if (object is ObservableChannel) {
+      register(object.subscribe(() => notifyState()));
+    } else if (object is Stream || object is Future || object is Listenable) {
+      register(ControlObservable.of(object).subscribe((value) => notifyState()));
+    }
+  }
+
+  T? init<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
+    final item = args.getWithFactory<T>(key: key, defaultValue: value);
+
+    if (stateNotifier) {
+      registerStateNotifier(item);
+    }
+
+    if (item is Disposable) {
+      register(item);
+    }
+
+    return item;
+  }
+
+  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => init<_ArgValue<T>>(key: key, value: () => _ArgValue<T>(this, value: value))!;
+
+  /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
+  /// Specific control is determined by [Type] and [key].
+  /// [args] - Arguments to pass to [ControlModel].
+  T? getControl<T extends ControlModel?>({dynamic key, dynamic args}) => Control.resolve<T>(this.args.data, key: key, args: args ?? this.args.data);
+
+  void notifyState() => state.notifyState();
+}
+
+class _ArgValue<T> {
+  final CoreContext? _element;
+  final bool stateNotifier;
+
+  T? _value;
+
+  _ArgValue(
+    this._element, {
+    T? value,
+    this.stateNotifier = false,
+  }) : _value = value;
+
+  T? get value => _value;
+
+  set value(T? value) {
+    if (_value != value) {
+      _value = value;
+
+      if (stateNotifier) {
+        _element?.notifyState();
+      }
+    }
   }
 }

@@ -49,17 +49,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeConfig<UITheme>(
         builder: (_) => UITheme(),
         themes: {
-          Brightness.light: (theme) => ThemeData(
-              primarySwatch:
-                  (Control.get<CounterControl>()?.counter ?? 0) % 2 == 0
-                      ? Colors.green
-                      : Colors.red),
+          Brightness.light: (theme) => ThemeData(primarySwatch: (Control.get<CounterControl>()?.counter ?? 0) % 2 == 0 ? Colors.green : Colors.red),
           Brightness.dark: (theme) => ThemeData(primarySwatch: Colors.orange),
         },
       ),
       states: [
-        AppState.init
-            .build((context) => InitLoader.of(builder: (_) => Container())),
+        AppState.init.build((context) => InitLoader.of(builder: (_) => Container())),
         AppState.main.build((context) => MenuPage()),
         AppState.onboarding.build((context) => MyHomePage(title: 'Onboarding')),
       ],
@@ -67,10 +62,6 @@ class MyApp extends StatelessWidget {
         key: setup.key,
         title: 'Flutter Demo',
         home: home,
-        builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: child!,
-        ),
         theme: setup.theme,
         locale: setup.locale,
         supportedLocales: setup.supportedLocales,
@@ -106,15 +97,15 @@ class MenuControl extends NavigatorStackControl with LazyControl {
   void swap() {
     swapped = !swapped;
     Control.get<CounterControl>()?.incrementCounter();
-    ThemeProvider.of(ControlRootScope.main().context!)
-        .changeTheme(Brightness.light);
+    ThemeProvider.of(ControlRootScope.main().context!).changeTheme(Brightness.light);
   }
 }
 
-class MenuPage extends SingleControlWidget<MenuControl>
-    with ThemeProvider<UITheme> {
+class MenuPage extends SingleControlWidget<MenuControl> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(CoreContext context, MenuControl control) {
+    final theme = context.theme;
+
     printDebug('rebuild main page - $theme');
     return Scaffold(
       body: Column(
@@ -125,14 +116,11 @@ class MenuPage extends SingleControlWidget<MenuControl>
               items: control.swapped
                   ? {
                       NavItem(key: '2'): (_) => SecondPage(),
-                      NavItem(key: '1'): (_) =>
-                          MyHomePage(title: 'Flutter Demo 1'),
-                      NavItem(key: '3'): (_) =>
-                          MyHomePage(title: 'Flutter Demo 2'),
+                      NavItem(key: '1'): (_) => MyHomePage(title: 'Flutter Demo 1'),
+                      NavItem(key: '3'): (_) => MyHomePage(title: 'Flutter Demo 2'),
                     }
                   : {
-                      NavItem(key: '1'): (_) =>
-                          MyHomePage(title: 'Flutter Demo 1'),
+                      NavItem(key: '1'): (_) => MyHomePage(title: 'Flutter Demo 1'),
                       NavItem(key: '2'): (_) => SecondPage(),
                     },
             ),
@@ -151,7 +139,7 @@ class MenuPage extends SingleControlWidget<MenuControl>
 
 class SecondPage extends SingleControlWidget<Generic> {
   @override
-  Widget build(BuildContext context) {
+  Widget build(CoreContext context, Generic control) {
     return Scaffold(
       body: Center(
         child: Column(
@@ -171,22 +159,21 @@ class SecondPage extends SingleControlWidget<Generic> {
   }
 }
 
-class MyHomePage extends SingleControlWidget<CounterControl>
-    with RouteControl, ThemeProvider, LocalinoProvider {
+class MyHomePage extends SingleControlWidget<CounterControl> with LocalinoProvider {
   final String title;
 
-  MyHomePage({
+  const MyHomePage({
     super.key,
     required this.title,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(CoreContext context, CounterControl control) {
+    final theme = context.theme;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title +
-            ' ${localization.locale}' +
-            ' / ${PrefsProvider.instance.get(ThemeConfig.preference_key)}'),
+        title: Text(title + ' ${localization.locale}' + ' / ${PrefsProvider.instance.get(ThemeConfig.preference_key)}'),
       ),
       body: Center(
         child: Column(
@@ -211,8 +198,7 @@ class MyHomePage extends SingleControlWidget<CounterControl>
               ),
             ),
             CaseWidget(
-              activeCase:
-                  'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
+              activeCase: 'light', //PrefsProvider.instance.get(ThemeConfig.preference_key),
               builders: {
                 'light': (_) => Container(
                       color: theme.primaryColor,
@@ -295,10 +281,7 @@ class MyHomePage extends SingleControlWidget<CounterControl>
             ),
             ElevatedButton(
               onPressed: () {
-                ControlScope.root.setAppState(
-                    ControlScope.root.state == AppState.main
-                        ? AppState.onboarding
-                        : AppState.main);
+                ControlScope.root.setAppState(ControlScope.root.state == AppState.main ? AppState.onboarding : AppState.main);
               },
               child: Text('${ControlScope.root.state}'),
             ),
