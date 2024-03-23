@@ -8,8 +8,7 @@ abstract class RouteNavigator {
   /// [root] - pushes route into root Navigator - onto top of everything.
   /// [replacement] - pushes route as replacement of current route.
   /// {@endtemplate}
-  Future<dynamic> openRoute(Route route,
-      {bool root = false, bool replacement = false});
+  Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false});
 
   /// {@template route-root}
   /// Clears current [Navigator] and opens new [Route].
@@ -20,8 +19,7 @@ abstract class RouteNavigator {
   /// Opens specific dialog based on given [type]
   /// Be default opens simple pop-up dialog.
   /// {@endtemplate}
-  Future<dynamic> openDialog(WidgetBuilder builder,
-      {bool root = true, dynamic type});
+  Future<dynamic> openDialog(WidgetBuilder builder, {bool root = true, dynamic type});
 
   /// {@template route-back-root}
   /// Goes back in navigation stack until first [Route].
@@ -53,17 +51,8 @@ class ControlNavigator implements RouteNavigator {
 
   ControlNavigator(this.context);
 
-  BuildContext getContext({bool root = false}) =>
-      root ? ControlScope.root.context ?? context : context;
-
   @protected
-  NavigatorState getNavigator({bool root = false}) {
-    if (root && !ControlScope.root.isInitialized) {
-      return Navigator.of(context, rootNavigator: true);
-    }
-
-    return Navigator.of(getContext(root: root));
-  }
+  NavigatorState getNavigator({bool root = false}) => Navigator.of(context, rootNavigator: root);
 
   @override
   void backTo<T>({
@@ -135,9 +124,9 @@ class ControlNavigator implements RouteNavigator {
   @override
   Future openDialog(builder, {bool root = true, dynamic type}) {
     return showDialog(
-      context: getContext(root: root),
+      context: context,
       builder: (context) => builder(context),
-      useRootNavigator: false,
+      useRootNavigator: root,
     );
   }
 

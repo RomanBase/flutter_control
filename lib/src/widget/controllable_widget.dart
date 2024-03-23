@@ -15,7 +15,7 @@ abstract class ControllableWidget<T> extends CoreWidget {
     super.onInit(args, context);
 
     if (control is ControlModel) {
-      (control as ControlModel).register(this);
+      (control as ControlModel).register(context);
     }
   }
 

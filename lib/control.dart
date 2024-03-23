@@ -3,13 +3,9 @@ library flutter_control;
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:control_config/config.dart';
-import 'package:control_core/core.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/widgets.dart';
-import 'package:localino/localino.dart';
+import 'package:flutter_control/control.dart';
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';

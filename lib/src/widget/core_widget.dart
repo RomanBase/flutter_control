@@ -177,21 +177,14 @@ class CoreContext extends StatefulElement {
     return this.init<T>(key: key, value: value, stateNotifier: stateNotifier);
   }
 
-  /// Registers object to lifecycle of [State].
-  ///
-  /// Widget with State must be initialized before executing this function - check [isInitialized].
-  /// It's safe to register objects in/after [onInit] function.
-  @protected
   void register(Disposable? object) {
     state.register(object);
   }
 
-  @protected
   void unregister(Disposable? object) {
     state.unregister(object);
   }
 
-  @protected
   void registerStateNotifier(dynamic object) {
     if (object is ObservableValue) {
       register(object.subscribe((value) => notifyState()));
@@ -202,7 +195,7 @@ class CoreContext extends StatefulElement {
     }
   }
 
-  T? init<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
+  T? init<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
     final item = args.getWithFactory<T>(key: key, defaultValue: value);
 
     if (stateNotifier) {
@@ -216,12 +209,29 @@ class CoreContext extends StatefulElement {
     return item;
   }
 
-  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => init<_ArgValue<T>>(key: key, value: () => _ArgValue<T>(this, value: value))!;
+  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => init<_ArgValue<T>>(
+        key: key,
+        value: () => _ArgValue<T>(
+          this,
+          value: value,
+          stateNotifier: stateNotifier,
+        ),
+      )!;
 
-  /// Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
-  /// Specific control is determined by [Type] and [key].
-  /// [args] - Arguments to pass to [ControlModel].
-  T? getControl<T extends ControlModel?>({dynamic key, dynamic args}) => Control.resolve<T>(this.args.data, key: key, args: args ?? this.args.data);
+  T? getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(
+        this.args.data,
+        key: key,
+        args: args ?? this.args.data,
+      );
+
+  T? get<T>({dynamic key}) => this.args.get<T>(
+        key: key,
+      );
+
+  void set<T>({dynamic key, required T? value}) => this.args.add(
+        key: key,
+        value: value,
+      );
 
   void notifyState() => state.notifyState();
 }
@@ -247,6 +257,27 @@ class _ArgValue<T> {
       if (stateNotifier) {
         _element?.notifyState();
       }
+    }
+  }
+}
+
+extension CoreContextExt on BuildContext {
+  RootContext get root => RootContext.of(this)!;
+}
+
+mixin ContextComponent on ControlModel {
+  CoreContext? context;
+
+  @override
+  void register(object) {
+    super.register(object);
+
+    if (object is CoreState) {
+      context = object.element;
+    }
+
+    if (object is CoreContext) {
+      context = object;
     }
   }
 }

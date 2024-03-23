@@ -1,11 +1,9 @@
 part of flutter_control;
 
 class ControlScope {
-  final BuildContext? context;
+  final BuildContext context;
 
   const ControlScope._(this.context);
-
-  static ControlRootScope get root => ControlRootScope.main();
 
   /// [parent] should be [BuildContext], [State] or [CoreWidget]
   factory ControlScope.of([dynamic parent]) {
@@ -15,10 +13,16 @@ class ControlScope {
       context = parent;
     } else if (parent is State) {
       context = parent.context;
+    } else if (parent is Element) {
+      context = parent;
     }
 
-    return ControlScope._(context ?? root.context);
+    assert(context != null);
+
+    return ControlScope._(context!);
   }
+
+  factory ControlScope.root(BuildContext context) => ControlScope._(context.root!);
 
   /// Tries to provide object from Widget Tree by given [T] and/or [key].
   /// [parent] should be [BuildContext], [State] or [CoreWidget]
@@ -31,10 +35,6 @@ class ControlScope {
 
   T? _get<T>({dynamic key, dynamic args, BuildContext? context}) {
     context ??= this.context;
-
-    if (context == null) {
-      return null;
-    }
 
     final state = context.findAncestorStateOfType<ControlState>();
 

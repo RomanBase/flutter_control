@@ -140,7 +140,7 @@ abstract class _ControlWidgetBase extends CoreWidget {
     state.controls?.remove(null);
     state.controls?.forEach((control) {
       control.init(state.args.data);
-      control.register(this);
+      control.register(state);
 
       if (control is ObservableComponent) {
         state.element.registerStateNotifier(control);

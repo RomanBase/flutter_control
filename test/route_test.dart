@@ -1,6 +1,8 @@
 import 'package:flutter_control/control.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'mock_widget.dart';
+
 void main() {
   group('Mask', () {
     test('init', () {
@@ -120,6 +122,7 @@ void main() {
       ]);
 
       final route = store.routing.generate(
+        MockBuildContext(),
         RouteSettings(
           name: path.path,
           arguments: {'arg': 'X'},

@@ -1,6 +1,6 @@
 part of flutter_control;
 
-abstract class InitLoaderControl extends BaseControl {
+abstract class InitLoaderControl extends BaseControl with ContextComponent {
   final loading = LoadingControl(LoadingStatus.progress);
   final Duration? delay;
 
@@ -43,15 +43,14 @@ abstract class InitLoaderControl extends BaseControl {
       await block.finish();
     }
 
-    final state = Parse.getArg<AppState>(result, defaultValue: AppState.main);
-    notifyControl(state, result);
+    final state = Parse.getArg<AppState>(result, defaultValue: AppState.main)!;
+
+    notifyState(state);
   }
 
   Future<dynamic> load();
 
-  void notifyControl(AppState? state, [dynamic args]) {
-    ControlScope.root.setAppState(state, args: args);
-  }
+  void notifyState(AppState state) => context?.root.changeAppState(state);
 
   @override
   void dispose() {
@@ -104,7 +103,6 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
 
   @override
   Widget build(CoreContext context, T control) {
-    return WidgetInitializer.of((context) => builder(context), control)
-        .getWidget(context, args: context.args);
+    return WidgetInitializer.of((context) => builder(context), control).getWidget(context, args: context.args);
   }
 }
