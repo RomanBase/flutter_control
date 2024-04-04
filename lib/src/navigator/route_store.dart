@@ -340,12 +340,14 @@ class RoutingProvider {
 
   RoutingProvider._(this.parent);
 
-  RouteSettings? popSettings(BuildContext context) => context.root.args.pop<RouteSettings>();
+  RouteSettings? popSettings(BuildContext context) => (context is RootContext ? context : context.root).args.pop<RouteSettings>();
 
   Route? generate(BuildContext context, RouteSettings settings, {bool? active, RouteFactory? onGenerate}) {
     if (onGenerate != null) {
       this.onGenerate = onGenerate;
     }
+
+    final root = context is RootContext ? context : context.root;
 
     String? path = settings.name;
 
@@ -356,7 +358,10 @@ class RoutingProvider {
     active ??= Control.isInitialized;
 
     if (!active) {
-      context.root.set(value: settings);
+      if (settings.name != '/') {
+        root.set(value: settings);
+      }
+
       return null;
     }
 

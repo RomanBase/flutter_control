@@ -130,10 +130,14 @@ class ControlRoot extends ControlWidget {
 
     return builder(
       context as RootContext,
-      CaseWidget<AppState>(
-        activeCase: context.value<AppState>().value,
-        builders: AppStateBuilder.fillBuilders(states),
-        transitions: AppStateBuilder.fillTransitions(states),
+      ControlBuilder<AppState>(
+        control: context.value<AppState>(),
+        valueConverter: (_) => context.value<AppState>().value!,
+        builder: (context, value) => CaseWidget<AppState>(
+          activeCase: value,
+          builders: AppStateBuilder.fillBuilders(states),
+          transitions: AppStateBuilder.fillTransitions(states),
+        ),
       ),
     );
   }
@@ -162,5 +166,5 @@ class RootContext extends CoreContext {
 
   void changeTheme(dynamic key, [bool preferred = true]) => get<ThemeConfig>()?.changeTheme(key, preferred);
 
-  Route? generateRoute(RouteSettings settings) => Control.get<RouteStore>()?.routing.generate(this, settings);
+  Route? generateRoute(RouteSettings settings, {Route Function()? root}) => (settings.name == '/' && root != null) ? root.call() : Control.get<RouteStore>()?.routing.generate(this, settings);
 }

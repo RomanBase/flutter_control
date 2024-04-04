@@ -54,10 +54,12 @@ class CaseWidget<T> extends StatefulWidget {
     bool autoKey = true,
     ValueGetter<bool>? reverseOrder,
     ValueGetter<bool>? reverseAnimation,
+    T Function(dynamic)? valueConverter,
   }) =>
       ControlBuilder(
         key: key,
         control: control,
+        valueConverter: valueConverter,
         builder: (context, value) => CaseWidget<T>(
           activeCase: value as T?,
           builders: builders,

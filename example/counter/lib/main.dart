@@ -54,8 +54,8 @@ class MyApp extends StatelessWidget {
       ],
       builder: (context, home) => MaterialApp(
         title: 'Flutter Demo',
-        home: home,
-        onGenerateRoute: (settings) => context.generateRoute(settings),
+        //home: home,
+        onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
         theme: context<ThemeConfig>()?.getPreferredTheme(),
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [

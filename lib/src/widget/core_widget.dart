@@ -99,11 +99,8 @@ class CoreContext extends StatefulElement {
 
   _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => bound<_ArgValue<T>>(
         key: key,
-        value: () => _ArgValue<T>(
-          this,
-          value: value,
-          stateNotifier: stateNotifier,
-        ),
+        value: () => _ArgValue<T>(value),
+        stateNotifier: stateNotifier,
       )!;
 
   T? getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(
@@ -234,27 +231,17 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
   }
 }
 
-class _ArgValue<T> {
-  final CoreContext? _element;
-  final bool stateNotifier;
-
+class _ArgValue<T> extends ChangeNotifier {
   T? _value;
 
-  _ArgValue(
-    this._element, {
-    T? value,
-    this.stateNotifier = false,
-  }) : _value = value;
+  _ArgValue(T? value) : _value = value;
 
   T? get value => _value;
 
   set value(T? value) {
     if (_value != value) {
       _value = value;
-
-      if (stateNotifier) {
-        _element?.notifyState();
-      }
+      notifyListeners();
     }
   }
 }
