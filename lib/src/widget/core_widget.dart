@@ -24,13 +24,9 @@ abstract class CoreWidget extends StatefulWidget {
   @override
   CoreState createState();
 
-  void initRuntime(CoreContext context) {}
-
   @protected
   @mustCallSuper
-  void onInit(Map args, CoreContext context) {
-    //TODO: get args from global initializer or route settings
-  }
+  void onInit(Map args, CoreContext context) {}
 
   /// Called whenever Widget needs update.
   /// Check [State.didUpdateWidget] for more info.
@@ -42,6 +38,90 @@ abstract class CoreWidget extends StatefulWidget {
   void onDependencyChanged(CoreContext context) {}
 
   void onDispose() {}
+}
+
+class CoreContext extends StatefulElement {
+  final args = ControlArgs({});
+
+  @override
+  CoreState get state => super.state as CoreState;
+
+  CoreContext(super.widget, Map initArgs) {
+    args.set(initArgs);
+  }
+
+  void initRuntime() {
+    args.set(ModalRoute.of(this)?.settings.arguments);
+    state.initRuntime();
+
+    (widget as CoreWidget).onInit(args.data, this);
+  }
+
+  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
+    if (args.containsKey(key ?? T)) {
+      return args.get<T>(key: key);
+    }
+
+    return this.bound<T>(key: key, value: value, stateNotifier: stateNotifier);
+  }
+
+  void register(Disposable? object) {
+    state.register(object);
+  }
+
+  void unregister(Disposable? object) {
+    state.unregister(object);
+  }
+
+  void registerStateNotifier(dynamic object) {
+    if (object is ObservableValue) {
+      register(object.subscribe((value) => notifyState()));
+    } else if (object is ObservableChannel) {
+      register(object.subscribe(() => notifyState()));
+    } else if (object is Stream || object is Future || object is Listenable) {
+      register(ControlObservable.of(object).subscribe((value) => notifyState()));
+    }
+  }
+
+  T? bound<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
+    final item = args.getWithFactory<T>(key: key, defaultValue: value);
+
+    if (stateNotifier) {
+      registerStateNotifier(item);
+    }
+
+    if (item is Disposable) {
+      register(item);
+    }
+
+    return item;
+  }
+
+  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => bound<_ArgValue<T>>(
+        key: key,
+        value: () => _ArgValue<T>(
+          this,
+          value: value,
+          stateNotifier: stateNotifier,
+        ),
+      )!;
+
+  T? getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(
+        this.args.data,
+        key: key,
+        args: args ?? this.args.data,
+      );
+
+  T? get<T>({dynamic key}) => this.args.get<T>(
+        key: key,
+      );
+
+  void set<T>({dynamic key, required T? value}) => this.args.add(
+        key: key,
+        value: value,
+      );
+
+  void notifyState() => state.notifyState();
 }
 
 /// [State] of [CoreWidget].
@@ -86,11 +166,8 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
     }
   }
 
-  @override
   @mustCallSuper
-  void initState() {
-    super.initState();
-  }
+  void initRuntime() {}
 
   void notifyState() {
     if (isDirty) {
@@ -106,7 +183,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     if (!_stateInitialized) {
       _stateInitialized = true;
-      widget.onInit(args.data, element);
+      element.initRuntime();
     }
 
     widget.onDependencyChanged(element);
@@ -155,85 +232,6 @@ abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
       });
     }
   }
-}
-
-class CoreContext extends StatefulElement {
-  final args = ControlArgs({});
-
-  @override
-  CoreState get state => super.state as CoreState;
-
-  CoreContext(super.widget, Map initArgs) {
-    args.set(initArgs);
-
-    (widget as CoreWidget).initRuntime(this);
-  }
-
-  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
-    if (args.containsKey(key ?? T)) {
-      return args.get<T>(key: key);
-    }
-
-    return this.init<T>(key: key, value: value, stateNotifier: stateNotifier);
-  }
-
-  void register(Disposable? object) {
-    state.register(object);
-  }
-
-  void unregister(Disposable? object) {
-    state.unregister(object);
-  }
-
-  void registerStateNotifier(dynamic object) {
-    if (object is ObservableValue) {
-      register(object.subscribe((value) => notifyState()));
-    } else if (object is ObservableChannel) {
-      register(object.subscribe(() => notifyState()));
-    } else if (object is Stream || object is Future || object is Listenable) {
-      register(ControlObservable.of(object).subscribe((value) => notifyState()));
-    }
-  }
-
-  T? init<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
-    final item = args.getWithFactory<T>(key: key, defaultValue: value);
-
-    if (stateNotifier) {
-      registerStateNotifier(item);
-    }
-
-    if (item is Disposable) {
-      register(item);
-    }
-
-    return item;
-  }
-
-  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => init<_ArgValue<T>>(
-        key: key,
-        value: () => _ArgValue<T>(
-          this,
-          value: value,
-          stateNotifier: stateNotifier,
-        ),
-      )!;
-
-  T? getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(
-        this.args.data,
-        key: key,
-        args: args ?? this.args.data,
-      );
-
-  T? get<T>({dynamic key}) => this.args.get<T>(
-        key: key,
-      );
-
-  void set<T>({dynamic key, required T? value}) => this.args.add(
-        key: key,
-        value: value,
-      );
-
-  void notifyState() => state.notifyState();
 }
 
 class _ArgValue<T> {

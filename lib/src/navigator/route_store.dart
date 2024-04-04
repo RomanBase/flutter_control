@@ -377,7 +377,6 @@ class RoutingProvider {
       return controlRoute
           ?._copyWith(
             identifier: path,
-            arguments: args.data,
           )
           .init(args: args.data);
     }

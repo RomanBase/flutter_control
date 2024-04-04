@@ -11,7 +11,7 @@ part of flutter_control;
 /// [NavigatorStackControl] is used to navigate between multiple [NavigatorStack]s.
 class NavigatorStack extends StatefulWidget {
   final NavigatorControl control;
-  final WidgetInitializer initializer;
+  final WidgetBuilder builder;
   final bool overrideNavigation;
   final RouteBuilderFactory? route;
 
@@ -19,7 +19,7 @@ class NavigatorStack extends StatefulWidget {
   const NavigatorStack._({
     Key? key,
     required this.control,
-    required this.initializer,
+    required this.builder,
     this.overrideNavigation = false,
     this.route,
   }) : super(key: key);
@@ -41,7 +41,7 @@ class NavigatorStack extends StatefulWidget {
     return NavigatorStack._(
       key: ObjectKey(control.menu.key),
       control: control,
-      initializer: WidgetInitializer.of(builder),
+      builder: builder,
       overrideNavigation: overrideNavigation,
       route: route,
     );
@@ -108,16 +108,12 @@ class NavigatorStack extends StatefulWidget {
   _NavigatorStackState createState() => _NavigatorStackState();
 }
 
-class _NavigatorStackState extends State<NavigatorStack>
-    implements StackNavigationHandler {
+class _NavigatorStackState extends State<NavigatorStack> implements StackNavigationHandler {
   late HeroController _heroController;
 
   GlobalKey<NavigatorState>? _navigatorKey;
 
   NavigatorState? get navigator => _navigatorKey?.currentState;
-
-  WidgetBuilder get builder =>
-      (context) => widget.initializer.getWidget(context);
 
   @override
   void initState() {
@@ -125,9 +121,7 @@ class _NavigatorStackState extends State<NavigatorStack>
 
     widget.control.register(this);
 
-    _heroController = HeroController(
-        createRectTween: (begin, end) =>
-            MaterialRectArcTween(begin: begin, end: end));
+    _heroController = HeroController(createRectTween: (begin, end) => MaterialRectArcTween(begin: begin, end: end));
 
     _updateNavigator();
   }
@@ -154,13 +148,13 @@ class _NavigatorStackState extends State<NavigatorStack>
       onGenerateRoute: (routeSettings) {
         if (widget.route != null) {
           return widget.route!.call(
-            builder,
+            widget.builder,
             routeSettings,
           );
         }
 
         return MaterialPageRoute(
-          builder: builder,
+          builder: widget.builder,
           settings: routeSettings,
         );
       },
@@ -198,8 +192,7 @@ class _NavigatorStackState extends State<NavigatorStack>
 //########################################################################################
 //########################################################################################
 
-typedef StackGroupBuilder = Widget Function(
-    BuildContext context, int index, List<NavigatorStack> items);
+typedef StackGroupBuilder = Widget Function(BuildContext context, int index, List<NavigatorStack> items);
 
 /// [NavigatorStack]
 /// [NavigatorControl]
@@ -240,8 +233,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
   }
 
   void _initControl() {
-    control.initControls(
-        _items.map((page) => page.control).toList(growable: false));
+    control.initControls(_items.map((page) => page.control).toList(growable: false));
     control.setPageIndex(control.currentPageIndex);
     control.currentControl?.selected = true;
 
@@ -261,13 +253,10 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
     }
 
     final oldMenu = control.menuItems;
-    final newMenu =
-        widget.items.map((page) => page.control.menu).toList(growable: false);
+    final newMenu = widget.items.map((page) => page.control.menu).toList(growable: false);
 
-    final oldMenuHasKeys =
-        !oldMenu.any((element) => element.key == NavItem._invalid);
-    final newMenuHasKeys =
-        !newMenu.any((element) => element.key == NavItem._invalid);
+    final oldMenuHasKeys = !oldMenu.any((element) => element.key == NavItem._invalid);
+    final newMenuHasKeys = !newMenu.any((element) => element.key == NavItem._invalid);
 
     if (oldMenuHasKeys && newMenuHasKeys) {
       if (oldMenu.length == newMenu.length) {

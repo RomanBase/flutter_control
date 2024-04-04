@@ -131,7 +131,7 @@ abstract class _ControlWidgetBase extends CoreWidget {
   /// Typically now need to override - check [onInit] and [onUpdate] functions.
   @protected
   @mustCallSuper
-  void onInitState(ControlState state) {
+  void onInitRuntime(ControlState state) {
     if (state.controls == null || state.controls!.isEmpty) {
       printDebug('no controls found - onInitState');
       return;
@@ -167,14 +167,9 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
   List<ControlModel>? controls;
 
   @override
-  void initState() {
-    super.initState();
+  void initRuntime() {
+    super.initRuntime();
 
-    initControls();
-    widget.onInitState(this);
-  }
-
-  void initControls() {
     controls = widget.initControls(element);
 
     element.args.set(controls!.toSet());
@@ -184,6 +179,8 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
         (control as ReferenceCounter).addReference(this);
       }
     });
+
+    widget.onInitRuntime(this);
   }
 
   @override

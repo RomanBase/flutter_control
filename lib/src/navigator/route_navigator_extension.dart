@@ -1,7 +1,7 @@
 part of flutter_control;
 
 /// Mixin class to enable navigation for [ControlWidget]
-extension RouteControlExt on CoreContext {
+extension RouteNavigatorExtension on CoreContext {
   ControlNavigator get navigator => ControlNavigator(this);
 
   /// Returns currently active [Route].
@@ -20,8 +20,6 @@ extension RouteControlExt on CoreContext {
   Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false}) => navigator.openRoute(route, root: root, replacement: replacement);
 
   Future<dynamic> openRoot(Route route) => navigator.openRoot(route);
-
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root = true, dynamic type}) => navigator.openDialog(builder, root: root, type: type);
 
   void backTo<T>({
     Route? route,

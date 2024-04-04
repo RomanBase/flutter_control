@@ -50,7 +50,9 @@ abstract class InitLoaderControl extends BaseControl with ContextComponent {
 
   Future<dynamic> load();
 
-  void notifyState(AppState state) => context?.root.changeAppState(state);
+  void notifyState(AppState state) {
+    context?.root.changeAppState(state);
+  }
 
   @override
   void dispose() {
@@ -103,6 +105,6 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
 
   @override
   Widget build(CoreContext context, T control) {
-    return WidgetInitializer.of((context) => builder(context), control).getWidget(context, args: context.args);
+    return builder(context);
   }
 }

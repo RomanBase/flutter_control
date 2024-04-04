@@ -7,9 +7,12 @@ void main() {
   runApp(const MyApp());
 }
 
-class Counter extends ControlModel with ObservableComponent<int> {
-  Counter() {
-    value = 0;
+class Counter extends BaseControl with ObservableComponent<int> {
+  @override
+  void onInit(Map args) {
+    super.onInit(args);
+
+    value = args.getArg<int>(defaultValue: 0);
   }
 
   void increment() => value = value! + 1;
@@ -31,9 +34,8 @@ class MyApp extends StatelessWidget {
           remoteSync: false,
         )),
       ],
-      factories: {},
-      entries: {
-        Counter: Counter(),
+      factories: {
+        Counter: (_) => Counter(),
       },
       initAsync: () async {
         await Future.delayed(Duration(seconds: 1));
@@ -105,7 +107,7 @@ class MainPage extends SingleControlWidget<Counter> {
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
             ElevatedButton(
-              onPressed: () => context.routeOf<SecondPage>()?.openRoute(),
+              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: counter),
               child: Text('Open Next'),
             ),
           ],
@@ -119,9 +121,16 @@ class MainPage extends SingleControlWidget<Counter> {
   }
 }
 
-class SecondPage extends StatelessWidget {
+class SecondPage extends ControlWidget {
   @override
-  Widget build(BuildContext context) {
+  void onInit(Map args, CoreContext context) {
+    super.onInit(args, context);
+
+    context<Counter>(value: () => Control.get<Counter>(args: args)!);
+  }
+
+  @override
+  Widget build(CoreContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -149,17 +158,22 @@ class SecondPage extends StatelessWidget {
               },
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
+            ElevatedButton(
+              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: context<Counter>()?.value),
+              child: Text('Open Next'),
+            ),
           ],
         ),
       ),
       floatingActionButton: ControlBuilder<int>(
-        control: Control.get<Counter>(),
-        builder: (context, value) {
+        control: context<Counter>(),
+        builder: (_, value) {
           return FloatingActionButton(
             child: Text('$value'),
-            onPressed: () => Control.get<Counter>()?.increment(),
+            onPressed: () => context<Counter>()?.increment(),
           );
         },
+        noData: (_) => BackButton(),
       ),
     );
   }

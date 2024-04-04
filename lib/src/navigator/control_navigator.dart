@@ -15,17 +15,6 @@ abstract class RouteNavigator {
   /// {@endtemplate}
   Future<dynamic> openRoot(Route route);
 
-  /// {@template route-dialog}
-  /// Opens specific dialog based on given [type]
-  /// Be default opens simple pop-up dialog.
-  /// {@endtemplate}
-  Future<dynamic> openDialog(WidgetBuilder builder, {bool root = true, dynamic type});
-
-  /// {@template route-back-root}
-  /// Goes back in navigation stack until first [Route].
-  /// {@endtemplate}
-  void backToRoot({Route? open});
-
   /// {@template route-back-to}
   /// Goes back in navigation stack until [Route] found.
   /// {@endtemplate}
@@ -35,6 +24,11 @@ abstract class RouteNavigator {
     bool Function(Route<dynamic>)? predicate,
     Route? open,
   });
+
+  /// {@template route-back-root}
+  /// Goes back in navigation stack until first [Route].
+  /// {@endtemplate}
+  void backToRoot({Route? open});
 
   /// {@template route-close}
   /// Pops [Route] from navigation stack.
@@ -53,6 +47,20 @@ class ControlNavigator implements RouteNavigator {
 
   @protected
   NavigatorState getNavigator({bool root = false}) => Navigator.of(context, rootNavigator: root);
+
+  @override
+  Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false}) {
+    if (replacement) {
+      return getNavigator().pushReplacement(route);
+    } else {
+      return getNavigator(root: root).push(route);
+    }
+  }
+
+  @override
+  Future openRoot(Route route) {
+    return getNavigator().pushAndRemoveUntil(route, (route) => route.isFirst);
+  }
 
   @override
   void backTo<T>({
@@ -118,29 +126,6 @@ class ControlNavigator implements RouteNavigator {
       route.didComplete(result);
       getNavigator().removeRoute(route);
       return true;
-    }
-  }
-
-  @override
-  Future openDialog(builder, {bool root = true, dynamic type}) {
-    return showDialog(
-      context: context,
-      builder: (context) => builder(context),
-      useRootNavigator: root,
-    );
-  }
-
-  @override
-  Future openRoot(Route route) {
-    return getNavigator().pushAndRemoveUntil(route, (route) => route.isFirst);
-  }
-
-  @override
-  Future openRoute(Route route, {bool root = false, bool replacement = false}) {
-    if (replacement) {
-      return getNavigator().pushReplacement(route);
-    } else {
-      return getNavigator(root: root).push(route);
     }
   }
 }

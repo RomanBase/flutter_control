@@ -101,8 +101,8 @@ class ControlRoot extends ControlWidget {
   });
 
   @override
-  void initRuntime(CoreContext context) {
-    super.initRuntime(context);
+  void onInit(Map args, CoreContext context) {
+    super.onInit(args, context);
 
     final localino = Control.get<Localino>();
 
@@ -113,7 +113,7 @@ class ControlRoot extends ControlWidget {
     }
 
     if (theme != null) {
-      context.init<ThemeConfig>(value: () => theme!, stateNotifier: true);
+      context<ThemeConfig>(value: () => theme!, stateNotifier: true);
     }
 
     context.value<AppState>(value: initState ?? AppState.init, stateNotifier: true);

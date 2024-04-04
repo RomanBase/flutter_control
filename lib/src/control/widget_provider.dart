@@ -1,5 +1,5 @@
 part of flutter_control;
-
+/*
 class InitBuilderArgs extends ControlArgs {
   final BuildContext context;
 
@@ -98,4 +98,4 @@ class _WidgetInitBuilder extends WidgetInitializer {
 
     return widget;
   }
-}
+}*/

@@ -38,13 +38,15 @@ part 'src/mixin/control.dart';
 
 part 'src/mixin/layout.dart';
 
-part 'src/mixin/navigation.dart';
-
 part 'src/mixin/overlay.dart';
 
 part 'src/navigator/control_navigator.dart';
 
 part 'src/navigator/route_control.dart';
+
+part 'src/navigator/route_handler.dart';
+
+part 'src/navigator/route_navigator_extension.dart';
 
 part 'src/navigator/route_store.dart';
 
@@ -65,4 +67,3 @@ part 'src/widget/core_widget.dart';
 part 'src/widget/field_builder.dart';
 
 typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
-typedef InitWidgetBuilder = Widget Function(InitBuilderArgs args);
