@@ -1,5 +1,8 @@
 part of localino;
 
+typedef LocalinoDataLoader = Future<Map<String, dynamic>> Function(
+    String locale);
+
 /// Json/Map based localization.
 class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Key of shared preference where preferred locale is stored.
@@ -17,10 +20,11 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Default locale.
   /// This locale should be loaded first, because data can contains some shared/non translatable values (links, captions, etc.).
-  String defaultLocale = WidgetsBinding.instance.window.locale.toString();
+  String defaultLocale =
+      WidgetsBinding.instance.platformDispatcher.locale.toString();
 
   /// Callback to load translations from local cache.
-  Future<Map<String, dynamic>> Function()? localData;
+  LocalinoDataLoader? dataLoader;
 
   /// Checks if this localization is main and will broadcast [LocalinoArgs] changes with [Localino] key.
   /// Only one localization should be main !
@@ -45,10 +49,11 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
 
   /// The system-reported default locale of the device.
-  Locale get deviceLocale => WidgetsBinding.instance.window.locale;
+  Locale get deviceLocale => WidgetsBinding.instance.platformDispatcher.locale;
 
   /// The full system-reported supported locales of the device.
-  List<Locale> get deviceLocales => WidgetsBinding.instance.window.locales;
+  List<Locale> get deviceLocales =>
+      WidgetsBinding.instance.platformDispatcher.locales;
 
   /// Returns list of available locales based on given assets.
   Iterable<String> get availableLocales => _assets.map((e) => e.locale);
@@ -58,7 +63,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Returns currently loaded locale.
   Locale get currentLocale =>
-      getLocale(locale) ?? WidgetsBinding.instance.window.locale;
+      getLocale(locale) ?? WidgetsBinding.instance.platformDispatcher.locale;
 
   /// Returns best possible country code based on [currentLocale] and [deviceLocale].
   String? get currentCountry =>
@@ -96,10 +101,10 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Used to initialize [main] instance of Localino from [LocalinoModule].
   void _setup(String defaultLocale, List<LocalinoAsset> assets,
-      Future<Map<String, dynamic>> Function() localData) {
+      LocalinoDataLoader? localDataLoader) {
     this.defaultLocale = defaultLocale;
     this._assets.addAll(assets);
-    this.localData = localData;
+    this.dataLoader = localDataLoader;
   }
 
   /// Should be called first.
@@ -149,7 +154,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
     loading = false;
 
     if (handleSystemLocale) {
-      WidgetsBinding.instance.window.onLocaleChanged = () {
+      WidgetsBinding.instance.platformDispatcher.onLocaleChanged = () {
         //TODO: Q: only when preferred locale is not set ??
         if (!isSystemLocaleActive()) {
           changeToSystemLocale();
@@ -373,7 +378,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
       });
 
       final assets = jsonDecode(json);
-      final locals = await localData?.call();
+      final locals = await dataLoader?.call(locale);
 
       final data = _mergeData([assets, locals]);
 
