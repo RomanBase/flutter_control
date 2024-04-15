@@ -11,6 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # https://pub.dev/packages/control_core
+  control_core: ">=1.2.0 <2.0.0"
+
+  # https://pub.dev/packages/control_config
+  control_config: ">=1.0.0 <2.0.0"
+
   # https://pub.dev/packages/localino
   localino: ">=1.2.1 <2.0.0"
 
