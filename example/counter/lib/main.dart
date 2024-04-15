@@ -52,6 +52,9 @@ class MyApp extends StatelessWidget {
         AppState.onboarding.build((context) => OnboardingPage()),
         AppState.main.build((context) => MainPage()),
       ],
+      builders: [
+        Localino,
+      ],
       builder: (context, home) => MaterialApp(
         title: 'Flutter Demo',
         //home: home,
@@ -64,6 +67,9 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
       ),
+      onSetupChanged: () {
+        Intl.defaultLocale = LocalinoProvider.instance.locale;
+      },
     );
   }
 }
@@ -82,6 +88,8 @@ class OnboardingPage extends StatelessWidget {
 class MainPage extends SingleControlWidget<Counter> {
   @override
   Widget build(CoreContext context, Counter counter) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(LocalinoProvider.instance.localize('app_name')),

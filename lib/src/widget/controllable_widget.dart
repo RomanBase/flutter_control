@@ -22,7 +22,7 @@ abstract class ControllableWidget<T> extends CoreWidget {
   @override
   CoreState<CoreWidget> createState() => _ControllableState<T>();
 
-  Widget build(BuildContext context);
+  Widget build(CoreContext context);
 }
 
 /// State of [ControllableWidget].
@@ -30,24 +30,17 @@ abstract class ControllableWidget<T> extends CoreWidget {
 class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
   @override
   Widget build(BuildContext context) {
-    final T _control = widget.control;
+    final _control = widget.control;
 
     if (_control is List) {
       return ControlBuilderGroup(
         controls: _control,
-        builder: (context, values) {
-          return widget.build(context);
-        },
+        builder: (context, values) => widget.build(element),
       );
     } else {
-      return ControlBuilder(
+      return ControlBuilder<dynamic>(
         control: _control,
-        builder: (context, value) {
-          return widget.build(context);
-        },
-        noData: (context) {
-          return widget.build(context);
-        },
+        builder: (context, value) => widget.build(element),
       );
     }
   }

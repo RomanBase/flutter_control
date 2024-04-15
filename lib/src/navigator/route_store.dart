@@ -412,3 +412,7 @@ class RoutingProvider {
     return null;
   }
 }
+
+extension RootContextRouterExt on RootContext {
+  Route? generateRoute(RouteSettings settings, {Route Function()? root}) => (settings.name == '/' && root != null) ? root.call() : Control.get<RouteStore>()?.routing.generate(this, settings);
+}

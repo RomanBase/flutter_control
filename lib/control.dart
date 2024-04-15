@@ -30,15 +30,15 @@ part 'src/control/input_control.dart';
 
 part 'src/control/navigator_stack_control.dart';
 
-part 'src/control/widget_provider.dart';
+part 'src/component/ticker_component.dart';
 
-part 'src/mixin/animation.dart';
+part 'src/component/context_component.dart';
 
 part 'src/mixin/control.dart';
 
-part 'src/mixin/layout.dart';
+part 'src/component/layout.dart';
 
-part 'src/mixin/overlay.dart';
+part 'src/component/overlay.dart';
 
 part 'src/navigator/control_navigator.dart';
 
@@ -52,9 +52,9 @@ part 'src/navigator/route_store.dart';
 
 part 'src/scope.dart';
 
-part 'src/util/curve.dart';
+part 'src/util/interval_curve.dart';
 
-part 'src/util/transition.dart';
+part 'src/component/cross_transition.dart';
 
 part 'src/widget/builder_widget.dart';
 

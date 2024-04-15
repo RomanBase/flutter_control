@@ -86,31 +86,27 @@ class _AppStateMain extends AppState {
 }
 
 class ControlRoot extends ControlWidget {
-  final List<dynamic> controls;
-  final AppState? initState;
   final ThemeConfig? theme;
+  final AppState? initState;
   final List<AppStateBuilder> states;
+  final List<dynamic> stateNotifiers;
+  final List<Type> builders;
   final Widget Function(RootContext context, Widget home) builder;
+  final VoidCallback? onSetupChanged;
 
   const ControlRoot({
-    this.controls = const [],
-    required this.builder,
-    this.initState,
     this.theme,
+    this.initState,
     this.states = const [],
+    this.stateNotifiers = const [],
+    this.builders = const [],
+    required this.builder,
+    this.onSetupChanged,
   });
 
   @override
   void onInit(Map args, CoreContext context) {
     super.onInit(args, context);
-
-    final localino = Control.get<Localino>();
-
-    if (localino != null) {
-      context.register(ControlObservable.of(localino).subscribe((value) {
-        rebuildAll(context);
-      }));
-    }
 
     if (theme != null) {
       context<ThemeConfig>(value: () => theme!, stateNotifier: true);
@@ -118,7 +114,13 @@ class ControlRoot extends ControlWidget {
 
     context.value<AppState>(value: initState ?? AppState.init, stateNotifier: true);
 
-    controls.forEach((element) => context.registerStateNotifier(element));
+    stateNotifiers.forEach((element) => context.registerStateNotifier(element));
+    builders.forEach((element) {
+      final object = Control.get(key: element);
+      if (object != null) {
+        (context as RootContext).registerBuilder(object);
+      }
+    });
   }
 
   @override
@@ -141,15 +143,6 @@ class ControlRoot extends ControlWidget {
       ),
     );
   }
-
-  void rebuildAll(BuildContext context) {
-    void rebuild(Element el) {
-      el.markNeedsBuild();
-      el.visitChildren(rebuild);
-    }
-
-    (context as Element).visitChildren(rebuild);
-  }
 }
 
 class RootContext extends CoreContext {
@@ -162,9 +155,30 @@ class RootContext extends CoreContext {
     super.initArgs,
   );
 
+  void registerBuilder(dynamic object) {
+    register(ControlObservable.of(object).subscribe((value) {
+      _rebuildElement(this);
+      (widget as ControlRoot).onSetupChanged?.call();
+    }));
+  }
+
+  void _rebuildElement(Element el) {
+    el.markNeedsBuild();
+    el.visitChildren(_rebuildElement);
+  }
+
   void changeAppState(AppState state) => value<AppState>().value = state;
 
   void changeTheme(dynamic key, [bool preferred = true]) => get<ThemeConfig>()?.changeTheme(key, preferred);
 
-  Route? generateRoute(RouteSettings settings, {Route Function()? root}) => (settings.name == '/' && root != null) ? root.call() : Control.get<RouteStore>()?.routing.generate(this, settings);
+  @override
+  void notifyState() {
+    super.notifyState();
+
+    (widget as ControlRoot).onSetupChanged?.call();
+  }
+}
+
+extension CoreContextExt on BuildContext {
+  RootContext get root => RootContext.of(this)!;
 }

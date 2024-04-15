@@ -26,7 +26,7 @@ class ControlBuilder<T> extends StatefulWidget {
   _ControlBuilderState<T> createState() => _ControlBuilderState<T>();
 }
 
-class _ControlBuilderState<T> extends ValueState<ControlBuilder<T>, T> {
+class _ControlBuilderState<T> extends _ValueState<ControlBuilder<T>, T> {
   Disposable? _sub;
 
   ObservableValue<dynamic>? _observable;
@@ -156,7 +156,7 @@ class ControlBuilderGroup extends StatefulWidget {
 }
 
 /// State of [ControlBuilderGroup].
-class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
+class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
   /// All active subs.
   final _subs = <Disposable>[];
 
@@ -249,5 +249,23 @@ class _ControlBuilderGroupState extends ValueState<ControlBuilderGroup, List> {
     super.dispose();
 
     _disposeSubs();
+  }
+}
+
+abstract class _ValueState<T extends StatefulWidget, U> extends State<T> {
+  /// Checks if [Element] is 'mounted' or 'dirty' and marked for rebuild.
+  bool get isDirty => !mounted || ((context as Element).dirty);
+
+  /// Current value of state.
+  U? value;
+
+  void notifyValue(U? value) {
+    if (isDirty) {
+      this.value = value;
+    } else {
+      setState(() {
+        this.value = value;
+      });
+    }
   }
 }

@@ -115,11 +115,11 @@ abstract class _ControlWidgetBase extends CoreWidget {
   ///
   /// Dependency Injection possibilities:
   /// [holder.findControls] - Returns [ControlModel]s from 'constructor' and 'init' [args].
-  /// [getControl] - Tries to find specific [ControlModel]. Looks up in current [controls], [args] and dependency Store.
+  /// [getControl] - Tries to find specific [ControlModel]. Looks up in current [stateNotifiers], [args] and dependency Store.
   /// [Control.get] - Returns object from [ControlFactory].
   /// [Control.init] - Initializes object via [ControlFactory].
   ///
-  /// Returns [controls] to init, subscribe and dispose with Widget.
+  /// Returns [stateNotifiers] to init, subscribe and dispose with Widget.
   @protected
   List<ControlModel> initControls(CoreContext context) => autoMountControls ? context.args.getAll<ControlModel>() : [];
 
@@ -127,7 +127,7 @@ abstract class _ControlWidgetBase extends CoreWidget {
   CoreState createState() => ControlState();
 
   /// Called during [State] initialization.
-  /// Widget will subscribe to all [controls].
+  /// Widget will subscribe to all [stateNotifiers].
   /// Typically now need to override - check [onInit] and [onUpdate] functions.
   @protected
   @mustCallSuper
@@ -155,7 +155,7 @@ abstract class _ControlWidgetBase extends CoreWidget {
   @protected
   Widget rebuild(CoreContext context);
 
-  /// Disposes and removes all [controls].
+  /// Disposes and removes all [stateNotifiers].
   /// Check [DisposeHandler] for different dispose strategies.
   void dispose() {
     printDebug('dispose: ${this.runtimeType.toString()}');

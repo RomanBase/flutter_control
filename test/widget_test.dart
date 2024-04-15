@@ -55,7 +55,7 @@ void main() {
       expect(widget.args.get(key: 'init'), isTrue);
 
       // ignore: invalid_use_of_protected_member
-      expect(widget.controls.length, 0);
+      expect(widget.stateNotifiers.length, 0);
     });
   });
 

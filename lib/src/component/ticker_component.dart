@@ -160,3 +160,48 @@ class _WidgetTicker extends Ticker {
     super.dispose();
   }
 }
+
+/// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [ControllableWidget].
+/// Enables to construct [AnimationController] and control animations.
+///
+/// Typically used as private [ControlModel] next to Widget class. This solution helps to separate animation/UI logic, actual business logic and pure UI.
+///
+/// Also Widget must use [TickerControl] or [SingleTickerControl] to enable vsync provider or pass [TickerProvider] from other place by calling [provideTicker].
+mixin TickerComponent on ControlModel {
+  /// Active provider. In fact provider can be used from different [ControlModel].
+  TickerProvider? _ticker;
+
+  /// Returns active [TickerProvider] provided by Widget or passed by other Control.
+  @protected
+  TickerProvider? get ticker => _ticker;
+
+  /// Checks if [TickerProvider] is set.
+  bool get isTickerAvailable => _ticker != null;
+
+  @override
+  void register(dynamic object) {
+    super.register(object);
+
+    if (object is TickerProvider) {
+      provideTicker(object);
+    }
+  }
+
+  /// Sets vsync. Called by framework during [State] initialization when used with [CoreWidget] and [TickerControl].
+  void provideTicker(TickerProvider ticker) {
+    _ticker = ticker;
+
+    onTickerInitialized(ticker);
+  }
+
+  /// Callback after [provideTicker] is executed.
+  /// Serves to created [AnimationController] and to set initial animation state.
+  void onTickerInitialized(TickerProvider ticker);
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    _ticker = null;
+  }
+}

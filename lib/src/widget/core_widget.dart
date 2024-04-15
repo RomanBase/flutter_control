@@ -44,9 +44,12 @@ class CoreContext extends StatefulElement {
   final args = ControlArgs({});
 
   @override
+  CoreWidget get widget => super.widget as CoreWidget;
+
+  @override
   CoreState get state => super.state as CoreState;
 
-  CoreContext(super.widget, Map initArgs) {
+  CoreContext(CoreWidget widget, Map initArgs) : super(widget) {
     args.set(initArgs);
   }
 
@@ -54,7 +57,7 @@ class CoreContext extends StatefulElement {
     args.set(ModalRoute.of(this)?.settings.arguments);
     state.initRuntime();
 
-    (widget as CoreWidget).onInit(args.data, this);
+    widget.onInit(args.data, this);
   }
 
   T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
@@ -62,28 +65,10 @@ class CoreContext extends StatefulElement {
       return args.get<T>(key: key);
     }
 
-    return this.bound<T>(key: key, value: value, stateNotifier: stateNotifier);
+    return this.take<T>(key: key, value: value, stateNotifier: stateNotifier);
   }
 
-  void register(Disposable? object) {
-    state.register(object);
-  }
-
-  void unregister(Disposable? object) {
-    state.unregister(object);
-  }
-
-  void registerStateNotifier(dynamic object) {
-    if (object is ObservableValue) {
-      register(object.subscribe((value) => notifyState()));
-    } else if (object is ObservableChannel) {
-      register(object.subscribe(() => notifyState()));
-    } else if (object is Stream || object is Future || object is Listenable) {
-      register(ControlObservable.of(object).subscribe((value) => notifyState()));
-    }
-  }
-
-  T? bound<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
+  T? take<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
     final item = args.getWithFactory<T>(key: key, defaultValue: value);
 
     if (stateNotifier) {
@@ -97,7 +82,7 @@ class CoreContext extends StatefulElement {
     return item;
   }
 
-  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => bound<_ArgValue<T>>(
+  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => take<_ArgValue<T>>(
         key: key,
         value: () => _ArgValue<T>(value),
         stateNotifier: stateNotifier,
@@ -119,6 +104,20 @@ class CoreContext extends StatefulElement {
       );
 
   void notifyState() => state.notifyState();
+
+  void register(Disposable? object) => state.register(object);
+
+  void unregister(Disposable? object) => state.unregister(object);
+
+  void registerStateNotifier(dynamic object) {
+    if (object is ObservableValue) {
+      register(object.subscribe((value) => notifyState()));
+    } else if (object is ObservableChannel) {
+      register(object.subscribe(() => notifyState()));
+    } else if (object is Stream || object is Future || object is Listenable) {
+      register(ControlObservable.of(object).subscribe((value) => notifyState()));
+    }
+  }
 }
 
 /// [State] of [CoreWidget].
@@ -137,12 +136,12 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
   bool get isDirty => (context as Element).dirty;
 
   /// Objects to dispose with State.
-  List<Disposable?>? _objects;
+  List? _objects;
 
   /// Registers object to dispose with this State.
-  void register(Disposable? object) {
+  void register(dynamic object) {
     if (_objects == null) {
-      _objects = <Disposable?>[];
+      _objects = [];
     }
 
     if (!_objects!.contains(object)) {
@@ -202,32 +201,16 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
     _objects?.forEach((element) {
       if (element is DisposeHandler) {
         element.requestDispose(this);
-      } else {
-        element!.dispose();
+      } else if (element is Disposable) {
+        element.dispose();
+      } else if (element is ChangeNotifier) {
+        element.dispose();
       }
     });
 
     _objects = null;
 
     widget.onDispose();
-  }
-}
-
-abstract class ValueState<T extends StatefulWidget, U> extends State<T> {
-  /// Checks if [Element] is 'mounted' or 'dirty' and marked for rebuild.
-  bool get isDirty => !mounted || ((context as Element).dirty);
-
-  /// Current value of state.
-  U? value;
-
-  void notifyValue(U? value) {
-    if (isDirty) {
-      this.value = value;
-    } else {
-      setState(() {
-        this.value = value;
-      });
-    }
   }
 }
 
@@ -242,27 +225,6 @@ class _ArgValue<T> extends ChangeNotifier {
     if (_value != value) {
       _value = value;
       notifyListeners();
-    }
-  }
-}
-
-extension CoreContextExt on BuildContext {
-  RootContext get root => RootContext.of(this)!;
-}
-
-mixin ContextComponent on ControlModel {
-  CoreContext? context;
-
-  @override
-  void register(object) {
-    super.register(object);
-
-    if (object is CoreState) {
-      context = object.element;
-    }
-
-    if (object is CoreContext) {
-      context = object;
     }
   }
 }
