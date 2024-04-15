@@ -109,7 +109,7 @@ class LocalinoModule extends ControlModule<Localino> {
     localino._setup(
       config.fallbackLocale,
       config.toAssets(),
-      () => remote.getLocalTranslations(),
+      (locale) => remote.getLocalTranslations(locale: locale),
     );
 
     remote.initialize(
