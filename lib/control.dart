@@ -34,8 +34,6 @@ part 'src/component/ticker_component.dart';
 
 part 'src/component/context_component.dart';
 
-part 'src/mixin/control.dart';
-
 part 'src/component/layout.dart';
 
 part 'src/component/overlay.dart';
