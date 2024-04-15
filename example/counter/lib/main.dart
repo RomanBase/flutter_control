@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
           ControlRoute.build<SecondPage>(builder: (_) => SecondPage()),
         ]),
         LocalinoModule(LocalinoLive.options(
-          remoteSync: false,
+          remoteSync: true,
         )),
       ],
       factories: {

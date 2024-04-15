@@ -21,7 +21,7 @@ class _LocalinoLiveApi implements LocalinoRemoteApi {
     throw response.body;
   }
 
-  //TODO: version not implemented on Localino side
+  //TODO: [version] not implemented on Localino side
   @override
   Future<Map<String, dynamic>> getRemoteTranslations(String locale,
       {DateTime? timestamp, String? version}) async {

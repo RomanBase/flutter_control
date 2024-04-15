@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:control_core/core.dart';
 import 'package:http/http.dart' as http;
 import 'package:localino/localino.dart';
-import 'package:path_provider/path_provider.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 part 'src/api.dart';
 
