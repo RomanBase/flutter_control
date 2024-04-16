@@ -10,14 +10,18 @@ extension RouteNavigatorExtension on CoreContext {
   Route? getActiveRoute() => args.get<Route>() ?? ModalRoute.of(this);
 
   /// {@macro route-store-get}
-  RouteHandler? routeOf<T>([dynamic identifier]) => ControlRoute.of<T>(identifier)?.navigator(navigator);
+  RouteHandler? routeOf<T>([dynamic identifier]) =>
+      ControlRoute.of<T>(identifier)?.navigator(navigator);
 
   /// Initializes and returns [Route] via [RouteStore] and [RouteControl].
   ///
   /// {@macro route-store-get}
-  Route? initRouteOf<T>({dynamic identifier, dynamic args}) => ControlRoute.of<T>(identifier)?.init(args: args);
+  Route? initRouteOf<T>({dynamic identifier, dynamic args}) =>
+      ControlRoute.of<T>(identifier)?.init(args: args);
 
-  Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false}) => navigator.openRoute(route, root: root, replacement: replacement);
+  Future<dynamic> openRoute(Route route,
+          {bool root = false, bool replacement = false}) =>
+      navigator.openRoute(route, root: root, replacement: replacement);
 
   Future<dynamic> openRoot(Route route) => navigator.openRoot(route);
 
@@ -46,5 +50,6 @@ extension RouteNavigatorExtension on CoreContext {
     }
   }
 
-  bool closeRoute(Route route, [dynamic result]) => navigator.closeRoute(route, result);
+  bool closeRoute(Route route, [dynamic result]) =>
+      navigator.closeRoute(route, result);
 }

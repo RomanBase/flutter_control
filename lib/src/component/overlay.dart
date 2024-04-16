@@ -18,11 +18,13 @@ mixin OverlayControl on CoreWidget {
       parentKey = key;
     }
 
-    final box = (parentKey?.currentState?.context.findRenderObject() ?? context.findRenderObject()) as RenderBox;
+    final box = (parentKey?.currentState?.context.findRenderObject() ??
+        context.findRenderObject()) as RenderBox;
     final location = box.localToGlobal(Offset.zero);
     final size = box.size;
 
-    final child = builder(Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
+    final child = builder(
+        Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
 
     final entry = OverlayEntry(
       builder: (_) => barrierDismissible
@@ -44,7 +46,8 @@ mixin OverlayControl on CoreWidget {
     return entry;
   }
 
-  OverlayEntry? getOverlay(CoreContext context, dynamic key) => context.args.get<OverlayEntry>(key: ObjectTag.of(key));
+  OverlayEntry? getOverlay(CoreContext context, dynamic key) =>
+      context.args.get<OverlayEntry>(key: ObjectTag.of(key));
 
   bool hideOverlay(CoreContext context, dynamic key) {
     final overlay = getOverlay(context, key);

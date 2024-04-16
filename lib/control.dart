@@ -12,6 +12,8 @@ export 'package:control_core/core.dart';
 export 'package:flutter/material.dart';
 export 'package:localino/localino.dart';
 
+part 'src/app/app_state.dart';
+
 part 'src/app/control_root.dart';
 
 part 'src/app/device.dart';
@@ -64,4 +66,5 @@ part 'src/widget/core_widget.dart';
 
 part 'src/widget/field_builder.dart';
 
-typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(
+    BuildContext context, T value);

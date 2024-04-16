@@ -117,7 +117,8 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
   void _updateCurrentWidget() {
     currentTransition = widget.activeTransition;
 
-    if (widget.activeCase != null && widget.builders.containsKey(widget.activeCase)) {
+    if (widget.activeCase != null &&
+        widget.builders.containsKey(widget.activeCase)) {
       currentWidget = widget.builders[widget.activeCase]!.call(context);
     } else {
       currentWidget = widget.placeholder?.call(context) ?? Container();
@@ -125,7 +126,8 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
 
     if (widget.autoKey) {
       currentWidget = KeyedSubtree(
-        key: ValueKey(ObjectTag.of(this).variant(widget.activeCase ?? UnitId.nextId())),
+        key: ValueKey(
+            ObjectTag.of(this).variant(widget.activeCase ?? UnitId.nextId())),
         child: currentWidget,
       );
     }
@@ -135,8 +137,10 @@ class _CaseWidgetState<T> extends State<CaseWidget<T>> {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: currentTransition.duration,
-      reverseDuration: currentTransition.reverseDuration ?? currentTransition.duration,
-      transitionBuilder: currentTransition.build(reverse: widget.reverseAnimation),
+      reverseDuration:
+          currentTransition.reverseDuration ?? currentTransition.duration,
+      transitionBuilder:
+          currentTransition.build(reverse: widget.reverseAnimation),
       child: currentWidget,
       layoutBuilder: (child, list) => Stack(
         alignment: Alignment.center,

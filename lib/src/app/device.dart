@@ -51,7 +51,8 @@ class Device {
 
   Offset toPxOffset(Offset offset) => Offset(toPx(offset.dx), toPx(offset.dy));
 
-  T onOrientation<T>({InitFactory<T>? portrait, InitFactory<T>? landscape, dynamic args}) {
+  T onOrientation<T>(
+      {InitFactory<T>? portrait, InitFactory<T>? landscape, dynamic args}) {
     if (this.portrait) {
       return portrait!(args);
     }

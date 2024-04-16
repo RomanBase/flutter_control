@@ -22,11 +22,12 @@ class ControlScope {
     return ControlScope._(context!);
   }
 
-  factory ControlScope.root(BuildContext context) => ControlScope._(context.root!);
+  _ControlRootScope get root => _ControlRootScope();
 
   /// Tries to provide object from Widget Tree by given [T] and/or [key].
   /// [parent] should be [BuildContext], [State] or [CoreWidget]
-  static T? provide<T>(dynamic parent, {dynamic key, dynamic args}) => ControlScope.of(parent).get<T>(
+  static T? provide<T>(dynamic parent, {dynamic key, dynamic args}) =>
+      ControlScope.of(parent).get<T>(
         key: key,
         args: args,
       );
@@ -60,5 +61,6 @@ extension ControlScopeOnWidget on CoreContext {
   ControlScope get scope => ControlScope.of(this);
 
   /// Returns [ControlModel] by given [T] or [key] from current UI Tree
-  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) => scope.get<T>(key: key, args: args);
+  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
+      scope.get<T>(key: key, args: args);
 }

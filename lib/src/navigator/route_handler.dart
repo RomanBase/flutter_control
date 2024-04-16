@@ -43,25 +43,31 @@ class RouteHandler {
   /// Creates copy of [RouteHandler] with given builder.
   ///
   /// @{macro route-route}
-  RouteHandler viaRoute(RouteBuilderFactory builder) => RouteHandler(navigator, routeProvider.viaRoute(builder));
+  RouteHandler viaRoute(RouteBuilderFactory builder) =>
+      RouteHandler(navigator, routeProvider.viaRoute(builder));
 
   /// Creates copy of [RouteHandler] with given transition.
   ///
   /// @{macro route-transition}
-  RouteHandler viaTransition(RouteTransitionFactory transition) => RouteHandler(navigator, routeProvider.viaTransition(transition));
+  RouteHandler viaTransition(RouteTransitionFactory transition) =>
+      RouteHandler(navigator, routeProvider.viaTransition(transition));
 
   /// Creates copy of [RouteHandler] with given path name.
   ///
   /// @{macro route-path}
-  RouteHandler path({InitFactory<dynamic>? name, InitFactory<dynamic>? query}) => RouteHandler(navigator, routeProvider.path(path: name, query: query));
+  RouteHandler path(
+          {InitFactory<dynamic>? name, InitFactory<dynamic>? query}) =>
+      RouteHandler(navigator, routeProvider.path(path: name, query: query));
 
   /// Creates copy of [RouteHandler] with given identifier.
   ///
   /// @{macro route-named}
-  RouteHandler named(String identifier) => RouteHandler(navigator, routeProvider.named(identifier));
+  RouteHandler named(String identifier) =>
+      RouteHandler(navigator, routeProvider.named(identifier));
 
   /// @{macro route-open}
-  Future<dynamic> openRoute({bool root = false, bool replacement = false, dynamic args}) {
+  Future<dynamic> openRoute(
+      {bool root = false, bool replacement = false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");
 
     final route = navigator.openRoute(

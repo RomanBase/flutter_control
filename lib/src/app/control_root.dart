@@ -1,88 +1,90 @@
 part of flutter_control;
 
-/// Setup of [AppState].
-/// Holds case [key], [builder] and [transition]
-class AppStateBuilder {
-  /// Case key of [AppState].
-  final AppState key;
+class _ControlRootKey extends GlobalKey<CoreState> {
+  bool get isMounted =>
+      currentState?.element is RootContext && currentState!.mounted;
 
-  /// Case builder for this state.
-  final WidgetBuilder builder;
+  RootContext get context => currentState!.element as RootContext;
 
-  /// Case transaction to this state.
-  final CrossTransition? transition;
-
-  /// Setup of [AppState].
-  /// [key] - Case representing [AppState].
-  /// [builder] - Builder for given case.
-  /// [transition] - Animation from previous Widget to given case.
-  const AppStateBuilder(
-    this.key,
-    this.builder,
-    this.transition,
-  );
-
-  /// Returns case:builder entry.
-  MapEntry<AppState, WidgetBuilder> get builderEntry => MapEntry(key, builder);
-
-  /// Returns case:transition entry.
-  MapEntry<AppState, CrossTransition> get transitionEntry => MapEntry(key, transition!);
-
-  /// Builds case:builder map for given states.
-  static Map<AppState, WidgetBuilder> fillBuilders(List<AppStateBuilder> items) => items.asMap().map<AppState, WidgetBuilder>((key, value) => value.builderEntry);
-
-  /// Builds case:transition map for given states.
-  static Map<AppState, CrossTransition> fillTransitions(List<AppStateBuilder> items) => items.where((item) => item.transition != null).toList().asMap().map<AppState, CrossTransition>((key, value) => value.transitionEntry);
-}
-
-/// Representation of App State handled by [ControlRoot].
-/// [AppState.init] is considered as initial State - used during App loading.
-/// [AppState.main] is considered as default App State.
-/// Other predefined States (as [AppState.onboarding]) can be used to separate main App States and their flow.
-/// It's possible to create custom States by extending [AppState].
-///
-/// Change State via [ControlRootScope] -> [Control.root].
-class AppState {
-  static const init = const AppState();
-
-  static const auth = const _AppStateAuth();
-
-  static const onboarding = const _AppStateOnboarding();
-
-  static const main = const _AppStateMain();
-
-  static const background = const _AppStateBackground();
-
-  const AppState();
-
-  AppStateBuilder build(WidgetBuilder builder, {CrossTransition? transition}) => AppStateBuilder(
-        this,
-        builder,
-        transition,
-      );
-
-  Type get key => this.runtimeType;
-
-  operator ==(Object other) => other is AppState && other.key == key;
+  const _ControlRootKey() : super.constructor();
 
   @override
-  int get hashCode => key.hashCode;
+  String toString() {
+    return '[GlobalKey#${shortHash(this)}_control_root]';
+  }
 }
 
-class _AppStateAuth extends AppState {
-  const _AppStateAuth();
-}
+class _ControlRootScope {
+  static const key = _ControlRootKey();
 
-class _AppStateOnboarding extends AppState {
-  const _AppStateOnboarding();
-}
+  bool get isMounted =>
+      key.currentState?.element is RootContext && key.currentState!.mounted;
 
-class _AppStateBackground extends AppState {
-  const _AppStateBackground();
-}
+  RootContext get context => key.currentState!.element as RootContext;
 
-class _AppStateMain extends AppState {
-  const _AppStateMain();
+  /// Notifies state of [ControlRoot] and sets new [AppState].
+  ///
+  /// [args] - Arguments to child Builders and Widgets.
+  /// [clearNavigator] - Clears root [Navigator].
+  bool setAppState(AppState state, {bool clearNavigator = true}) {
+    if (clearNavigator) {
+      try {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } catch (err) {
+        printDebug(err.toString());
+      }
+    }
+
+    if (isMounted) {
+      context.changeAppState(state);
+
+      return true;
+    }
+
+    printDebug('No State found to notify.');
+
+    return false;
+  }
+
+  /// Changes [AppState] to [AppState.init]
+  ///
+  /// Checks [setAppState] for more info.
+  bool setInitState({bool clearNavigator = true}) => setAppState(
+        AppState.init,
+        clearNavigator: clearNavigator,
+      );
+
+  /// Changes [AppState] to [AppState.auth]
+  ///
+  /// Checks [setAppState] for more info.
+  bool setAuthState({bool clearNavigator = true}) => setAppState(
+        AppState.auth,
+        clearNavigator: clearNavigator,
+      );
+
+  /// Changes [AppState] to [AppState.onboarding]
+  ///
+  /// Checks [setAppState] for more info.
+  bool setOnboardingState({bool clearNavigator = true}) => setAppState(
+        AppState.onboarding,
+        clearNavigator: clearNavigator,
+      );
+
+  /// Changes [AppState] to [AppState.main]
+  ///
+  /// Checks [setAppState] for more info.
+  bool setMainState({bool clearNavigator = true}) => setAppState(
+        AppState.main,
+        clearNavigator: clearNavigator,
+      );
+
+  /// Changes [AppState] to [AppState.background]
+  ///
+  /// Checks [setAppState] for more info.
+  bool setBackgroundState({bool clearNavigator = true}) => setAppState(
+        AppState.background,
+        clearNavigator: clearNavigator,
+      );
 }
 
 class ControlRoot extends ControlWidget {
@@ -102,7 +104,7 @@ class ControlRoot extends ControlWidget {
     this.builders = const [],
     required this.builder,
     this.onSetupChanged,
-  });
+  }) : super(key: _ControlRootScope.key);
 
   @override
   void onInit(Map args, CoreContext context) {
@@ -112,7 +114,8 @@ class ControlRoot extends ControlWidget {
       context<ThemeConfig>(value: () => theme!, stateNotifier: true);
     }
 
-    context.value<AppState>(value: initState ?? AppState.init, stateNotifier: true);
+    context.value<AppState>(
+        value: initState ?? AppState.init, stateNotifier: true);
 
     stateNotifiers.forEach((element) => context.registerStateNotifier(element));
     builders.forEach((element) {
@@ -128,13 +131,14 @@ class ControlRoot extends ControlWidget {
 
   @override
   Widget build(CoreContext context) {
-    printAction(() => 'BUILD CONTROL ROOT: ${Parse.name(context.value<AppState>().value)} | ${ThemeConfig.preferredTheme} | ${Control.get<Localino>()?.locale}');
+    printAction(() =>
+        'BUILD CONTROL ROOT: ${Parse.name(context.value<AppState>().value)} | ${ThemeConfig.preferredTheme} | ${Control.get<Localino>()?.locale}');
 
     return builder(
       context as RootContext,
       ControlBuilder<AppState>(
         control: context.value<AppState>(),
-        valueConverter: (_) => context.value<AppState>().value!,
+        valueConverter: (_) => context.appState,
         builder: (context, value) => CaseWidget<AppState>(
           activeCase: value,
           builders: AppStateBuilder.fillBuilders(states),
@@ -146,7 +150,8 @@ class ControlRoot extends ControlWidget {
 }
 
 class RootContext extends CoreContext {
-  static RootContext? of(BuildContext context) => context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;
+  static RootContext? of(BuildContext context) =>
+      context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;
 
   AppState get appState => value<AppState>().value ?? AppState.init;
 
@@ -169,7 +174,8 @@ class RootContext extends CoreContext {
 
   void changeAppState(AppState state) => value<AppState>().value = state;
 
-  void changeTheme(dynamic key, [bool preferred = true]) => get<ThemeConfig>()?.changeTheme(key, preferred);
+  void changeTheme(dynamic key, [bool preferred = true]) =>
+      get<ThemeConfig>()?.changeTheme(key, preferred);
 
   @override
   void notifyState() {

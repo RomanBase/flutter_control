@@ -8,7 +8,8 @@ abstract class RouteNavigator {
   /// [root] - pushes route into root Navigator - onto top of everything.
   /// [replacement] - pushes route as replacement of current route.
   /// {@endtemplate}
-  Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false});
+  Future<dynamic> openRoute(Route route,
+      {bool root = false, bool replacement = false});
 
   /// {@template route-root}
   /// Clears current [Navigator] and opens new [Route].
@@ -46,10 +47,12 @@ class ControlNavigator implements RouteNavigator {
   ControlNavigator(this.context);
 
   @protected
-  NavigatorState getNavigator({bool root = false}) => Navigator.of(context, rootNavigator: root);
+  NavigatorState getNavigator({bool root = false}) =>
+      Navigator.of(context, rootNavigator: root);
 
   @override
-  Future<dynamic> openRoute(Route route, {bool root = false, bool replacement = false}) {
+  Future<dynamic> openRoute(Route route,
+      {bool root = false, bool replacement = false}) {
     if (replacement) {
       return getNavigator().pushReplacement(route);
     } else {

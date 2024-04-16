@@ -5,9 +5,11 @@ typedef ThemeInitializer = ThemeData Function();
 class ThemeConfig with PrefsProvider, ChangeNotifier {
   static const preference_key = 'control_theme';
 
-  static String get preferredTheme => PrefsProvider.instance.get(ThemeConfig.preference_key, defaultValue: 'auto')!;
+  static String get preferredTheme => PrefsProvider.instance
+      .get(ThemeConfig.preference_key, defaultValue: 'auto')!;
 
-  static Brightness get platformBrightness => PlatformDispatcher.instance.platformBrightness;
+  static Brightness get platformBrightness =>
+      PlatformDispatcher.instance.platformBrightness;
 
   final dynamic initTheme;
   final Map<dynamic, ThemeInitializer> themes;
@@ -20,13 +22,16 @@ class ThemeConfig with PrefsProvider, ChangeNotifier {
   bool contains(dynamic key) {
     key = Parse.name(key);
 
-    return themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => null) != null;
+    return themes.keys.firstWhere((item) => Parse.name(item) == key,
+            orElse: () => null) !=
+        null;
   }
 
   ThemeData getTheme(dynamic key) {
     key = Parse.name(key);
 
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initTheme ?? platformBrightness);
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key,
+        orElse: () => initTheme ?? platformBrightness);
 
     if (themes.containsKey(key)) {
       return themes[key]!();
@@ -39,7 +44,8 @@ class ThemeConfig with PrefsProvider, ChangeNotifier {
 
   ThemeData getPreferredTheme() => getTheme(preferredTheme);
 
-  void setAsPreferred(dynamic key) => prefs.set(ThemeConfig.preference_key, Parse.name(key));
+  void setAsPreferred(dynamic key) =>
+      prefs.set(ThemeConfig.preference_key, Parse.name(key));
 
   void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
@@ -56,5 +62,6 @@ class ThemeConfig with PrefsProvider, ChangeNotifier {
     broadcastTheme(data);
   }
 
-  void broadcastTheme(ThemeData data) => BroadcastProvider.broadcast<ThemeData>(value: data);
+  void broadcastTheme(ThemeData data) =>
+      BroadcastProvider.broadcast<ThemeData>(value: data);
 }

@@ -5,7 +5,10 @@ abstract class RoutingStoreProvider {
 
   RoutingStoreProvider();
 
-  factory RoutingStoreProvider.of({List<ControlRoute> routes = const [], List<RoutingStoreProvider> providers = const []}) => _RoutingStoreProvider(
+  factory RoutingStoreProvider.of(
+          {List<ControlRoute> routes = const [],
+          List<RoutingStoreProvider> providers = const []}) =>
+      _RoutingStoreProvider(
         [
           ...routes,
           ...providers.map((e) => e.routes).fold([], (a, b) => [...a, ...b]),
@@ -49,12 +52,14 @@ class RouteArgs extends ControlArgs {
 
   RouteMask get mask => get<RouteMask>()!;
 
-  RouteArgs._(ControlRoute route, RouteMask mask, [dynamic args]) : super(ControlArgs.of(args).data) {
+  RouteArgs._(ControlRoute route, RouteMask mask, [dynamic args])
+      : super(ControlArgs.of(args).data) {
     add(value: route);
     add(value: mask);
   }
 
-  String format(dynamic args, [ParamDecoratorFormat? decorator]) => mask.format(args, decorator);
+  String format(dynamic args, [ParamDecoratorFormat? decorator]) =>
+      mask.format(args, decorator);
 }
 
 /// Stores [ControlRoute] by identifier key - [RouteStore.routeIdentifier].
@@ -96,7 +101,8 @@ class RouteStore {
 
     assert(() {
       if (_routes.containsKey(identifier)) {
-        printDebug('Storage already contains key: $identifier. Route of this key will be override.');
+        printDebug(
+            'Storage already contains key: $identifier. Route of this key will be override.');
       }
       return true;
     }());
@@ -118,7 +124,8 @@ class RouteStore {
     }
 
     identifier = RouteMask.of(identifier);
-    final mask = _masks.firstWhere((element) => element.match(identifier), orElse: () => RouteMask.empty);
+    final mask = _masks.firstWhere((element) => element.match(identifier),
+        orElse: () => RouteMask.empty);
 
     if (mask.isNotEmpty && _routes.containsKey(mask.identifier)) {
       return _routes[mask.identifier];
@@ -159,7 +166,8 @@ class RouteStore {
   static RouteMask routePathMask(String path) => RouteMask.of(path);
 
   /// Alters given [identifier] with [path].
-  static String routePathIdentifier<T>({dynamic identifier, dynamic path, dynamic args}) {
+  static String routePathIdentifier<T>(
+      {dynamic identifier, dynamic path, dynamic args}) {
     if (path == null) {
       path = routeIdentifier(identifier);
     } else if (path is String) {
@@ -169,7 +177,9 @@ class RouteStore {
     } else if (path is List) {
       path = '/' + path.join('/');
     } else if (path is Map) {
-      path = '/' + Parse.toList(args, entryConverter: (key, value) => '$key/$value').join('/');
+      path = '/' +
+          Parse.toList(args, entryConverter: (key, value) => '$key/$value')
+              .join('/');
     }
 
     if (args == null || (args is String && args.isEmpty)) {
@@ -177,7 +187,9 @@ class RouteStore {
     }
 
     if (args is Map) {
-      return '$path?' + Parse.toList(args, entryConverter: (key, value) => '$key=$value').join('&');
+      return '$path?' +
+          Parse.toList(args, entryConverter: (key, value) => '$key=$value')
+              .join('&');
     }
 
     if (args is List) {
@@ -199,7 +211,8 @@ class RouteMask {
 
   String get path => '/' + _segments.map((e) => e.name).join('/');
 
-  List<String> get args => _segments.where((e) => e.mask).map((e) => e.name).toList();
+  List<String> get args =>
+      _segments.where((e) => e.mask).map((e) => e.name).toList();
 
   bool get isEmpty => _segments.isEmpty;
 
@@ -207,13 +220,22 @@ class RouteMask {
 
   int get segmentCount => _segments.length;
 
-  static RouteMask get root => RouteMask._([_PathSegment('', false, null)], '/');
+  static RouteMask get root =>
+      RouteMask._([_PathSegment('', false, null)], '/');
 
   static RouteMask get empty => RouteMask._([], '/');
 
   const RouteMask._(this._segments, this.identifier);
 
-  factory RouteMask.of(String? path, [String? identifier]) => path == null ? empty : (path == '/' ? root : RouteMask._(_PathSegment.chain(Uri.parse(path, 0, path.endsWith('/') ? path.length - 1 : path.length).pathSegments), identifier ?? path));
+  factory RouteMask.of(String? path, [String? identifier]) => path == null
+      ? empty
+      : (path == '/'
+          ? root
+          : RouteMask._(
+              _PathSegment.chain(Uri.parse(path, 0,
+                      path.endsWith('/') ? path.length - 1 : path.length)
+                  .pathSegments),
+              identifier ?? path));
 
   bool match(RouteMask other) {
     if (other._segments.length != _segments.length) {
@@ -255,13 +277,18 @@ class RouteMask {
     }
 
     if (args is Map) {
-      return Parse.format(path, Parse.toKeyMap(args, (key, value) => '$key', converter: (value) => '$value'), decorator);
+      return Parse.format(
+          path,
+          Parse.toKeyMap(args, (key, value) => '$key',
+              converter: (value) => '$value'),
+          decorator);
     }
 
     return Parse.format(path, {this.args.first: '$args'}, ParamDecorator.none);
   }
 
-  Map<String, dynamic> params(RouteMask other, [int decoratorStartOffset = 1, int decoratorEndOffset = 1]) {
+  Map<String, dynamic> params(RouteMask other,
+      [int decoratorStartOffset = 1, int decoratorEndOffset = 1]) {
     final map = <String, dynamic>{};
 
     RouteMask mask;
@@ -282,7 +309,9 @@ class RouteMask {
     final count = mask.segmentCount;
     for (int i = 0; i < count; i++) {
       if (mask._segments[i].mask && route.segmentCount > i) {
-        map[mask._segments[i].substringName(decoratorStartOffset, decoratorEndOffset)] = route._segments[i].name;
+        map[mask._segments[i]
+                .substringName(decoratorStartOffset, decoratorEndOffset)] =
+            route._segments[i].name;
       }
     }
 
@@ -314,7 +343,8 @@ class _PathSegment {
     return segments.reversed.toList();
   }
 
-  String substringName(int startOffset, int endOffset) => name.substring(startOffset, name.length - endOffset);
+  String substringName(int startOffset, int endOffset) =>
+      name.substring(startOffset, name.length - endOffset);
 
   _PathSegment? firstMask() {
     if (mask) {
@@ -340,9 +370,13 @@ class RoutingProvider {
 
   RoutingProvider._(this.parent);
 
-  RouteSettings? popSettings(BuildContext context) => (context is RootContext ? context : context.root).args.pop<RouteSettings>();
+  RouteSettings? popSettings(BuildContext context) =>
+      (context is RootContext ? context : context.root)
+          .args
+          .pop<RouteSettings>();
 
-  Route? generate(BuildContext context, RouteSettings settings, {bool? active, RouteFactory? onGenerate}) {
+  Route? generate(BuildContext context, RouteSettings settings,
+      {bool? active, RouteFactory? onGenerate}) {
     if (onGenerate != null) {
       this.onGenerate = onGenerate;
     }
@@ -402,7 +436,8 @@ class RoutingProvider {
     return null;
   }
 
-  Future restoreRouteNavigation(BuildContext context, RouteNavigator navigator) async {
+  Future restoreRouteNavigation(
+      BuildContext context, RouteNavigator navigator) async {
     final route = restore(context);
 
     if (route != null) {
@@ -414,5 +449,8 @@ class RoutingProvider {
 }
 
 extension RootContextRouterExt on RootContext {
-  Route? generateRoute(RouteSettings settings, {Route Function()? root}) => (settings.name == '/' && root != null) ? root.call() : Control.get<RouteStore>()?.routing.generate(this, settings);
+  Route? generateRoute(RouteSettings settings, {Route Function()? root}) =>
+      (settings.name == '/' && root != null)
+          ? root.call()
+          : Control.get<RouteStore>()?.routing.generate(this, settings);
 }

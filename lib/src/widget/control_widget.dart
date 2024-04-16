@@ -21,7 +21,8 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 /// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
 ///
 /// {@macro control-widget}
-abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidgetBase {
+abstract class SingleControlWidget<T extends ControlModel>
+    extends _ControlWidgetBase {
   /// specific [key] under which is [ControlModel] stored in [ControlFactory].
   dynamic get factoryKey => null;
 
@@ -62,7 +63,8 @@ abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidge
   T? initControl(CoreContext context) => context.getControl<T>(key: factoryKey);
 
   @override
-  Widget rebuild(CoreContext context) => build(context, (context.state as ControlState).controls![0] as T);
+  Widget rebuild(CoreContext context) =>
+      build(context, (context.state as ControlState).controls![0] as T);
 
   Widget build(CoreContext context, T control);
 }
@@ -121,7 +123,8 @@ abstract class _ControlWidgetBase extends CoreWidget {
   ///
   /// Returns [stateNotifiers] to init, subscribe and dispose with Widget.
   @protected
-  List<ControlModel> initControls(CoreContext context) => autoMountControls ? context.args.getAll<ControlModel>() : [];
+  List<ControlModel> initControls(CoreContext context) =>
+      autoMountControls ? context.args.getAll<ControlModel>() : [];
 
   @override
   CoreState createState() => ControlState();

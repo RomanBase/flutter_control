@@ -68,7 +68,8 @@ class CoreContext extends StatefulElement {
     return this.take<T>(key: key, value: value, stateNotifier: stateNotifier);
   }
 
-  T? take<T>({dynamic key, required T Function()? value, bool stateNotifier = false}) {
+  T? take<T>(
+      {dynamic key, required T Function()? value, bool stateNotifier = false}) {
     final item = args.getWithFactory<T>(key: key, defaultValue: value);
 
     if (stateNotifier) {
@@ -82,7 +83,8 @@ class CoreContext extends StatefulElement {
     return item;
   }
 
-  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) => take<_ArgValue<T>>(
+  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) =>
+      take<_ArgValue<T>>(
         key: key,
         value: () => _ArgValue<T>(value),
         stateNotifier: stateNotifier,
@@ -115,7 +117,8 @@ class CoreContext extends StatefulElement {
     } else if (object is ObservableChannel) {
       register(object.subscribe(() => notifyState()));
     } else if (object is Stream || object is Future || object is Listenable) {
-      register(ControlObservable.of(object).subscribe((value) => notifyState()));
+      register(
+          ControlObservable.of(object).subscribe((value) => notifyState()));
     }
   }
 }
