@@ -10,7 +10,6 @@ import 'package:flutter_control/control.dart';
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
 export 'package:flutter/material.dart';
-export 'package:localino/localino.dart';
 
 part 'src/app/app_state.dart';
 

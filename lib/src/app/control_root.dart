@@ -132,7 +132,7 @@ class ControlRoot extends ControlWidget {
   @override
   Widget build(CoreContext context) {
     printAction(() =>
-        'BUILD CONTROL ROOT: ${Parse.name(context.value<AppState>().value)} | ${ThemeConfig.preferredTheme} | ${Control.get<Localino>()?.locale}');
+        'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} | ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
 
     return builder(
       context as RootContext,

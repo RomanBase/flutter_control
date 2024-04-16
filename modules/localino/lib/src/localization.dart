@@ -762,4 +762,9 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
     clear();
   }
+
+  @override
+  String toString() {
+    return locale;
+  }
 }
