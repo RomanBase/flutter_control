@@ -3,13 +3,13 @@ library flutter_control;
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
 export 'package:flutter/material.dart';
+export 'package:flutter/cupertino.dart' hide RefreshCallback;
 
 part 'src/app/app_state.dart';
 
@@ -65,5 +65,4 @@ part 'src/widget/core_widget.dart';
 
 part 'src/widget/field_builder.dart';
 
-typedef ControlWidgetBuilder<T> = Widget Function(
-    BuildContext context, T value);
+typedef ControlWidgetBuilder<T> = Widget Function(BuildContext context, T value);

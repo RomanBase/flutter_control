@@ -1,37 +1,32 @@
 part of flutter_control;
 
 typedef ThemeInitializer = ThemeData Function();
+typedef ThemeFactory = Map<dynamic, ThemeInitializer>;
 
-class ThemeConfig with PrefsProvider, ChangeNotifier {
+class ThemeConfig extends ValueNotifier<ThemeData> with PrefsProvider {
   static const preference_key = 'control_theme';
 
-  static String get preferredTheme => PrefsProvider.instance
-      .get(ThemeConfig.preference_key, defaultValue: 'auto')!;
+  static String get preferredTheme => PrefsProvider.instance.get(ThemeConfig.preference_key, defaultValue: 'auto')!;
 
-  static Brightness get platformBrightness =>
-      PlatformDispatcher.instance.platformBrightness;
+  static Brightness get platformBrightness => PlatformDispatcher.instance.platformBrightness;
 
-  final dynamic initTheme;
-  final Map<dynamic, ThemeInitializer> themes;
+  final dynamic initial;
+  final ThemeFactory themes;
 
   ThemeConfig({
-    this.initTheme,
+    this.initial,
     required this.themes,
-  });
+  }) : super(themes[initial ?? themes.keys.first]!());
 
-  bool contains(dynamic key) {
-    key = Parse.name(key);
-
-    return themes.keys.firstWhere((item) => Parse.name(item) == key,
-            orElse: () => null) !=
-        null;
+  Future<void> mount() async {
+    await prefs.mount();
+    changeTheme(preferredTheme, false);
   }
 
   ThemeData getTheme(dynamic key) {
     key = Parse.name(key);
 
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key,
-        orElse: () => initTheme ?? platformBrightness);
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initial ?? platformBrightness) ;
 
     if (themes.containsKey(key)) {
       return themes[key]!();
@@ -40,12 +35,7 @@ class ThemeConfig with PrefsProvider, ChangeNotifier {
     return themes.values.first();
   }
 
-  ThemeData getInitTheme() => getTheme(initTheme);
-
-  ThemeData getPreferredTheme() => getTheme(preferredTheme);
-
-  void setAsPreferred(dynamic key) =>
-      prefs.set(ThemeConfig.preference_key, Parse.name(key));
+  void setAsPreferred(dynamic key) => prefs.set(ThemeConfig.preference_key, Parse.name(key));
 
   void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
@@ -58,10 +48,6 @@ class ThemeConfig with PrefsProvider, ChangeNotifier {
       setAsPreferred(key);
     }
 
-    notifyListeners();
-    broadcastTheme(data);
+    value = data;
   }
-
-  void broadcastTheme(ThemeData data) =>
-      BroadcastProvider.broadcast<ThemeData>(value: data);
 }
