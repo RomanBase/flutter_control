@@ -45,8 +45,8 @@ class MyApp extends StatelessWidget {
     );
 
     return ControlRoot(
-      theme: ThemeConfig(
-        themes: UITheme.config,
+      theme: MaterialThemeConfig(
+        themes: UITheme.factory,
       ),
       states: [
         AppState.init.build((context) => InitLoader.of(builder: (_) => Center(child: Text('init')))),
@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         //home: home,
         onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
-        theme: context<ThemeConfig>()?.value,
+        theme: context<ThemeConfig>()!.value,
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,

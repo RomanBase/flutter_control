@@ -147,7 +147,7 @@ class UITheme {
 
   static ColorScheme scheme = _lightScheme;
 
-  static ThemeFactory get config => {
+  static MaterialThemeFactory get factory => {
         Brightness.light: () => _light(),
         Brightness.dark: () => _dark(),
       };

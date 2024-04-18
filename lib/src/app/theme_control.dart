@@ -1,9 +1,26 @@
 part of flutter_control;
 
-typedef ThemeInitializer = ThemeData Function();
-typedef ThemeFactory = Map<dynamic, ThemeInitializer>;
+typedef ThemeInitializer<T> = T Function();
+typedef ThemeFactory<T> = Map<dynamic, ThemeInitializer<T>>;
 
-class ThemeConfig extends ValueNotifier<ThemeData> with PrefsProvider {
+typedef MaterialThemeFactory = ThemeFactory<ThemeData>;
+typedef CupertinoThemeFactory = ThemeFactory<CupertinoThemeData>;
+
+class MaterialThemeConfig extends ThemeConfig<ThemeData> {
+  MaterialThemeConfig({
+    super.initial,
+    required super.themes,
+  });
+}
+
+class CupertinoThemeConfig extends ThemeConfig<CupertinoThemeData> {
+  CupertinoThemeConfig({
+    super.initial,
+    required super.themes,
+  });
+}
+
+class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   static const preference_key = 'control_theme';
 
   static String get preferredTheme => PrefsProvider.instance.get(ThemeConfig.preference_key, defaultValue: 'auto')!;
@@ -23,10 +40,10 @@ class ThemeConfig extends ValueNotifier<ThemeData> with PrefsProvider {
     changeTheme(preferredTheme, false);
   }
 
-  ThemeData getTheme(dynamic key) {
+  T getTheme(dynamic key) {
     key = Parse.name(key);
 
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initial ?? platformBrightness) ;
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initial ?? platformBrightness);
 
     if (themes.containsKey(key)) {
       return themes[key]!();
