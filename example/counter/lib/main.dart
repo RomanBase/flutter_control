@@ -49,7 +49,8 @@ class MyApp extends StatelessWidget {
         themes: UITheme.factory,
       ),
       states: [
-        AppState.init.build((context) => InitLoader.of(builder: (_) => Center(child: Text('init')))),
+        AppState.init.build((context) =>
+            InitLoader.of(builder: (_) => Center(child: Text('init')))),
         AppState.onboarding.build((context) => OnboardingPage()),
         AppState.main.build((context) => MainPage()),
       ],
@@ -59,7 +60,8 @@ class MyApp extends StatelessWidget {
       builder: (context, home) => MaterialApp(
         title: 'Flutter Demo',
         //home: home,
-        onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
+        onGenerateRoute: (settings) => context.generateRoute(settings,
+            root: () => MaterialPageRoute(builder: (_) => home)),
         theme: context<ThemeConfig>()!.value,
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [
@@ -112,12 +114,16 @@ class MainPage extends SingleControlWidget<Counter> {
             ),
             ElevatedButton(
               onPressed: () {
-                LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
+                LocalinoProvider.instance.changeLocale(
+                    LocalinoProvider.instance.locale == 'en_US'
+                        ? 'cs_CZ'
+                        : 'en_US');
               },
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
             ElevatedButton(
-              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: counter),
+              onPressed: () =>
+                  context.routeOf<SecondPage>()?.openRoute(args: counter),
               child: Text('Open Next'),
             ),
           ],
@@ -164,12 +170,17 @@ class SecondPage extends ControlWidget {
             ),
             ElevatedButton(
               onPressed: () {
-                LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
+                LocalinoProvider.instance.changeLocale(
+                    LocalinoProvider.instance.locale == 'en_US'
+                        ? 'cs_CZ'
+                        : 'en_US');
               },
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
             ElevatedButton(
-              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: context<Counter>()?.value),
+              onPressed: () => context
+                  .routeOf<SecondPage>()
+                  ?.openRoute(args: context<Counter>()?.value),
               child: Text('Open Next'),
             ),
           ],

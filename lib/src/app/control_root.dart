@@ -1,7 +1,8 @@
 part of flutter_control;
 
 class _ControlRootKey extends GlobalKey<CoreState> {
-  bool get isMounted => currentState?.element is RootContext && currentState!.mounted;
+  bool get isMounted =>
+      currentState?.element is RootContext && currentState!.mounted;
 
   RootContext get context => currentState!.element as RootContext;
 
@@ -16,7 +17,8 @@ class _ControlRootKey extends GlobalKey<CoreState> {
 class _ControlRootScope {
   static const key = _ControlRootKey();
 
-  bool get isMounted => key.currentState?.element is RootContext && key.currentState!.mounted;
+  bool get isMounted =>
+      key.currentState?.element is RootContext && key.currentState!.mounted;
 
   RootContext get context => key.currentState!.element as RootContext;
 
@@ -113,7 +115,8 @@ class ControlRoot extends ControlWidget {
       theme!.mount();
     }
 
-    context.value<AppState>(value: initState ?? AppState.init, stateNotifier: true);
+    context.value<AppState>(
+        value: initState ?? AppState.init, stateNotifier: true);
 
     stateNotifiers.forEach((element) => context.registerStateNotifier(element));
     builders.forEach((element) {
@@ -129,7 +132,8 @@ class ControlRoot extends ControlWidget {
 
   @override
   Widget build(CoreContext context) {
-    printAction(() => 'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} | ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
+    printAction(() =>
+        'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} | ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
 
     return builder(
       context as RootContext,
@@ -147,7 +151,8 @@ class ControlRoot extends ControlWidget {
 }
 
 class RootContext extends CoreContext {
-  static RootContext? of(BuildContext context) => context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;
+  static RootContext? of(BuildContext context) =>
+      context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;
 
   AppState get appState => value<AppState>().value ?? AppState.init;
 
@@ -170,7 +175,8 @@ class RootContext extends CoreContext {
 
   void changeAppState(AppState state) => value<AppState>().value = state;
 
-  void changeTheme(dynamic key, [bool preferred = true]) => get<ThemeConfig>()?.changeTheme(key, preferred);
+  void changeTheme(dynamic key, [bool preferred = true]) =>
+      get<ThemeConfig>()?.changeTheme(key, preferred);
 
   @override
   void notifyState() {

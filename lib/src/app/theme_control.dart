@@ -23,9 +23,11 @@ class CupertinoThemeConfig extends ThemeConfig<CupertinoThemeData> {
 class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   static const preference_key = 'control_theme';
 
-  static String get preferredTheme => PrefsProvider.instance.get(ThemeConfig.preference_key, defaultValue: 'auto')!;
+  static String get preferredTheme => PrefsProvider.instance
+      .get(ThemeConfig.preference_key, defaultValue: 'auto')!;
 
-  static Brightness get platformBrightness => PlatformDispatcher.instance.platformBrightness;
+  static Brightness get platformBrightness =>
+      PlatformDispatcher.instance.platformBrightness;
 
   final dynamic initial;
   final ThemeFactory themes;
@@ -43,7 +45,8 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   T getTheme(dynamic key) {
     key = Parse.name(key);
 
-    key = themes.keys.firstWhere((item) => Parse.name(item) == key, orElse: () => initial ?? platformBrightness);
+    key = themes.keys.firstWhere((item) => Parse.name(item) == key,
+        orElse: () => initial ?? platformBrightness);
 
     if (themes.containsKey(key)) {
       return themes[key]!();
@@ -52,7 +55,8 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
     return themes.values.first();
   }
 
-  void setAsPreferred(dynamic key) => prefs.set(ThemeConfig.preference_key, Parse.name(key));
+  void setAsPreferred(dynamic key) =>
+      prefs.set(ThemeConfig.preference_key, Parse.name(key));
 
   void resetPreferred() => prefs.set(ThemeConfig.preference_key, null);
 
