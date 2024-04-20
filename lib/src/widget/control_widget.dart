@@ -1,7 +1,7 @@
 part of flutter_control;
 
 abstract class BaseControlWidget extends CoreWidget {
-  Widget build(BuildContext context);
+  Widget build(CoreContext context);
 
   @override
   CoreState<CoreWidget> createState() => BaseControlState();
@@ -14,7 +14,7 @@ abstract class BaseControlWidget extends CoreWidget {
 
 class BaseControlState extends CoreState<BaseControlWidget> {
   @override
-  Widget build(BuildContext context) => widget.build(context);
+  Widget build(BuildContext context) => widget.build(element);
 }
 
 /// [ControlWidget] with one main [ControlModel].
