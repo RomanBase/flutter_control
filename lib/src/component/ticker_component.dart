@@ -1,77 +1,19 @@
 part of flutter_control;
 
-/// Mostly copy of [SingleTickerProviderStateMixin].
-class _SingleTickerProvider implements Disposable, TickerProvider {
-  Ticker? _ticker;
+class _WidgetTicker extends Ticker {
+  _TickerProvider? _creator;
 
-  @override
-  Ticker createTicker(onTick) {
-    assert(() {
-      if (_ticker == null) return true;
-      throw FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary(
-            '$runtimeType is a SingleTickerProviderStateMixin but multiple tickers were created.'),
-        ErrorDescription(
-            'A SingleTickerProviderStateMixin can only be used as a TickerProvider once.'),
-        ErrorHint(
-            'If a State is used for multiple AnimationController objects, or if it is passed to other '
-            'objects and those objects might use it more than one time in total, then instead of '
-            'mixing in a SingleTickerProviderStateMixin, use a regular TickerProviderStateMixin.')
-      ]);
-    }());
-    _ticker =
-        Ticker(onTick, debugLabel: kDebugMode ? 'created by $this' : null);
-    // We assume that this is called from initState, build, or some sort of
-    // event handler, and that thus TickerMode.of(context) would return true. We
-    // can't actually check that here because if we're in initState then we're
-    // not allowed to do inheritance checks yet.
-    return _ticker!;
-  }
+  bool get isMounted => _creator != null;
 
-  void _muteTicker(bool muted) => _ticker?.muted = muted;
+  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel})
+      : super(onTick, debugLabel: debugLabel);
 
   @override
   void dispose() {
-    assert(() {
-      if (_ticker == null || !_ticker!.isActive) return true;
-      throw FlutterError.fromParts(<DiagnosticsNode>[
-        ErrorSummary('$this was disposed with an active Ticker.'),
-        ErrorDescription(
-            '$runtimeType created a Ticker via its SingleTickerProviderStateMixin, but at the time '
-            'dispose() was called on the mixin, that Ticker was still active. The Ticker must '
-            'be disposed before calling super.dispose().'),
-        ErrorHint('Tickers used by AnimationControllers '
-            'should be disposed by calling dispose() on the AnimationController itself. '
-            'Otherwise, the ticker will leak.'),
-        _ticker!.describeForError('The offending ticker was')
-      ]);
-    }());
+    _creator?._removeTicker(this);
+    _creator = null;
 
-    _ticker?.dispose();
-    _ticker = null;
-  }
-}
-
-/// Check [SingleTickerProviderStateMixin]
-mixin SingleTickerControl on CoreWidget implements TickerProvider {
-  final _ticker = _SingleTickerProvider();
-
-  TickerProvider get ticker => this;
-
-  @override
-  Ticker createTicker(onTick) => _ticker.createTicker(onTick);
-
-  @override
-  void onInit(Map args, CoreContext context) {
-    _ticker._muteTicker(!TickerMode.of(context));
-
-    super.onInit(args, context);
-  }
-
-  @override
-  void onDispose() {
-    _ticker.dispose();
-    super.onDispose();
+    super.dispose();
   }
 }
 
@@ -129,43 +71,16 @@ class _TickerProvider implements Disposable, TickerProvider {
 }
 
 /// Check [TickerProviderStateMixin]
-mixin TickerControl on CoreWidget implements TickerProvider {
-  final _ticker = _TickerProvider();
+extension TickerExt on CoreContext {
+  _TickerProvider get ticker => get<_TickerProvider>()!;
 
-  TickerProvider get ticker => this;
-
-  @override
-  Ticker createTicker(TickerCallback onTick) => _ticker.createTicker(onTick);
-
-  @override
-  void onInit(Map args, CoreContext context) {
-    _ticker._muteTicker(!TickerMode.of(context));
-
-    super.onInit(args, context);
+  void initRuntime() {
+    final ticker = take<_TickerProvider>(value: () => _TickerProvider())!;
+    ticker._muteTicker(TickerMode.of(this));
   }
 
-  @override
   void onDispose() {
-    super.onDispose();
-
-    _ticker.dispose();
-  }
-}
-
-class _WidgetTicker extends Ticker {
-  _TickerProvider? _creator;
-
-  bool get isMounted => _creator != null;
-
-  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel})
-      : super(onTick, debugLabel: debugLabel);
-
-  @override
-  void dispose() {
-    _creator?._removeTicker(this);
-    _creator = null;
-
-    super.dispose();
+    ticker.dispose();
   }
 }
 

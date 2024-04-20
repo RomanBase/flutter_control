@@ -121,6 +121,10 @@ class CoreContext extends StatefulElement {
           ControlObservable.of(object).subscribe((value) => notifyState()));
     }
   }
+
+  void onDependencyChanged() {}
+
+  void onDispose() {}
 }
 
 /// [State] of [CoreWidget].
@@ -185,6 +189,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
       element.initRuntime();
     }
 
+    element.onDependencyChanged();
     widget.onDependencyChanged(element);
   }
 
@@ -213,6 +218,7 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
     _objects = null;
 
+    element.onDispose();
     widget.onDispose();
   }
 }

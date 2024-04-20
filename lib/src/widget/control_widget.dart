@@ -1,7 +1,6 @@
 part of flutter_control;
 
 abstract class BaseControlWidget extends CoreWidget {
-
   const BaseControlWidget({
     super.key,
     super.initArgs,

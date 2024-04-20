@@ -93,21 +93,111 @@ const _darkScheme = ColorScheme(
 );
 
 TextTheme _textTheme(Color color) => TextTheme(
-      displayLarge: TextStyle(fontSize: 48.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      displayMedium: TextStyle(fontSize: 40.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      displaySmall: TextStyle(fontSize: 32.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      headlineLarge: TextStyle(fontSize: 28.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      headlineMedium: TextStyle(fontSize: 24.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      headlineSmall: TextStyle(fontSize: 20.0, color: color, fontFamily: _fontHeadlineFamily, fontWeight: FontWeight.w900, height: _fontHeadlineHeight, letterSpacing: _fontHeadlineSpacing),
-      titleLarge: TextStyle(fontSize: 22.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w800, height: _fontHeight, letterSpacing: _fontSpacing),
-      titleMedium: TextStyle(fontSize: 18.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w800, height: _fontHeight, letterSpacing: _fontSpacing),
-      titleSmall: TextStyle(fontSize: 16.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w700, height: _fontHeight, letterSpacing: _fontSpacing),
-      bodyLarge: TextStyle(fontSize: 14.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w400, height: _fontContentHeight, letterSpacing: _fontSpacing),
-      bodyMedium: TextStyle(fontSize: 13.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w400, height: _fontContentHeight, letterSpacing: _fontSpacing),
-      bodySmall: TextStyle(fontSize: 12.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w300, height: _fontContentHeight, letterSpacing: _fontSpacing),
-      labelLarge: TextStyle(fontSize: 15.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w700, height: _fontHeight, letterSpacing: _fontSpacing),
-      labelMedium: TextStyle(fontSize: 14.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w700, height: _fontContentHeight, letterSpacing: _fontSpacing),
-      labelSmall: TextStyle(fontSize: 12.0, color: color, fontFamily: _fontFamily, fontWeight: FontWeight.w700, height: _fontContentHeight, letterSpacing: _fontSpacing),
+      displayLarge: TextStyle(
+          fontSize: 48.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      displayMedium: TextStyle(
+          fontSize: 40.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      displaySmall: TextStyle(
+          fontSize: 32.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      headlineLarge: TextStyle(
+          fontSize: 28.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      headlineMedium: TextStyle(
+          fontSize: 24.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      headlineSmall: TextStyle(
+          fontSize: 20.0,
+          color: color,
+          fontFamily: _fontHeadlineFamily,
+          fontWeight: FontWeight.w900,
+          height: _fontHeadlineHeight,
+          letterSpacing: _fontHeadlineSpacing),
+      titleLarge: TextStyle(
+          fontSize: 22.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w800,
+          height: _fontHeight,
+          letterSpacing: _fontSpacing),
+      titleMedium: TextStyle(
+          fontSize: 18.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w800,
+          height: _fontHeight,
+          letterSpacing: _fontSpacing),
+      titleSmall: TextStyle(
+          fontSize: 16.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w700,
+          height: _fontHeight,
+          letterSpacing: _fontSpacing),
+      bodyLarge: TextStyle(
+          fontSize: 14.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w400,
+          height: _fontContentHeight,
+          letterSpacing: _fontSpacing),
+      bodyMedium: TextStyle(
+          fontSize: 13.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w400,
+          height: _fontContentHeight,
+          letterSpacing: _fontSpacing),
+      bodySmall: TextStyle(
+          fontSize: 12.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w300,
+          height: _fontContentHeight,
+          letterSpacing: _fontSpacing),
+      labelLarge: TextStyle(
+          fontSize: 15.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w700,
+          height: _fontHeight,
+          letterSpacing: _fontSpacing),
+      labelMedium: TextStyle(
+          fontSize: 14.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w700,
+          height: _fontContentHeight,
+          letterSpacing: _fontSpacing),
+      labelSmall: TextStyle(
+          fontSize: 12.0,
+          color: color,
+          fontFamily: _fontFamily,
+          fontWeight: FontWeight.w700,
+          height: _fontContentHeight,
+          letterSpacing: _fontSpacing),
     );
 
 ThemeData _light() => ThemeData.from(
@@ -169,9 +259,12 @@ extension ThemeDataExt on ThemeData {
       ];
 
   ScrollPhysics get platformPhysics => Device.onPlatform(
-        android: () => BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        ios: () => BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        other: () => BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        android: () =>
+            BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        ios: () =>
+            BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+        other: () =>
+            BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
       )!;
 }
 
@@ -194,24 +287,31 @@ extension TextStyleExtension on TextStyle {
 
   TextStyle get error => copyWith(color: UITheme.scheme.error);
 
-  TextStyle get onSurfaceVariant => copyWith(color: UITheme.scheme.onSurfaceVariant);
+  TextStyle get onSurfaceVariant =>
+      copyWith(color: UITheme.scheme.onSurfaceVariant);
 
   TextStyle get asOutline => copyWith(color: UITheme.scheme.outline);
 
-  TextStyle get asOutlineVariant => copyWith(color: UITheme.scheme.outlineVariant);
+  TextStyle get asOutlineVariant =>
+      copyWith(color: UITheme.scheme.outlineVariant);
 
-  TextStyle withOpacity(double opacity) => copyWith(color: color?.withOpacity(opacity));
+  TextStyle withOpacity(double opacity) =>
+      copyWith(color: color?.withOpacity(opacity));
 }
 
 extension ButtonStyleExtension on ButtonStyle {
   ButtonStyle get outline => this.copyWith(
         backgroundColor: MaterialStatePropertyAll<Color>(Colors.transparent),
-        surfaceTintColor: MaterialStatePropertyAll<Color>(backgroundColor?.resolve({}) ?? UITheme.scheme.primary),
-        overlayColor: MaterialStatePropertyAll<Color>((backgroundColor?.resolve({}) ?? UITheme.scheme.primary).withOpacity(0.25)),
+        surfaceTintColor: MaterialStatePropertyAll<Color>(
+            backgroundColor?.resolve({}) ?? UITheme.scheme.primary),
+        overlayColor: MaterialStatePropertyAll<Color>(
+            (backgroundColor?.resolve({}) ?? UITheme.scheme.primary)
+                .withOpacity(0.25)),
         shadowColor: MaterialStatePropertyAll<Color>(Colors.transparent),
         shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
           RoundedRectangleBorder(
-            side: BorderSide(color: backgroundColor?.resolve({}) ?? UITheme.scheme.primary),
+            side: BorderSide(
+                color: backgroundColor?.resolve({}) ?? UITheme.scheme.primary),
             borderRadius: BorderRadius.circular(24.0),
           ),
         ),
@@ -219,6 +319,7 @@ extension ButtonStyleExtension on ButtonStyle {
 
   ButtonStyle get error => this.copyWith(
         backgroundColor: MaterialStatePropertyAll<Color>(UITheme.scheme.error),
-        overlayColor: MaterialStatePropertyAll<Color>((UITheme.scheme.onError).withOpacity(0.25)),
+        overlayColor: MaterialStatePropertyAll<Color>(
+            (UITheme.scheme.onError).withOpacity(0.25)),
       );
 }
