@@ -5,8 +5,8 @@ mixin OnLayout on CoreWidget {
   void onInit(Map args, CoreContext context) {
     super.onInit(args, context);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout());
+    WidgetsBinding.instance.addPostFrameCallback((_) => onLayout(context));
   }
 
-  void onLayout();
+  void onLayout(CoreContext context);
 }
