@@ -1,15 +1,16 @@
 part of flutter_control;
 
 abstract class BaseControlWidget extends CoreWidget {
-  Widget build(CoreContext context);
-
-  @override
-  CoreState<CoreWidget> createState() => BaseControlState();
 
   const BaseControlWidget({
     super.key,
     super.initArgs,
   });
+
+  @override
+  CoreState<CoreWidget> createState() => BaseControlState();
+
+  Widget build(CoreContext context);
 }
 
 class BaseControlState extends CoreState<BaseControlWidget> {
