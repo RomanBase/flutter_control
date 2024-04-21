@@ -31,7 +31,7 @@ part 'src/control/input_control.dart';
 
 part 'src/control/navigator_stack_control.dart';
 
-part 'src/component/ticker_component.dart';
+part 'src/hook/ticker_component.dart';
 
 part 'src/component/context_component.dart';
 

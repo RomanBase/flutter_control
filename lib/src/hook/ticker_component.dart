@@ -5,8 +5,7 @@ class _WidgetTicker extends Ticker {
 
   bool get isMounted => _creator != null;
 
-  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel})
-      : super(onTick, debugLabel: debugLabel);
+  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel}) : super(onTick, debugLabel: debugLabel);
 
   @override
   void dispose() {
@@ -17,7 +16,6 @@ class _WidgetTicker extends Ticker {
   }
 }
 
-/// Mostly copy of [TickerProviderStateMixin].
 class _TickerProvider implements Disposable, TickerProvider {
   Set<Ticker>? _tickers;
 
@@ -39,19 +37,21 @@ class _TickerProvider implements Disposable, TickerProvider {
     _tickers!.remove(ticker);
   }
 
-  void _muteTicker(bool muted) =>
-      _tickers?.forEach((item) => item.muted = muted);
+  void _muteTicker(bool muted) => _tickers?.forEach((item) => item.muted = muted);
+
+  void _stop() => _tickers?.forEach((item) => item.stop());
 
   @override
   void dispose() {
+    _stop();
+
     assert(() {
       if (_tickers != null) {
         for (Ticker ticker in _tickers!) {
           if (ticker.isActive) {
             throw FlutterError.fromParts(<DiagnosticsNode>[
               ErrorSummary('$this was disposed with an active Ticker.'),
-              ErrorDescription(
-                  '$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
+              ErrorDescription('$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
                   'dispose() was called on the mixin, that Ticker was still active. All Tickers must '
                   'be disposed before calling super.dispose().'),
               ErrorHint('Tickers used by AnimationControllers '
@@ -70,9 +70,8 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 }
 
-/// Check [TickerProviderStateMixin]
-extension TickerExt on CoreContext {
-  _TickerProvider get ticker => take<_TickerProvider>(value: () {
+extension TickerHook on CoreContext {
+  _TickerProvider get ticker => use<_TickerProvider>(value: () {
         final provider = _TickerProvider();
         provider._muteTicker(TickerMode.of(this));
 
@@ -80,12 +79,6 @@ extension TickerExt on CoreContext {
       })!;
 }
 
-/// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [ControllableWidget].
-/// Enables to construct [AnimationController] and control animations.
-///
-/// Typically used as private [ControlModel] next to Widget class. This solution helps to separate animation/UI logic, actual business logic and pure UI.
-///
-/// Also Widget must use [TickerControl] or [SingleTickerControl] to enable vsync provider or pass [TickerProvider] from other place by calling [provideTicker].
 mixin TickerComponent on ControlModel {
   /// Active provider. In fact provider can be used from different [ControlModel].
   TickerProvider? _ticker;
@@ -101,8 +94,8 @@ mixin TickerComponent on ControlModel {
   void register(dynamic object) {
     super.register(object);
 
-    if (object is TickerProvider) {
-      provideTicker(object);
+    if (object is CoreState) {
+      provideTicker(object.element.ticker);
     }
   }
 

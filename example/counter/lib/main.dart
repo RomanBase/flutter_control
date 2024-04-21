@@ -1,3 +1,4 @@
+import 'package:counter/loader_indicator.dart';
 import 'package:counter/static_theme.dart';
 import 'package:flutter_control/control.dart';
 import 'package:localino/localino.dart';
@@ -183,6 +184,7 @@ class SecondPage extends ControlWidget {
                   ?.openRoute(args: context<Counter>()?.value),
               child: Text('Open Next'),
             ),
+            LoaderStepIndicator(),
           ],
         ),
       ),

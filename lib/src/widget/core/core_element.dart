@@ -42,18 +42,22 @@ class CoreContext extends StatefulElement {
       return args.get<T>(key: key);
     }
 
-    return this.take<T>(key: key, value: value, stateNotifier: stateNotifier);
+    return this.use<T>(key: key, value: value, stateNotifier: stateNotifier);
   }
 
-  T? take<T>(
-      {dynamic key, required T Function()? value, bool stateNotifier = false}) {
+  T? use<T>(
+      {dynamic key, required T Function()? value, bool stateNotifier = false, void Function(T object)? dispose}) {
     final item = args.getWithFactory<T>(key: key, defaultValue: value);
+
+    assert(item != null, 'There is nothing to take: $T | $key');
 
     if (stateNotifier) {
       registerStateNotifier(item);
     }
 
-    if (item is Disposable) {
+    if(dispose != null){
+      register(DisposableClient()..onDispose = () => dispose(item!));
+    } else if (item is Disposable) {
       register(item);
     }
 
@@ -61,7 +65,7 @@ class CoreContext extends StatefulElement {
   }
 
   _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) =>
-      take<_ArgValue<T>>(
+      use<_ArgValue<T>>(
         key: key,
         value: () => _ArgValue<T>(value),
         stateNotifier: stateNotifier,
