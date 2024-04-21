@@ -43,8 +43,6 @@ class _TickerProvider implements Disposable, TickerProvider {
 
   @override
   void dispose() {
-    _stop();
-
     assert(() {
       if (_tickers != null) {
         for (Ticker ticker in _tickers!) {
