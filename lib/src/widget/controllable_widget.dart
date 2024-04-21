@@ -1,7 +1,5 @@
 part of flutter_control;
 
-/// Experimental version, this Widget and how works is subject of change.
-/// Currently supports [ActionControl], [FieldControl], [Listenable] and List of these objects.
 abstract class ControllableWidget<T> extends CoreWidget {
   final T control;
 
@@ -25,8 +23,6 @@ abstract class ControllableWidget<T> extends CoreWidget {
   Widget build(CoreContext context);
 }
 
-/// State of [ControllableWidget].
-/// Simply wraps [ControlBuilder] or [ControlBuilderGroup] based on [ControllableWidget.control].
 class _ControllableState<T> extends CoreState<ControllableWidget<T>> {
   @override
   Widget build(BuildContext context) {

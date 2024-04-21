@@ -1,5 +1,6 @@
 part of flutter_control;
 
+//TODO: make it Stateless
 abstract class BaseControlWidget extends CoreWidget {
   const BaseControlWidget({
     super.key,
@@ -17,8 +18,7 @@ class BaseControlState extends CoreState<BaseControlWidget> {
   Widget build(BuildContext context) => widget.build(element);
 }
 
-abstract class SingleControlWidget<T extends ControlModel>
-    extends _ControlWidgetBase {
+abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidgetBase {
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   const SingleControlWidget({
     super.key,
@@ -56,8 +56,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   T? initControl(CoreContext context) => context.getControl<T>();
 
   @override
-  Widget rebuild(CoreContext context) =>
-      build(context, (context.state as ControlState).controls![0] as T);
+  Widget rebuild(CoreContext context) => build(context, (context.state as ControlState).controls![0] as T);
 
   Widget build(CoreContext context, T control);
 }
@@ -87,62 +86,33 @@ abstract class _ControlWidgetBase extends CoreWidget {
     super.initArgs,
   });
 
-  /// This is a place where to fill all required [ControlModel]s for this Widget.
-  /// Called during Widget/State initialization phase.
-  ///
-  /// Dependency Injection possibilities:
-  /// [holder.findControls] - Returns [ControlModel]s from 'constructor' and 'init' [args].
-  /// [getControl] - Tries to find specific [ControlModel]. Looks up in current [stateNotifiers], [args] and dependency Store.
-  /// [Control.get] - Returns object from [ControlFactory].
-  /// [Control.init] - Initializes object via [ControlFactory].
-  ///
-  /// Returns [stateNotifiers] to init, subscribe and dispose with Widget.
-  @protected
-  List<ControlModel> initControls(CoreContext context) =>
-      autoMountControls ? context.args.getAll<ControlModel>() : [];
-
   @override
   CoreState createState() => ControlState();
 
-  /// Called during [State] initialization.
-  /// Widget will subscribe to all [stateNotifiers].
-  /// Typically now need to override - check [onInit] and [onUpdate] functions.
+  /// This is a place where to fill all required [ControlModel]s for this Widget.
+  /// Called during Widget/State initialization phase.
   @protected
-  @mustCallSuper
-  void onInitRuntime(ControlState state) {
-    if (state.controls == null || state.controls!.isEmpty) {
-      printDebug('no controls found - onInitState');
-      return;
-    }
+  List<ControlModel> initControls(CoreContext context) => autoMountControls ? context.args.getAll<ControlModel>() : [];
 
-    state.controls?.remove(null);
-    state.controls?.forEach((control) {
-      control.init(state.args.data);
-      control.register(state);
+  @protected
+  void onInitState(ControlState state) {}
 
-      if (control is ObservableComponent) {
-        state.element.registerStateNotifier(control);
-      }
-    });
-  }
+  @protected
+  Widget rebuild(CoreContext context);
 
   /// Callback from [State] when state is notified.
   @protected
   void onStateChanged(dynamic state) {}
 
-  @protected
-  Widget rebuild(CoreContext context);
-
-  /// Disposes and removes all [stateNotifiers].
-  /// Check [DisposeHandler] for different dispose strategies.
-  void dispose() {
+  @override
+  void onDispose() {
     printDebug('dispose: ${this.runtimeType.toString()}');
   }
 }
 
 /// [State] of [ControlWidget]
 class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
-  List<ControlModel>? controls;
+  late List<ControlModel> controls;
 
   @override
   void onInit() {
@@ -150,15 +120,30 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
 
     controls = widget.initControls(element);
 
-    element.args.set(controls!.toSet());
+    element.args.set(controls.toSet());
 
-    controls!.forEach((control) {
+    controls.forEach((control) {
       if (control is ReferenceCounter) {
         (control as ReferenceCounter).addReference(this);
       }
     });
 
-    widget.onInitRuntime(this);
+    if (controls.isEmpty) {
+      printDebug('no controls found - onInitState');
+      return;
+    }
+
+    controls.remove(null);
+    controls.forEach((control) {
+      control.init(element.args.data);
+      control.register(this);
+
+      if (control is ObservableComponent) {
+        element.registerStateNotifier(control);
+      }
+    });
+
+    widget.onInitState(this);
   }
 
   @override
@@ -181,14 +166,11 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
   void dispose() {
     super.dispose();
 
-    if (controls != null) {
-      controls!.forEach((control) {
+    if (controls.isNotEmpty) {
+      controls.forEach((control) {
         control.requestDispose(this);
       });
-      controls!.clear();
-      controls = null;
+      controls.clear();
     }
-
-    widget.dispose();
   }
 }
