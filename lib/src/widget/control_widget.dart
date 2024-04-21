@@ -36,7 +36,7 @@ abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidge
     if (autoMountControls) {
       final controls = context.args.getAll<ControlModel>();
 
-      if (controls.length > 1 && controls.contains(control)) {
+      if (controls.contains(control)) {
         controls.remove(control);
       }
 

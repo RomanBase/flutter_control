@@ -14,6 +14,8 @@ class ControlArgs implements Disposable {
 
   factory ControlArgs.of([dynamic args]) => ControlArgs({})..set(args);
 
+  static Map build(dynamic args) => (ControlArgs({})..set(args)).data;
+
   /// Returns object of given [key] or null.
   dynamic operator [](dynamic key) => _args.getArg(key: key);
 
