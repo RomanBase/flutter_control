@@ -72,16 +72,12 @@ class _TickerProvider implements Disposable, TickerProvider {
 
 /// Check [TickerProviderStateMixin]
 extension TickerExt on CoreContext {
-  _TickerProvider get ticker => get<_TickerProvider>()!;
+  _TickerProvider get ticker => take<_TickerProvider>(value: () {
+        final provider = _TickerProvider();
+        provider._muteTicker(TickerMode.of(this));
 
-  void initRuntime() {
-    set<_TickerProvider>(value: _TickerProvider());
-    ticker._muteTicker(TickerMode.of(this));
-  }
-
-  void onDispose() {
-    ticker.dispose();
-  }
+        return provider;
+      })!;
 }
 
 /// Mixin for [ControlModel] to pass [TickerProvider] from [CoreWidget] - [ControlWidget] or [ControllableWidget].

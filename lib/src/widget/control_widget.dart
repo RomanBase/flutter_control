@@ -18,7 +18,8 @@ class BaseControlState extends CoreState<BaseControlWidget> {
   Widget build(BuildContext context) => widget.build(element);
 }
 
-abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidgetBase {
+abstract class SingleControlWidget<T extends ControlModel>
+    extends _ControlWidgetBase {
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   const SingleControlWidget({
     super.key,
@@ -56,7 +57,8 @@ abstract class SingleControlWidget<T extends ControlModel> extends _ControlWidge
   T? initControl(CoreContext context) => context.getControl<T>();
 
   @override
-  Widget rebuild(CoreContext context) => build(context, (context.state as ControlState).controls![0] as T);
+  Widget rebuild(CoreContext context) =>
+      build(context, (context.state as ControlState).controls![0] as T);
 
   Widget build(CoreContext context, T control);
 }
@@ -92,7 +94,8 @@ abstract class _ControlWidgetBase extends CoreWidget {
   /// This is a place where to fill all required [ControlModel]s for this Widget.
   /// Called during Widget/State initialization phase.
   @protected
-  List<ControlModel> initControls(CoreContext context) => autoMountControls ? context.args.getAll<ControlModel>() : [];
+  List<ControlModel> initControls(CoreContext context) =>
+      autoMountControls ? context.args.getAll<ControlModel>() : [];
 
   @protected
   void onInitState(ControlState state) {}
