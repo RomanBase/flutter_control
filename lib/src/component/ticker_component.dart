@@ -75,7 +75,7 @@ extension TickerExt on CoreContext {
   _TickerProvider get ticker => get<_TickerProvider>()!;
 
   void initRuntime() {
-    final ticker = take<_TickerProvider>(value: () => _TickerProvider())!;
+    set<_TickerProvider>(value: _TickerProvider());
     ticker._muteTicker(TickerMode.of(this));
   }
 

@@ -55,13 +55,17 @@ part 'src/util/interval_curve.dart';
 
 part 'src/component/cross_transition.dart';
 
+part 'src/widget/core/core_element.dart';
+
+part 'src/widget/core/core_state.dart';
+
+part 'src/widget/core/core_widget.dart';
+
 part 'src/widget/builder_widget.dart';
 
 part 'src/widget/control_widget.dart';
 
 part 'src/widget/controllable_widget.dart';
-
-part 'src/widget/core_widget.dart';
 
 part 'src/widget/field_builder.dart';
 

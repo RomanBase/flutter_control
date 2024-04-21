@@ -17,15 +17,8 @@ class BaseControlState extends CoreState<BaseControlWidget> {
   Widget build(BuildContext context) => widget.build(element);
 }
 
-/// [ControlWidget] with one main [ControlModel].
-/// Required [ControlModel] is returned by [initControl] - override this functions if Model is not in [args] or [ControlFactory] can't return it.
-///
-/// {@macro control-widget}
 abstract class SingleControlWidget<T extends ControlModel>
     extends _ControlWidgetBase {
-  /// specific [key] under which is [ControlModel] stored in [ControlFactory].
-  dynamic get factoryKey => null;
-
   /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   const SingleControlWidget({
     super.key,
@@ -60,7 +53,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
-  T? initControl(CoreContext context) => context.getControl<T>(key: factoryKey);
+  T? initControl(CoreContext context) => context.getControl<T>();
 
   @override
   Widget rebuild(CoreContext context) =>
@@ -81,24 +74,6 @@ abstract class ControlWidget extends _ControlWidgetBase {
   Widget build(CoreContext context);
 }
 
-/// {@template control-widget}
-/// [ControlWidget] maintains larger UI parts of App (Pages or complex Widgets). Widget is created with default [ControlState] to correctly reflect lifecycle of [Widget] to Models and Controls. So there is no need to create custom [State].
-/// Widget will [init] all containing Models and pass arguments to them.
-/// [ControlWidget] is 'immutable' so all logic parts (even UI logic and animations) must be handled outside. This helps truly separate all 'code' from pure UI (also helps to reuse this code).
-///
-/// This Widget comes with few [mixin] classes:
-///   - [RouteControl] to abstract navigation and easily pass arguments and init other Pages.
-///   - [TickerControl] and [SingleTickerControl] to create [Ticker] and provide access to [vsync]. Then use [ControlModel] with [TickerComponent] to get access to [TickerProvider].
-///
-/// Typically one or more [ControlModel] objects handles all logic for [ControlWidget]. This solution helps to separate even [Animation] from Business Logic and UI Widgets part.
-/// And comes with [LocalizationProvider] to use [BaseLocalization] without standard delegate solution.
-///
-/// [ControlWidget] - Basic Widget with manual [ControlModel] initialization.
-/// [SingleControlWidget] - Focused to single [ControlModel]. But still can handle multiple Controls.
-/// [MountedControlWidget] - Automatically uses all [ControlModel]s passed to Widget.
-///
-/// Also check [ControllableWidget] an abstract Widget focused to build smaller Widgets controlled by [ObservableModel] and [BaseModel].
-/// {@endtemplate}
 abstract class _ControlWidgetBase extends CoreWidget {
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
   /// By default set to 'false'.
@@ -170,8 +145,8 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
   List<ControlModel>? controls;
 
   @override
-  void initRuntime() {
-    super.initRuntime();
+  void onInit() {
+    super.onInit();
 
     controls = widget.initControls(element);
 

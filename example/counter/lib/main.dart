@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
         //home: home,
         onGenerateRoute: (settings) => context.generateRoute(settings,
             root: () => MaterialPageRoute(builder: (_) => home)),
-        theme: context<ThemeConfig>()!.value,
+        theme: context<ThemeConfig>()?.value,
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,
