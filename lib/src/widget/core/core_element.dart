@@ -1,5 +1,6 @@
 part of flutter_control;
 
+//So we can easily switch to interface/mixin for Stateless implementation.
 typedef CoreContext = CoreElement;
 
 class CoreElement extends StatefulElement {
