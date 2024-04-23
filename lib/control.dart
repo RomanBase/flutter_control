@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
+import 'package:flutter_control/src/hook/control_hook.dart';
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
@@ -31,9 +32,15 @@ part 'src/control/input_control.dart';
 
 part 'src/control/navigator_stack_control.dart';
 
-part 'src/hook/ticker_component.dart';
+part 'src/hook/animation_controller.dart';
 
-part 'src/component/context_component.dart';
+part 'src/hook/context.dart';
+
+part 'src/hook/scroll_controller.dart';
+
+part 'src/hook/theme_data.dart';
+
+part 'src/hook/ticker.dart';
 
 part 'src/component/layout.dart';
 

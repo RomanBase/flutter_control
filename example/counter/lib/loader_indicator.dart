@@ -37,7 +37,7 @@ class LoaderStepIndicator extends BaseControlWidget {
   final double bounce;
   final double spacing;
 
-  LoaderStepIndicator({
+  const LoaderStepIndicator({
     Key? key,
     this.count = 24,
     this.color = Colors.black38,
@@ -48,27 +48,16 @@ class LoaderStepIndicator extends BaseControlWidget {
     this.spacing = 0.0,
   }) : super(key: key);
 
-  factory LoaderStepIndicator.standalone({int? count, Color? color}) => LoaderStepIndicator(
-        count: count ?? 24,
-        bounce: 12.0,
-        spacing: 0.0,
-        size: Size(6.0, 32.0),
-        color: color ?? Colors.black38,
-      );
-
-  Curve curveAt(CoreContext context, int index) => context.get<Curve>(key: index)!;
-
   @override
   void onInit(Map args, CoreContext context) {
     super.onInit(args, context);
 
     _initRandom(context);
 
-    final step = context.use<AnimationController>(
-      value: () => AnimationController(vsync: context.ticker, duration: duration),
+    final step = context.animation(
+      duration: duration,
       stateNotifier: true,
-      dispose: (value) => value.dispose(),
-    )!;
+    );
 
     step.repeat(reverse: true);
     step.addStatusListener((status) {
@@ -84,15 +73,16 @@ class LoaderStepIndicator extends BaseControlWidget {
       final begin = random.nextDouble() * 0.25;
       context.set(
         key: i,
-        value: curve.inRange(begin, (begin + random.nextDouble()).clamp(0.5, 1.0)),
+        value:
+            curve.inRange(begin, (begin + random.nextDouble()).clamp(0.5, 1.0)),
       );
     }
   }
 
   @override
   Widget build(CoreContext context) {
-    final step = context.get<AnimationController>()!;
-    final progress = count * step.value;
+    final progress = context.animation.value;
+    Curve Function(int index) curve = (i) => context.get<Curve>(key: i)!;
 
     return SizedBox(
       height: size.height,
@@ -102,9 +92,12 @@ class LoaderStepIndicator extends BaseControlWidget {
         children: [
           for (int i = 0; i < count; i++)
             Container(
-              margin: EdgeInsets.symmetric(horizontal: spacing * 0.5).add(EdgeInsets.only(bottom: (bounce * (math.sin(progress / count) + 1.0) * 0.25), top: (bounce * (math.sin(progress / count) + 1.0) * 0.25))),
+              margin: EdgeInsets.symmetric(horizontal: spacing * 0.5).add(
+                  EdgeInsets.only(
+                      bottom: (bounce * (math.sin(progress) + 1.0) * 0.25),
+                      top: (bounce * (math.sin(progress) + 1.0) * 0.25))),
               width: size.width,
-              height: curveAt(context, i).transform(step.value) * size.height,
+              height: curve(i).transform(progress) * size.height,
               decoration: BoxDecoration(
                 //borderRadius: BorderRadius.vertical(top: Radius.circular(6.0)),
                 color: color,

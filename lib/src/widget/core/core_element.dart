@@ -7,8 +7,7 @@ class CoreContext extends StatefulElement {
 
   bool get isInitialized => _initialized;
 
-  /// Objects to dispose with State.
-  List? _objectsToDispose;
+  List? _objects;
 
   @override
   CoreWidget get widget => super.widget as CoreWidget;
@@ -26,6 +25,12 @@ class CoreContext extends StatefulElement {
       initRuntime();
       initState();
     }
+
+    _objects?.forEach((element) {
+      if (element is LazyHook) {
+        element.onDependencyChanged(this);
+      }
+    });
   }
 
   void initRuntime() {
@@ -37,16 +42,18 @@ class CoreContext extends StatefulElement {
     widget.onInit(args.data, this);
   }
 
-  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) {
+  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) =>
+      use<T>(key: key, value: value, stateNotifier: stateNotifier);
+
+  T? use<T>(
+      {dynamic key,
+      required T Function()? value,
+      bool stateNotifier = false,
+      void Function(T object)? dispose}) {
     if (args.containsKey(key ?? T)) {
       return args.get<T>(key: key);
     }
 
-    return this.use<T>(key: key, value: value, stateNotifier: stateNotifier);
-  }
-
-  T? use<T>(
-      {dynamic key, required T Function()? value, bool stateNotifier = false, void Function(T object)? dispose}) {
     final item = args.getWithFactory<T>(key: key, defaultValue: value);
 
     assert(item != null, 'There is nothing to take: $T | $key');
@@ -55,8 +62,8 @@ class CoreContext extends StatefulElement {
       registerStateNotifier(item);
     }
 
-    if(dispose != null){
-      register(DisposableClient()..onDispose = () => dispose(item!));
+    if (dispose != null) {
+      register(DisposableClient()..onDispose = () => dispose(item!), 1);
     } else if (item is Disposable) {
       register(item);
     }
@@ -71,17 +78,21 @@ class CoreContext extends StatefulElement {
         stateNotifier: stateNotifier,
       )!;
 
-  T? getControl<T>({dynamic key, dynamic args}) => Control.resolve<T>(
-        this.args.data,
-        key: key,
-        args: args ?? this.args.data,
-      );
+  T? getControl<T>({dynamic key, bool scope = false}) => scope
+      ? this.scope.get<T>(key: key, args: args.data)
+      : Control.resolve<T>(
+          this.args.data,
+          key: key,
+          args: args.data,
+        );
 
-  T? get<T>({dynamic key}) => this.args.get<T>(
+  T? get<T>({dynamic key, T? Function()? defaultValue}) =>
+      args.get<T>(
         key: key,
-      );
+      ) ??
+      defaultValue?.call();
 
-  void set<T>({dynamic key, required T? value}) => this.args.add(
+  void set<T>({dynamic key, required T? value}) => args.add(
         key: key,
         value: value,
       );
@@ -89,23 +100,31 @@ class CoreContext extends StatefulElement {
   void notifyState() => state.notifyState();
 
   /// Registers object to dispose
-  void register(dynamic object) {
-    if (_objectsToDispose == null) {
-      _objectsToDispose = [];
+  void register(dynamic object, [int priority = 0]) {
+    if (_objects == null) {
+      _objects = [];
     }
 
-    if (!_objectsToDispose!.contains(object)) {
+    if (!_objects!.contains(object)) {
+      if (object is LazyHook) {
+        object.hookValue = object.init(this);
+      }
+
       if (object is ReferenceCounter) {
         object.addReference(this);
       }
 
-      _objectsToDispose!.add(object);
+      if (priority > 0) {
+        _objects!.insert(0, object);
+      } else {
+        _objects!.add(object);
+      }
     }
   }
 
   /// Unregisters object from dispose
   void unregister(Disposable? object) {
-    _objectsToDispose?.remove(object);
+    _objects?.remove(object);
 
     if (object is ReferenceCounter) {
       object.removeReference(this);
@@ -126,7 +145,7 @@ class CoreContext extends StatefulElement {
   void onDispose() {
     _initialized = false;
 
-    _objectsToDispose?.forEach((element) {
+    _objects?.forEach((element) {
       if (element is DisposeHandler) {
         element.requestDispose(this);
       } else if (element is Disposable) {
@@ -136,7 +155,7 @@ class CoreContext extends StatefulElement {
       }
     });
 
-    _objectsToDispose = null;
+    _objects = null;
 
     args.clear();
   }

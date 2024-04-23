@@ -185,7 +185,3 @@ class RootContext extends CoreContext {
     (widget as ControlRoot).onSetupChanged?.call(this);
   }
 }
-
-extension CoreContextExt on BuildContext {
-  RootContext get root => RootContext.of(this)!;
-}

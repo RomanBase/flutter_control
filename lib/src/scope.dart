@@ -56,11 +56,3 @@ class ControlScope {
     return _get(key: key, args: args, context: state.context);
   }
 }
-
-extension ControlScopeOnWidget on CoreContext {
-  ControlScope get scope => ControlScope.of(this);
-
-  /// Returns [ControlModel] by given [T] or [key] from current UI Tree
-  T? getScopeControl<T extends ControlModel?>({dynamic key, dynamic args}) =>
-      scope.get<T>(key: key, args: args);
-}

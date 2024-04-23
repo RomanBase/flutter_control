@@ -5,7 +5,8 @@ class _WidgetTicker extends Ticker {
 
   bool get isMounted => _creator != null;
 
-  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel}) : super(onTick, debugLabel: debugLabel);
+  _WidgetTicker(TickerCallback onTick, this._creator, {String? debugLabel})
+      : super(onTick, debugLabel: debugLabel);
 
   @override
   void dispose() {
@@ -37,21 +38,21 @@ class _TickerProvider implements Disposable, TickerProvider {
     _tickers!.remove(ticker);
   }
 
-  void _muteTicker(bool muted) => _tickers?.forEach((item) => item.muted = muted);
+  void _muteTicker(bool muted) =>
+      _tickers?.forEach((item) => item.muted = muted);
 
-  void _stop() => _tickers?.forEach((item) => item.stop());
+  void stopTicker() => _tickers?.forEach((item) => item.stop());
 
   @override
   void dispose() {
-    _stop();
-
     assert(() {
       if (_tickers != null) {
         for (Ticker ticker in _tickers!) {
           if (ticker.isActive) {
             throw FlutterError.fromParts(<DiagnosticsNode>[
               ErrorSummary('$this was disposed with an active Ticker.'),
-              ErrorDescription('$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
+              ErrorDescription(
+                  '$runtimeType created a Ticker via its TickerProviderStateMixin, but at the time '
                   'dispose() was called on the mixin, that Ticker was still active. All Tickers must '
                   'be disposed before calling super.dispose().'),
               ErrorHint('Tickers used by AnimationControllers '
