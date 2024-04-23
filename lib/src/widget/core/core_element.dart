@@ -1,6 +1,8 @@
 part of flutter_control;
 
-class CoreContext extends StatefulElement {
+typedef CoreContext = CoreElement;
+
+class CoreElement extends StatefulElement {
   final args = ControlArgs({});
 
   bool _initialized = false;
@@ -15,7 +17,7 @@ class CoreContext extends StatefulElement {
   @override
   CoreState get state => super.state as CoreState;
 
-  CoreContext(CoreWidget widget, Map initArgs) : super(widget) {
+  CoreElement(CoreWidget widget, Map initArgs) : super(widget) {
     args.set(initArgs);
   }
 
