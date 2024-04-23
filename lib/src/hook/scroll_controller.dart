@@ -3,7 +3,7 @@ part of flutter_control;
 extension ScrollControllerHook on CoreContext {
   _ScrollControllerProvider get scroll => use<_ScrollControllerProvider>(
         value: () => _ScrollControllerProvider(),
-        dispose: (object) => object.dispose(),
+        //ScrollController is [ChangeNotifier] - CoreElement will auto dispose this
       )!;
 }
 
