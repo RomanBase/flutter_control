@@ -92,7 +92,7 @@ class ControlRoot extends ControlWidget {
   final AppState? initState;
   final List<AppStateBuilder> states;
   final List<dynamic> stateNotifiers;
-  final List<Type> builders;
+  final List<dynamic> builders;
   final Widget Function(RootContext context, Widget home) builder;
   final Function(RootContext context)? onSetupChanged;
 
@@ -120,11 +120,34 @@ class ControlRoot extends ControlWidget {
 
     stateNotifiers.forEach((element) => context.registerStateNotifier(element));
     builders.forEach((element) {
-      final object = Control.get(key: element);
-      if (object != null) {
-        (context as RootContext).registerBuilder(object);
-      }
+      _evaluateDynamic(element, (object) {
+        if (object != null) {
+          (context as RootContext).registerBuilder(object);
+        }
+      });
     });
+  }
+
+  //TODO: Replace with Control.evaluate
+  void _evaluateDynamic(dynamic object, ValueCallback callback) async {
+    if (object is Type) {
+      if (!Control.isInitialized && !Control.factory.containsKey(object)) {
+        await Control.factory.onReady();
+      }
+
+      callback.call(Control.get(key: object));
+      return;
+    }
+
+    if (object is Function) {
+      callback.call(object.call());
+      return;
+    }
+
+    if (object is Future) {
+      callback.call(await object);
+      return;
+    }
   }
 
   @override
@@ -163,14 +186,14 @@ class RootContext extends CoreContext {
 
   void registerBuilder(dynamic object) {
     register(ControlObservable.of(object).subscribe((value) {
-      _rebuildElement(this);
+      _rebuildElementTree(this);
       (widget as ControlRoot).onSetupChanged?.call(this);
     }));
   }
 
-  void _rebuildElement(Element el) {
+  void _rebuildElementTree(Element el) {
     el.markNeedsBuild();
-    el.visitChildren(_rebuildElement);
+    el.visitChildren(_rebuildElementTree);
   }
 
   void changeAppState(AppState state) => value<AppState>().value = state;

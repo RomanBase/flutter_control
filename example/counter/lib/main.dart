@@ -33,9 +33,10 @@ class MyApp extends StatelessWidget {
         RoutingModule([
           ControlRoute.build<SecondPage>(builder: (_) => SecondPage()),
         ]),
-        LocalinoModule(LocalinoLive.options(
+        LocalinoModule(LocalinoOptions()),
+        /*LocalinoModule(LocalinoLive.options(
           remoteSync: true,
-        )),
+        )),*/
       ],
       factories: {
         Counter: (_) => Counter(),
@@ -138,7 +139,7 @@ class MainPage extends SingleControlWidget<Counter> {
   }
 }
 
-class SecondPage extends ControlWidget {
+class SecondPage extends ControlWidget with Dependency {
   @override
   void onInit(Map args, CoreContext context) {
     super.onInit(args, context);

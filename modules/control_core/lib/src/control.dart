@@ -163,6 +163,31 @@ class Control {
       factory.resolve<T>(source,
           key: key, args: args, defaultValue: defaultValue);
 
+  /// Executes proper function based on object type, then retrieve result via [callback].
+  /// Type - get object from [ControlFactory]
+  /// Function - call given function
+  /// Future - waits to complete
+  static void evaluate(dynamic object, ValueCallback callback) async {
+    if (object is Type) {
+      if (!Control.isInitialized && !Control.factory.containsKey(object)) {
+        await Control.factory.onReady();
+      }
+
+      callback.call(Control.get(key: object));
+      return;
+    }
+
+    if (object is Function) {
+      callback.call(object.call());
+      return;
+    }
+
+    if (object is Future) {
+      callback.call(await object);
+      return;
+    }
+  }
+
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
   /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
   /// If object of given [key] is not found, then all instances of [T] are removed.

@@ -58,7 +58,7 @@ abstract class SingleControlWidget<T extends ControlModel>
 
   @override
   Widget rebuild(CoreContext context) =>
-      build(context, (context.state as ControlState).controls![0] as T);
+      build(context, (context.state as ControlState).controls[0] as T);
 
   Widget build(CoreContext context, T control);
 }
