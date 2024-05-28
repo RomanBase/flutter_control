@@ -64,19 +64,19 @@ class Device {
     T Function()? android,
     T Function()? ios,
     T Function()? web,
+    T Function()? desktop,
     T Function()? other,
-    T Function()? defaultValue,
   }) {
     if (kIsWeb) {
-      return (web ?? defaultValue)?.call();
+      return (web ?? other)?.call();
     }
 
     if (Platform.isAndroid) {
-      return (android ?? defaultValue)?.call();
+      return (android ?? other)?.call();
     } else if (Platform.isIOS) {
-      return (ios ?? defaultValue)?.call();
+      return (ios ?? other)?.call();
     }
 
-    return (other ?? defaultValue)?.call();
+    return (desktop ?? other)?.call();
   }
 }

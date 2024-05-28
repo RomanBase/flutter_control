@@ -88,6 +88,7 @@ class _ControlRootScope {
 }
 
 class ControlRoot extends ControlWidget {
+  final Future<void> Function()? init;
   final ThemeConfig? theme;
   final AppState? initState;
   final List<AppStateBuilder> states;
@@ -97,6 +98,7 @@ class ControlRoot extends ControlWidget {
   final Function(RootContext context)? onSetupChanged;
 
   const ControlRoot({
+    this.init,
     this.theme,
     this.initState,
     this.states = const [],
@@ -118,36 +120,23 @@ class ControlRoot extends ControlWidget {
     context.value<AppState>(
         value: initState ?? AppState.init, stateNotifier: true);
 
-    stateNotifiers.forEach((element) => context.registerStateNotifier(element));
-    builders.forEach((element) {
-      _evaluateDynamic(element, (object) {
-        if (object != null) {
-          (context as RootContext).registerBuilder(object);
-        }
-      });
-    });
+    _init(context as RootContext);
   }
 
-  //TODO: Replace with Control.evaluate
-  void _evaluateDynamic(dynamic object, ValueCallback callback) async {
-    if (object is Type) {
-      if (!Control.isInitialized && !Control.factory.containsKey(object)) {
-        await Control.factory.onReady();
-      }
+  void _init(RootContext context) async {
+    stateNotifiers.forEach((element) => context.registerStateNotifier(element));
 
-      callback.call(Control.get(key: object));
-      return;
-    }
+    FutureBlock.nextFrame(() async {
+      await init?.call();
 
-    if (object is Function) {
-      callback.call(object.call());
-      return;
-    }
-
-    if (object is Future) {
-      callback.call(await object);
-      return;
-    }
+      builders.forEach((element) {
+        Control.evaluate(element, (object) {
+          if (object != null) {
+            context.registerBuilder(object);
+          }
+        });
+      });
+    });
   }
 
   @override
@@ -185,10 +174,13 @@ class RootContext extends CoreContext {
   );
 
   void registerBuilder(dynamic object) {
-    register(ControlObservable.of(object).subscribe((value) {
-      _rebuildElementTree(this);
-      (widget as ControlRoot).onSetupChanged?.call(this);
-    }));
+    register(ControlObservable.of(object).subscribe(
+      (value) {
+        _rebuildElementTree(this);
+        (widget as ControlRoot).onSetupChanged?.call(this);
+      },
+      current: false,
+    ));
   }
 
   void _rebuildElementTree(Element el) {

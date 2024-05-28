@@ -22,15 +22,9 @@ part 'src/app/theme_control.dart';
 
 part 'src/component/case_widget.dart';
 
-part 'src/component/input_field.dart';
-
 part 'src/component/loader_widget.dart';
 
-part 'src/component/navigation_stack.dart';
-
-part 'src/control/input_control.dart';
-
-part 'src/control/navigator_stack_control.dart';
+part 'src/component/input_control.dart';
 
 part 'src/hook/animation_controller.dart';
 

@@ -112,7 +112,7 @@ class TestSingleWidget extends SingleControlWidget<TestController> {
       : super(initArgs: ControlArgs.of(controller).data);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, TestController control) {
     return Container();
   }
 }
