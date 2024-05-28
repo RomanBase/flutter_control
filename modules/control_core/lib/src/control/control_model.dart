@@ -22,7 +22,7 @@ class ControlModel with DisposeHandler implements Initializable {
 
   /// Used to register interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  void register(dynamic object) {}
+  void mount(dynamic object) {}
 
   @override
   void dispose() {

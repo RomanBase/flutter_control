@@ -120,7 +120,7 @@ class _NavigatorStackState extends State<NavigatorStack>
   void initState() {
     super.initState();
 
-    widget.control.register(this);
+    widget.control.mount(this);
 
     _heroController = HeroController(
         createRectTween: (begin, end) =>
@@ -231,7 +231,7 @@ class _NavigatorStackGroupState extends State<NavigatorStackGroup> {
 
     _items = widget.items;
 
-    control.register(this);
+    control.mount(this);
 
     _initControl();
   }

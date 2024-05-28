@@ -92,8 +92,8 @@ mixin TickerComponent on ControlModel {
   bool get isTickerAvailable => _ticker != null;
 
   @override
-  void register(dynamic object) {
-    super.register(object);
+  void mount(dynamic object) {
+    super.mount(object);
 
     if (object is CoreState) {
       provideTicker(object.element.ticker);

@@ -1,3 +1,6 @@
+## 1.2.1
+- Control modules and providers
+
 ## 1.1.0
 - Standalone factory instance
 

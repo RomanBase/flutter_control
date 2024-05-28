@@ -4,8 +4,8 @@ mixin ContextComponent on ControlModel {
   CoreContext? context;
 
   @override
-  void register(object) {
-    super.register(object);
+  void mount(object) {
+    super.mount(object);
 
     if (object is CoreState) {
       context = object.element;

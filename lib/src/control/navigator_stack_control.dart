@@ -118,8 +118,8 @@ class NavigatorControl extends BaseControl {
   }
 
   @override
-  void register(object) {
-    super.register(object);
+  void mount(object) {
+    super.mount(object);
 
     if (object is StackNavigationHandler) {
       _navigator = object;

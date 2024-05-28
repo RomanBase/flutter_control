@@ -139,7 +139,7 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
     controls.remove(null);
     controls.forEach((control) {
       control.init(element.args.data);
-      control.register(this);
+      control.mount(this);
 
       if (control is ObservableComponent) {
         element.registerStateNotifier(control);
