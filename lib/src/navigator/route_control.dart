@@ -107,6 +107,12 @@ class ControlRoute {
     return MaterialPageRoute<T>(builder: builder, settings: routeSettings);
   }
 
+  Widget buildView(BuildContext context) {
+    assert(_builder != null);
+
+    return _builder!.call(context);
+  }
+
   /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
   /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
   /// Given [args] are passed to Widget.
