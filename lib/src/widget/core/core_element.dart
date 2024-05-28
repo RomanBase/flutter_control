@@ -3,6 +3,35 @@ part of flutter_control;
 //So we can easily switch to interface/mixin for Stateless implementation.
 typedef CoreContext = CoreElement;
 
+mixin Dependency on Object {
+  Iterable<Type> get dependencies => [];
+
+  Iterable getControlDependencies() {
+    if (dependencies.isEmpty) {
+      return [];
+    }
+
+    return dependencies.map((element) => Control.get(key: element));
+  }
+
+  Object getRouteDependencies(BuildContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args == null) {
+      return [];
+    }
+
+    if (dependencies.isNotEmpty) {
+      final map = ControlArgs.of(args);
+
+      return map.data.values.where(
+          (element) => dependencies.any((type) => element.runtimeType == type));
+    }
+
+    return args;
+  }
+}
+
 class CoreElement extends StatefulElement {
   final args = ControlArgs({});
 
@@ -22,6 +51,7 @@ class CoreElement extends StatefulElement {
     args.set(initArgs);
   }
 
+  /// Called whenever dependency of State is changed.
   void onDependencyChanged() {
     if (!_initialized) {
       _initialized = true;
@@ -36,10 +66,14 @@ class CoreElement extends StatefulElement {
     });
   }
 
+  /// Called just once when State is ready.
   void initRuntime() {
-    args.set(ModalRoute.of(this)?.settings.arguments);
+    if (widget is Dependency) {
+      args.set((widget as Dependency).getRouteDependencies(this));
+    }
   }
 
+  /// Called just once when State is ready and Runtime is initialized.
   void initState() {
     state.onInit();
     widget.onInit(args.data, this);
@@ -74,10 +108,11 @@ class CoreElement extends StatefulElement {
     return item;
   }
 
-  _ArgValue<T> value<T>({dynamic key, T? value, bool stateNotifier = false}) =>
-      use<_ArgValue<T>>(
+  ElementValue<T> value<T>(
+          {dynamic key, T? value, bool stateNotifier = false}) =>
+      use<ElementValue<T>>(
         key: key,
-        value: () => _ArgValue<T>(value),
+        value: () => ElementValue<T>(value),
         stateNotifier: stateNotifier,
       )!;
 
@@ -164,10 +199,10 @@ class CoreElement extends StatefulElement {
   }
 }
 
-class _ArgValue<T> extends ChangeNotifier {
+class ElementValue<T> extends ChangeNotifier {
   T? _value;
 
-  _ArgValue(T? value) : _value = value;
+  ElementValue(T? value) : _value = value;
 
   T? get value => _value;
 
