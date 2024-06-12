@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
     ControlRoot.initControl(
       debug: true,
       localization: LocalinoLive.options(
+        setup: LocalinoSetup(project: 'empty'),
         remoteSync: false,
       ),
       factories: {
