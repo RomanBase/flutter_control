@@ -91,7 +91,7 @@ class ControlTheme {
 
   Color get errorColor => scheme.error;
 
-  Color get activeColor => data.toggleableActiveColor;
+  Color get activeColor => data.colorScheme.tertiary;
 
   Color get accentColorPrimary => scheme.onPrimary;
 
