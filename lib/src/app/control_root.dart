@@ -88,7 +88,6 @@ class _ControlRootScope {
 }
 
 class ControlRoot extends ControlWidget {
-  final Future<void> Function()? init;
   final ThemeConfig? theme;
   final AppState? initState;
   final List<AppStateBuilder> states;
@@ -98,7 +97,6 @@ class ControlRoot extends ControlWidget {
   final Function(RootContext context)? onSetupChanged;
 
   const ControlRoot({
-    this.init,
     this.theme,
     this.initState,
     this.states = const [],
@@ -120,21 +118,17 @@ class ControlRoot extends ControlWidget {
     context.value<AppState>(
         value: initState ?? AppState.init, stateNotifier: true);
 
-    _init(context as RootContext);
+    _initNotifiers(context as RootContext);
   }
 
-  void _init(RootContext context) async {
+  void _initNotifiers(RootContext context) async {
     stateNotifiers.forEach((element) => context.registerStateNotifier(element));
 
-    FutureBlock.nextFrame(() async {
-      await init?.call();
-
-      builders.forEach((element) {
-        Control.evaluate(element, (object) {
-          if (object != null) {
-            context.registerBuilder(object);
-          }
-        });
+    builders.forEach((element) {
+      Control.evaluate(element, (object) {
+        if (object != null) {
+          context.registerBuilder(object);
+        }
       });
     });
   }
