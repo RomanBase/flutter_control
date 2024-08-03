@@ -122,6 +122,29 @@ class Control {
   static T? get<T>({dynamic key, dynamic args, bool withInjector = true}) =>
       factory.get<T>(key: key, args: args, withInjector: withInjector);
 
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// If object is not found, then [value] is used.
+  /// When [value] is used and [store] is set, then [value] will be stored to [ControlFactory] for future lookups.
+  static T use<T>(
+      {dynamic key,
+      dynamic args,
+      required T Function() value,
+      bool store = true}) {
+    final object = get<T>(key: key, args: args);
+
+    if (object != null) {
+      return object;
+    }
+
+    final newObject = value();
+
+    if (store) {
+      set<T>(key: key, value: newObject);
+    }
+
+    return newObject;
+  }
+
   /// Stores [value] with given [key] in [ControlFactory].
   /// Object with same [key] previously stored in factory is overridden.
   /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
