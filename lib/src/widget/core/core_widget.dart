@@ -30,6 +30,7 @@ abstract class CoreWidget extends StatefulWidget {
 
   /// Called whenever Widget needs update.
   /// Check [State.didUpdateWidget] for more info.
+  @protected
   void onUpdate(CoreWidget oldWidget) {}
 
   /// Called whenever dependency of Widget is changed.
@@ -37,5 +38,7 @@ abstract class CoreWidget extends StatefulWidget {
   @protected
   void onDependencyChanged(CoreContext context) {}
 
+  @protected
+  @mustCallSuper
   void onDispose() {}
 }

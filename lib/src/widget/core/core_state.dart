@@ -33,9 +33,9 @@ abstract class CoreState<T extends CoreWidget> extends State<T> {
 
   @override
   void dispose() {
-    super.dispose();
-
     widget.onDispose();
     element.onDispose();
+
+    super.dispose();
   }
 }

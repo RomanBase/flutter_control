@@ -100,7 +100,7 @@ class ControlRoute {
       return MaterialPageRoute<T>(builder: builder, settings: routeSettings);
     }
 
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       return CupertinoPageRoute<T>(builder: builder, settings: routeSettings);
     }
 

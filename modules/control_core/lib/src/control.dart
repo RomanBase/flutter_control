@@ -209,6 +209,8 @@ class Control {
       callback.call(await object);
       return;
     }
+
+    callback.call(object);
   }
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].

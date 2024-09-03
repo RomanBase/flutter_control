@@ -35,7 +35,7 @@ abstract class SingleControlWidget<T extends ControlModel>
     }
 
     if (autoMountControls) {
-      final controls = context.args.getAll<ControlModel>();
+      final controls = super.initControls(context);
 
       if (controls.contains(control)) {
         controls.remove(control);
@@ -75,14 +75,12 @@ abstract class ControlWidget extends _ControlWidgetBase {
   Widget build(CoreContext context);
 }
 
+/// Focused to handle Pages and complex Widgets.
 abstract class _ControlWidgetBase extends CoreWidget {
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
   /// By default set to 'false'.
   bool get autoMountControls => false;
 
-  /// Focused to handle Pages or complex Widgets.
-  /// [args] - Arguments passed to this Widget and also to [ControlModel]s.
-  /// Check [SingleControlWidget] and [MountedControlWidget] to automatically handle input Controls.
   const _ControlWidgetBase({
     super.key,
     super.initArgs,
@@ -94,8 +92,18 @@ abstract class _ControlWidgetBase extends CoreWidget {
   /// This is a place where to fill all required [ControlModel]s for this Widget.
   /// Called during Widget/State initialization phase.
   @protected
-  List<ControlModel> initControls(CoreContext context) =>
-      autoMountControls ? context.args.getAll<ControlModel>() : [];
+  List<ControlModel> initControls(CoreContext context) {
+    if (this is Dependency) {
+      return [
+        ...(this as Dependency)
+            .getControlDependencies()
+            .where((item) => item is ControlModel),
+        if (autoMountControls) ...context.args.getAll<ControlModel>(),
+      ];
+    }
+
+    return autoMountControls ? context.args.getAll<ControlModel>() : [];
+  }
 
   @protected
   void onInitState(ControlState state) {}
@@ -109,6 +117,8 @@ abstract class _ControlWidgetBase extends CoreWidget {
 
   @override
   void onDispose() {
+    super.onDispose();
+
     printDebug('dispose: ${this.runtimeType.toString()}');
   }
 }

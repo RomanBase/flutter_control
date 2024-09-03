@@ -71,9 +71,9 @@ class Device {
       return (web ?? other)?.call();
     }
 
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       return (android ?? other)?.call();
-    } else if (Platform.isIOS) {
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       return (ios ?? other)?.call();
     }
 
