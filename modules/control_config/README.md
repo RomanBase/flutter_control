@@ -12,20 +12,19 @@ class UserPrefs with PrefsProvider {
 }
 ```
 
+Model:
+```dart
+final boolPref = PrefModel.boolean('visited');
+final numPref = PrefModel.number('fav_num', defaultValue: -1);
+
+void updateVisited() {
+  boolPref.value = numPref.value > 0;
+}
+```
+
 Instance:
 ```dart
   final id = PrefsProvider.instance.get('user_id');
-```
-
-Standalone Module Initialization:
-```dart
-class UserPrefs with PrefsProvider {
-  Control.initControl(
-      modules: [
-          ConfigModule(),
-      ],
-  );
-}
 ```
 
 
