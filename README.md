@@ -46,10 +46,11 @@ import 'package:flutter_control/control.dart';
         LocalinoModule(LocalinoConfig(
           defaultLocale: 'en',
           locales: LocalinoAsset.map(locales: ['en_US', 'es_ES']),
-          )),
+          ),
+        ),
       ],
       initAsync: () async {
-        loadPreAppConfig();
+        loadAppConfig();
       },
     );
 ```

@@ -1,3 +1,6 @@
+## [4.0.0] - BREAKING: Widget [args] moved to [CoreContext]. All widget constructors should be now `const`. All Widget/State arguments are now handled by [Element].
+ - changed from ```Property get prop => mount<Property>()``` to ```context.use<Property>()```
+ - we are no more able to access `context` and `args` from outside of init/build functions.
 ## [3.0.1] - Flutter & Dart 3.0
 ## [2.6.3] - Localino and localino_live integration
 ## [2.5.1] - Multiple libs
