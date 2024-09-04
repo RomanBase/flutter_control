@@ -1,6 +1,7 @@
 name: localino_builder
 description: Builder to download and store json translations via Localino REST API.
 homepage: https://localino.app
+repository: https://github.com/romanbase/flutter_control
 version: 1.0.1
 
 environment:

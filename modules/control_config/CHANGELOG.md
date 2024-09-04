@@ -1,3 +1,6 @@
+## 1.3.0
+- Added `PrefModel`
+
 ## 1.0.0
 - Major release of Control Config running on Flutter 3.0
 

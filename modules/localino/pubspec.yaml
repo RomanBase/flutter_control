@@ -1,6 +1,7 @@
 name: localino
 description: Json based localization.
 homepage: https://localino.app
+repository: https://github.com/romanbase/flutter_control
 version: 1.2.1
 
 environment:
