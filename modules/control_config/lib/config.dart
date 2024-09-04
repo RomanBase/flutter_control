@@ -6,6 +6,7 @@ import 'package:control_core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 part 'src/control_prefs.dart';
+part 'src/pref_model.dart';
 
 class ConfigModule extends ControlModule<ControlPrefs> {
   int get priority => 100;
