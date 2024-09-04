@@ -26,7 +26,6 @@ import 'package:flutter_control/control.dart';
 - `ControlFactory` Initializes and can store Controls, Models and other Objects. Works as Service Locator and Storage.\
   Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
   Factory is one and only Singleton in this Library.\
-  Core objects of Flutter Control are stored in Factory's Storage by default (`Control.initControl`) and are accessible by their `Type` or via Providers.
   
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
   
@@ -43,11 +42,7 @@ import 'package:flutter_control/control.dart';
         ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
       ],
       modules: [
-        LocalinoModule(LocalinoConfig(
-          defaultLocale: 'en',
-          locales: LocalinoAsset.map(locales: ['en_US', 'es_ES']),
-          ),
-        ),
+        LocalinoModule(LocalinoLive.options()),
       ],
       initAsync: () async {
         loadAppConfig();
@@ -55,19 +50,16 @@ import 'package:flutter_control/control.dart';
     );
 ```
 
-- `ControlRoot` Wraps basic app flow and initializes [Control]. It's just shortcut to start with Flutter Control. Via `ControlScope` is possible to maintain `State` of this root widget and control whole app state (localization, theme, etc.).\
-  Additionally offers App State management - home screen, localization and theme changes.
+- `ControlRoot` Wraps basic app flow and global state management - Theme, Locale, Home Widget. It's just shortcut to start with Flutter Control.
 
 ```dart
     ControlRoot(
-      localization: LocalinoConfig(locales: [...]),
-      theme: ThemeConfig<MyThemne>(
-        builder: (context) => MyTheme(context),
-        themes: {...},
+      theme: MaterialThemeConfig(
+        themes: {
+          Brightness.light: () => ThemeData.light(),
+          Brightness.dark: () => ThemeData.dark(),
+        }
       ),
-      entries: {...},
-      initializers: {...},
-      routes: [...],
       states: [
         AppState.init.build(builder: (_) => LoadingPage()),
         AppState.main.build(
@@ -75,12 +67,14 @@ import 'package:flutter_control/control.dart';
           transition: TransitionToDashboard(),
         ),
       ],
-      app: (setup, home) => MaterialApp(
-        key: setup.key,
+      builders: [
+        Localino,
+      ],
+      app: (context, home) => MaterialApp(
         title: setup.title('app_name', 'Example App'),
-        theme: setup.theme,
+        theme: context.themeConfig?.value,
         home: home,
-        locale: setup.locale,
+        locale: LocalinoProvider.instance.currentLocale,
         supportedLocales: setup.supportedLocales,
         localizationsDelegates: [
           ...
@@ -91,26 +85,20 @@ import 'package:flutter_control/control.dart';
 
 ---
 
-- `ControlWidget` is base abstract class (**StatefulWidget**) to maintain larger UI parts of App (Pages or complex Widgets). Widget is created with default `ControlState` to correctly reflect lifecycle of Widget to Models. So there is no need to create custom [State].\
+- `ControlWidget` is base abstract class (**StatefulWidget**) to maintain larger UI parts of App (Pages and complex Widgets). Widget is created with default `ControlState` to correctly reflect lifecycle of Widget to Models. So there is no need to create custom [State].\
   Widget will **init** all containing Models and pass arguments to them.\
-  `ControlWidget` is **immutable** so all logic parts (even UI logic and animations) must be controlled from outside. This helps truly separate all **code** from pure UI (also helps to reuse this code).
+  `ControlWidget` is **immutable** so all logic parts must be controlled from outside. This helps truly separate all **code** from pure UI (also helps to reuse this code).
    
 - `SingleControlWidget` is focused to single **ControlModel**. But still can handle multiple Controls.
 
 - `ControllableWidget` - Subscribes to one or more `Observable` - [ObservableComponent], [ActionControl], [FieldControl], [Stream], [Future], [Listenable]\
   Whenever state of [ControlObservable] is changed, this Widget is rebuild.
-
-  These Widgets comes with few `mixin` classes:
-   - `RouteControl` to abstract navigation and easily pass arguments to Routes and init other Pages.
-   - `TickerAnimControl`, `TickerControl` and `SingleTickerControl` to create [State] with `Ticker` and provide access to `vsync`.
-   - `LocalizationProvider`, `ThemeProvider`, `OnLayout`, `ControlsComponent`, `OverlayControl` and more..
    
 - `ControlModel` is base class to maintain Business Logic parts.\
   `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
   `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
   This Controls comes with few `mixin` classes to extend base functionality:
    - `ObservableComponent` to control State and notify Widget about changes. Mostly used with `BaseModel`
-   - `TickerComponent` passes `Ticker` to Model and enables to control animations outside of Widget.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
@@ -118,14 +106,14 @@ import 'package:flutter_control/control.dart';
   With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
 
 - `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
-  Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\
+  Has tree variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Empty** (nullable)\
   On the Widget side is `ControlBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
 
 ```dart
     final counter = ActionControl.broadcast<int>(0);
 
-    ActionBuilder<int>(
+    ControlBuilder<int>(
       control: counter,
       builder: (context, value) => Text(value.toString()),
     );
@@ -146,7 +134,6 @@ import 'package:flutter_control/control.dart';
       builder: (context, value) => Text(value.toString()),
     );
 ```
-  Check [Counter Example](https://github.com/RomanBase/flutter_control/tree/master/examples/a_counter) and [TODO List Example](https://github.com/RomanBase/flutter_control/tree/master/examples/b_todo_list) at Git repository.
 
 ---
 
@@ -156,41 +143,15 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 ---
 
 **Localization**
-  
-- `BaseLocalization` Json based localization, that supports simple strings, plurals and dynamic structures.\
-  Easy access via `LocalizationProvider` mixin. Localization object is stored in [ControlFactory], so is accessible without context and can be used even in Models, Entities, etc. via `Control.localization()`\
-  Localization is initialized and loaded in `Control` by default.\
-  And by default `ControlWidget` uses this localization via mixin.
-  
-```dart
-    Control.initControl(
-      localization: LocalizationConfig(
-        defaultLocale: 'en',
-        locales: {
-          'en': 'assets/localization/en.json',
-          'es': 'assets/localization/es.json',
-        },
-      ),
-    );
-```
 
-```dart
-    ControlRoot(
-      localization: LocalizationConfig(
-        locales: {
-          ...LocalizationAsset.map(locales: ['en_US', 'es_ES']),
-        },
-      ),
-    );
-```
-  Check [Localization Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization) and [Localization Delegate Example](https://github.com/RomanBase/flutter_control/tree/master/examples/c_localization_delegate) at Git repository.
+- Moved to [Localino](https://pub.dev/packages/localino) package.
 
 **Global Event System**  
   
 - `ControlBroadcast` Event stream across whole App. Default broadcaster is part of `ControlFactory` and is stored there.\
-  Every subscription is bound to it's `key` and `Type` so notification to Listeners arrives only for expected data.\
+  Every subscription is bound to it's `key` and/or `Type` so notification to Listeners arrives only for expected data.\
   With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of App to the another, even to Widgets and their States.
-  Also custom broadcaster can be created to separate events from global/default stream.
+  Also custom broadcaster can be created to separate events from default stream.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/broadcaster.png)
 
@@ -202,8 +163,8 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 **Navigation and Routing**
 
 - `ControlRoute` Specifies `Route` with `Transition` and [WidgetBuilder] for `RouteHandler`. Handler then solves navigation and passes **args** to Widgets and Models.\
-  Use `RouteControl` mixin to enable this navigation with [ControlWidget] and `RouteControlProvider` mixin with [ControlModel].
-  Routes can be stored in `RouteStore` and Route builder is accessible statically via `ControlRoute.of`.
+  Use `Dependency` mixin to enable this argument injection into [ControlWidget].
+- Routes are stored in `RouteStore`.
 
 ```dart
     Control.initControl(
@@ -214,33 +175,41 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     );
 
     class ListPage extends ControlWidget with RouteControl {
-      Widget build(BuildContext context){
+      Widget build(CoreContext context){
         ...
-        onPressed: () => routeOf<DetailPage>().openRoute();
-        onPressed: () => routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
-        onPressed: () => routeOf(key: 'detail_super').openRoute();
+        onPressed: () => context.routeOf<DetailPage>().openRoute();
+        onPressed: () => context.routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
+        onPressed: () => context.routeOf(key: 'detail_super').openRoute();
         ...
       };
     }
 ```
-  Check [Navigation Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation) and [Navigation Stack Example](https://github.com/RomanBase/flutter_control/tree/master/examples/d_navigation_stack) at Git repository.
 
+- Initial app routing is handled with `RoutingProvider`, that stores initial route for later use (after app is initialized, auth confirmed, etc.).
+
+```dart
+  MaterialApp(
+    onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
+  );
+
+  class HomePage extends ControlWidget {
+    void onInit(CoreContext context, Map args){
+      //Restores initial route navigation from from onGenerateRoute 
+      context.root.restoreNavigation();
+    } 
+  }
+```
 ---
 
 **Other classes**
 
-- `ControlTheme` and `ThemeProvider` Wraps [ThemeData], [MediaQuery] and asset path helper.
-- `InputField` Wrapper of [TextField] to provide more functionality and control via `InputControl`.
 - `DisposeHandler` - mixin for any class, helps with object disposing.
 - `PrefsProvider` - mixin for any class, helps to store user preferences - based on [shared_preferences](https://pub.dartlang.org/packages/shared_preferences).
 - `Parse` Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
 - `FutureBlock` Retriggerable delay.
 - `DelayBlock` Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
-- `WidgetInitializer` Helps to initialize Widgets with init data.
-- `UnitId` Unique Id generator based on Time, Index or just Random. 
-
-- and more..
 
 ---
 
-Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/examples) at Git repository for more complex solutions and how to use this library.
+Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/example) at Git repository for more complex solutions and how to use this library.
+More examples comes in future..

@@ -64,7 +64,7 @@ class MyApp extends StatelessWidget {
         //home: home,
         onGenerateRoute: (settings) => context.generateRoute(settings,
             root: () => MaterialPageRoute(builder: (_) => home)),
-        theme: context<ThemeConfig>()?.value,
+        theme: context.themeConfig?.value,
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [
           GlobalMaterialLocalizations.delegate,
@@ -92,6 +92,13 @@ class OnboardingPage extends StatelessWidget {
 }
 
 class MainPage extends SingleControlWidget<Counter> {
+  @override
+  void onInit(Map args, CoreContext context) {
+    super.onInit(args, context);
+
+    context.root.restoreNavigation();
+  }
+
   @override
   Widget build(CoreContext context, Counter counter) {
     final theme = Theme.of(context);

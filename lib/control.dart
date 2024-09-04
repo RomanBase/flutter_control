@@ -49,7 +49,7 @@ part 'src/navigator/route_navigator_extension.dart';
 
 part 'src/navigator/route_store.dart';
 
-part 'src/scope.dart';
+part 'src/app/scope.dart';
 
 part 'src/util/interval_curve.dart';
 

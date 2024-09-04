@@ -436,7 +436,7 @@ class RoutingProvider {
     return null;
   }
 
-  Future restoreRouteNavigation(
+  Future<dynamic> restoreRouteNavigation(
       BuildContext context, RouteNavigator navigator) async {
     final route = restore(context);
 
@@ -453,4 +453,10 @@ extension RootContextRouterExt on RootContext {
       (settings.name == '/' && root != null)
           ? root.call()
           : Control.get<RouteStore>()?.routing.generate(this, settings);
+
+  Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
+
+  Future<dynamic> restoreNavigation() async => Control.get<RouteStore>()
+      ?.routing
+      .restoreRouteNavigation(this, navigator);
 }

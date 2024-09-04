@@ -162,6 +162,8 @@ class RootContext extends CoreContext {
 
   AppState get appState => value<AppState>().value ?? AppState.init;
 
+  ThemeConfig? get themeConfig => get<ThemeConfig>();
+
   RootContext(
     super.widget,
     super.initArgs,
@@ -185,7 +187,7 @@ class RootContext extends CoreContext {
   void changeAppState(AppState state) => value<AppState>().value = state;
 
   void changeTheme(dynamic key, [bool preferred = true]) =>
-      get<ThemeConfig>()?.changeTheme(key, preferred);
+      themeConfig?.changeTheme(key, preferred);
 
   @override
   void notifyState() {
