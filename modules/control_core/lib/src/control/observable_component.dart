@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 class ObservableLeaf<T> {
   final ObservableNotifier _parent;

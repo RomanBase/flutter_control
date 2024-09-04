@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 class ControlSubscription<T> implements Disposable {
   ObservableValue? _parent;

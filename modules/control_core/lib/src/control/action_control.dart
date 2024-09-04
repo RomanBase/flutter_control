@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 /// @{macro action-control}
 ///
@@ -12,7 +12,7 @@ class ActionControl<T> extends ControlObservable<T> {
   bool get _single => true;
 
   ///Default constructor.
-  ActionControl._(T value) : super(value);
+  ActionControl._(super.value);
 
   /// Simplified version of [Stream] to provide basic and lightweight functionality to notify listeners.
   /// Only one sub can be active.

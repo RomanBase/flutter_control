@@ -1,4 +1,4 @@
-part of control_core;
+part of '../core.dart';
 
 class BroadcastSubscriptionException implements Exception {
   dynamic args;
@@ -38,7 +38,7 @@ class BroadcastSubscriptionArgs<T> {
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
 class ControlBroadcast extends ControlObservable<dynamic> {
   /// Last available value for subs.
-  final _store = Map();
+  final _store = {};
 
   ControlBroadcast() : super(null);
 
@@ -79,7 +79,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   @override
   BroadcastSubscription createSubscription([dynamic args]) {
     if (args == null ||
-        !(args is BroadcastSubscriptionArgs) ||
+        args is! BroadcastSubscriptionArgs ||
         args.key == null) {
       throw BroadcastSubscriptionException(args);
     }

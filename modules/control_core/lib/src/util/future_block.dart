@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 /// Works similarly to [Future.delayed(duration)], but completion callback can be postponed.
 /// Can be re-triggered multiple times - only last call will be handled.
@@ -57,7 +57,7 @@ class FutureBlock {
   static Future wait(Iterable<Future?> futures) async {
     final futuresToWait = futures.where((item) => item != null).cast<Future>();
 
-    if (futuresToWait.length > 0) {
+    if (futuresToWait.isNotEmpty) {
       await Future.wait(futuresToWait);
     }
   }

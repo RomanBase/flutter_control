@@ -1,4 +1,4 @@
-part of control_core;
+part of '../core.dart';
 
 typedef InitInjection<T> = void Function(T? item, dynamic args);
 
@@ -12,7 +12,7 @@ abstract class Injector {
 }
 
 class BaseInjector implements Injector, Disposable {
-  final _injectors = Map<Type, InitInjection>();
+  final _injectors = <Type, InitInjection>{};
   InitInjection? _other;
 
   BaseInjector({Map<Type, InitInjection>? injectors, InitInjection? other}) {

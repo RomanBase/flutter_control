@@ -1,4 +1,4 @@
-part of control_core;
+part of '../core.dart';
 
 abstract class ControlModule<T> implements Comparable<ControlModule> {
   Type get key => T;
@@ -36,13 +36,13 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
   static List<ControlModule> _fillModules(List<ControlModule> modules) {
     final output = List.of(modules);
 
-    modules.forEach((element) {
+    for (final element in modules) {
       element.subModules.forEach((key, value) {
         if (!output.any((element) => element.key == key)) {
           output.addAll(_fillModules([value.call(null)]));
         }
       });
-    });
+    }
 
     return output;
   }

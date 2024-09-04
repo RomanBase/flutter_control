@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 typedef ParamDecoratorFormat = String Function(String input);
 
@@ -8,13 +8,13 @@ class ParamDecorator {
   static ParamDecoratorFormat get none => (input) => input;
 
   /// Curl braces decorator. 'input' => '{input}'
-  static ParamDecoratorFormat get curl => (input) => '\{$input\}';
+  static ParamDecoratorFormat get curl => (input) => '{$input}';
 
   /// Dollar sign decorator. 'input' => '$input'
   static ParamDecoratorFormat get dollar => (input) => '\$$input';
 
   /// Percent sign decorator. 'input' => '%input'
-  static ParamDecoratorFormat get percent => (input) => '\%$input';
+  static ParamDecoratorFormat get percent => (input) => '%$input';
 }
 
 /// Helps to parse basic nullable objects.
@@ -397,17 +397,15 @@ class Parse {
 
     if (value is Iterable) {
       if (converter != null) {
-        value.forEach((item) {
+        for (final item in value) {
           final listItem = convert(item, converter: converter);
 
           if (listItem != null) {
             items.add(listItem);
           }
-        });
-      } else if (entryConverter != null) {
-        if (valueMap == null) {
-          valueMap = value.toList().asMap();
         }
+      } else if (entryConverter != null) {
+        valueMap ??= value.toList().asMap();
 
         valueMap.forEach((key, item) {
           final listItem = convertEntry(key, item, converter: entryConverter);
@@ -425,11 +423,11 @@ class Parse {
           }
         }
 
-        value.forEach((item) {
+        for (final item in value) {
           if (item is T) {
             items.add(item);
           }
-        });
+        }
       }
     } else {
       if (converter != null) {
@@ -464,7 +462,7 @@ class Parse {
       {ValueConverter<T>? converter,
       EntryConverter<T>? entryConverter,
       bool hardCast = false}) {
-    final items = Map<dynamic, T>();
+    final items = <dynamic, T>{};
 
     if (value == null) {
       return items;
@@ -537,7 +535,7 @@ class Parse {
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
   static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter,
       {ValueConverter<T>? converter, EntryConverter<T>? entryConverter}) {
-    final items = Map<K, T>();
+    final items = <K, T>{};
 
     if (value == null) {
       return items;
@@ -761,8 +759,7 @@ extension IterableExtension on Iterable {
           predicate: predicate, defaultValue: defaultValue);
 
   List<T> insertEvery<T>(T Function(T item) builder, {T? header, T? footer}) {
-    final list = this
-        .expand((item) sync* {
+    final list = expand((item) sync* {
           final newItem = builder(item);
 
           if (newItem != null) {

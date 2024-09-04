@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 extension ObservableBoolExt on ObservableModel<bool> {
   /// Checks if [value] is 'true'.

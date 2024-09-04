@@ -1,4 +1,4 @@
-part of control_core;
+part of '../core.dart';
 
 class _InvalidKey {}
 
@@ -279,12 +279,12 @@ class ControlFactory with Disposable {
   /// Stored objects in Factory.
   /// [key] is dynamic and is determined by [keyOf].
   /// [value] is actual object.
-  final _items = Map();
+  final _items = {};
 
   /// Stored Initializers for object construction.
   /// [key] is [Type] - typically interface or dynamic models.
   /// [value] is [InitFactory] for concrete object.
-  final _factory = Map<Type, InitFactory>();
+  final _factory = <Type, InitFactory>{};
 
   /// Instance of default [ControlBroadcast].
   /// [BroadcastProvider] uses this instance.
@@ -391,13 +391,8 @@ class ControlFactory with Disposable {
   /// [value] - runtime type of given object.
   ///
   /// Returns actual factory [key].
-  dynamic keyOf<T>({dynamic key, dynamic value}) {
-    if (key == null) {
-      key = T != dynamic ? T : value?.runtimeType;
-    }
-
-    return key;
-  }
+  dynamic keyOf<T>({dynamic key, dynamic value}) =>
+    key ??= T != dynamic ? T : value?.runtimeType;
 
   /// Sets [Injector] for this Factory.
   /// Set null to remove current Injector.

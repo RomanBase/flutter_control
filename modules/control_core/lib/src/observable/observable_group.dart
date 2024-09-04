@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
   final _items = <DisposableToken>[];
@@ -79,7 +79,9 @@ class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
   @override
   void dispose() {
     _parent.dispose();
-    _items.forEach((item) => item.cancel());
+    for (final item in _items) {
+      item.cancel();
+    }
     _items.clear();
   }
 }

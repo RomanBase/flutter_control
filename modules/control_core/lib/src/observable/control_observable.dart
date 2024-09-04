@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 abstract class ObservableNotifier {
   void notify();
@@ -31,15 +31,13 @@ abstract class ObservableValue<T> implements Disposable {
 
   void cancel(ControlSubscription<T> subscription);
 
-  static ObservableValue<T?> of<T>(ObservableModel<T?> observable) =>
-      _ObservableHandler<T?>(observable);
+  static ObservableValue<T?> of<T>(ObservableModel<T?> observable) => _ObservableHandler<T?>(observable);
 
   @override
   void dispose() {}
 }
 
-abstract class ObservableModel<T> extends ObservableValue<T>
-    implements ObservableNotifier {
+abstract class ObservableModel<T> extends ObservableValue<T> implements ObservableNotifier {
   bool get isEmpty => value == null;
 
   bool get isNotEmpty => value != null;
@@ -62,25 +60,19 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   _ObservableHandler(this._parent);
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
-          {bool current = true, dynamic args}) =>
-      _parent.subscribe(
+  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, dynamic args}) => _parent.subscribe(
         action,
         current: current,
         args: args,
       );
 
   @override
-  void cancel(ControlSubscription<T> subscription) =>
-      _parent.cancel(subscription);
+  void cancel(ControlSubscription<T> subscription) => _parent.cancel(subscription);
 }
 
 class ControlObservable<T> extends ObservableModel<T> {
   @protected
   final subs = <ControlSubscription<T>>[];
-
-  @override
-  dynamic internalData;
 
   bool _active = true;
 
@@ -99,8 +91,7 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   ControlObservable(this._value);
 
-  static ControlObservable<T?> empty<T>([T? value]) =>
-      ControlObservable<T?>(value);
+  static ControlObservable<T?> empty<T>([T? value]) => ControlObservable<T?>(value);
 
   static ObservableValue<T?> of<T>(dynamic object) {
     if (T == dynamic) {
@@ -154,17 +145,16 @@ class ControlObservable<T> extends ObservableModel<T> {
   static ControlObservable<T?> ofListenable<T>(Listenable listenable) {
     final observable = _ClientObservable<T>();
 
-    final callback = () {
+    callback() {
       if (listenable is ValueListenable<T>) {
         observable.setValue(listenable.value, forceNotify: true);
       } else {
         observable.notify();
       }
-    };
+    }
 
     listenable.addListener(callback);
-    observable.register(DisposableClient()
-      ..onDispose = () => listenable.removeListener(callback));
+    observable.register(DisposableClient()..onDispose = () => listenable.removeListener(callback));
 
     return observable;
   }
@@ -195,8 +185,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T> action,
-      {bool current = true, dynamic args}) {
+  ControlSubscription<T> subscribe(ValueCallback<T> action, {bool current = true, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
 
@@ -210,8 +199,7 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @protected
-  ControlSubscription<T> createSubscription([dynamic args]) =>
-      ControlSubscription<T>();
+  ControlSubscription<T> createSubscription([dynamic args]) => ControlSubscription<T>();
 
   @override
   void cancel(ControlSubscription<T> subscription) {
@@ -229,12 +217,18 @@ class ControlObservable<T> extends ObservableModel<T> {
       return;
     }
 
-    subs.forEach((element) => element.notifyCallback(value));
-    subs.removeWhere((element) => !element.isValid);
+    // Notify all subs and remove invalid subs
+    subs.removeWhere((element) {
+      element.notifyCallback(value);
+      return !element.isValid;
+    });
   }
 
   void clear() {
-    subs.forEach((element) => element.invalidate());
+    for (final element in subs) {
+      element.invalidate();
+    }
+
     subs.clear();
   }
 
@@ -245,7 +239,7 @@ class ControlObservable<T> extends ObservableModel<T> {
 }
 
 class _ControlObservableNullable<T> extends ControlObservable<T?> {
-  _ControlObservableNullable([T? value]) : super(value);
+  _ControlObservableNullable([super.value]);
 }
 
 class _ClientObservable<T> extends _ControlObservableNullable<T> {

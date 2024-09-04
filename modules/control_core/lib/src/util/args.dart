@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 /// Stores data as arguments based on [key] - [value] pairs.
 class ControlArgs implements Disposable {
@@ -39,18 +39,18 @@ class ControlArgs implements Disposable {
     } else if (args is Map) {
       _args.addAll(args);
     } else if (args is Set) {
-      args.forEach((item) {
+      for (final item in args) {
         _args[item.runtimeType] = item;
-      });
+      }
     } else if (args is Iterable) {
       if (args.length > 1 &&
           args.every(
               (element) => element.runtimeType == args.first.runtimeType)) {
         _args[args.runtimeType] = args;
       } else {
-        args.forEach((item) {
+        for (final item in args) {
           _args[item.runtimeType] = item;
-        });
+        }
       }
     } else {
       _args[args.runtimeType] = args;

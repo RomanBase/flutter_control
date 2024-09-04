@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 /// Lazily build value once and holds it for whole time.
 class LazyInitializer<T> {

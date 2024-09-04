@@ -1,9 +1,9 @@
-part of control_core;
+part of '../../core.dart';
 
 class ObjectTag {
   final Object? value;
 
-  ValueKey get key => ValueKey(this.value);
+  ValueKey get key => ValueKey(value);
 
   const ObjectTag._(this.value);
 

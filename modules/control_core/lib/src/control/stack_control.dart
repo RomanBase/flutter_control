@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 class StackControl<T> extends ObservableModel<T?> {
   /// Current stack of values.

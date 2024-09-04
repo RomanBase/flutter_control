@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 typedef DisposeMarker = Function();
 
@@ -122,7 +122,10 @@ mixin DisposeObserver on ControlModel {
   void dispose() {
     super.dispose();
 
-    _toDispose.forEach((element) => element.dispose());
+    for (final element in _toDispose) {
+      element.dispose();
+    }
+
     _toDispose.clear();
   }
 }
@@ -166,10 +169,10 @@ class _DisposableClient implements Disposable {
 class DisposableClient extends _DisposableClient {
   /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
-  DisposableClient({dynamic parent}) : super(parent: parent);
+  DisposableClient({super.parent});
 
   /// Creates [DisposableToken] that can be used by `Client`.
-  DisposableToken asToken({dynamic data}) => DisposableToken(this, data: data);
+  DisposableToken asToken({dynamic data}) => DisposableToken._(this, data: data);
 }
 
 /// {@macro disposable-client}
@@ -199,7 +202,7 @@ class DisposableToken extends _DisposableClient {
   ///
   /// [_client] - Parent client of this token.
   /// [data] - Initial token data.
-  DisposableToken(
+  DisposableToken._(
     this._client, {
     this.data,
   });
@@ -218,7 +221,7 @@ class DisposableToken extends _DisposableClient {
     VoidCallback? onDispose,
     dynamic data,
   }) =>
-      DisposableToken(
+      DisposableToken._(
         _DisposableClient(
           parent: parent,
         )

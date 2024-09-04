@@ -1,4 +1,4 @@
-part of control_core;
+part of '../../core.dart';
 
 /// Standard initialization of object right after constructor.
 abstract class Initializable {
@@ -28,7 +28,7 @@ class ControlModel with DisposeHandler implements Initializable {
   void dispose() {
     super.dispose();
 
-    printDebug('dispose: ${this.runtimeType.toString()}');
+    printDebug('dispose: ${runtimeType.toString()}');
   }
 }
 
@@ -51,8 +51,7 @@ class BaseControl extends ControlModel {
   @mustCallSuper
   void init(Map args) {
     if (isInitialized && preventMultiInit) {
-      printDebug(
-          'controller is already initialized: ${this.runtimeType.toString()}');
+      printDebug('controller is already initialized: ${this.runtimeType.toString()}');
       return;
     }
 
@@ -87,9 +86,8 @@ class BaseControl extends ControlModel {
 ///
 /// @{macro control-model}
 class BaseModel extends ControlModel {
-  @override
-  bool preferSoftDispose = true;
-
   /// Default constructor.
-  BaseModel();
+  BaseModel() {
+    preferSoftDispose = true;
+  }
 }
