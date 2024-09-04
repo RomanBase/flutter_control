@@ -172,7 +172,8 @@ class DisposableClient extends _DisposableClient {
   DisposableClient({super.parent});
 
   /// Creates [DisposableToken] that can be used by `Client`.
-  DisposableToken asToken({dynamic data}) => DisposableToken._(this, data: data);
+  DisposableToken asToken({dynamic data}) =>
+      DisposableToken._(this, data: data);
 }
 
 /// {@macro disposable-client}

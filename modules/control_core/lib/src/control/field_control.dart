@@ -1,6 +1,7 @@
 part of '../../core.dart';
 
-class FieldSubscription<T> extends ControlSubscription<T> implements StreamSubscription<T?> {
+class FieldSubscription<T> extends ControlSubscription<T>
+    implements StreamSubscription<T?> {
   final StreamSubscription<T?> _sub;
   bool cancelOnError = false;
 
@@ -126,7 +127,12 @@ class FieldControl<T> extends ObservableModel<T?> {
 
   /// Initializes [FieldControl] and subscribes it to given [stream].
   /// Check [subscribeTo] function for more info.
-  factory FieldControl.of(Stream stream, {T? initValue, Function? onError, void Function()? onDone, bool cancelOnError = false, ValueConverter<T>? converter}) {
+  factory FieldControl.of(Stream stream,
+      {T? initValue,
+      Function? onError,
+      void Function()? onDone,
+      bool cancelOnError = false,
+      ValueConverter<T>? converter}) {
     final control = FieldControl(initValue);
 
     control.subscribeTo(
@@ -166,10 +172,14 @@ class FieldControl<T> extends ObservableModel<T?> {
   }
 
   /// Returns [Sink] with custom [ValueConverter].
-  Sink sinkConverter(ValueConverter<T> converter) => FieldSinkConverter(this, converter);
+  Sink sinkConverter(ValueConverter<T> converter) =>
+      FieldSinkConverter(this, converter);
 
   /// Creates sub and stores reference for later dispose..
-  FieldSubscription<U> _addSub<U>(StreamSubscription<U?> subscription, {Function? onError, void Function()? onDone, bool cancelOnError = false}) {
+  FieldSubscription<U> _addSub<U>(StreamSubscription<U?> subscription,
+      {Function? onError,
+      void Function()? onDone,
+      bool cancelOnError = false}) {
     final sub = FieldSubscription<U>(subscription)
       ..onError(onError)
       ..onDone(onDone)
@@ -185,7 +195,10 @@ class FieldControl<T> extends ObservableModel<T?> {
   /// Sets [value] after [future] finishes.
   /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
   /// Returns [Future] to await and register other callbacks.
-  Future onFuture(Future future, {ValueConverter? converter}) => future.then((value) => setValue(converter == null ? value : converter(value))).catchError((err) {
+  Future onFuture(Future future, {ValueConverter? converter}) => future
+          .then(
+              (value) => setValue(converter == null ? value : converter(value)))
+          .catchError((err) {
         printDebug(err);
       });
 
@@ -194,7 +207,11 @@ class FieldControl<T> extends ObservableModel<T?> {
   /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
   /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
   /// Returns [FieldSubscription] for manual cancellation.
-  FieldSubscription subscribeTo(Stream stream, {Function? onError, void Function()? onDone, bool cancelOnError = false, ValueConverter? converter}) {
+  FieldSubscription subscribeTo(Stream stream,
+      {Function? onError,
+      void Function()? onDone,
+      bool cancelOnError = false,
+      ValueConverter? converter}) {
     // ignore: cancel_subscriptions
     final subscription = stream.listen(
       (data) {
@@ -223,7 +240,8 @@ class FieldControl<T> extends ObservableModel<T?> {
   }
 
   @override
-  FieldSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, dynamic args}) {
+  FieldSubscription<T> subscribe(ValueCallback<T?> action,
+      {bool current = true, dynamic args}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(action);
 
@@ -237,7 +255,11 @@ class FieldControl<T> extends ObservableModel<T?> {
     );
   }
 
-  FieldSubscription<T> subscribeStream(void Function(T? event) onData, {Function? onError, void Function()? onDone, bool cancelOnError = false, bool current = true}) {
+  FieldSubscription<T> subscribeStream(void Function(T? event) onData,
+      {Function? onError,
+      void Function()? onDone,
+      bool cancelOnError = false,
+      bool current = true}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,
@@ -374,7 +396,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   bool containsIndex(int index) => length > 0 && index > -1 && index < length;
 
   /// Filters data into given [controller].
-  StreamSubscription filterTo(FieldControl controller, {Function? onError, void Function()? onDone, bool cancelOnError = false, ValueConverter? converter, Predicate<T>? filter}) {
+  StreamSubscription filterTo(FieldControl controller,
+      {Function? onError,
+      void Function()? onDone,
+      bool cancelOnError = false,
+      ValueConverter? converter,
+      Predicate<T>? filter}) {
     return subscribeStream(
       (data) {
         if (filter != null) {
@@ -399,7 +426,8 @@ class ListControl<T> extends FieldControl<List<T>> {
   }
 
   @override
-  void setValue(Iterable<T>? value, {bool notify = true, bool forceNotify = false}) {
+  void setValue(Iterable<T>? value,
+      {bool notify = true, bool forceNotify = false}) {
     _list.clear();
 
     if (value != null) {
@@ -537,7 +565,8 @@ class ListControl<T> extends FieldControl<List<T>> {
   T reduce(T Function(T value, T element) combine) => _list.reduce(combine);
 
   /// [Iterable.fold].
-  E fold<E>(E initialValue, E Function(E previousValue, T element) combine) => _list.fold(initialValue, combine);
+  E fold<E>(E initialValue, E Function(E previousValue, T element) combine) =>
+      _list.fold(initialValue, combine);
 
   /// [Iterable.every].
   bool every(bool Function(T element) test) => _list.every(test);
@@ -590,10 +619,12 @@ class ListControl<T> extends FieldControl<List<T>> {
   Iterable<T> where(Predicate<T> test) => _list.where(test);
 
   /// [Iterable.indexWhere]
-  int indexWhere(Predicate<T> test, [int start = 0]) => _list.indexWhere(test, start);
+  int indexWhere(Predicate<T> test, [int start = 0]) =>
+      _list.indexWhere(test, start);
 
   /// [List.lastIndexWhere].
-  int lastIndexWhere(bool Function(T element) test, [int? start]) => _list.lastIndexWhere(test, start);
+  int lastIndexWhere(bool Function(T element) test, [int? start]) =>
+      _list.lastIndexWhere(test, start);
 
   /// [Iterable.indexOf]
   int indexOf(T object) => _list.indexOf(object);
@@ -718,7 +749,8 @@ class StringControl extends FieldControl<String?> {
   /// [regex] - override of [StringControl.regex] -> one of them can't be 'null'.
   ///
   /// Regex is typically used with [StringControl.withRegex] constructor and then setting value via [setValue] or [value] setter.
-  void setWithRegex(String? value, {String? regex, bool notify = true, bool forceNotify = false}) {
+  void setWithRegex(String? value,
+      {String? regex, bool notify = true, bool forceNotify = false}) {
     assert(regex != null || this.regex != null);
 
     regex ??= this.regex;
@@ -781,7 +813,8 @@ class NumberControl<T extends num> extends FieldControl<T> {
   void setValue(T? value, {bool notify = true, bool forceNotify = false}) {
     if (clampable) {
       if (clamp) {
-        super.setValue(_castValue((value ?? min).clamp(min, max)), notify: notify, forceNotify: forceNotify);
+        super.setValue(_castValue((value ?? min).clamp(min, max)),
+            notify: notify, forceNotify: forceNotify);
       } else {
         if (value! >= min && value <= max) {
           super.setValue(value, notify: notify, forceNotify: forceNotify);

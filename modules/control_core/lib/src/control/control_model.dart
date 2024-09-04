@@ -51,7 +51,8 @@ class BaseControl extends ControlModel {
   @mustCallSuper
   void init(Map args) {
     if (isInitialized && preventMultiInit) {
-      printDebug('controller is already initialized: ${this.runtimeType.toString()}');
+      printDebug(
+          'controller is already initialized: ${this.runtimeType.toString()}');
       return;
     }
 

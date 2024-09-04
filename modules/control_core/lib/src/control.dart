@@ -392,7 +392,7 @@ class ControlFactory with Disposable {
   ///
   /// Returns actual factory [key].
   dynamic keyOf<T>({dynamic key, dynamic value}) =>
-    key ??= T != dynamic ? T : value?.runtimeType;
+      key ??= T != dynamic ? T : value?.runtimeType;
 
   /// Sets [Injector] for this Factory.
   /// Set null to remove current Injector.

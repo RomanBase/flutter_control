@@ -760,17 +760,14 @@ extension IterableExtension on Iterable {
 
   List<T> insertEvery<T>(T Function(T item) builder, {T? header, T? footer}) {
     final list = expand((item) sync* {
-          final newItem = builder(item);
+      final newItem = builder(item);
 
-          if (newItem != null) {
-            yield newItem;
-          }
+      if (newItem != null) {
+        yield newItem;
+      }
 
-          yield item;
-        })
-        .skip(1)
-        .toList()
-        .cast<T>();
+      yield item;
+    }).skip(1).toList().cast<T>();
 
     if (header != null) {
       list.insert(0, header);
