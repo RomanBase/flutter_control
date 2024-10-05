@@ -4,7 +4,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
   flutter: ">=3.0.0"
 
 dependencies:
@@ -21,6 +21,9 @@ dependencies:
 
   localino_live:
     path: ../../modules/localino_live
+
+  control_macros:
+    path: ../../modules/control_macros
 
 dev_dependencies:
   flutter_test:
