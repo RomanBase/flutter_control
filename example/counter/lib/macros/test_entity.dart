@@ -12,7 +12,6 @@ enum TestEnum {
 
 @ParseEntity()
 class TestEntity extends BaseEntity {
-  @ParseIgnoreTo()
   @ParseValue(key: 'id_key')
   final String id;
 
