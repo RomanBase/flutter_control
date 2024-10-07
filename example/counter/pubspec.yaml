@@ -22,8 +22,6 @@ dependencies:
   localino_live:
     path: ../../modules/localino_live
 
-  control_macros:
-    path: ../../modules/control_macros
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +32,9 @@ dev_dependencies:
 
   localino_builder:
     path: ../../modules/localino_builder
+
+  control_macros:
+    path: ../../modules/control_macros
 
 # The following section is specific to Flutter packages.
 flutter:

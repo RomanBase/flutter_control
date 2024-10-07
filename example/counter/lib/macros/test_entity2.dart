@@ -22,6 +22,7 @@ class TestEntity2 {
   @ParseValue(toConverter: _convertBackDynamic)
   final dynamic dnc;
 
+  @CopyEntity()
   const TestEntity2({
     required this.id,
     this.count,
@@ -45,5 +46,6 @@ class TestEntity2 {
 
   void test() {
     TestEntity2.fromJson({});
+    final copy = copyWith();
   }
 }

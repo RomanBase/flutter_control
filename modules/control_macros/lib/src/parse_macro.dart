@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:macros/macros.dart';
 import 'package:control_core/core.dart';
 
+import 'declarations.dart';
+
 enum ParseIgnore {
   none,
   from,
@@ -45,48 +47,45 @@ class ParseValue<T> {
   });
 }
 
+//TODO: not working?
+macro class ParseEnum implements EnumDeclarationsMacro {
+  const ParseEnum();
+
+  @override
+  FutureOr<void> buildDeclarationsForEnum(EnumDeclaration enuum, EnumDeclarationBuilder builder) async {
+    builder.declareInType(DeclarationCode.fromString('String toJson() => name;'));
+    builder.declareInType(DeclarationCode.fromString('static TestEnum fromJson(Map<String, dynamic> data) => Parse.toEnum(data, values);'));
+  }
+}
+
 macro class ParseEntity implements ClassDeclarationsMacro {
   final String? from;
   final String? to;
+  final String? list;
   final String keyType;
 
+  //Only named params are supported right now
   const ParseEntity({
     this.from = 'Json',
     this.to = 'Json',
+    this.list = 'List',
     this.keyType = 'snake_case',
   });
 
-  Future<List<_Field>> _getFields(TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
-    final items = (await builder.fieldsOf(declaration)).map((e) => _Field(declaration: e)).toList();
-
-    if (declaration is ClassDeclaration && declaration.superclass != null) {
-      final superClass = await builder.typeDeclarationOf(declaration.superclass!.identifier);
-      final superItems = await _getFields(superClass, builder);
-      return [...items, ...superItems];
-    }
-
-    return items;
-  }
-
-  Future<List<_Method>> _getMethods(TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
-    final items = (await builder.methodsOf(declaration)).map((e) => _Method(declaration: e)).toList();
-
-    if (declaration is ClassDeclaration && declaration.superclass != null) {
-      final superClass = await builder.typeDeclarationOf(declaration.superclass!.identifier);
-      final superItems = await _getMethods(superClass, builder);
-      return [...items, ...superItems];
-    }
-
-    return items;
-  }
-
   @override
   FutureOr<void> buildDeclarationsForClass(ClassDeclaration clazz, MemberDeclarationBuilder builder) async {
-    final fields = await _getFields(clazz, builder);
-    final methods = await _getMethods(clazz, builder);
+    final fields = await MacroField.getFields(clazz, builder);
+    final methods = await MacroMethod.getMethods(clazz, builder);
 
     builder.declareInLibrary(DeclarationCode.fromString('import \'package:control_core/core.dart\';'));
     builder.declareInLibrary(DeclarationCode.fromString(''));
+
+    if (list != null) {
+      builder.declareInType(DeclarationCode.fromParts([
+        'static List<${clazz.identifier.name}> to$list(dynamic data) => Parse.toList(data, converter: (data) => ${clazz.identifier.name}.from$from(data));',
+        '\n'
+      ]));
+    }
 
     if (from != null) {
       builder.declareInType(DeclarationCode.fromParts([
@@ -106,7 +105,7 @@ macro class ParseEntity implements ClassDeclarationsMacro {
     }
   }
 
-  Iterable _buildParse(_Field field, List<_Method> methods) {
+  Iterable _buildParse(MacroField field, List<MacroMethod> methods) {
     final key = _key(field.key, field.customKey);
 
     if (field.raw) {
@@ -155,7 +154,7 @@ macro class ParseEntity implements ClassDeclarationsMacro {
     return _parseObject(field, key);
   }
 
-  Iterable _parseObject(_Field field, String key) {
+  Iterable _parseObject(MacroField field, String key) {
     if (field.isDynamic()) {
       return ['${field.name}: data[$key]'];
     }
@@ -183,11 +182,11 @@ macro class ParseEntity implements ClassDeclarationsMacro {
 
   String _defaultValue(dynamic defaultValue) => defaultValue == null ? '' : ', defaultValue: $defaultValue';
 
-  String _jsonValue(_Field field, List<_Method> methods) {
+  String _jsonValue(MacroField field, List<MacroMethod> methods) {
     final convert = field.toConverter;
 
     if (convert != null) {
-      final method = methods.find<_Method>((value) => value.name == convert);
+      final method = methods.find<MacroMethod>((value) => value.name == convert);
 
       if (method != null) {
         return '${method.name}(${method.hasParams ? field.name : ''})';
@@ -250,112 +249,4 @@ macro class ParseEntity implements ClassDeclarationsMacro {
 
     return value;
   }
-}
-
-class _Field {
-  final FieldDeclaration declaration;
-  late final NamedTypeAnnotation obj;
-
-  ConstructorMetadataAnnotation? annotation;
-
-  Map<String, ExpressionCode> args = {};
-
-  _Field({
-    required this.declaration,
-  }) {
-    obj = declaration.type as NamedTypeAnnotation;
-
-    for (final ann in declaration.metadata) {
-      if (ann is ConstructorMetadataAnnotation) {
-        if (ann.type.identifier.name == 'ParseValue') {
-          annotation = ann;
-        }
-
-        if (ann.type.identifier.name.startsWith('Parse')) {
-          args.addAll(ann.namedArguments);
-        }
-      }
-    }
-  }
-
-  String get name => declaration.identifier.name;
-
-  String get type => obj.identifier.name;
-
-  bool get nullable => obj.isNullable;
-
-  bool get customKey => args.containsKey('key');
-
-  dynamic get key => args['key']?.parts.first ?? '\'$name\'';
-
-  dynamic get defaultValue => args['defaultValue']?.parts.first;
-
-  bool get ignoreFrom => _ignore(ParseIgnore.from);
-
-  bool get ignoreTo => _ignore(ParseIgnore.to);
-
-  bool get raw => args['raw']?.parts.first == 'true';
-
-  String? get keyConverter => _unwrap(args['keyConverter']?.parts.first);
-
-  String? get converter => _unwrap(args['converter']?.parts.first);
-
-  String? get entryConverter => _unwrap(args['entryConverter']?.parts.first);
-
-  String? get fromConverter => _unwrap(args['fromConverter']?.parts.first) ?? (isPrimitive() ? converter : null);
-
-  String? get toConverter => _unwrap(args['toConverter']?.parts.first);
-
-  String? _unwrap(Object? value) {
-    if (value is String) {
-      final raw = (value.startsWith('r\'') || value.startsWith('r"'));
-      if (raw || (value.startsWith('\'') && value.endsWith('\'')) || (value.startsWith('"') && value.endsWith('"'))) {
-        return value.substring(raw ? 2 : 1, value.length - 1);
-      }
-
-      return value;
-    }
-
-    return value?.toString();
-  }
-
-  bool _ignore(ParseIgnore toIgnore) {
-    final ignore = args['ignore']?.parts.first;
-
-    return ignore == 'ParseIgnore.both' || ignore == 'ParseIgnore.${toIgnore.name}';
-  }
-
-  bool _isPrimitive(String? type) {
-    return _isDynamic(type) || type == 'void' || type == 'String' || type == 'int' || type == 'double' || type == 'number' || type == 'bool' || type == 'DateTime';
-  }
-
-  bool _isDynamic(String? type) => type == null || type == 'dynamic';
-
-  bool isPrimitive() => _isPrimitive(type);
-
-  bool isDynamic() => _isDynamic(type);
-
-  bool isArgPrimitive(int index) => _isPrimitive(getArg(index)?.name);
-
-  bool isArgDynamic(int index) => _isDynamic(getArg(index)?.name);
-
-  Identifier? getArg(int index) {
-    if (obj.typeArguments.length <= index) {
-      return null;
-    }
-
-    return (obj.typeArguments.elementAt(index) as NamedTypeAnnotation).identifier;
-  }
-}
-
-class _Method {
-  final MethodDeclaration declaration;
-
-  _Method({
-    required this.declaration
-  });
-
-  String get name => declaration.identifier.name;
-
-  bool get hasParams => declaration.positionalParameters.isNotEmpty;
 }

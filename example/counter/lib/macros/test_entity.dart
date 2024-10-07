@@ -5,9 +5,9 @@ enum TestEnum {
   none,
   value;
 
-  static TestEnum fromJson(Map<String, dynamic> data) => Parse.toEnum(data, values);
-
   String toJson() => name;
+
+  static TestEnum fromJson(Map<String, dynamic> data) => Parse.toEnum(data, values);
 }
 
 @ParseEntity()
@@ -41,4 +41,14 @@ class BaseEntity {
     required this.base,
     required this.enm,
   });
+}
+
+@DisposeMacro()
+class TestModel extends BaseModel {
+  @override
+  void dispose() {
+    super.dispose();
+
+    printDebug('custom dispose');
+  }
 }
