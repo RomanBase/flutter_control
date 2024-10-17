@@ -1,6 +1,5 @@
 part of flutter_control;
 
-//TODO: make it Stateless
 abstract class BaseControlWidget extends CoreWidget {
   const BaseControlWidget({
     super.key,
@@ -54,7 +53,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
-  T? initControl(CoreContext context) => context.getControl<T>();
+  T? initControl(CoreContext context) => Control.resolve<T>(context.args);
 
   @override
   Widget rebuild(CoreContext context) =>
@@ -93,11 +92,8 @@ abstract class _ControlWidgetBase extends CoreWidget {
   /// Called during Widget/State initialization phase.
   @protected
   List<ControlModel> initControls(CoreContext context) {
-    if (this is Dependency) {
+    if (this is InitProvider) {
       return [
-        ...(this as Dependency)
-            .getControlDependencies()
-            .where((item) => item is ControlModel),
         if (autoMountControls) ...context.args.getAll<ControlModel>(),
       ];
     }

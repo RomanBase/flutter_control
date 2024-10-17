@@ -141,10 +141,12 @@ class Parse {
   /// }
   ///
   /// Returns formatted string.
-  static String format(String input, Map<String, String> params, [ParamDecoratorFormat? decorator]) {
+  static String format(String input, Map<String, String> params,
+      [ParamDecoratorFormat? decorator]) {
     decorator ??= ParamDecorator.curl;
 
-    params.forEach((key, value) => input = input.replaceFirst(decorator!(key), value));
+    params.forEach(
+        (key, value) => input = input.replaceFirst(decorator!(key), value));
 
     return input;
   }
@@ -156,7 +158,8 @@ class Parse {
   /// Timestamp or any other object with `toDate` method.
   static DateTime? date(dynamic value, {bool inSec = false}) {
     if (value is num) {
-      return DateTime.fromMillisecondsSinceEpoch(inSec ? value * 1000 as int : value as int);
+      return DateTime.fromMillisecondsSinceEpoch(
+          inSec ? value * 1000 as int : value as int);
     }
 
     if (value is String) {
@@ -208,7 +211,9 @@ class Parse {
     }
 
     if (value is String) {
-      return int.tryParse(value) ?? double.tryParse(value)?.toInt() ?? defaultValue;
+      return int.tryParse(value) ??
+          double.tryParse(value)?.toInt() ??
+          defaultValue;
     }
 
     return defaultValue;
@@ -279,7 +284,8 @@ class Parse {
 
     final name = string(value).toLowerCase();
 
-    return enums.firstWhere((item) => fromEnum(item)!.toLowerCase() == name, orElse: () => defaultValue ?? enums[0]);
+    return enums.firstWhere((item) => fromEnum(item)!.toLowerCase() == name,
+        orElse: () => defaultValue ?? enums[0]);
   }
 
   /// Returns name of given enum [value].
@@ -300,7 +306,8 @@ class Parse {
 
   /// Safety converts value to give [Type]
   /// If conversion fails, then is [defaultValue] returned.
-  static T? convert<T>(dynamic value, {required ValueConverter<T> converter, T? defaultValue}) {
+  static T? convert<T>(dynamic value,
+      {required ValueConverter<T> converter, T? defaultValue}) {
     try {
       return converter(value) ?? defaultValue;
     } catch (err) {
@@ -312,11 +319,13 @@ class Parse {
 
   /// Safety converts value to give [Type]
   /// If conversion fails, then is [defaultValue] returned.
-  static T? convertEntry<T>(dynamic key, dynamic value, {required EntryConverter<T> converter, T? defaultValue}) {
+  static T? convertEntry<T>(dynamic key, dynamic value,
+      {required EntryConverter<T> converter, T? defaultValue}) {
     try {
       return converter(key, value) ?? defaultValue;
     } catch (err) {
-      printDebug('failed to convert $T from ${key?.toString()} : ${value?.toString()}');
+      printDebug(
+          'failed to convert $T from ${key?.toString()} : ${value?.toString()}');
     }
 
     return defaultValue;
@@ -358,7 +367,8 @@ class Parse {
 
   /// Returns [Type] from given [T] or [value].
   /// Returns `dynamic` if [T] is not passed and [value] is `null`.
-  static Type type<T>([dynamic value]) => T != dynamic ? T : (value?.runtimeType ?? dynamic);
+  static Type type<T>([dynamic value]) =>
+      T != dynamic ? T : (value?.runtimeType ?? dynamic);
 
   /// Returns 'true' if [T] is nullable.
   static bool nullableType<T>() => null is T || T == dynamic;
@@ -369,7 +379,10 @@ class Parse {
   ///
   /// Use [converter] or [entryConverter] to convert values into new List.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static List<T> toList<T>(dynamic value, {ValueConverter<T>? converter, EntryConverter<T>? entryConverter, bool hardCast = false}) {
+  static List<T> toList<T>(dynamic value,
+      {ValueConverter<T>? converter,
+      EntryConverter<T>? entryConverter,
+      bool hardCast = false}) {
     final items = <T>[];
     Map? valueMap;
 
@@ -445,7 +458,10 @@ class Parse {
   ///
   /// Use [converter] or [entryConverter] to convert values.
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<dynamic, T> toMap<T>(dynamic value, {ValueConverter<T>? converter, EntryConverter<T>? entryConverter, bool hardCast = false}) {
+  static Map<dynamic, T> toMap<T>(dynamic value,
+      {ValueConverter<T>? converter,
+      EntryConverter<T>? entryConverter,
+      bool hardCast = false}) {
     final items = <dynamic, T>{};
 
     if (value == null) {
@@ -517,7 +533,8 @@ class Parse {
   ///
   /// Use [converter] or [entryConverter] to convert value to [T]. [keyConverter] converts key to [K].
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter, {ValueConverter<T>? converter, EntryConverter<T>? entryConverter}) {
+  static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter,
+      {ValueConverter<T>? converter, EntryConverter<T>? entryConverter}) {
     final items = <K, T>{};
 
     if (value == null) {
@@ -577,12 +594,14 @@ class Parse {
 
   /// Converts [value] and additional [data] into Map of arguments.
   /// Check [ControlArgs] for more info.
-  static Map toArgs(dynamic value, {dynamic data}) => (ControlArgs.of(value)..set(data)).data;
+  static Map toArgs(dynamic value, {dynamic data}) =>
+      (ControlArgs.of(value)..set(data)).data;
 
   /// Tries to return item of given [key] or [Type].
   /// If none found, then [defaultValue] is returned.
   /// Currently supports [Parse.getArgFromMap], [Parse.getArgFromList] and [Parse.getArgFromString]
-  static T? getArg<T>(dynamic value, {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
+  static T? getArg<T>(dynamic value,
+      {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
     if (value is T && T != dynamic) {
       return value;
     }
@@ -592,15 +611,18 @@ class Parse {
     }
 
     if (value is Map) {
-      return getArgFromMap<T>(value, key: key, predicate: predicate, defaultValue: defaultValue);
+      return getArgFromMap<T>(value,
+          key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     if (value is Iterable) {
-      return getArgFromList<T>(value, predicate: predicate, defaultValue: defaultValue);
+      return getArgFromList<T>(value,
+          predicate: predicate, defaultValue: defaultValue);
     }
 
     if (value is String) {
-      return getArgFromString<T>(value, key: key, predicate: predicate, defaultValue: defaultValue);
+      return getArgFromString<T>(value,
+          key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     return defaultValue;
@@ -609,7 +631,8 @@ class Parse {
   /// Tries to return item of given [key], [Type] or [predicate].
   /// If [key] is not specified, then [Parse.getArgFromList] is used.
   /// If none found, then [defaultValue] is returned.
-  static T? getArgFromMap<T>(Map? map, {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
+  static T? getArgFromMap<T>(Map? map,
+      {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
     if (map == null) {
       return defaultValue;
     }
@@ -620,7 +643,9 @@ class Parse {
       }
 
       if (key is Type) {
-        final item = map.values.nullable().firstWhere((item) => item.runtimeType == key, orElse: () => null);
+        final item = map.values
+            .nullable()
+            .firstWhere((item) => item.runtimeType == key, orElse: () => null);
 
         if (item != null) {
           return item;
@@ -633,32 +658,39 @@ class Parse {
     }
 
     if (T != dynamic && predicate == null) {
-      final item = map.values.nullable().firstWhere((item) => item is T, orElse: () => null);
+      final item = map.values
+          .nullable()
+          .firstWhere((item) => item is T, orElse: () => null);
 
       if (item != null) {
         return item;
       }
     }
 
-    return getArgFromList<T>(map.values, predicate: predicate, defaultValue: defaultValue);
+    return getArgFromList<T>(map.values,
+        predicate: predicate, defaultValue: defaultValue);
   }
 
   /// Tries to return object of given [Type] or [predicate].
   /// If none found, then [defaultValue] is returned.
-  static T? getArgFromList<T>(Iterable? iterable, {bool Function(dynamic)? predicate, T? defaultValue}) {
+  static T? getArgFromList<T>(Iterable? iterable,
+      {bool Function(dynamic)? predicate, T? defaultValue}) {
     if (iterable == null) {
       return defaultValue;
     }
 
     if (predicate != null) {
-      final testItem = iterable.nullable().firstWhere(predicate, orElse: () => null);
+      final testItem =
+          iterable.nullable().firstWhere(predicate, orElse: () => null);
 
       if (testItem != null) {
         return testItem;
       }
     } else {
       if (T != dynamic) {
-        final typeItem = iterable.nullable().firstWhere((item) => item is T, orElse: () => null);
+        final typeItem = iterable
+            .nullable()
+            .firstWhere((item) => item is T, orElse: () => null);
 
         if (typeItem != null) {
           return typeItem;
@@ -671,7 +703,8 @@ class Parse {
 
   /// Converts input [value] to json, then tries to return object of given [key], [Type] or [predicate].
   /// If none found, then [defaultValue] is returned.
-  static T? getArgFromString<T>(String? value, {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
+  static T? getArgFromString<T>(String? value,
+      {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
     if (value == null || value.isEmpty) {
       return defaultValue;
     }
@@ -679,18 +712,25 @@ class Parse {
     final json = jsonDecode(value);
 
     if (json is Map) {
-      return getArgFromMap<T>(json, key: key, predicate: predicate, defaultValue: defaultValue);
+      return getArgFromMap<T>(json,
+          key: key, predicate: predicate, defaultValue: defaultValue);
     }
 
     if (json is Iterable) {
-      return getArgFromList<T>(json, predicate: predicate, defaultValue: defaultValue);
+      return getArgFromList<T>(json,
+          predicate: predicate, defaultValue: defaultValue);
     }
 
     return defaultValue;
   }
 
   /// Creates copy of given [map] and filters out [null] values. Also empty [Iterable] or [String] is not included in returned [Map].
-  static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)..removeWhere((key, value) => key == null || value == null || (value is Iterable && value.isEmpty) || (value is String && value.isEmpty));
+  static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)
+    ..removeWhere((key, value) =>
+        key == null ||
+        value == null ||
+        (value is Iterable && value.isEmpty) ||
+        (value is String && value.isEmpty));
 }
 
 extension ObjectExtension on Object {
@@ -701,7 +741,10 @@ extension ObjectExtension on Object {
 
 extension MapExtension on Map {
   /// [Parse.getArgFromMap].
-  T? getArg<T>({dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) => Parse.getArgFromMap<T>(this, key: key, predicate: predicate, defaultValue: defaultValue);
+  T? getArg<T>(
+          {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) =>
+      Parse.getArgFromMap<T>(this,
+          key: key, predicate: predicate, defaultValue: defaultValue);
 
   /// [Parse.fill].
   Map<K, V?> fill<K, V>() => Parse.fill(this as Map<K, V?>);
@@ -711,7 +754,9 @@ extension IterableExtension on Iterable {
   Iterable<T?> nullable<T>() => cast<T?>();
 
   /// [Parse.getArgFromList].
-  T? getArg<T>({bool Function(dynamic)? predicate, T? defaultValue}) => Parse.getArgFromList<T>(this, predicate: predicate, defaultValue: defaultValue);
+  T? getArg<T>({bool Function(dynamic)? predicate, T? defaultValue}) =>
+      Parse.getArgFromList<T>(this,
+          predicate: predicate, defaultValue: defaultValue);
 
   List<T> insertEvery<T>(T Function(T item) builder, {T? header, T? footer}) {
     final list = expand((item) sync* {

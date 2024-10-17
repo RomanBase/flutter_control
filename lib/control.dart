@@ -27,8 +27,6 @@ part 'src/component/input_control.dart';
 
 part 'src/hook/animation_controller.dart';
 
-part 'src/hook/context.dart';
-
 part 'src/hook/scroll_controller.dart';
 
 part 'src/hook/theme_data.dart';

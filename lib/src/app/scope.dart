@@ -5,7 +5,7 @@ class ControlScope {
 
   const ControlScope._(this.context);
 
-  /// [parent] should be [BuildContext], [State] or [CoreWidget]
+  /// [parent] should be [BuildContext], [Element] or [State]
   factory ControlScope.of([dynamic parent]) {
     BuildContext? context;
 
@@ -22,37 +22,36 @@ class ControlScope {
     return ControlScope._(context!);
   }
 
-  _ControlRootScope get root => _ControlRootScope();
+  static _ControlRootScope get root => _ControlRootScope();
 
-  /// Tries to provide object from Widget Tree by given [T] and/or [key].
-  /// [parent] should be [BuildContext], [State] or [CoreWidget]
-  static T? provide<T>(dynamic parent, {dynamic key, dynamic args}) =>
-      ControlScope.of(parent).get<T>(
-        key: key,
-        args: args,
-      );
+  T? get<T>({dynamic key, dynamic args, ControlFactory? factory}) =>
+      _get<T>(factory, key: key, args: args);
 
-  T? get<T>({dynamic key, dynamic args}) => _get<T>(key: key, args: args);
-
-  T? _get<T>({dynamic key, dynamic args, BuildContext? context}) {
+  T? _get<T>(ControlFactory? factory,
+      {dynamic key, dynamic args, BuildContext? context}) {
     context ??= this.context;
 
-    final state = context.findAncestorStateOfType<ControlState>();
+    final state = context.findAncestorStateOfType<CoreState>();
 
     if (state == null) {
+      if (factory != null) {
+        return factory.get<T>(key: key, args: args);
+      }
+
       return null;
     }
 
-    final item = Control.resolve<T>(
-      ControlArgs.of(state.controls).merge(state.args).data,
-      key: key,
-      args: args,
-    );
-
-    if (item != null) {
-      return item;
+    if (state.args.containsKey(key ?? T)) {
+      return state.args.get<T>(key: key);
     }
 
-    return _get(key: key, args: args, context: state.context);
+    if (state is ControlState) {
+      final controls = ControlArgs.of(state.controls);
+      if (controls.containsKey(key ?? T)) {
+        return controls[key ?? T];
+      }
+    }
+
+    return _get(factory, key: key, args: args, context: state.context);
   }
 }

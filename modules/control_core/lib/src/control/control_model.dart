@@ -32,6 +32,17 @@ class ControlModel with DisposeHandler implements Initializable {
   }
 }
 
+/// Lightweight version of [ControlModel]. Mainly used for simple Widgets as Items in dynamic List or to separate/reuse Logic, also to prevent dispose, because [BaseModel] overrides [preferSoftDispose].
+/// [dispose] must be called manually !
+///
+/// @{macro control-model}
+class BaseModel extends ControlModel {
+  /// Default constructor.
+  BaseModel() {
+    preferSoftDispose = true;
+  }
+}
+
 /// Extended version of [ControlModel]. Mainly used for complex Widgets as Pages or to separate/reuse logic.
 ///
 /// @{macro control-model}
@@ -52,7 +63,7 @@ class BaseControl extends ControlModel {
   void init(Map args) {
     if (isInitialized && preventMultiInit) {
       printDebug(
-          'controller is already initialized: ${this.runtimeType.toString()}');
+          'controller is already initialized: ${runtimeType.toString()}');
       return;
     }
 
@@ -79,16 +90,5 @@ class BaseControl extends ControlModel {
   void dispose() {
     super.dispose();
     _isInitialized = false;
-  }
-}
-
-/// Lightweight version of [ControlModel]. Mainly used for simple Widgets as Items in dynamic List or to separate/reuse Logic, also to prevent dispose, because [BaseModel] overrides [preferSoftDispose].
-/// [dispose] must be called manually !
-///
-/// @{macro control-model}
-class BaseModel extends ControlModel {
-  /// Default constructor.
-  BaseModel() {
-    preferSoftDispose = true;
   }
 }

@@ -3,36 +3,6 @@ part of flutter_control;
 //So we can easily switch to interface/mixin for Stateless implementation.
 typedef CoreContext = CoreElement;
 
-//PoC,
-mixin Dependency on Object {
-  Iterable<Type> get dependencies => [];
-
-  Iterable getControlDependencies() {
-    if (dependencies.isEmpty) {
-      return [];
-    }
-
-    return dependencies.map((element) => Control.get(key: element));
-  }
-
-  Object getRouteDependencies(BuildContext context) {
-    final args = ModalRoute.of(context)?.settings.arguments;
-
-    if (args == null) {
-      return [];
-    }
-
-    if (dependencies.isNotEmpty) {
-      final map = ControlArgs.of(args);
-
-      return map.data.values.where(
-          (element) => dependencies.any((type) => element.runtimeType == type));
-    }
-
-    return args;
-  }
-}
-
 class CoreElement extends StatefulElement {
   final args = ControlArgs({});
 
@@ -69,8 +39,12 @@ class CoreElement extends StatefulElement {
 
   /// Called just once when State is ready.
   void initRuntime() {
-    if (widget is Dependency) {
-      args.set((widget as Dependency).getRouteDependencies(this));
+    if (widget is InitProvider) {
+      args.set((widget as InitProvider).getRouteDependencies(this));
+    }
+
+    if (widget is LazyProvider) {
+      (widget as LazyProvider).mountDependencies(this);
     }
   }
 
@@ -89,12 +63,14 @@ class CoreElement extends StatefulElement {
       bool stateNotifier = false,
       void Function(T object)? dispose}) {
     if (args.containsKey(key ?? T)) {
-      return args.get<T>(key: key);
+      return args.get<T>(key: key)!;
     }
 
-    final item = args.getWithFactory<T>(key: key, defaultValue: value);
+    final item = args.getWithFactory<T>(key: key, defaultValue: value) ??
+        Control.factory.get<T>(key: key);
 
-    assert(item != null, 'There is nothing to take: $T | $key');
+    assert(item != null,
+        'There is nothing to take: $T | $key. Please provide [T Function()? value]');
 
     if (stateNotifier) {
       registerStateNotifier(item);
@@ -106,7 +82,7 @@ class CoreElement extends StatefulElement {
       register(item);
     }
 
-    return item;
+    return item!;
   }
 
   ElementValue<T> value<T>(
@@ -117,13 +93,30 @@ class CoreElement extends StatefulElement {
         stateNotifier: stateNotifier,
       )!;
 
-  T? getControl<T>({dynamic key, bool scope = false}) => scope
-      ? this.scope.get<T>(key: key, args: args.data)
-      : Control.resolve<T>(
-          this.args.data,
-          key: key,
-          args: args.data,
-        );
+  T? registerDependency<T>(
+      {dynamic key, bool scope = false, bool stateNotifier = false}) {
+    if (args.containsKey(key ?? T)) {
+      return args.get<T>(key: key);
+    }
+
+    T? item;
+    if (scope) {
+      item = this.scope.get<T>(key: key, args: args.data);
+    } else {
+      item = Control.get<T>(key: key);
+      register(item);
+    }
+
+    if (item != null) {
+      args.add<T>(key: key, value: item);
+
+      if (stateNotifier) {
+        registerStateNotifier(item);
+      }
+    }
+
+    return item;
+  }
 
   T? get<T>({dynamic key, T? Function()? defaultValue}) =>
       args.get<T>(
@@ -131,7 +124,7 @@ class CoreElement extends StatefulElement {
       ) ??
       defaultValue?.call();
 
-  void set<T>({dynamic key, required T? value}) => args.add(
+  void set<T>({dynamic key, required T? value}) => args.add<T>(
         key: key,
         value: value,
       );
@@ -140,6 +133,10 @@ class CoreElement extends StatefulElement {
 
   /// Registers object to dispose
   void register(dynamic object, [int priority = 0]) {
+    if (object == null) {
+      return;
+    }
+
     if (_objects == null) {
       _objects = [];
     }
@@ -211,6 +208,40 @@ class ElementValue<T> extends ChangeNotifier {
     if (_value != value) {
       _value = value;
       notifyListeners();
+    }
+  }
+}
+
+extension ControlContextExt on BuildContext {
+  RootContext get root => RootContext.of(this)!;
+
+  ControlScope get scope => ControlScope.of(this);
+}
+
+mixin InitProvider on CoreWidget {
+  @protected
+  Object getRouteDependencies(BuildContext context) =>
+      ModalRoute.of(context)?.settings.arguments ?? [];
+}
+
+mixin LazyProvider on CoreWidget {
+  @protected
+  void mountDependencies(CoreContext context) {}
+}
+
+mixin ContextComponent on ControlModel {
+  CoreContext? context;
+
+  @override
+  void mount(object) {
+    super.mount(object);
+
+    if (object is CoreState) {
+      context = object.element;
+    }
+
+    if (object is CoreContext) {
+      context = object;
     }
   }
 }
