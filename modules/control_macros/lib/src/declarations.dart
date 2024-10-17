@@ -68,11 +68,15 @@ class MacroField {
     }
   }
 
-  static Future<List<MacroField>> getFields(TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
-    final items = (await builder.fieldsOf(declaration)).map((e) => MacroField(declaration: e)).toList();
+  static Future<List<MacroField>> getFields(
+      TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
+    final items = (await builder.fieldsOf(declaration))
+        .map((e) => MacroField(declaration: e))
+        .toList();
 
     if (declaration is ClassDeclaration && declaration.superclass != null) {
-      final superClass = await builder.typeDeclarationOf(declaration.superclass!.identifier);
+      final superClass =
+          await builder.typeDeclarationOf(declaration.superclass!.identifier);
       final superItems = await getFields(superClass, builder);
       return [...items, ...superItems];
     }
@@ -80,7 +84,9 @@ class MacroField {
     return items;
   }
 
-  static Future<List<MacroField>> getFieldsOf(Identifier identifier, MemberDeclarationBuilder builder) async => getFields(await builder.typeDeclarationOf(identifier), builder);
+  static Future<List<MacroField>> getFieldsOf(
+          Identifier identifier, MemberDeclarationBuilder builder) async =>
+      getFields(await builder.typeDeclarationOf(identifier), builder);
 
   NamedTypeAnnotation get obj => declaration.type as NamedTypeAnnotation;
 
@@ -108,7 +114,9 @@ class MacroField {
 
   String? get entryConverter => _unwrap(args['entryConverter']?.parts.first);
 
-  String? get fromConverter => _unwrap(args['fromConverter']?.parts.first) ?? (isPrimitive() ? converter : null);
+  String? get fromConverter =>
+      _unwrap(args['fromConverter']?.parts.first) ??
+      (isPrimitive() ? converter : null);
 
   String? get toConverter => _unwrap(args['toConverter']?.parts.first);
 
@@ -133,7 +141,9 @@ class MacroField {
   String? _unwrap(Object? value) {
     if (value is String) {
       final raw = (value.startsWith('r\'') || value.startsWith('r"'));
-      if (raw || (value.startsWith('\'') && value.endsWith('\'')) || (value.startsWith('"') && value.endsWith('"'))) {
+      if (raw ||
+          (value.startsWith('\'') && value.endsWith('\'')) ||
+          (value.startsWith('"') && value.endsWith('"'))) {
         return value.substring(raw ? 2 : 1, value.length - 1);
       }
 
@@ -146,11 +156,19 @@ class MacroField {
   bool _ignore(ParseIgnore toIgnore) {
     final ignore = args['ignore']?.parts.first;
 
-    return ignore == 'ParseIgnore.both' || ignore == 'ParseIgnore.${toIgnore.name}';
+    return ignore == 'ParseIgnore.both' ||
+        ignore == 'ParseIgnore.${toIgnore.name}';
   }
 
   bool _isPrimitive(String? type) {
-    return _isDynamic(type) || type == 'void' || type == 'String' || type == 'int' || type == 'double' || type == 'number' || type == 'bool' || type == 'DateTime';
+    return _isDynamic(type) ||
+        type == 'void' ||
+        type == 'String' ||
+        type == 'int' ||
+        type == 'double' ||
+        type == 'number' ||
+        type == 'bool' ||
+        type == 'DateTime';
   }
 
   bool _isDynamic(String? type) => type == null || type == 'dynamic';
@@ -172,7 +190,8 @@ class MacroField {
       return null;
     }
 
-    return (obj.typeArguments.elementAt(index) as NamedTypeAnnotation).identifier;
+    return (obj.typeArguments.elementAt(index) as NamedTypeAnnotation)
+        .identifier;
   }
 
   Iterable<Object> getCodeParts({bool nullable = true}) {
@@ -216,11 +235,15 @@ class MacroMethod {
 
   MacroMethod({required this.declaration});
 
-  static Future<List<MacroMethod>> getMethods(TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
-    final items = (await builder.methodsOf(declaration)).map((e) => MacroMethod(declaration: e)).toList();
+  static Future<List<MacroMethod>> getMethods(
+      TypeDeclaration declaration, MemberDeclarationBuilder builder) async {
+    final items = (await builder.methodsOf(declaration))
+        .map((e) => MacroMethod(declaration: e))
+        .toList();
 
     if (declaration is ClassDeclaration && declaration.superclass != null) {
-      final superClass = await builder.typeDeclarationOf(declaration.superclass!.identifier);
+      final superClass =
+          await builder.typeDeclarationOf(declaration.superclass!.identifier);
       final superItems = await getMethods(superClass, builder);
       return [...items, ...superItems];
     }
