@@ -1,6 +1,7 @@
 import 'package:control_macros/macros.dart';
-import 'package:counter/macros/test_entity.dart';
 import 'package:flutter_control/control.dart';
+
+import 'test_entity.dart';
 
 @ParseEntity(from: 'Json', to: 'Fire')
 class TestEntity2 {
@@ -14,7 +15,10 @@ class TestEntity2 {
   final List<TestEntity> testList;
   @ParseValue(key: 'str_list', converter: '(arg) => TestEntity2._convert(arg)')
   final List<String> strList;
-  @ParseValue(key: 'String_Dynamic_Key', keyConverter: TestEntity2._convertEntry, converter: TestEntity2._convert)
+  @ParseValue(
+      key: 'String_Dynamic_Key',
+      keyConverter: TestEntity2._convertEntry,
+      converter: TestEntity2._convert)
   final Map<String, dynamic> map;
   final Map<String, TestEntity> testMap;
   final Map<String, String> strMap;
@@ -38,9 +42,11 @@ class TestEntity2 {
     this.dnc,
   });
 
-  static String _convert(dynamic value) => Parse.toEnum(value, TestEnum.values).name;
+  static String _convert(dynamic value) =>
+      Parse.toEnum(value, TestEnum.values).name;
 
-  static String _convertEntry(dynamic key, dynamic value) => Parse.toEnum(value, TestEnum.values).name;
+  static String _convertEntry(dynamic key, dynamic value) =>
+      Parse.toEnum(value, TestEnum.values).name;
 
   static String _convertBackDynamic(dynamic value) => 'dnc $value';
 

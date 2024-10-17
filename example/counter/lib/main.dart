@@ -1,6 +1,5 @@
-import 'package:counter/loader_indicator.dart';
-import 'package:counter/macros/test_entity.dart';
-import 'package:counter/static_theme.dart';
+import 'package:counter/src/loader_indicator.dart';
+import 'package:counter/src/static_theme.dart';
 import 'package:flutter_control/control.dart';
 import 'package:localino/localino.dart';
 import 'package:localino_live/localino_live.dart';
@@ -11,7 +10,8 @@ void main() {
   runApp(const MyApp());
 }
 
-class Counter extends BaseControl with ObservableComponent<int> {
+class Counter extends BaseControl
+    with ObservableComponent<int>, ReferenceCounter {
   @override
   void onInit(Map args) {
     super.onInit(args);
@@ -28,13 +28,12 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    TestModel().dispose();
-
     Control.initControl(
       debug: true,
       modules: [
         RoutingModule([
           ControlRoute.build<SecondPage>(builder: (_) => SecondPage()),
+          ControlRoute.build<ThirdPage>(builder: (_) => ThirdPage()),
         ]),
         LocalinoModule(LocalinoOptions()),
         /*LocalinoModule(LocalinoLive.options(
@@ -54,7 +53,8 @@ class MyApp extends StatelessWidget {
         themes: UITheme.factory,
       ),
       states: [
-        AppState.init.build((context) => InitLoader.of(builder: (_) => Center(child: Text('init')))),
+        AppState.init.build((context) =>
+            InitLoader.of(builder: (_) => Center(child: Text('init')))),
         AppState.onboarding.build((context) => OnboardingPage()),
         AppState.main.build((context) => MainPage()),
       ],
@@ -64,7 +64,8 @@ class MyApp extends StatelessWidget {
       builder: (context, home) => MaterialApp(
         title: 'Flutter Demo',
         //home: home,
-        onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
+        onGenerateRoute: (settings) => context.generateRoute(settings,
+            root: () => MaterialPageRoute(builder: (_) => home)),
         theme: context.themeConfig?.value,
         locale: LocalinoProvider.instance.currentLocale,
         localizationsDelegates: [
@@ -74,7 +75,7 @@ class MyApp extends StatelessWidget {
         ],
       ),
       onSetupChanged: (context) {
-        UITheme.scheme = context<ThemeConfig>()!.value.colorScheme;
+        UITheme.scheme = context<ThemeConfig>()?.value.colorScheme;
         Intl.defaultLocale = LocalinoProvider.instance.locale;
       },
     );
@@ -124,41 +125,57 @@ class MainPage extends SingleControlWidget<Counter> {
             ),
             ElevatedButton(
               onPressed: () {
-                LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
+                LocalinoProvider.instance.changeLocale(
+                    LocalinoProvider.instance.locale == 'en_US'
+                        ? 'cs_CZ'
+                        : 'en_US');
               },
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
             ElevatedButton(
-              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: counter),
-              child: Text('Open Next'),
+              onPressed: () =>
+                  context.routeOf<SecondPage>()?.openRoute(args: counter),
+              child: Text('Open Second'),
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Text('${counter.value}'),
+        child: Text(
+          '${counter.value}',
+          style: theme.textTheme.titleMedium,
+        ),
         onPressed: () => counter.increment(),
       ),
     );
   }
 }
 
-class SecondPage extends ControlWidget with Dependency {
+class SecondPage extends ControlWidget with InitProvider {
   @override
   void onInit(Map args, CoreContext context) {
     super.onInit(args, context);
 
-    context<Counter>(value: () => Control.get<Counter>(args: args)!);
+    //We providing Counter only from MainPage
+    context.value<bool>(key: 'second', value: args.containsKey(Counter));
+
+    //[args] can contain [Counter] or [int].
+    printDebug('Init Counter: from $args');
+    final counter =
+        context.use<Counter>(value: () => Control.get<Counter>(args: args)!);
+    printDebug('Init Counter Value: ${counter?.value}');
   }
 
   @override
   Widget build(CoreContext context) {
     final theme = Theme.of(context);
+    final counter = context<Counter>();
+    final secondPage = context.value<bool>(key: 'second').value!;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       appBar: AppBar(
-        title: Text('This is second page'),
+        title: Text('This is ${secondPage ? 'second' : 'next'} page'),
       ),
       body: Center(
         child: Column(
@@ -176,28 +193,79 @@ class SecondPage extends ControlWidget with Dependency {
             ),
             ElevatedButton(
               onPressed: () {
-                LocalinoProvider.instance.changeLocale(LocalinoProvider.instance.locale == 'en_US' ? 'cs_CZ' : 'en_US');
+                LocalinoProvider.instance.changeLocale(
+                    LocalinoProvider.instance.locale == 'en_US'
+                        ? 'cs_CZ'
+                        : 'en_US');
               },
               child: Text('Locale: ${LocalinoProvider.instance.locale}'),
             ),
             ElevatedButton(
-              onPressed: () => context.routeOf<SecondPage>()?.openRoute(args: context<Counter>()?.value),
+              onPressed: () => context
+                  .routeOf<SecondPage>()
+                  ?.openRoute(args: counter?.value),
               child: Text('Open Next'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  context.routeOf<ThirdPage>()?.openRoute(args: counter),
+              child: Text('Open Scope'),
             ),
             LoaderStepIndicator(),
           ],
         ),
       ),
       floatingActionButton: ControlBuilder<int>(
-        control: context<Counter>(),
+        control: counter,
         builder: (_, value) {
           return FloatingActionButton(
-            child: Text('$value'),
-            onPressed: () => context<Counter>()?.increment(),
+            child: Text(
+              '$value',
+              style: secondPage ? theme.textTheme.titleMedium : null,
+            ),
+            onPressed: () => counter?.increment(),
           );
         },
         noData: (_) => BackButton(),
       ),
     );
+  }
+}
+
+class ThirdPage extends SingleControlWidget<Counter> with InitProvider {
+  @override
+  Widget build(CoreContext context, Counter control) {
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _ThirdScope(),
+            ElevatedButton(
+              onPressed: () => control.increment(),
+              child: Text('+'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('close'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ThirdScope extends BaseControlWidget with LazyProvider {
+  @override
+  void mountDependencies(CoreContext context) {
+    context.registerDependency<Counter>(scope: true, stateNotifier: true);
+  }
+
+  @override
+  Widget build(CoreContext context) {
+    final counter = context.get<Counter>();
+
+    return Text('Init With: $counter - (${counter?.value})');
   }
 }

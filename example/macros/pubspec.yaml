@@ -1,36 +1,28 @@
-name: counter
-description: A new Flutter project.
+name: macros_test
+description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
-  flutter: ">=3.0.0"
+  flutter: '>=3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
-  flutter_localizations:
-    sdk: flutter
-
-  intl: 0.19.0
-
   flutter_control:
     path: ../../
 
-  localino_live:
-    path: ../../modules/localino_live
+  # https://dart.dev/language/macros
+  control_macros:
+    path: ../../modules/control_macros
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # dart run build_runner build
-  build_runner: 2.4.6
-
-  localino_builder:
-    path: ../../modules/localino_builder
+  flutter_lints: ^4.0.0
 
 # The following section is specific to Flutter packages.
 flutter:
@@ -39,9 +31,3 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
-  assets:
-    - assets/
-    - assets/localization/
-
-

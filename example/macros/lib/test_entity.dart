@@ -7,7 +7,8 @@ enum TestEnum {
 
   String toJson() => name;
 
-  static TestEnum fromJson(Map<String, dynamic> data) => Parse.toEnum(data, values);
+  static TestEnum fromJson(Map<String, dynamic> data) =>
+      Parse.toEnum(data, values);
 }
 
 @ParseEntity()
