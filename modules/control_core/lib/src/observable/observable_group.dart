@@ -1,6 +1,7 @@
 part of '../../core.dart';
 
-class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
+class ObservableGroup extends ObservableValue<Iterable?>
+    implements Disposable, ObservableNotifier {
   final _items = <DisposableToken>[];
 
   final _parent = ActionControl.empty<Iterable>();
@@ -40,15 +41,14 @@ class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
 
   Iterable _getValues() => _items.map((item) => _getValue(item));
 
-  /// Supports [ActionControl], [FieldControl] and [Listenable]. Other objects will be passed unchanged.
-  DisposableToken join(dynamic observer) {
+  DisposableToken join(Object observable) {
     final event = DisposableClient(parent: this);
 
     final sub =
-        ControlObservable.of(observer).subscribe((value) => _notifyControl());
+        ControlObservable.of(observable).subscribe((value) => _notifyControl());
     event.onCancel = sub.dispose;
 
-    final token = event.asToken(data: observer);
+    final token = event.asToken(data: observable);
 
     event.onDispose = () {
       _items.remove(token);
@@ -61,6 +61,7 @@ class ObservableGroup extends ObservableValue<Iterable?> implements Disposable {
 
   void _notifyControl() => _parent.value = _getValues();
 
+  @override
   void notify() => _notifyControl();
 
   @override

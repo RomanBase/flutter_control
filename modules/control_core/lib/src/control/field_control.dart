@@ -88,7 +88,7 @@ class FieldSubscription<T> extends ControlSubscription<T>
   }
 }
 
-/// {@macro action-control}
+/// Stream based version of [ObservableModel].
 class FieldControl<T> extends ObservableModel<T?> {
   /// Current broadcast [StreamController].
   final StreamController<T?> _stream = StreamController<T?>.broadcast();
@@ -118,7 +118,7 @@ class FieldControl<T> extends ObservableModel<T?> {
   /// Returns true if current stream is closed.
   bool get isClosed => _stream.isClosed;
 
-  /// Initializes control and [Stream] with default [value].
+  /// Stream centric version of [ObservableModel].
   FieldControl([T? value]) {
     if (value != null) {
       setValue(value);
@@ -358,6 +358,7 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 //########################################################################################
 
 /// Extended version of [FieldControl] specified to [List].
+/// TODO [4.2.0]: ready to refactor
 class ListControl<T> extends FieldControl<List<T>> {
   /// [value] can't be `null`.
   List<T> get _list => value!;
@@ -663,6 +664,7 @@ enum LoadingStatus {
 }
 
 /// Extended [FieldControl] specified to control [LoadingStatus].
+/// TODO [4.2.0]: ready to refactor
 class LoadingControl extends FieldControl<LoadingStatus> {
   /// Returns true if [value] is [LoadingStatus.done].
   bool get isDone => value == LoadingStatus.done;
@@ -710,7 +712,8 @@ class LoadingControl extends FieldControl<LoadingStatus> {
 //########################################################################################
 //########################################################################################
 
-/// Extended version of [FieldControl] specified to [String].
+@Deprecated(
+    'New general extensions comes with ObservableModel. Will be removed in 4.2.0')
 class StringControl extends FieldControl<String?> {
   /// Returns 'true' if value is 'null' or empty String.
   @override
@@ -763,7 +766,8 @@ class StringControl extends FieldControl<String?> {
   }
 }
 
-/// Extended version of [FieldControl] specified to [num].
+@Deprecated(
+    'New general extensions comes with ObservableModel. Will be removed in 4.2.0')
 class NumberControl<T extends num> extends FieldControl<T> {
   /// Inclusive lower bound value;
   late T min;

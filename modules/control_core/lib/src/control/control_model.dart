@@ -1,51 +1,66 @@
 part of '../../core.dart';
 
 /// Standard initialization of object right after constructor.
+/// In this approach constructor can be empty and [args] can contains all required dependencies. Kind of late property injection.
 abstract class Initializable {
-  /// {@template init-object}
-  /// Init is typically called right after constructor by framework.
-  /// [args] - Arguments passed from parent or through Factory.
-  /// {@endtemplate}
+  /// Init is typically called right after constructor.
+  /// [args] - these arguments are typically passed through factory.
   void init(Map args) {}
 }
 
-/// {@template control-model}
-/// Base class to use with [CoreWidget] - specifically [ControlWidget].
-/// Logic part that handles Streams, loading, data, etc.
-/// Init [args] helps to pass reference of other used Controls and objects.
-///
-/// Extend this class to create custom controls and models.
-/// {@endtemplate}
+/// Base class within to implement Business logic.
+/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
+/// Pass init [args] right after constructor to configure this model.
+/// Comes with [DisposeHandler] so we can control how [dispose] will be handled.
+/// When not restricted, [init] and [dispose] can be called multiple times during lifecycle of this model.
+/// More specific use is implemented within [BaseControl] and [BaseModel].
 class ControlModel with DisposeHandler implements Initializable {
   @override
   void init(Map args) {}
 
   /// Used to register interface/handler/notifier etc.
   /// Can be called multiple times with different objects!
-  void mount(dynamic object) {}
+  void mount(Object? object) {}
 
   @override
   void dispose() {
     super.dispose();
 
+    //TODO: better log system to prevent unwanted spam
     printDebug('dispose: ${runtimeType.toString()}');
   }
 }
 
-/// Lightweight version of [ControlModel]. Mainly used for simple Widgets as Items in dynamic List or to separate/reuse Logic, also to prevent dispose, because [BaseModel] overrides [preferSoftDispose].
-/// [dispose] must be called manually !
+/// Base class within to implement lightweight Business logic.
+/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
+/// When not restricted, [init] can be called multiple times during lifecycle of this model.
+/// Since this model [preferSoftDispose] by default, [dispose] must be called manually !
 ///
-/// @{macro control-model}
+/// BaseModels are typically constructed and initialized manually within code, but also can be constructed through [ControlFactory] (Check [Control] service locator).
+///
+/// Check [BaseControl] for more robust implementation of [ControlModel].
+/// Check [ObservableComponent], [NotifierComponent] mixins to create observable version of model.
 class BaseModel extends ControlModel {
-  /// Default constructor.
-  BaseModel() {
-    preferSoftDispose = true;
+  /// Prefer soft dispose by default.
+  bool _preferSoftDispose = true;
+
+  @override
+  bool get preferSoftDispose => _preferSoftDispose;
+
+  @override
+  set preferSoftDispose(bool value) {
+    _preferSoftDispose = value;
   }
 }
 
-/// Extended version of [ControlModel]. Mainly used for complex Widgets as Pages or to separate/reuse logic.
+/// Base class within to implement robust Business logic.
+/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
+/// [init] is 'replaced' with [onInit] that is called just once ([preventMultiInit] is set by default).
 ///
-/// @{macro control-model}
+/// BaseControls are typically constructed by [ControlFactory] (Check [Control] service locator).
+///
+/// Check [BaseModel] for more lightweight implementation of [ControlModel].
+/// Check [LazyControl], [ReferenceCounter] mixins to create even more powerful implementation.
 class BaseControl extends ControlModel {
   /// Init check.
   bool _isInitialized = false;
@@ -56,8 +71,6 @@ class BaseControl extends ControlModel {
   /// Prevents multiple initialization and [onInit] will be called just once.
   bool preventMultiInit = true;
 
-  /// {@macro init-object}
-  /// Set [preventMultiInit] to enable multi init / re-init
   @override
   @mustCallSuper
   void init(Map args) {
@@ -71,16 +84,16 @@ class BaseControl extends ControlModel {
     onInit(args);
   }
 
-  /// Is typically called once and shortly after constructor.
-  /// In most of times [Widget] or [State] isn't ready yet.
-  /// [preventMultiInit] is enabled by default and prevents multiple calls of this function.
-  /// [args] input arguments passed from parent or Factory.
+  /// Init is typically called right after constructor.
+  /// Is called just once. To enable multi init set [preventMultiInit] to false.
+  /// [args] - these arguments are typically passed through factory.
   void onInit(Map args) {}
 
   /// Reload model and data.
   Future<void> reload() async {}
 
-  /// Invalidates Control and sets [isInitialized] to false.
+  /// Invalidates Model and sets [isInitialized] to false.
+  /// In some cases, from this point model can be re-initialized.
   void invalidate() {
     _isInitialized = false;
   }

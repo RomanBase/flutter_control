@@ -19,6 +19,8 @@ class ObservableLeaf<T> {
   ObservableLeaf(this._parent, [this._value]);
 }
 
+/// Mixin implementation of ObservableValue.
+/// In most of cases used with [BaseModel] to create observable model.
 mixin ObservableComponent<T> on ControlModel
     implements ObservableValue<T?>, ObservableNotifier {
   /// Actual control to subscribe.
@@ -66,7 +68,10 @@ mixin ObservableComponent<T> on ControlModel
   }
 }
 
-mixin NotifierComponent on ControlModel implements ObservableChannel {
+/// Mixin implementation of ObservableChannel.
+/// In most of cases used with [BaseModel] to create observable model.
+mixin NotifierComponent on ControlModel
+    implements ObservableChannel, ObservableNotifier {
   /// Actual control to subscribe.
   final _parent = ControlObservable.empty();
 

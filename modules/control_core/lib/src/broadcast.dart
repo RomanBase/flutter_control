@@ -36,51 +36,53 @@ class BroadcastSubscriptionArgs<T> {
 /// Stream is driven by keys and object types.
 ///
 /// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
-class ControlBroadcast extends ControlObservable<dynamic> {
+class ControlBroadcast implements ObservableNotifier, Disposable {
+  final _observable = ControlObservable<dynamic>(null);
+
   /// Last available value for subs.
   final _store = {};
 
-  ControlBroadcast() : super(null);
+  /// Actual observable that holds all listeners.
+  /// This is exposed just for debug and test purposes.
+  /// DO NOT modify directly any fields in release.
+  ControlObservable get observable => _observable;
 
-  /// Returns stored object by give - exact [key].
-  /// Object can be stored during [broadcast].
-  T? getStore<T>(dynamic key) {
-    if (_store.containsKey(key)) {
-      return _store[key] as T?;
-    }
+  /// Number of active listeners.
+  int get subCount => _observable.subCount;
 
-    return null;
-  }
+  /// Checks availability of this broadcast.
+  /// Inactive broadcast will not serve any data.
+  bool get isActive => _observable.isActive;
+
+  /// Pauses all broadcasting.
+  void pause() => _observable.pause();
+
+  /// Resumes broadcast distribution.
+  bool resume() => _observable.resume();
 
   /// In most of cases not used directly
   /// Check [subscribeTo] / [subscribeOf] and [subscribeEvent] / [subscribeEventOf]
-  @override
   BroadcastSubscription subscribe(
     ValueCallback action, {
     bool current = true,
-    dynamic args,
+    required BroadcastSubscriptionArgs args,
   }) {
-    final sub = createSubscription(args);
-    subs.add(sub);
+    final sub = _createSubscription(args);
+    _observable.subs.add(sub);
 
-    sub.initSubscription(this, action);
+    sub.initSubscription(_observable, action);
 
-    if (args is BroadcastSubscriptionArgs) {
-      if (current &&
-          _store.containsKey(args.key) &&
-          sub.isValidForBroadcast(sub.key, _store[args.key])) {
-        sub.notifyCallback(_store[args.key]);
-      }
+    if (current &&
+        _store.containsKey(args.key) &&
+        sub.isValidForBroadcast(sub.key, _store[args.key])) {
+      sub.notifyCallback(_store[args.key]);
     }
 
     return sub;
   }
 
-  @override
-  BroadcastSubscription createSubscription([dynamic args]) {
-    if (args == null ||
-        args is! BroadcastSubscriptionArgs ||
-        args.key == null) {
+  BroadcastSubscription _createSubscription(BroadcastSubscriptionArgs args) {
+    if (args.key == null) {
       throw BroadcastSubscriptionException(args);
     }
 
@@ -92,29 +94,28 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
+  /// Check [subscribeOf] to subscribe with Type [T].
   BroadcastSubscription<T> subscribeTo<T>(
-    dynamic key,
+    Object key,
     ValueChanged<T?> onData, {
     bool current = true,
     bool nullOk = true,
-  }) {
-    assert(key != null);
-
-    return subscribe(
-      (data) => onData.call(data == null ? null : data as T),
-      current: current,
-      args: BroadcastSubscriptionArgs<T>(
-        key: key,
-        nullOk: nullOk,
-      ),
-    ) as BroadcastSubscription<T>;
-  }
+  }) =>
+      subscribe(
+        (data) => onData.call(data == null ? null : data as T),
+        current: current,
+        args: BroadcastSubscriptionArgs<T>(
+          key: key,
+          nullOk: nullOk,
+        ),
+      ) as BroadcastSubscription<T>;
 
   /// Subscribe to global object stream for given [Type]. This [Type] is used as broadcast [key].
   /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
   /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
+  /// Check [subscribeTo] to subscribe with custom key.
   BroadcastSubscription<T> subscribeOf<T>(
     ValueChanged<T?> onData, {
     bool current = true,
@@ -129,7 +130,8 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
-  BroadcastSubscription subscribeEvent(dynamic key, VoidCallback callback) {
+  /// Check [subscribeEventOf] to subscribe with Type [T].
+  BroadcastSubscription subscribeEvent(Object key, VoidCallback callback) {
     return subscribeTo(key, (_) => callback(), current: false);
   }
 
@@ -137,6 +139,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
   ///
   /// Returns [BroadcastSubscription] to control and close subscription.
+  /// Check [subscribeEvent] to subscribe with custom key.
   BroadcastSubscription subscribeEventOf<T>(VoidCallback callback) {
     assert(T != dynamic);
 
@@ -153,6 +156,11 @@ class ControlBroadcast extends ControlObservable<dynamic> {
     required dynamic value,
     bool store = false,
   }) {
+    if (!isActive) {
+      printDebug('Broadcast is not active!');
+      return 0;
+    }
+
     key = Control.factory.keyOf<T>(key: key, value: value);
     int count = 0;
 
@@ -160,7 +168,7 @@ class ControlBroadcast extends ControlObservable<dynamic> {
       _store[key] = value;
     }
 
-    subs.cast<BroadcastSubscription>().forEach((sub) {
+    _observable.subs.cast<BroadcastSubscription>().forEach((sub) {
       if (sub.isValidForBroadcast(key, value)) {
         count++;
         sub.notifyCallback(value);
@@ -176,13 +184,39 @@ class ControlBroadcast extends ControlObservable<dynamic> {
   /// Returns number of notified subs.
   int broadcastEvent<T>({dynamic key}) => broadcast<T>(key: key, value: null);
 
-  @override
-  void notify() => broadcast(value: value);
+  /// Returns stored object by give - exact [key].
+  /// Object can be stored during [broadcast].
+  T? getStore<T>({Object? key}) {
+    key ??= Control.factory.keyOf<T>(key: key);
+
+    if (_store.containsKey(key)) {
+      return _store[key] as T?;
+    }
+
+    return null;
+  }
+
+  /// Invalidates current store.
+  /// If [key] is given, then only this will be removed.
+  bool invalidateStore({Object? key}) {
+    if (key != null) {
+      return _store.remove(key);
+    }
+
+    _store.clear();
+    return true;
+  }
+
+  void clear() {
+    _store.clear();
+    _observable.clear();
+  }
 
   @override
-  void clear() {
-    super.clear();
-    _store.clear();
+  void notify() {
+    for (final entry in _store.entries) {
+      broadcast(key: entry.key, value: entry.value);
+    }
   }
 
   @override

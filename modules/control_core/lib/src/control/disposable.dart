@@ -1,16 +1,18 @@
 part of '../../core.dart';
 
+/// Dump marker used to mark object for dispose.
 typedef DisposeMarker = Function();
 
 /// Mark Object as Disposable to let other know, that this Object can hold some resources that needs to be to invalidated and cleared.
 mixin Disposable {
   /// Used to clear and dispose object.
-  /// After this method call is object typically unusable and ready for GC.
+  /// Unsubscribe and close all sources. Prepare object for GC.
   /// Can be called multiple times!
   void dispose();
 }
 
 extension DisposableExt on Disposable {
+  /// Register for dispose with given [observer].
   void disposeWith(DisposeObserver observer) => observer.registerDispose(this);
 }
 
@@ -25,12 +27,12 @@ mixin DisposeHandler implements Disposable {
   /// [requestDispose] do nothing if set. Final [dispose] must be handled manually.
   bool preventDispose = false;
 
-  /// [requestDispose] will execute [softDispose]. Useful for items in list and objects store in [ControlFactory]. Final [dispose] must be handled manually.
+  /// [requestDispose] will execute [softDispose]. Useful for items in list and objects stored in [ControlFactory]. Final [dispose] must be handled manually.
   bool preferSoftDispose = false;
 
   /// Executes dispose based on [preventDispose] and [preferSoftDispose] settings.
-  /// [parent] - actual object that requesting dispose.
-  void requestDispose([dynamic parent]) {
+  /// [sender] - actual object that requesting dispose - can be null.
+  void requestDispose([Object? sender]) {
     if (preventDispose) {
       return;
     }
@@ -52,60 +54,63 @@ mixin DisposeHandler implements Disposable {
     softDispose();
   }
 
-  static void disposeOf(dynamic object, dynamic parent) {
+  /// Util function to properly request dispose of given [object].
+  static void disposeOf(Object? object, Object? sender) {
     if (object is DisposeHandler) {
-      object.requestDispose(parent);
+      object.requestDispose(sender);
     } else if (object is Disposable) {
       object.dispose();
     }
   }
 }
 
-/// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and [ControlModel].
+/// Mixin class for [DisposeHandler] - mostly used with [LazyControl] and/or to control reference within Widget Tree.
 /// Counts references by [hashCode]. References must be added/removed manually.
 ///
 /// When there is 1 or more reference then [preferSoftDispose] is set.
+/// Counter don't hold 'ref' to other objects, just their hashes.
 mixin ReferenceCounter on DisposeHandler {
   /// List of references.
   final _references = <int>[];
 
+  /// Number of registered references.
   int get referenceCount => _references.length;
 
   @override
   bool get preferSoftDispose => _references.isNotEmpty;
 
-  /// Reference is passed by given [object], but only [Object.hashCode] is store, to prevent 'shady' two way referencing (so native GC will not be affected).
+  /// Reference is passed by given [sender], but only [Object.hashCode] is store, to prevent 'shady' two way referencing (so native GC will not be affected).
   /// When there is 1 or more reference then [preferSoftDispose] is set.
-  void addReference(Object object) {
-    if (_references.contains(object.hashCode)) {
+  void addReference(Object sender) {
+    if (_references.contains(sender.hashCode)) {
       return;
     }
 
-    _references.add(object.hashCode);
+    _references.add(sender.hashCode);
   }
 
-  /// Removes reference of given [object].
+  /// Removes reference of given [sender].
   /// When there is 1 or more reference then [preferSoftDispose] is set.
-  void removeReference(Object object) => _references.remove(object.hashCode);
+  void removeReference(Object sender) => _references.remove(sender.hashCode);
 
   @override
-  void requestDispose([parent]) {
-    if (parent != null) {
-      removeReference(parent);
+  void requestDispose([sender]) {
+    if (sender != null) {
+      removeReference(sender);
     }
 
-    super.requestDispose(parent);
+    super.requestDispose(sender);
   }
 
   /// Clears all references.
   /// So [preferSoftDispose] is not set.
-  void clear() => _references.clear();
+  void clearReferences() => _references.clear();
 
   @override
   void dispose() {
     super.dispose();
 
-    clear();
+    _references.clear();
   }
 }
 
@@ -130,11 +135,7 @@ mixin DisposeObserver on ControlModel {
   }
 }
 
-/// {@template disposable-client}
-/// Propagates `thread` notifications that can be canceled.
-///
-/// For example can be used to represent Image upload Stream that can be canceled.
-/// {@endtemplate}
+/// Abstract disposable client with other callbacks.
 class _DisposableClient implements Disposable {
   /// Parent of this disposer.
   final dynamic parent;
@@ -148,7 +149,6 @@ class _DisposableClient implements Disposable {
   /// Callback when token is disposed and [finish] called.
   VoidCallback? onDispose;
 
-  /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
   _DisposableClient({this.parent});
 
@@ -164,10 +164,8 @@ class _DisposableClient implements Disposable {
   }
 }
 
-/// {@macro disposable-client}
-/// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
+/// [DisposableClient] is used at `Client` side and [DisposableToken] at `Model` side.
 class DisposableClient extends _DisposableClient {
-  /// Propagates `thread` notifications with possibility to cancel operations.
   /// [parent] - Parent object of this client.
   DisposableClient({super.parent});
 
@@ -176,9 +174,9 @@ class DisposableClient extends _DisposableClient {
       DisposableToken._(this, data: data);
 }
 
-/// {@macro disposable-client}
-/// [DisposableClient] is used at `Client` side and [DisposableToken] at `User` side.
+/// [DisposableClient] is used at `Client` side and [DisposableToken] at `Model` side.
 class DisposableToken extends _DisposableClient {
+  /// Parent of this token.
   final _DisposableClient _client;
 
   @override
@@ -199,8 +197,6 @@ class DisposableToken extends _DisposableClient {
   /// Checks if [finish] has been executed.
   bool get isFinished => _isFinished;
 
-  /// Propagates `thread` notifications with possibility to cancel operations.
-  ///
   /// [_client] - Parent client of this token.
   /// [data] - Initial token data.
   DisposableToken._(
@@ -208,8 +204,6 @@ class DisposableToken extends _DisposableClient {
     this.data,
   });
 
-  /// Propagates `thread` notifications with possibility to cancel operations.
-  ///
   /// [parent] - Parent object of this token.
   /// [data] - Initial token data.
   /// [onCancel] - Client event that is called when token is canceled.

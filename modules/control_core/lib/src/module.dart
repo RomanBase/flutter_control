@@ -120,6 +120,7 @@ abstract class ControlModule<T> implements Comparable<ControlModule> {
 
   Future init();
 
+  @override
   int compareTo(ControlModule other) {
     if (priority > other.priority) {
       return -1;

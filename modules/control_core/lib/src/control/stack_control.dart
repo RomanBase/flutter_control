@@ -1,11 +1,12 @@
 part of '../../core.dart';
 
+/// Observable stack based on [ObservableModel].
 class StackControl<T> extends ObservableModel<T?> {
   /// Current stack of values.
   final List<T?> _stack = <T>[];
 
-  /// Holds current value and [ActionControlObservable] interface just wraps this control.
-  final _parent = ActionControl.empty<T>();
+  /// Holds current value and serves as concrete observable.
+  final _parent = ControlObservable<T?>(null);
 
   @override
   bool get isActive => _parent.isActive;
@@ -20,7 +21,7 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Stack with root value.
   bool _root = false;
 
-  /// First value is root. [pop] until first value.
+  /// Check is stack is rooted, so [pop] will remove items only to first value.
   bool get isRooted => _root;
 
   /// Last value in stack.
@@ -47,6 +48,10 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Returns value in stack by index.
   operator [](int index) => _stack[index];
 
+  /// Observable list.
+  /// [push] new value to the top of the stack. This becomes 'active' value.
+  /// [pop] value from the top of the stack. Previous, if any, becomes 'active' value.
+  /// If [root] is set, stack will [pop] only until last value.
   StackControl({T? value, bool root = false}) {
     _root = root;
     if (value != null) {
@@ -54,7 +59,8 @@ class StackControl<T> extends ObservableModel<T?> {
     }
   }
 
-  /// Push given [value] to end of stack.
+  /// Push given [value] to the end of stack.
+  /// If [value] is same as 'active' value, then nothing happens.
   void push(T? value) {
     if (this.value == value) {
       return;
@@ -64,7 +70,7 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Push given [value] to end of stack.
+  /// Push given [value] to the end of stack.
   /// Previous occurrence of [value] is removed from stack.
   void pushUnique(T value) {
     _stack.remove(value);
@@ -86,6 +92,7 @@ class StackControl<T> extends ObservableModel<T?> {
   }
 
   /// Pops last [value] from stack.
+  /// Previous value, if any, becomes 'active' value.
   void pop() {
     if (!canPop) {
       return;
@@ -96,7 +103,7 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Pops to given [value]. All next values are removed from stack.
+  /// Pops to given [value]. All top values are removed from stack.
   void popTo(T value) {
     int index = _stack.indexOf(value);
 
@@ -107,7 +114,7 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Pops to [value] of given [test]. All next values are removed from stack.
+  /// Pops to [value] of given [test]. All top values are removed from stack.
   void popUntil(Predicate<T?> test) {
     int index = _stack.indexWhere(test);
 
@@ -118,7 +125,7 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Pops to root/first value of stack. All next values are removed from stack.
+  /// Pops to root/first value of stack. All top values are removed from stack.
   void popToFirst() {
     if (!canPop) {
       return;
@@ -132,7 +139,8 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Pops to last value of stack. All previous values are removed from stack.
+  /// Clears stack, but active value stays on top.
+  /// All previous values are removed from stack.
   void popToLast() {
     if (!canPop) {
       return;
@@ -146,8 +154,8 @@ class StackControl<T> extends ObservableModel<T?> {
     _notifyParent();
   }
 
-  /// Pops until last item in stack.
-  /// Returns [true] if there is nothing to pop.
+  /// Pops if [canPop] and returns `false`.
+  /// Returns `true` if there is nothing to pop.
   bool navigateBack() {
     if (canPop) {
       pop();
@@ -160,6 +168,9 @@ class StackControl<T> extends ObservableModel<T?> {
 
   /// Disables root value. So stack can pop all values.
   void disableRoot() => _root = false;
+
+  /// Enables root value. So stack can pop only to first value.
+  void enableRoot() => _root = false;
 
   /// Clears all values in stack. Even if [isRooted] is set to true.
   void clear() {

@@ -2,7 +2,8 @@ part of '../core.dart';
 
 typedef InitInjection<T> = void Function(T? item, dynamic args);
 
-/// TODO: purpose ?
+/// TODO: purpose ? Since v0 and never used :) But ControlFactory still uses 'empty' injector.
+@Deprecated('Remove in future - support LateInitialization with macros later')
 abstract class Injector {
   void inject<T>(T item, dynamic args);
 
@@ -11,6 +12,7 @@ abstract class Injector {
       BaseInjector(injectors: injectors, other: other);
 }
 
+@Deprecated('Remove in future - support LateInitialization with macros later')
 class BaseInjector implements Injector, Disposable {
   final _injectors = <Type, InitInjection>{};
   InitInjection? _other;

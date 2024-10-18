@@ -291,6 +291,7 @@ class ControlFactory with Disposable {
   final _broadcast = ControlBroadcast();
 
   /// Custom item initialization.
+  @Deprecated('Remove in future')
   Injector? _injector;
 
   /// Factory initialize state.
@@ -396,6 +397,7 @@ class ControlFactory with Disposable {
 
   /// Sets [Injector] for this Factory.
   /// Set null to remove current Injector.
+  @Deprecated('Remove in future')
   void setInjector(Injector? injector) {
     _injector = injector;
 
