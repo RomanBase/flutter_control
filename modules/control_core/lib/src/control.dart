@@ -2,17 +2,8 @@ part of '../core.dart';
 
 class _InvalidKey {}
 
-/// Main [Control] static class.
-/// Provides easy access to most usable [Control] classes. These objects are stored in [ControlFactory] with their [Type] key.
-/// Some of this classes also has custom Provider with base functionality.
-///
-/// Start with [Control.initControl] to initialize [ControlFactory] and other core [Control] objects.
-///
-/// [ControlBroadcast] - Sends data and events via global broadcast. Use [BroadcastProvider] for base and direct workflow.
-/// [BaseLocalization] - Loads and stores localization data. Use it directly via [LocalizationProvider] as mixin or to find closest [BaseLocalizationDelegate] in Widget Tree.
-/// [RouteStore] - Stores route builders and their paths and settings. Use [ControlRoute.of] to retrieve route. Then is possible to alter this route with new settings, path or transition.
-/// [ControlRootScope] - This class provides access to root of Widget Tree and to [ControlRootState]. But only if [ControlRoot] Widget is used.
-/// [BasePrefs] - Wrapper around [SharedPreferences].
+/// Service Locator with Factory and object Initialization.
+/// Start with [Control.initControl] to initialize [ControlFactory].
 class Control {
   /// Control is pure static class.
   /// Just hidden constructor.
@@ -29,39 +20,34 @@ class Control {
 
   /// Checks if [ControlFactory] is initialized.
   ///
-  /// Factory can be initialized via [Control.initControl] or [ControlFactory.initialize].
+  /// Factory can be initialized with [Control.initControl].
   static bool get isInitialized => factory.isInitialized;
 
-  /// Checks the current settings of debug mode (this mode is set independently to [kDebugMode]) and is usable in profile/release mode.
-  /// This value is also provided to [BaseLocalization] during [Control.initControl] and to various other classes.
+  /// Internal debug mark.
   static bool get debug => factory.debug;
 
   /// Returns default instance of [ControlBroadcast] - this instance is stored in [ControlFactory].
   /// Use [BroadcastProvider] for base broadcast operations.
   static ControlBroadcast get broadcast => factory._broadcast;
 
-  /// Returns default instance of [Injector] - this instance is stored in [ControlFactory].
-  /// Injector is set via [Control.initControl] or [ControlFactory.setInjector].
-  static Injector? get injector => factory._injector;
-
   /////
   /////
   /////
 
-  /// Initializes [ControlFactory] and other core [Control] objects.
-  /// Loads [BasePrefs] and [BaseLocalization], also builds [RouteStore].
+  /// Initializes instance of [ControlFactory].
   ///
-  /// [debug] - Runtime debug value. This value is also provided to [BaseLocalization]. Default value is [kDebugMode].
-  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
+  /// [debug] - Runtime debug value. Default value is [kDebugMode].
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones.
+  ///           - For Entry objects, if models, [DisposeHandler.preferSoftDispose] is checked to prevent dispose of these object.
   /// [factories] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
-  /// [injector] - Property Injector to use right after object initialization. Use [BaseInjector] for [Type] based injection.
-  /// [modules] -
-  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
+  /// [modules] - Custom or prebuild [ControlModule]s, like Localino, Prefs, Routing, etc.
+  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings.
+  ///
+  /// Returns `true` if initialization success.
   static bool initControl({
     bool? debug,
     Map? entries,
     Map<Type, InitFactory>? factories,
-    Injector? injector,
     List<ControlModule> modules = const [],
     Future Function()? initAsync,
   }) {
@@ -85,7 +71,6 @@ class Control {
         for (ControlModule module in modules) ...module.factories,
         ...factories,
       },
-      injector: injector,
       initAsync: () async {
         for (ControlModule module in modules) {
           if (module.preInit) {
@@ -109,22 +94,37 @@ class Control {
   /////
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
-  /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
-  /// Set [withInjector] to re-inject stored object.
+  /// Given [args] are passed to [Initializable.init] if new instance of object is constructed.
   ///
   /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
-  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
-  /// And when initialized object is [LazyControl] then this object is stored into Factory.
+  /// When initialized object is [LazyControl] then this object is stored into Factory.
   ///
-  /// [Control] provides static call for this function via [Control.get].
-  ///
-  /// nullable
+  /// Returns concrete object or null.
   static T? get<T>({dynamic key, dynamic args, bool withInjector = true}) =>
       factory.get<T>(key: key, args: args, withInjector: withInjector);
 
+  /// Stores [value] with given [key] in [ControlFactory]. When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
+  /// Object with same [key] previously stored in factory is overridden.
+  /// Returns [key] of the stored [value].
+  static dynamic set<T>({dynamic key, required T value}) =>
+      factory.set<T>(key: key, value: value);
+
+  /// Adds Factory for later use - [Control.init] or [Control.get].
+  static dynamic add<T>({dynamic key, required InitFactory<T> init}) =>
+      factory.add<T>(key: key, init: init);
+
+  /// Returns new object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// Given [args] are passed to [Initializable.init].
+  ///
+  /// Returns concrete object or null.
+  static T? init<T>({Type? key, dynamic args}) =>
+      factory.init(key: key, args: args);
+
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// If object is not found, then [value] is used.
-  /// When [value] is used and [store] is set, then [value] will be stored to [ControlFactory] for future lookups.
+  /// When [value] is used and [store] is set, then [value] will be stored into [ControlFactory] for future lookups.
+  ///
+  /// Check [get] and [set] functions.
   static T use<T>(
       {dynamic key,
       dynamic args,
@@ -145,42 +145,9 @@ class Control {
     return newObject;
   }
 
-  /// Stores [value] with given [key] in [ControlFactory].
-  /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
-  /// Returns [key] of the stored [value].
-  static dynamic set<T>({dynamic key, required T value}) =>
-      factory.set<T>(key: key, value: value);
-
-  /// Stores [init] Factory for later use - [Control.init] or [Control.get].
-  static dynamic add<T>({dynamic key, required InitFactory<T> init}) =>
-      factory.add<T>(key: key, init: init);
-
-  /// Returns new object of requested [Type] via initializer in [ControlFactory].
-  /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
-  ///
-  /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
-  /// In most of cases is preferred to use more powerful [ControlFactory.get].
-  ///
-  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.add].
-  ///
-  /// [Control] provides static call for this function via [Control.init].
-  ///
-  /// nullable
-  static T? init<T>({Type? key, dynamic args}) =>
-      factory.init(key: key, args: args);
-
-  /// Injects and initializes given [item] with [args].
-  /// [Initializable.init] is called only when [args] are not null.
-  ///
-  /// [Control] provides static call for this function via [Control.inject].
-  static void inject<T>(dynamic item, {dynamic args}) =>
-      factory.inject(item, args: args, withInjector: true, withArgs: true);
-
   /// Executes sequence of functions to retrieve expected object.
-  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] / [ControlFactory.init] is executed.
-  /// Returns object from [source] or via [ControlFactory] or [defaultValue].
-  /// nullable
+  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed. After all, [defaultValue] is used.
+  /// Returns object from [source] then [ControlFactory] then [defaultValue].
   static T? resolve<T>(dynamic source,
           {dynamic key, dynamic args, T? defaultValue}) =>
       factory.resolve<T>(source,
@@ -214,66 +181,17 @@ class Control {
   }
 
   /// Removes specific object with given [key] or by [Type] from [ControlFactory].
-  /// When given [key] is null, then key is [T] - check [ControlFactory.keyOf] for more info.
   /// If object of given [key] is not found, then all instances of [T] are removed.
-  /// Set [dispose] to dispose removed object/s.
+  /// Set [dispose] to dispose removed object.
   ///
   /// Returns number of removed items.
   static int remove<T>({dynamic key, bool dispose = false}) =>
       factory.remove<T>(key: key, dispose: dispose);
 }
 
-/// Provider of [ControlBroadcast].
-///
-/// Global stream to broadcast data and events.
-/// Stream is driven by keys and object types.
-///
-/// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
-class BroadcastProvider {
-  /// Subscribe to global object stream for given [key] and [Type].
-  /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
-  /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
-  ///
-  /// Returns [BroadcastSubscription] to control and close subscription.
-  static BroadcastSubscription<T> subscribe<T>(
-          dynamic key, ValueChanged<T?> onData) =>
-      Control.broadcast.subscribeTo<T>(key, onData);
-
-  /// Subscribe to global event stream for given [key].
-  /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
-  ///
-  /// Returns [BroadcastSubscription] to control and close subscription.
-  static BroadcastSubscription subscribeEvent(
-          dynamic key, VoidCallback callback) =>
-      Control.broadcast.subscribeEvent(key, callback);
-
-  /// Sends [value] to global object stream.
-  /// Subs with same [key] and [value] type will be notified.
-  /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
-  ///
-  /// Returns number of notified subs.
-  static void broadcast<T>({dynamic key, dynamic value, bool store = false}) =>
-      Control.broadcast.broadcast<T>(key: key, value: value, store: store);
-
-  /// Sends event to global event stream.
-  /// Subs with same [key] will be notified.
-  ///
-  /// Returns number of notified subs.
-  static void broadcastEvent<T>({dynamic key}) =>
-      Control.broadcast.broadcastEvent<T>(key: key);
-}
-
-/// Main singleton class.
-/// Factory is used for dependency injection and to store objects.
-///
-/// [Control] provides most used methods statically.
-/// Only rarely is necessary to use Factory directly.
-/// Use [Control.factory] to get instance of this Factory.
-///
-/// It's preferred to use more powerful [Control.initControl] to initialize and fill this Factory.
+/// Service Locator with Factory and object Initialization.
 class ControlFactory with Disposable {
-  /// Factory is singleton.
-  /// Just hidden constructor.
+  /// Just private constructor.
   ControlFactory._();
 
   /// Stored objects in Factory.
@@ -282,17 +200,12 @@ class ControlFactory with Disposable {
   final _items = {};
 
   /// Stored Initializers for object construction.
-  /// [key] is [Type] - typically interface or dynamic models.
-  /// [value] is [InitFactory] for concrete object.
+  /// [key] is [Type] - typically interface.
+  /// [value] is [InitFactory] that constructs a concrete object.
   final _factory = <Type, InitFactory>{};
 
   /// Instance of default [ControlBroadcast].
-  /// [BroadcastProvider] uses this instance.
   final _broadcast = ControlBroadcast();
-
-  /// Custom item initialization.
-  @Deprecated('Remove in future')
-  Injector? _injector;
 
   /// Factory initialize state.
   bool _initialized = false;
@@ -300,7 +213,7 @@ class ControlFactory with Disposable {
   /// Checks if Factory is initialized.
   /// Use [onReady] to listen [initialize] completion.
   ///
-  /// Returns [true] if Factory is initialized including [async] load (localization, prefs, etc.).
+  /// Returns `true` if Factory is initialized, including [initAsync].
   bool get isInitialized => _initialized && _completer == null;
 
   /// Runtime debug value. Default value is [false].
@@ -310,27 +223,28 @@ class ControlFactory with Disposable {
   /// Use [onReady] to listen this completer.
   Completer? _completer = Completer();
 
-  /// Callable class
+  /// Callable class - [get].
   T? call<T>({dynamic key, dynamic args, bool withInjector = true}) =>
       get<T>(key: key, args: args, withInjector: withInjector);
 
-  /// Completes when Factory is initialized including [async] load (localization, prefs, etc.).
+  /// Completes when Factory is initialized including [initAsync].
   ///
   /// Returns [Future] of init [Completer].
   Future<void>? onReady() async => _completer?.future;
 
-  /// Initializes Factory and given objects.
+  /// Initialization of this factory.
+  /// This function should be called first before any use of factory store.
   ///
-  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones. All objects are initialized - [Initializable.init] and [DisposeHandler.preferSoftDispose] is set.
+  /// [entries] - Default items to store in [ControlFactory]. Use [Control.get] to retrieve this objects and [Control.set] to add new ones.
+  ///           - For Entry objects, if models, [DisposeHandler.preferSoftDispose] is checked to prevent dispose of these object.
   /// [factories] - Default factory initializers to store in [ControlFactory] Use [Control.init] or [Control.get] to retrieve concrete objects.
-  /// [injector] - Injector to use after object initialization. Use [BaseInjector] for [Type] based injection.
-  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings before 'home' widget is shown.
+  /// [modules] - Custom or prebuild [ControlModule]s, like Localino, Prefs, Routing, etc.
+  /// [initAsync] - Custom [async] function to execute during [ControlFactory] initialization. Don't overwhelm this function - it's just for loading core settings.
   ///
-  /// Factory can be initialized just once - until [ControlFactory.clear] is executed.
+  /// Returns `true` if initialization success.
   bool initialize(
       {Map? entries,
       Map<Type, InitFactory>? factories,
-      Injector? injector,
       Future Function()? initAsync}) {
     if (_initialized) {
       return false;
@@ -340,8 +254,6 @@ class ControlFactory with Disposable {
 
     _items[ControlFactory] = this;
     _items[ControlBroadcast] = _broadcast;
-
-    setInjector(injector);
 
     if (entries != null) {
       _items.addAll(entries);
@@ -353,7 +265,7 @@ class ControlFactory with Disposable {
 
     _items.forEach((key, value) {
       if (value is Initializable) {
-        inject(value, args: {});
+        _init(value, args: {});
 
         printDebug('Factory init $key - ${value.runtimeType.toString()}');
       }
@@ -381,6 +293,9 @@ class ControlFactory with Disposable {
     _completer = null;
   }
 
+  /// Loads module into this factory.
+  ///
+  /// Check [Control.initControl] - Modules are typically given to factory as soon as possible.
   void registerModule(ControlModule module, {bool includeSubModules = false}) =>
       module.initStore(this, includeSubModules: includeSubModules);
 
@@ -395,20 +310,7 @@ class ControlFactory with Disposable {
   dynamic keyOf<T>({dynamic key, dynamic value}) =>
       key ??= T != dynamic ? T : value?.runtimeType;
 
-  /// Sets [Injector] for this Factory.
-  /// Set null to remove current Injector.
-  @Deprecated('Remove in future')
-  void setInjector(Injector? injector) {
-    _injector = injector;
-
-    if (injector == null && _items.containsKey(Injector)) {
-      _items.remove(Injector);
-    } else {
-      _items[Injector] = injector;
-    }
-  }
-
-  /// Stores [init] Factory for later use - [ControlFactory.init] or [ControlFactory.get].
+  /// Adds Factory for later use - [Control.init] or [Control.get].
   void add<T>({Type? key, required InitFactory<T> init}) {
     key ??= T;
 
@@ -423,10 +325,9 @@ class ControlFactory with Disposable {
     _factory[key] = init;
   }
 
-  /// Stores [value] with given [key] in [ControlFactory].
+  /// Stores [value] with given [key] in [ControlFactory]. When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Object with same [key] previously stored in factory is overridden.
-  /// When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
-  /// Returns [key] of stored [value].
+  /// Returns [key] of the stored [value].
   dynamic set<T>({dynamic key, required dynamic value}) {
     key = keyOf<T>(key: key, value: value);
 
@@ -445,12 +346,13 @@ class ControlFactory with Disposable {
   }
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
-  /// When [args] are not empty and object is [Initializable], then [Initializable.init] is called.
-  /// Set [withInjector] to re-inject stored object.
+  /// Given [args] are passed to [Initializable.init] if new instance of object is constructed. New instances always call [Initializable.init], if implements.
+  /// When factory already contains requested object, [Initializable.init] is called only when [args] are set.
   ///
   /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
-  /// When [T] is passed to initializer and [args] are null, then [key] is used as arguments for [ControlFactory.init].
-  /// And when initialized object is [LazyControl] then this object is stored into Factory.
+  /// When initialized object is [LazyControl] then this object is stored into Factory.
+  ///
+  /// Returns concrete object or null.
   T? get<T>({dynamic key, dynamic args, bool withInjector = true}) {
     final useExactKey = key != null;
     key = keyOf<T>(key: key);
@@ -461,7 +363,12 @@ class ControlFactory with Disposable {
       final item = _items[key] as T?;
 
       if (item != null) {
-        inject(item, args: args, withInjector: withInjector);
+        _init(
+          item,
+          args: args,
+          forceInit: false,
+        );
+
         return item;
       }
     }
@@ -478,43 +385,56 @@ class ControlFactory with Disposable {
       }
 
       if (item != null) {
-        inject(item, args: args, withInjector: withInjector);
+        _init(
+          item,
+          args: args,
+          forceInit: false,
+        );
+
         return item;
       }
     }
 
-    final item = init<T>(key: key == Type ? key : null, args: args ?? key);
+    final item = init<T>(
+      key: (useExactKey && key is Type) ? key : null,
+      args: args,
+      forceInit: true,
+    );
 
     if (item is LazyControl) {
       if (item.factoryKey != null) {
         key = item.factoryKey;
+      } else {
+        item._factoryKey = key;
       }
 
-      item._factoryKey = key;
       set<T>(key: key, value: item);
     }
 
     return item;
   }
 
-  /// Returns new object of requested [Type] via initializer in [ControlFactory].
-  /// When [args] are not null and initialized object is [Initializable] then [Initializable.init] is called.
+  /// Inits [Initializable] [item] with given [args].
+  /// Set [forceInit] to init with empty args.
+  void _init<T>(dynamic item, {dynamic args, bool forceInit = true}) {
+    if (item is Initializable && (args != null || forceInit)) {
+      item.init(args is Map ? args : Parse.toMap(args));
+    }
+  }
+
+  /// Returns new object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// Given [args] are passed to [Initializable.init], if implements.
+  /// Set [forceInit] to prevent initialization when [args] are not given.
   ///
-  /// This function is also called when [ControlFactory.get] fails to find object in internal store and [key] is [Type].
+  /// This function is also called when [ControlFactory.get] fails to find object in internal store.
   /// In most of cases is preferred to use more powerful [ControlFactory.get].
-  ///
-  /// Initializers are passed to factory during init phase or later can be added via [ControlFactory.add].
-  ///
-  /// [Control] provides static call for this function via [Control.init].
-  ///
-  /// nullable
-  T? init<T>({Type? key, dynamic args}) {
+  T? init<T>({Type? key, dynamic args, bool forceInit = true}) {
     final initializer = findInitializer<T>(key);
 
     if (initializer != null) {
       final item = initializer(args);
 
-      inject<T>(item, args: args);
+      _init<T>(item, args: args, forceInit: forceInit);
 
       return item;
     }
@@ -522,36 +442,14 @@ class ControlFactory with Disposable {
     return null;
   }
 
-  /// Injects and initializes given [item] with [args].
-  /// Set [withInjector] to inject given object.
-  /// Set [withArgs] to init given object.
-  ///
-  /// [Initializable.init] is called only when [args] are not null.
-  ///
-  /// [Control] provides static call for this function via [Control.inject].
-  void inject<T>(dynamic item,
-      {dynamic args, bool withInjector = true, bool withArgs = true}) {
-    if (withInjector && _injector != null) {
-      _injector!.inject<T?>(item, args);
-    }
-
-    if (withArgs && item is Initializable && args != null) {
-      item.init(args is Map ? args : Parse.toMap(args));
-    }
-  }
-
   /// Executes sequence of functions to retrieve expected object.
-  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed with given [key] and [args].
-  /// Returns object from [source] or from factory store/initializers or [defaultValue].
-  ///
-  /// [Control] provides static call for this function via [Control.inject].
-  ///
-  /// nullable
+  /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed. After all, [defaultValue] is used.
+  /// Returns object from [source] then [ControlFactory] then [defaultValue].
   T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
 
     if (item != null) {
-      inject(item, args: args);
+      _init(item, args: args, forceInit: false);
       return item;
     }
 
@@ -711,7 +609,6 @@ class ControlFactory with Disposable {
     _items.clear();
     _factory.clear();
     _initialized = false;
-    _injector = null;
 
     return true;
   }
@@ -746,6 +643,46 @@ class ControlFactory with Disposable {
   void dispose() {
     clear();
   }
+}
+
+/// Provider of [ControlBroadcast].
+///
+/// Global stream to broadcast data and events.
+/// Stream is driven by keys and object types.
+///
+/// Default broadcast is created with [ControlFactory] and is possible to use it via [BroadcastProvider].
+class BroadcastProvider {
+  /// Subscribe to global object stream for given [key] and [Type].
+  /// [onData] callback is triggered when [broadcast] with specified [key] and correct [value] is called.
+  /// [current] when object for given [key] is stored from previous [broadcast], then [onData] is notified immediately.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
+  static BroadcastSubscription<T> subscribe<T>(
+          dynamic key, ValueChanged<T?> onData) =>
+      Control.broadcast.subscribeTo<T>(key, onData);
+
+  /// Subscribe to global event stream for given [key].
+  /// [callback] is triggered when [broadcast] or [broadcastEvent] with specified [key] is called.
+  ///
+  /// Returns [BroadcastSubscription] to control and close subscription.
+  static BroadcastSubscription subscribeEvent(
+          dynamic key, VoidCallback callback) =>
+      Control.broadcast.subscribeEvent(key, callback);
+
+  /// Sends [value] to global object stream.
+  /// Subs with same [key] and [value] type will be notified.
+  /// [store] - stores [value] for future subs and notifies them immediately after [subscribe].
+  ///
+  /// Returns number of notified subs.
+  static void broadcast<T>({dynamic key, dynamic value, bool store = false}) =>
+      Control.broadcast.broadcast<T>(key: key, value: value, store: store);
+
+  /// Sends event to global event stream.
+  /// Subs with same [key] will be notified.
+  ///
+  /// Returns number of notified subs.
+  static void broadcastEvent<T>({dynamic key}) =>
+      Control.broadcast.broadcastEvent<T>(key: key);
 }
 
 /// Mixin class for every [Disposable] object - mostly used with [ControlModel].

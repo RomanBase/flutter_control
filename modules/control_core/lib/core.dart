@@ -25,8 +25,6 @@ part 'src/control/observable_component.dart';
 
 part 'src/control/stack_control.dart';
 
-part 'src/injector.dart';
-
 part 'src/module.dart';
 
 part 'src/util/object_tag.dart';

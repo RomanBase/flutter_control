@@ -23,7 +23,6 @@ void main() async {
       _InjectModel: (_) => _InjectModel(),
       _InitNullable: (_) => Random().nextBool() ? null : _InitNullable(),
     },
-    injector: BaseInjector(),
   );
 
   group('Control', () {
@@ -41,7 +40,6 @@ void main() async {
 
       expect(Control.factory, isNotNull);
       expect(Control.broadcast, isNotNull);
-      expect(Control.injector, isNotNull);
 
       expect(Control.debug, isFalse);
       expect(Control.debug, factory.debug);
@@ -138,28 +136,6 @@ void main() async {
       expect(itemByExactType, isNotNull);
 
       expect(itemByType.runtimeType, _SwapController);
-    });
-
-    test('inject', () {
-      final injector = factory.get<Injector>() as BaseInjector;
-
-      injector.setInjector<_InjectModel>((item, args) {
-        item!.data = _ArgModel();
-      });
-
-      injector.setInjector((dynamic item, args) {
-        if (item is _InitModel) {
-          item.data = args;
-        }
-      });
-
-      final item = factory.init<_InjectModel>()!;
-      final itemBase = _InitModel();
-
-      injector.inject(itemBase, 'init');
-
-      expect(item.data.runtimeType, _ArgModel);
-      expect(itemBase.data, 'init');
     });
   });
 

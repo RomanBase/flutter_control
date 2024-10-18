@@ -57,7 +57,8 @@ abstract class ObservableValue<T> implements Disposable {
 }
 
 ///
-abstract class ObservableModel<T> extends ObservableValue<T> implements ObservableNotifier {
+abstract class ObservableModel<T> extends ObservableValue<T>
+    implements ObservableNotifier {
   /// Checks if [value] is not set.
   bool get isEmpty => value == null;
 
@@ -85,7 +86,8 @@ abstract class ObservableModel<T> extends ObservableValue<T> implements Observab
   /// Returns new instance of [ObservableModel].
   /// Whenever [notify] is called then [FutureBlock.delayed] is triggered.
   /// So listeners are notified after [duration] finishes.
-  ObservableModel<T> delayed(Duration duration) => DelayedObservable(this, duration);
+  ObservableModel<T> delayed(Duration duration) =>
+      DelayedObservable(this, duration);
 }
 
 /// Just wrapper.
@@ -98,14 +100,17 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   _ObservableHandler(this._parent);
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, dynamic args}) => _parent.subscribe(
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+          {bool current = true, dynamic args}) =>
+      _parent.subscribe(
         action,
         current: current,
         args: args,
       );
 
   @override
-  void cancel(ControlSubscription<T> subscription) => _parent.cancel(subscription);
+  void cancel(ControlSubscription<T> subscription) =>
+      _parent.cancel(subscription);
 }
 
 /// Observable class that handles listeners and [value] changes.
@@ -141,10 +146,12 @@ class ControlObservable<T> extends ObservableModel<T> {
   ControlObservable(this._value);
 
   /// Returns null version of observable.
-  static ControlObservable<T?> empty<T>([T? value]) => ControlObservable<T?>(value);
+  static ControlObservable<T?> empty<T>([T? value]) =>
+      ControlObservable<T?>(value);
 
   /// Wraps given [observable]. Can be handy to 'hide' concrete functionality.
-  static ObservableValue<T?> handle<T>(ObservableModel<T?> observable) => _ObservableHandler<T?>(observable);
+  static ObservableValue<T?> handle<T>(ObservableModel<T?> observable) =>
+      _ObservableHandler<T?>(observable);
 
   /// Creates an observable from given [object].
   /// This method is able to consume:
@@ -224,7 +231,8 @@ class ControlObservable<T> extends ObservableModel<T> {
     }
 
     listenable.addListener(callback);
-    observable.register(DisposableClient()..onDispose = () => listenable.removeListener(callback));
+    observable.register(DisposableClient()
+      ..onDispose = () => listenable.removeListener(callback));
 
     return observable;
   }
@@ -257,7 +265,8 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T> action, {bool current = true, dynamic args}) {
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
+      {bool current = true, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
 
@@ -271,7 +280,8 @@ class ControlObservable<T> extends ObservableModel<T> {
   }
 
   @protected
-  ControlSubscription<T> createSubscription([dynamic args]) => ControlSubscription<T>();
+  ControlSubscription<T> createSubscription([dynamic args]) =>
+      ControlSubscription<T>();
 
   @override
   void cancel(ControlSubscription<T> subscription) {
@@ -356,21 +366,25 @@ class DelayedObservable<T> extends ObservableModel<T> {
   DelayedObservable(this.parent, this.duration);
 
   @override
-  void setValue(T value, {bool notify = true, bool forceNotify = false}) => parent.setValue(
+  void setValue(T value, {bool notify = true, bool forceNotify = false}) =>
+      parent.setValue(
         value,
         notify: notify,
         forceNotify: forceNotify,
       );
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action, {bool current = true, args}) => parent.subscribe(
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+          {bool current = true, args}) =>
+      parent.subscribe(
         action,
         current: current,
         args: args,
       );
 
   @override
-  void cancel(ControlSubscription<T> subscription) => parent.cancel(subscription);
+  void cancel(ControlSubscription<T> subscription) =>
+      parent.cancel(subscription);
 
   @override
   void notify() => _block.delayed(duration, () => parent.notify());
