@@ -1,6 +1,8 @@
 part of '../../core.dart';
 
 /// Lazily build value once and holds it for whole time.
+/// TODO: Not used anymore? Marked as deprecated for now - if used then refactor (constructor and set).
+@Deprecated('Will be removed in future')
 class LazyInitializer<T> {
   /// Current value.
   T? _value;

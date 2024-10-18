@@ -16,6 +16,8 @@ class UnitId {
 
   static int instanceCounter = 0;
 
+  static int seed = DateTime.now().toUtc().microsecondsSinceEpoch;
+
   static VoidCallback? onChanged;
 
   /// Cycles through given [sequence] and builds String based on given [index] number.
@@ -72,7 +74,7 @@ class UnitId {
   static String randomFromSequence(int length, String sequence) {
     final output = StringBuffer();
 
-    final rnd = math.Random();
+    final rnd = math.Random(seed);
 
     for (int i = 0; i < length; i++) {
       output.write(sequence[rnd.nextInt(sequence.length)]);

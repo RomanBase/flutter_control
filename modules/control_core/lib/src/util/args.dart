@@ -1,19 +1,27 @@
 part of '../../core.dart';
 
-/// Stores data as arguments based on [key] - [value] pairs.
+/// Stores data as key:object arguments.
 class ControlArgs implements Disposable {
   /// Map of stored data.
   final Map _args;
 
-  /// Returns currently stored data.
-  /// Mostly used by framework. Do not modify this data directly !
-  /// Consider using [ControlArgs.set], [ControlArgs.get], [ControlArgs.add] functions or [] operators.
+  /// Currently stored data.
+  /// Use [ControlArgs.set], [ControlArgs.get], [ControlArgs.add] functions or [] to operate with [data] store.
+  /// Exposed to public API for easy access.
+  /// DO NOT modify this data directly !
   Map get data => _args;
 
+  /// Stores data as arguments.
+  /// Initial raw [args] - given [args] are not processed. Use [ControlArgs.of] factory to process given [args].
+  /// Check [set] for more info.
   const ControlArgs(this._args);
 
+  /// Stores data as arguments.
+  /// Given [args] are processed and stored.
+  /// Check [set] for more info.
   factory ControlArgs.of([dynamic args]) => ControlArgs({})..set(args);
 
+  /// Process given [args] and return arguments as Map [data].
   static Map build(dynamic args) => (ControlArgs({})..set(args)).data;
 
   /// Returns object of given [key] or null.
@@ -68,7 +76,7 @@ class ControlArgs implements Disposable {
   }
 
   /// Combines this store with given [args].
-  /// Returns new [ControlArgs] that contains both [args].
+  /// Returns new [ControlArgs] that contains [data] of both instances.
   ControlArgs merge(ControlArgs args) {
     final store = ControlArgs.of(this);
     store._args.addAll(args._args);
@@ -83,7 +91,7 @@ class ControlArgs implements Disposable {
   T? get<T>({dynamic key, T? defaultValue}) =>
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
-  /// Returns object of given [key] or initialize [defaultValue] and stores that value to args store.
+  /// Returns object of given [key] or initialize [defaultValue] and stores that value to [data] store.
   T? getWithFactory<T>({dynamic key, T Function()? defaultValue}) {
     final item = Parse.getArgFromMap<T>(_args, key: key);
 

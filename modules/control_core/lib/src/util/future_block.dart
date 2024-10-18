@@ -1,26 +1,25 @@
 part of '../../core.dart';
 
-/// Works similarly to [Future.delayed(duration)], but completion callback can be postponed.
-/// Can be re-triggered multiple times - only last call will be handled.
+/// Whole class that serves as [Future.delayed].
 class FutureBlock {
+  /// Timer for delayed future.
   Timer? _timer;
+
+  /// Callback of this delayed future.
   VoidCallback? _callback;
 
   /// Returns true if last delay is in progress.
   bool get isActive => _timer != null && _timer!.isActive;
 
-  /// Default constructor.
+  /// Re-triggerable, re-usable delayed Future.
+  /// This is just empty constructor.
+  /// Use [delayed] to start timer.
   FutureBlock();
 
   /// Starts delay for given [duration]. Given callback can be postponed or canceled.
-  /// Can be called multiple times - only last call will be handled.
-  void delayed(Duration duration, VoidCallback? onDone) {
+  /// If timer is active, then new delay is triggered and [duration] is restarted.
+  void delayed(Duration duration, VoidCallback onDone) {
     cancel();
-
-    if (onDone == null) {
-      printDebug('FutureBlock: null callback - delay not started');
-      return;
-    }
 
     _callback = onDone;
     _timer = Timer(duration, () {
@@ -31,15 +30,22 @@ class FutureBlock {
 
   /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
   /// Can be called multiple times - only last call will be handled.
+  /// returns `true` if action is delayed.
+  /// returns `false` when this future block is already finished. Re-trigger with [delayed].
   bool postpone(Duration duration) {
     if (isActive) {
-      delayed(duration, _callback);
+      if (_callback == null) {
+        printDebug('Invalid Callback');
+        return false;
+      }
+
+      delayed(duration, _callback!);
     }
 
     return isActive;
   }
 
-  /// Cancels current delay action.
+  /// Cancels current delayed action.
   void cancel() {
     if (_timer != null) {
       _timer!.cancel();
@@ -49,9 +55,10 @@ class FutureBlock {
     _callback = null;
   }
 
-  /// Runs delayed [Future] with zero [Duration] so [action] will be performed next frame.
-  static Future nextFrame(VoidCallback action) =>
-      Future.delayed(const Duration(), action);
+  static FutureBlock run(Duration duration, VoidCallback onDone) => FutureBlock()..delayed(duration, onDone);
+
+  /// Runs delayed [Future] with zero [Duration] so [action] should be performed next frame.
+  static Future nextFrame(VoidCallback action) => Future.delayed(const Duration(), action);
 
   /// Same as [Future.wait] but nullable.
   static Future wait(Iterable<Future?> futures) async {
