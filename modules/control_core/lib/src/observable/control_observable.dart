@@ -6,57 +6,63 @@ abstract class ObservableNotifier {
   void notify();
 }
 
+/// Observable Interface.
+/// Clients can subscribe to listen changes.
+abstract class ObservableBase<T> implements Disposable {
+  /// Serves for internal data or marker.
+  /// Exposed to public API due to usage as custom 'client' data.
+  dynamic internalData;
+
+  /// Subscribe to listen future changes.
+  /// Returns [ControlSubscription] for later connection close.
+  ControlSubscription<T> listen(VoidCallback action);
+
+  /// Cancels given [subscription].
+  void cancel(ControlSubscription<T> subscription);
+}
+
+extension ObservableBaseExt on ObservableBase {
+  /// Creates new group, that listens to both observables.
+  ObservableGroup merge(Object other) => ObservableGroup([this, other]);
+}
+
+extension ObservableValuext on ObservableValue {
+  /// Cast this observable.
+  ObservableValue<U> cast<U>() => this as ObservableValue<U>;
+}
+
 /// Simple observable channel that notifies others about changes.
 /// These changes are typically not part of this class.
 /// Channel serves more like robust callback system.
-abstract class ObservableChannel implements Disposable {
-  /// Subscribe to listen future changes.
-  ControlSubscription subscribe(
-    VoidCallback action, {
-    dynamic args,
-  });
-
-  /// Cancel given [subscription].
-  void cancel(ControlSubscription subscription);
-
-  /// Creates new group, that listens to both observables.
-  ObservableGroup merge(Object other) => ObservableGroup([this, other]);
+abstract class ObservableChannel implements ObservableBase<void> {
+  @override
+  dynamic internalData;
 
   @override
-  void dispose() {}
+  ControlSubscription<void> listen(VoidCallback action) => subscribe(action);
+
+  ControlSubscription subscribe(VoidCallback action,
+      {bool current = true, args});
 }
 
 /// Simple observable that notifies others about [value] changes.
 /// Actual value is stored within this class.
-abstract class ObservableValue<T> implements Disposable {
+abstract class ObservableValue<T> implements ObservableBase<T> {
   /// Current value of this observable.
   T get value;
 
-  /// Serves for internal data or markers.
-  /// Exposed to public API due to usage as custom 'client' data.
+  @override
   dynamic internalData;
 
-  /// Cast this observable.
-  ObservableValue<U> cast<U>() => this as ObservableValue<U>;
-
-  /// Subscribe to listen future changes.
-  ControlSubscription<T> subscribe(
-    ValueCallback<T?> action, {
-    bool current = true,
-    dynamic args,
-  });
-
-  /// Cancel given [subscription].
-  void cancel(ControlSubscription<T> subscription);
-
-  /// Creates new group, that listens to both observables.
-  ObservableGroup merge(Object other) => ObservableGroup([this, other]);
-
   @override
-  void dispose() {}
+  ControlSubscription<T> listen(VoidCallback action) =>
+      subscribe((_) => action());
+
+  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+      {bool current = true, args});
 }
 
-///
+/// Base class to implement Observable variable.
 abstract class ObservableModel<T> extends ObservableValue<T>
     implements ObservableNotifier {
   /// Checks if [value] is not set.
@@ -82,12 +88,6 @@ abstract class ObservableModel<T> extends ObservableValue<T>
   /// Disable [notify] to prevent propagation of this value change. This can be handy when we change [value] multiple times during one function call and we want to notify just last change.
   /// Enable [forceNotify] to notify listeners even if [value] is not changed.
   void setValue(T value, {bool notify = true, bool forceNotify = false});
-
-  /// Returns new instance of [ObservableModel].
-  /// Whenever [notify] is called then [FutureBlock.delayed] is triggered.
-  /// So listeners are notified after [duration] finishes.
-  ObservableModel<T> delayed(Duration duration) =>
-      DelayedObservable(this, duration);
 }
 
 /// Just wrapper.
@@ -111,6 +111,11 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   @override
   void cancel(ControlSubscription<T> subscription) =>
       _parent.cancel(subscription);
+
+  @override
+  void dispose() {
+    _parent.dispose();
+  }
 }
 
 /// Observable class that handles listeners and [value] changes.
@@ -173,7 +178,7 @@ class ControlObservable<T> extends ObservableModel<T> {
         return ofFuture(object).cast();
       } else if (object is Listenable) {
         return ofListenable(object).cast();
-      } else if (object is ObservableChannel) {
+      } else if (object is ObservableBase) {
         return ofChannel(object).cast();
       }
     } else {
@@ -185,7 +190,7 @@ class ControlObservable<T> extends ObservableModel<T> {
         return ofFuture(object);
       } else if (object is Listenable) {
         return ofListenable(object);
-      } else if (object is ObservableChannel) {
+      } else if (object is ObservableBase) {
         return ofChannel(object);
       }
     }
@@ -239,10 +244,10 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   /// Creates an observable from given [channel].
   /// This object wraps channel and propagates their notifies.
-  static ControlObservable<T?> ofChannel<T>(ObservableChannel channel) {
+  static ControlObservable<T?> ofChannel<T>(ObservableBase channel) {
     final observable = _ClientObservable<T>();
 
-    channel.subscribe(() => observable.notify());
+    channel.listen(() => observable.notify());
 
     return observable;
   }
@@ -391,8 +396,6 @@ class DelayedObservable<T> extends ObservableModel<T> {
 
   @override
   void dispose() {
-    super.dispose();
-
     parent.dispose();
   }
 }

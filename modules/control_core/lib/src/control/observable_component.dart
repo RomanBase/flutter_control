@@ -1,30 +1,11 @@
 part of '../../core.dart';
 
-class ObservableLeaf<T> {
-  final ObservableNotifier _parent;
-
-  T? _value;
-
-  T? get value => _value;
-
-  set value(T? value) {
-    _value = value;
-    _parent.notify();
-  }
-
-  bool get isEmpty => _value == null;
-
-  bool get isNotEmpty => _value != null;
-
-  ObservableLeaf(this._parent, [this._value]);
-}
-
-/// Mixin implementation of ObservableValue.
+/// Mixin implementation of ObservableValue to enhance [ControlModel].
 /// In most of cases used with [BaseModel] to create observable model.
 mixin ObservableComponent<T> on ControlModel
     implements ObservableValue<T?>, ObservableNotifier {
-  /// Actual control to subscribe.
-  final _parent = ActionControl.empty<T>();
+  /// Actual observable to subscribe.
+  final _parent = ControlObservable.empty<T>();
 
   @override
   dynamic internalData;
@@ -40,6 +21,10 @@ mixin ObservableComponent<T> on ControlModel
         notify: notify,
         forceNotify: forceNotify,
       );
+
+  @override
+  ControlSubscription<T?> listen(VoidCallback action) =>
+      subscribe((_) => action());
 
   @override
   ControlSubscription<T?> subscribe(ValueCallback<T?> action,
@@ -76,10 +61,17 @@ mixin NotifierComponent on ControlModel
   final _parent = ControlObservable.empty();
 
   @override
-  ControlSubscription subscribe(VoidCallback action, {dynamic args}) =>
+  dynamic internalData;
+
+  @override
+  ControlSubscription<void> listen(VoidCallback action) => subscribe(action);
+
+  @override
+  ControlSubscription<void> subscribe(VoidCallback action,
+          {bool current = false, args}) =>
       _parent.subscribe(
         (_) => action.call(),
-        current: false,
+        current: current,
         args: args,
       );
 

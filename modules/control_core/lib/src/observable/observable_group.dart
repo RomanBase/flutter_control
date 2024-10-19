@@ -1,7 +1,7 @@
 part of '../../core.dart';
 
 class ObservableGroup extends ObservableValue<Iterable?>
-    implements Disposable, ObservableNotifier {
+    implements ObservableNotifier {
   final _items = <DisposableToken>[];
 
   final _parent = ActionControl.empty<Iterable>();
