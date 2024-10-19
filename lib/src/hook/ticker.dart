@@ -77,7 +77,7 @@ extension TickerHook on CoreContext {
         provider._muteTicker(TickerMode.of(this));
 
         return provider;
-      })!;
+      });
 }
 
 mixin TickerComponent on ControlModel {

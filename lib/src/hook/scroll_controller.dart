@@ -4,7 +4,7 @@ extension ScrollControllerHook on CoreContext {
   _ScrollControllerProvider get scroll => use<_ScrollControllerProvider>(
         value: () => _ScrollControllerProvider(),
         //ScrollController is [ChangeNotifier] - CoreElement will auto dispose this
-      )!;
+      );
 }
 
 class _ScrollControllerProvider extends ScrollController {

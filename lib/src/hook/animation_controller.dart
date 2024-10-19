@@ -5,7 +5,7 @@ extension AnimationControllerHook on CoreContext {
       use<_AnimationControllerProvider>(
         value: () => _AnimationControllerProvider(ticker, this),
         dispose: (object) => object.dispose(),
-      )!;
+      );
 }
 
 class _AnimationControllerProvider extends AnimationController {

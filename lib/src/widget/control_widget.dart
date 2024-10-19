@@ -85,7 +85,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   T? initControl(CoreContext context) => Control.resolve<T>(context.args);
 
   @override
-  Widget rebuild(CoreContext context) => build(context, context<T>()!);
+  Widget rebuild(CoreContext context) => build(context, context<T>());
 
   /// Build actual Widget.
   /// Use [context] to work with references, dependencies, state management, routing, etc. Check [CoreContext] as underlying [Element] of this Widget.
