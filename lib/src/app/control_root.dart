@@ -104,6 +104,7 @@ class ControlRoot extends ControlWidget {
     this.builders = const [],
     required this.builder,
     this.onSetupChanged,
+    super.initArgs,
   }) : super(key: _ControlRootScope.key);
 
   @override
@@ -134,7 +135,7 @@ class ControlRoot extends ControlWidget {
   }
 
   @override
-  CoreContext createElement() => RootContext(this, initArgs);
+  CoreContext createElement() => RootContext(this);
 
   @override
   Widget build(CoreContext context) {
@@ -164,10 +165,7 @@ class RootContext extends CoreContext {
 
   ThemeConfig? get themeConfig => get<ThemeConfig>();
 
-  RootContext(
-    super.widget,
-    super.initArgs,
-  );
+  RootContext(super.widget);
 
   void registerBuilder(dynamic object) {
     register(ControlObservable.of(object).subscribe(

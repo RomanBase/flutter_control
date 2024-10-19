@@ -1,5 +1,16 @@
 part of flutter_control;
 
+/// Entry Widget control state management with single [ControlModel].
+/// Multiple observers and multiple state notifiers can request rebuild of this widget.
+///
+/// [onInit] is called right after initState and before build.
+///  - [context] is here fully usable without restrictions.
+///  - Best place to register state notifiers, hooks and other resources.
+///
+/// Retrieve these references with [CoreContext.get].
+///
+/// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
+/// Check [OnLayout] mixin to process resources after view is adjusted.
 abstract class BaseControlWidget extends CoreWidget {
   const BaseControlWidget({
     super.key,
@@ -9,6 +20,11 @@ abstract class BaseControlWidget extends CoreWidget {
   @override
   CoreState<CoreWidget> createState() => BaseControlState();
 
+  /// Build actual Widget.
+  /// Use [context] to work with references, dependencies, state management, routing, etc. Check [CoreContext] as underlying [Element] of this Widget.
+  ///
+  /// DO NOT call directly [register]/[registerStateNotifier] during build call - instead use [onInit] to register once.
+  /// Within build method you can register state notifier with `context.use(.., stateNotifier = true)`;
   Widget build(CoreContext context);
 }
 
@@ -17,9 +33,22 @@ class BaseControlState extends CoreState<BaseControlWidget> {
   Widget build(BuildContext context) => widget.build(element);
 }
 
+/// Entry Widget control state management with single [ControlModel].
+/// Still multiple observers and multiple state notifiers can request rebuild of this widget.
+/// If [T] is not found, then error occurs.
+///
+/// [onInit] is called right after initState and before build.
+///  - [context] is here fully usable without restrictions.
+///  - Best place to register state notifiers, hooks and other resources.
+///
+/// [initControl], [initControls] registers given [ControlModel]s to this Widget. Check [DisposeHandler] and [ReferenceCounter] to prevent early dispose of given Models.
+/// Retrieve these references with [CoreContext.get].
+///
+/// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
+/// Check [OnLayout] mixin to process resources after view is adjusted.
+/// Check [BaseControlWidget] for lightweight implementation.
 abstract class SingleControlWidget<T extends ControlModel>
     extends _ControlWidgetBase {
-  /// If given [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
   const SingleControlWidget({
     super.key,
     super.initArgs,
@@ -49,19 +78,36 @@ abstract class SingleControlWidget<T extends ControlModel>
   }
 
   /// Tries to find or construct instance of requested [Type].
-  /// If init [args] contains [ControlModel] of requested [Type], it will be used as [control], otherwise [Control.get] will provide requested [ControlModel].
+  /// If [CoreContext.args] contains [ControlModel] of requested [Type], it will be used as [control].
   /// Check [initControls] for more dependency possibilities.
   /// Returns [ControlModel] of given [Type].
   @protected
   T? initControl(CoreContext context) => Control.resolve<T>(context.args);
 
   @override
-  Widget rebuild(CoreContext context) =>
-      build(context, (context.state as ControlState).controls[0] as T);
+  Widget rebuild(CoreContext context) => build(context, context<T>()!);
 
+  /// Build actual Widget.
+  /// Use [context] to work with references, dependencies, state management, routing, etc. Check [CoreContext] as underlying [Element] of this Widget.
+  ///
+  /// DO NOT call directly [register]/[registerStateNotifier] during build call - instead use [onInit] to register once.
+  /// Within build method you can register state notifier with `context.use(.., stateNotifier = true)`;
   Widget build(CoreContext context, T control);
 }
 
+/// Entry Widget control state management with single [ControlModel].
+/// Multiple observers and multiple state notifiers can request rebuild of this widget.
+///
+/// [onInit] is called right after initState and before build.
+///  - [context] is here fully usable without restrictions.
+///  - Best place to register state notifiers, hooks and other resources.
+///
+/// [initControls] registers given [ControlModel]s to this Widget. Check [DisposeHandler] and [ReferenceCounter] to prevent early dispose of given Models.
+/// Retrieve these references with [CoreContext.get].
+///
+/// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
+/// Check [OnLayout] mixin to process resources after view is adjusted.
+/// Check [BaseControlWidget] for lightweight implementation.
 abstract class ControlWidget extends _ControlWidgetBase {
   const ControlWidget({
     super.key,
@@ -71,13 +117,19 @@ abstract class ControlWidget extends _ControlWidgetBase {
   @override
   Widget rebuild(CoreContext context) => build(context);
 
+  /// Build actual Widget.
+  /// Use [context] to work with references, dependencies, state management, routing, etc. Check [CoreContext] as underlying [Element] of this Widget.
+  ///
+  /// DO NOT call directly [register]/[registerStateNotifier] during build call - instead use [onInit] to register once.
+  /// Within build method you can register state notifier with `context.use(.., stateNotifier = true)`;
   Widget build(CoreContext context);
 }
 
-/// Focused to handle Pages and complex Widgets.
+/// Base class for concrete [ControlWidget]s with [ControlState].
+/// ControlModels are initialized with [initControls] and stored in [ControlState.controls] and also in [CoreContext.args].
 abstract class _ControlWidgetBase extends CoreWidget {
   /// Checks [args] and returns all [ControlModel]s during [initControls] and these Models will be initialized by this Widget.
-  /// By default set to 'false'.
+  /// By default set to 'false' to prevent unintended rebuilds.
   bool get autoMountControls => false;
 
   const _ControlWidgetBase({
@@ -86,30 +138,26 @@ abstract class _ControlWidgetBase extends CoreWidget {
   });
 
   @override
-  CoreState createState() => ControlState();
+  ControlState createState() => ControlState();
 
   /// This is a place where to fill all required [ControlModel]s for this Widget.
   /// Called during Widget/State initialization phase.
   @protected
   List<ControlModel> initControls(CoreContext context) {
-    if (this is InitProvider) {
-      return [
-        if (autoMountControls) ...context.args.getAll<ControlModel>(),
-      ];
-    }
-
     return autoMountControls ? context.args.getAll<ControlModel>() : [];
   }
 
+  /// Callback to notify state initialization completed.
   @protected
   void onInitState(ControlState state) {}
 
+  /// Callback to notify state changes.
+  @protected
+  void onChangeState(ControlState state, dynamic value) {}
+
+  /// Abstract rebuild implementation - override with proper [build] in concrete class.
   @protected
   Widget rebuild(CoreContext context);
-
-  /// Callback from [State] when state is notified.
-  @protected
-  void onStateChanged(dynamic state) {}
 
   @override
   void onDispose() {
@@ -119,8 +167,11 @@ abstract class _ControlWidgetBase extends CoreWidget {
   }
 }
 
-/// [State] of [ControlWidget]
+/// [State] of [_ControlWidgetBase].
+/// Handles lifecycle of given [controls].
 class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
+  /// List of used Models.
+  /// Both [CoreContext.args] and this List holds references to given Models.
   late List<ControlModel> controls;
 
   @override
@@ -128,26 +179,18 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
     super.onInit();
 
     controls = widget.initControls(element);
+    // Just ensure we have all controls in args.
+    element.args.set(controls);
 
-    element.args.set(controls.toSet());
-
-    controls.forEach((control) {
-      if (control is ReferenceCounter) {
-        (control as ReferenceCounter).addReference(this);
-      }
-    });
-
-    if (controls.isEmpty) {
-      printDebug('no controls found - onInitState');
-      return;
-    }
-
-    controls.remove(null);
     controls.forEach((control) {
       control.init(element.args.data);
       control.mount(this);
 
-      if (control is ObservableComponent) {
+      if (control is ReferenceCounter) {
+        (control as ReferenceCounter).addReference(this);
+      }
+
+      if (control is ObservableBase) {
         element.registerStateNotifier(control);
       }
     });
@@ -158,23 +201,26 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
   @override
   void notifyState([dynamic state]) {
     if (mounted) {
-      setState(() {
-        widget.onStateChanged(state);
-      });
+      if (isDirty) {
+        widget.onChangeState(this, state);
+      } else {
+        setState(() {
+          widget.onChangeState(this, state);
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) => widget.rebuild(element);
 
-  /// Disposes and removes all [controls].
-  /// Controller can prevent disposing [BaseControl.preventDispose].
-  /// Then disposes Widget.
   @override
   @mustCallSuper
   void dispose() {
     super.dispose();
 
+    // Disposes and removes all [controls].
+    // Models can prevent disposing [DisposeHandler.preventDispose].
     if (controls.isNotEmpty) {
       controls.forEach((control) {
         control.requestDispose(this);

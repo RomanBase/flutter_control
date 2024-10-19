@@ -56,7 +56,7 @@ class _AnimationControllerProvider extends AnimationController {
       );
 
       if (stateNotifier) {
-        context.registerStateNotifier(_items[key]);
+        context.registerStateNotifier(_items[key]!);
       }
     }
 

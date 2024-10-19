@@ -1,7 +1,8 @@
 part of flutter_control;
 
 /// Subscribes to given [control] and notifies [builder] when object changes.
-/// [control] object is typically: [ObservableValue] like [ActionControl] or [ObservableComponent], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
+/// [control] object is typically: [ObservableValue] like [ActionControl] or [ObservableComponent], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].\
+/// Check [ControlObservable.of] for full list of supported observables.
 class ControlBuilder<T> extends StatefulWidget {
   /// Control to subscribe.
   final dynamic control;
@@ -58,7 +59,7 @@ class _ControlBuilderState<T> extends _ValueState<ControlBuilder<T>, T> {
     super.initState();
 
     // [TODO]: do something about it
-    // AWFUL HACK: for unknown reason default generic Type is Object? instead of dynamic
+    // ?AWFUL HACK: default generic Type is Object?
     isTypeSet = '$T' != 'Object?' && T != dynamic;
 
     _initSub();

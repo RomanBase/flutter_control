@@ -1,15 +1,21 @@
 part of flutter_control;
 
-//So we can easily switch to interface/mixin for Stateless implementation.
-typedef CoreContext = CoreElement;
+/// [CoreContext] of Control state management.
+typedef CoreContext
+    = CoreElement; //We need to build an interface, since direct use of [CoreElement] exposes a lot.
 
+/// [CoreContext] of Control state management.
 class CoreElement extends StatefulElement {
+  /// Arguments of this element.
   final args = ControlArgs({});
 
   bool _initialized = false;
 
+  /// Checks if element is already in use.
   bool get isInitialized => _initialized;
 
+  /// Actual objects to dispose.
+  /// We can have duplicate references here and in [args].
   List? _objects;
 
   @override
@@ -18,11 +24,20 @@ class CoreElement extends StatefulElement {
   @override
   CoreState get state => super.state as CoreState;
 
-  CoreElement(CoreWidget widget, Map initArgs) : super(widget) {
-    args.set(initArgs);
+  /// Base [Element] of Control state management.
+  /// It's connected to [ControlFactory] and handles object initialization, 'hooks' like arguments and their lifecycle.
+  ///
+  /// [CoreWidget]
+  ///
+  /// Check [InitProvider] and [LazyProvider] to work with dependencies.
+  /// Check [CoreState] as counterpart for this element.
+  CoreElement(CoreWidget widget) : super(widget) {
+    args.set(widget.initArgs);
   }
 
   /// Called whenever dependency of State is changed.
+  @protected
+  @mustCallSuper
   void onDependencyChanged() {
     if (!_initialized) {
       _initialized = true;
@@ -38,26 +53,35 @@ class CoreElement extends StatefulElement {
   }
 
   /// Called just once when State is ready.
+  @protected
+  @mustCallSuper
   void initRuntime() {
-    if (widget is InitProvider) {
-      args.set((widget as InitProvider).getRouteDependencies(this));
-    }
-
-    if (widget is LazyProvider) {
-      (widget as LazyProvider).mountDependencies(this);
-    }
+    widget.init(this);
   }
 
   /// Called just once when State is ready and Runtime is initialized.
+  @protected
+  @mustCallSuper
   void initState() {
     state.onInit();
     widget.onInit(args.data, this);
   }
 
-  T? call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) =>
+  /// Calls [use].
+  /// NOT Nullsafety - use [get] instead.
+  T call<T>({dynamic key, T Function()? value, bool stateNotifier = false}) =>
       use<T>(key: key, value: value, stateNotifier: stateNotifier);
 
-  T? use<T>(
+  /// Retrieve object based on [key] or [Type].
+  /// When object is not found in [args], then is initialized with [value] and stored to [args].
+  /// When object implements [Disposable], then is [register] for later dispose.
+  ///
+  /// Use custom [key] to register more Objects with same type [T].
+  ///
+  /// Set [stateNotifier] to [registerStateNotifier].
+  /// Set [dispose] for custom resource release.
+  /// NOT Nullsafety - use [get] instead.
+  T use<T>(
       {dynamic key,
       required T Function()? value,
       bool stateNotifier = false,
@@ -67,13 +91,13 @@ class CoreElement extends StatefulElement {
     }
 
     final item = args.getWithFactory<T>(key: key, defaultValue: value) ??
-        Control.factory.get<T>(key: key);
+        Control.get<T>(key: key);
 
     assert(item != null,
-        'There is nothing to take: $T | $key. Please provide [T Function()? value]');
+        'There is nothing to take: $T | $key. Please provide [T Function()? value] or register new factory/entry within ControlFactory');
 
     if (stateNotifier) {
-      registerStateNotifier(item);
+      registerStateNotifier(item!);
     }
 
     if (dispose != null) {
@@ -85,14 +109,30 @@ class CoreElement extends StatefulElement {
     return item!;
   }
 
+  /// Retrieve custom [ChangeNotifier] as [ElementValue] based on [key] or [ElementValue<Type>].
+  /// When object is not found in [args], then new Value is initialized and stored to [args].
+  /// Object will auto dispose with lifecycle of Element.
+  ///
+  /// Use custom [key] to register more [ElementValue]s with same type [T].
+  ///
+  /// Set [stateNotifier] to [registerStateNotifier].
   ElementValue<T> value<T>(
           {dynamic key, T? value, bool stateNotifier = false}) =>
       use<ElementValue<T>>(
         key: key,
         value: () => ElementValue<T>(value),
         stateNotifier: stateNotifier,
-      )!;
+      );
 
+  /// Registers object as required dependency of this Element/Widget. Object is stored to [args].
+  /// When object is found in [args], just retrieve it's reference.
+  ///
+  /// If object is given from [ControlFactory], then Element will request dispose given object.
+  /// If object is given from [scope], then Element will NOT dispose given object.
+  ///
+  /// Set [scope] to retrieve object from WidgetTree - Check [ControlScope].
+  /// Set [stateNotifier] to also register this object as [registerStateNotifier].
+  /// Check [LazyProvider] as best place to register these dependencies, alternatively use within [CoreWidget.onInit] to register dependency.
   T? registerDependency<T>(
       {dynamic key, bool scope = false, bool stateNotifier = false}) {
     if (args.containsKey(key ?? T)) {
@@ -118,20 +158,25 @@ class CoreElement extends StatefulElement {
     return item;
   }
 
+  /// Retrieve object from [args] based on [key] or [Type].
+  /// If object is not found, then [defaultValue] is returned.
+  /// Default Value is NOT stored to [args].
   T? get<T>({dynamic key, T? Function()? defaultValue}) =>
       args.get<T>(
         key: key,
       ) ??
       defaultValue?.call();
 
+  /// Stores given [value] to [args] under given [key] or [Type].
   void set<T>({dynamic key, required T? value}) => args.add<T>(
         key: key,
         value: value,
       );
 
+  /// Request rebuild.
   void notifyState() => state.notifyState();
 
-  /// Registers object to dispose
+  /// Registers given [object] to dispose with this Element.
   void register(dynamic object, [int priority = 0]) {
     if (object == null) {
       return;
@@ -167,17 +212,14 @@ class CoreElement extends StatefulElement {
     }
   }
 
-  void registerStateNotifier(dynamic object) {
-    if (object is ObservableValue) {
-      register(object.subscribe((value) => notifyState()));
-    } else if (object is ObservableChannel) {
-      register(object.subscribe(() => notifyState()));
-    } else if (object is Stream || object is Future || object is Listenable) {
-      register(
-          ControlObservable.of(object).subscribe((value) => notifyState()));
-    }
-  }
+  /// Register this objects as state notifier
+  ///
+  /// Check [ControlObservable.of] for supported types.
+  void registerStateNotifier(Object object) => register(
+      ControlObservable.of(object).subscribe((value) => notifyState()));
 
+  /// Dispose all registered resources.
+  /// This is Callback from [CoreState].
   void onDispose() {
     _initialized = false;
 
@@ -197,6 +239,7 @@ class CoreElement extends StatefulElement {
   }
 }
 
+/// Simple [ValueNotifier] just for [CoreElement].
 class ElementValue<T> extends ChangeNotifier {
   T? _value;
 
@@ -219,16 +262,32 @@ extension ControlContextExt on BuildContext {
 }
 
 mixin InitProvider on CoreWidget {
-  @protected
-  Object getRouteDependencies(BuildContext context) =>
-      ModalRoute.of(context)?.settings.arguments ?? [];
+  @override
+  void init(CoreContext context) {
+    final args = ModalRoute.of(context)?.settings.arguments;
+
+    if (args != null) {
+      context.args.set(args);
+    }
+
+    super.init(context);
+  }
 }
 
 mixin LazyProvider on CoreWidget {
+  @override
+  void init(CoreContext context) {
+    mountDependencies(context);
+
+    super.init(context);
+  }
+
   @protected
-  void mountDependencies(CoreContext context) {}
+  void mountDependencies(CoreContext context);
 }
 
+/// Provides [context] to [ControlModel].
+/// USE THIS ONLY TO ENHANCE UI LOGIC.
 mixin ContextComponent on ControlModel {
   CoreContext? context;
 
