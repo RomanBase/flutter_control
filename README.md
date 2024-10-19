@@ -22,11 +22,11 @@ import 'package:flutter_control/control.dart';
 ---
 
 **Flutter Control Core**
-- `Control` Main static class. Initializes `ControlFactory` and provides easy access to most of core [Control] objects like `BaseLocalization`, `RouteStore`, `ControlBroadcast`, etc..
-- `ControlFactory` Initializes and can store Controls, Models and other Objects. Works as Service Locator and Storage.\
-  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
-  Factory is one and only Singleton in this Library.\
-  
+- `Control` Main static class. Initializes `ControlFactory` that serves as Service Locator with Factory and object initialization.
+- `ControlFactory` Is responsible for creating and storing given `factories` and `entries`. Then locating this services and retrieving on demand.\
+  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.
+- `ControlModule` holds all resources for custom extension. Factory will load these `modules` and stores dependencies.
+
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
   
 ```dart
@@ -38,9 +38,6 @@ import 'package:flutter_control/control.dart';
         CounterModel: (_) => CounterModel(),
         CounterDetailControl: (args) => CounterDetailControl(model: Parse.getArg<CounterModel>(args)),
       },
-      routes: [
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
-      ],
       modules: [
         LocalinoModule(LocalinoLive.options()),
       ],
@@ -87,7 +84,7 @@ import 'package:flutter_control/control.dart';
 
 - `ControlWidget` is base abstract class (**StatefulWidget**) to maintain larger UI parts of App (Pages and complex Widgets). Widget is created with default `ControlState` to correctly reflect lifecycle of Widget to Models. So there is no need to create custom [State].\
   Widget will **init** all containing Models and pass arguments to them.\
-  `ControlWidget` is **immutable** so all logic parts must be controlled from outside. This helps truly separate all **code** from pure UI (also helps to reuse this code).
+  `ControlWidget` has mutable State to control state management.
    
 - `SingleControlWidget` is focused to single **ControlModel**. But still can handle multiple Controls.
 
@@ -97,16 +94,15 @@ import 'package:flutter_control/control.dart';
 - `ControlModel` is base class to maintain Business Logic parts.\
   `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
   `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
-  This Controls comes with few `mixin` classes to extend base functionality:
-   - `ObservableComponent` to control State and notify Widget about changes. Mostly used with `BaseModel`
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
 - `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
   With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
 
-- `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
-  Has tree variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Empty** (nullable)\
+- `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify listeners about value changes.\
+  Has tree main variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Empty** (null).\
+  4th variant is **provider** that subscribe to global [BroadcastProvider].\
   On the Widget side is `ControlBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
 
@@ -115,7 +111,7 @@ import 'package:flutter_control/control.dart';
 
     ControlBuilder<int>(
       control: counter,
-      builder: (context, value) => Text(value.toString()),
+      builder: (context, value) => Text('$value'),
     );
 ```
 
@@ -168,9 +164,13 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 
 ```dart
     Control.initControl(
-      routes: [
-        ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
-        ControlRoute.build(key: 'detail_super', builder: (_) => DetailPage()).path('super').viaTransition(_transitionBuilder),
+      modules: [
+        RoutingModule(
+          [
+            ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
+            ControlRoute.build(key: 'detail_super', builder: (_) => DetailPage()).path('super').viaTransition(_transitionBuilder),  
+          ]
+        );
       ],
     );
 
@@ -188,8 +188,10 @@ Structure below shows how data and events flows between UI and Controls. `Contro
 - Initial app routing is handled with `RoutingProvider`, that stores initial route for later use (after app is initialized, auth confirmed, etc.).
 
 ```dart
-  MaterialApp(
-    onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
+  ControlRoot(
+    builder(context, home) => MaterialApp(
+      onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
+    )
   );
 
   class HomePage extends ControlWidget {

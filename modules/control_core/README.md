@@ -12,10 +12,10 @@ import 'package:control_core/core.dart';
 ---
 
 **Flutter Control Core**
-- `Control` is main static class that creates new instance of `ControlFactory`.
-- `ControlFactory` Initializes and stores Controls, Models and other Objects. Works as a direct Service Locator.\
-  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.\
-  This Factory is one and only Singleton in this Library.\
+- `Control` Main static class. Initializes `ControlFactory` that serves as Service Locator with Factory and object initialization.
+- `ControlFactory` Is responsible for creating and storing given `factories` and `entries`. Then locating this services and retrieving on demand.\
+  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.
+- `ControlModule` holds all resources for custom extension. Factory will load these `modules` and stores dependencies.
 
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
 
@@ -46,8 +46,10 @@ import 'package:control_core/core.dart';
 - `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
   With `ControlBuilder` and `ControlBuilderGroup` on the Widget side ([flutter_control] library). These universal builder widgets can handle all possible types of Notifiers.
 
-- `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify Widgets and to provide events about value changes.\
-  Has two variants - **Single** (just one listener), **Broadcast** (multiple listeners).\
+- `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify listeners about value changes.\
+  Has tree main variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Empty** (null).\
+  4th variant is **provider** that subscribe to global [BroadcastProvider].\
+  On the Widget side is `ControlBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
   Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
 
 ```dart
