@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
         ],
       ),
       onSetupChanged: (context) {
-        UITheme.scheme = context.get<ThemeConfig>()?.value.colorScheme;
+        UITheme.scheme = context.themeConfig?.value.colorScheme;
         Intl.defaultLocale = LocalinoProvider.instance.locale;
       },
     );

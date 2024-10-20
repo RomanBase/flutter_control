@@ -112,8 +112,9 @@ class ControlRoot extends ControlWidget {
     super.onInit(args, context);
 
     if (theme != null) {
-      context<ThemeConfig>(value: () => theme!, stateNotifier: true);
-      theme!.mount();
+      context
+          .use<ThemeConfig>(value: () => theme!, stateNotifier: true)
+          .mount();
     }
 
     context.value<AppState>(
@@ -123,7 +124,13 @@ class ControlRoot extends ControlWidget {
   }
 
   void _initNotifiers(RootContext context) async {
-    stateNotifiers.forEach((element) => context.registerStateNotifier(element));
+    stateNotifiers.forEach((element) {
+      Control.evaluate(element, (object) {
+        if (object != null) {
+          context.registerStateNotifier(object);
+        }
+      });
+    });
 
     builders.forEach((element) {
       Control.evaluate(element, (object) {
@@ -140,7 +147,7 @@ class ControlRoot extends ControlWidget {
   @override
   Widget build(CoreContext context) {
     printAction(() =>
-        'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} | ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
+        'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} --- ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
 
     return builder(
       context as RootContext,
