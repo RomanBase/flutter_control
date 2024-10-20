@@ -1,7 +1,5 @@
 library flutter_control;
 
-import 'dart:math' as math;
-
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
 import 'package:flutter_control/src/hook/control_hook.dart';
@@ -14,8 +12,6 @@ export 'package:flutter/cupertino.dart' hide RefreshCallback;
 part 'src/app/app_state.dart';
 
 part 'src/app/control_root.dart';
-
-part 'src/app/device.dart';
 
 part 'src/app/theme_control.dart';
 
