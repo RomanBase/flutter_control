@@ -187,10 +187,6 @@ class CoreElement extends StatefulElement {
     }
 
     if (!_objects!.contains(object)) {
-      if (object is LazyHook) {
-        object.hookValue = object.init(this);
-      }
-
       if (object is ReferenceCounter) {
         object.addReference(this);
       }
@@ -259,6 +255,8 @@ extension ControlContextExt on BuildContext {
   RootContext get root => RootContext.of(this)!;
 
   ControlScope get scope => ControlScope.of(this);
+
+  void unfocus() => primaryFocus?.unfocus();
 }
 
 mixin InitProvider on CoreWidget {

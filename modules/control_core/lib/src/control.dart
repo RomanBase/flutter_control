@@ -447,6 +447,7 @@ class ControlFactory with Disposable {
   /// Returns object from [source] then [ControlFactory] then [defaultValue].
   T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
+    args = ControlArgs.of(source)..set(args);
 
     if (item != null) {
       _init(item, args: args, forceInit: false);

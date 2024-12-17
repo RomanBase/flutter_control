@@ -163,70 +163,74 @@ class SecondPage extends ControlWidget with InitProvider {
     printDebug('Init Counter: from $args');
     final counter =
         context.use<Counter>(value: () => Control.get<Counter>(args: args)!);
-    printDebug('Init Counter Value: ${counter?.value}');
+    printDebug('Init Counter Value: ${counter.value}');
   }
 
   @override
   Widget build(CoreContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final counter = context<Counter>();
     final secondPage = context.value<bool>(key: 'second').value!;
 
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        title: Text('This is ${secondPage ? 'second' : 'next'} page'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                if (ThemeConfig.preferredTheme == 'light') {
-                  context.root.changeTheme(Brightness.dark);
-                } else {
-                  context.root.changeTheme(Brightness.light);
-                }
-              },
-              child: Text('Theme: ${ThemeConfig.preferredTheme}'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                LocalinoProvider.instance.changeLocale(
-                    LocalinoProvider.instance.locale == 'en_US'
-                        ? 'cs_CZ'
-                        : 'en_US');
-              },
-              child: Text('Locale: ${LocalinoProvider.instance.locale}'),
-            ),
-            ElevatedButton(
-              onPressed: () => context
-                  .routeOf<SecondPage>()
-                  ?.openRoute(args: counter?.value),
-              child: Text('Open Next'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  context.routeOf<ThirdPage>()?.openRoute(args: counter),
-              child: Text('Open Scope'),
-            ),
-            LoaderStepIndicator(),
-          ],
+    return GestureDetector(
+      onTap: () => context.unfocus(),
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.background,
+        appBar: AppBar(
+          title: Text('This is ${secondPage ? 'second' : 'next'} page'),
         ),
-      ),
-      floatingActionButton: ControlBuilder<int>(
-        control: counter,
-        builder: (_, value) {
-          return FloatingActionButton(
-            child: Text(
-              '$value',
-              style: secondPage ? theme.textTheme.titleMedium : null,
-            ),
-            onPressed: () => counter?.increment(),
-          );
-        },
-        noData: (_) => BackButton(),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  if (ThemeConfig.preferredTheme == 'light') {
+                    context.root.changeTheme(Brightness.dark);
+                  } else {
+                    context.root.changeTheme(Brightness.light);
+                  }
+                },
+                child: Text('Theme: ${ThemeConfig.preferredTheme}'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  LocalinoProvider.instance.changeLocale(
+                      LocalinoProvider.instance.locale == 'en_US'
+                          ? 'cs_CZ'
+                          : 'en_US');
+                },
+                child: Text('Locale: ${LocalinoProvider.instance.locale}'),
+              ),
+              ElevatedButton(
+                onPressed: () => context
+                    .routeOf<SecondPage>()
+                    ?.openRoute(args: counter.value),
+                child: Text('Open Next'),
+              ),
+              ElevatedButton(
+                onPressed: () =>
+                    context.routeOf<ThirdPage>()?.openRoute(args: counter),
+                child: Text('Open Scope'),
+              ),
+              LoaderStepIndicator(),
+              TextField(),
+            ],
+          ),
+        ),
+        floatingActionButton: ControlBuilder<int>(
+          control: counter,
+          builder: (_, value) {
+            return FloatingActionButton(
+              child: Text(
+                '$value',
+                style: secondPage ? theme.textTheme.titleMedium : null,
+              ),
+              onPressed: () => counter.increment(),
+            );
+          },
+          noData: (_) => BackButton(),
+        ),
       ),
     );
   }
