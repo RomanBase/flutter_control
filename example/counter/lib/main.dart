@@ -103,7 +103,7 @@ class MainPage extends SingleControlWidget<Counter> {
 
   @override
   Widget build(CoreContext context, Counter counter) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,9 +116,9 @@ class MainPage extends SingleControlWidget<Counter> {
             ElevatedButton(
               onPressed: () {
                 if (ThemeConfig.preferredTheme == 'light') {
-                  context.root<ThemeConfig>()?.changeTheme(Brightness.dark);
+                  context.root<ThemeConfig>().changeTheme(Brightness.dark);
                 } else {
-                  context.root<ThemeConfig>()?.changeTheme(Brightness.light);
+                  context.root<ThemeConfig>().changeTheme(Brightness.light);
                 }
               },
               child: Text('Theme: ${ThemeConfig.preferredTheme}'),

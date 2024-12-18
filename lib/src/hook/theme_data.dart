@@ -10,7 +10,5 @@ class _ThemeDataHook with LazyHook<ThemeData> {
   ThemeData init(CoreContext context) => Theme.of(context);
 
   @override
-  void onDependencyChanged(CoreContext context) {
-    context.set<_ThemeDataHook>(value: null);
-  }
+  void onDependencyChanged(CoreContext context) => invalidate();
 }

@@ -445,7 +445,8 @@ class ControlFactory with Disposable {
   /// Executes sequence of functions to retrieve expected object.
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed. After all, [defaultValue] is used.
   /// Returns object from [source] then [ControlFactory] then [defaultValue].
-  T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? Function()? defaultValue}) {
+  T? resolve<T>(dynamic source,
+      {dynamic key, dynamic args, T? Function()? defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
     args = (ControlArgs.of(source)..set(args)).data;
 

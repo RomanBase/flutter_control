@@ -11,6 +11,8 @@ mixin LazyHook<T> implements Disposable {
 
   void onDependencyChanged(CoreContext context) {}
 
+  void invalidate() => _value = null;
+
   @override
   void dispose() {}
 }
