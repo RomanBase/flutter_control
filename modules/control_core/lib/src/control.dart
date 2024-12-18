@@ -149,7 +149,7 @@ class Control {
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed. After all, [defaultValue] is used.
   /// Returns object from [source] then [ControlFactory] then [defaultValue].
   static T? resolve<T>(dynamic source,
-          {dynamic key, dynamic args, T? defaultValue}) =>
+          {dynamic key, dynamic args, T? Function()? defaultValue}) =>
       factory.resolve<T>(source,
           key: key, args: args, defaultValue: defaultValue);
 
@@ -418,7 +418,7 @@ class ControlFactory with Disposable {
   /// Set [forceInit] to init with empty args.
   void _init<T>(dynamic item, {dynamic args, bool forceInit = true}) {
     if (item is Initializable && (args != null || forceInit)) {
-      item.init(args is Map ? args : Parse.toMap(args));
+      item.init(args is Map ? args : ControlArgs.of(args).data);
     }
   }
 
@@ -445,16 +445,16 @@ class ControlFactory with Disposable {
   /// Executes sequence of functions to retrieve expected object.
   /// Look up in [source] for item via [Parse.getArg] and if object is not found then [ControlFactory.get] is executed. After all, [defaultValue] is used.
   /// Returns object from [source] then [ControlFactory] then [defaultValue].
-  T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? defaultValue}) {
+  T? resolve<T>(dynamic source, {dynamic key, dynamic args, T? Function()? defaultValue}) {
     final item = Parse.getArg<T>(source, key: key);
-    args = ControlArgs.of(source)..set(args);
+    args = (ControlArgs.of(source)..set(args)).data;
 
     if (item != null) {
       _init(item, args: args, forceInit: false);
       return item;
     }
 
-    return get<T>(key: key, args: args) ?? defaultValue;
+    return get<T>(key: key, args: args) ?? defaultValue?.call();
   }
 
   /// Finds and returns [InitFactory] of given [Type].

@@ -105,10 +105,10 @@ void main() async {
     test('resolve', () {
       final data = {'0': 'item', ControlModel: _InitModel()};
 
-      final item = factory.resolve<String>(data, defaultValue: 'def');
+      final item = factory.resolve<String>(data, defaultValue: () => 'def');
       final model = factory.resolve(data, key: ControlModel, args: 'init');
       final argModel = factory.resolve<_ArgModel>(data, args: 'init')!;
-      final def = factory.resolve(data, key: 'none', defaultValue: 'def');
+      final def = factory.resolve(data, key: 'none', defaultValue: () => 'def');
       final defStore = factory.get(key: 'none');
 
       expect(item, 'item');
