@@ -62,7 +62,7 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
 
   bool isPreferred(dynamic key) => preferredTheme == Parse.name(key);
 
-  void changeTheme(dynamic key, [bool preferred = true]) {
+  bool changeTheme(dynamic key, [bool preferred = true]) {
     final data = getTheme(key);
 
     if (preferred) {
@@ -70,5 +70,7 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
     }
 
     value = data;
+
+    return true;
   }
 }

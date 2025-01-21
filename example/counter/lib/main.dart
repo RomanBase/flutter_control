@@ -253,6 +253,10 @@ class ThirdPage extends SingleControlWidget<Counter> with InitProvider {
               onPressed: () => Navigator.of(context).pop(),
               child: Text('close'),
             ),
+            ElevatedButton(
+              onPressed: () => context.root.changeAppState(AppState.init),
+              child: Text('restart'),
+            ),
           ],
         ),
       ),

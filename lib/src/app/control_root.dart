@@ -20,30 +20,17 @@ class _ControlRootScope {
   bool get isMounted =>
       key.currentState?.element is RootContext && key.currentState!.mounted;
 
-  RootContext get context => key.currentState!.element as RootContext;
+  RootContext? get context => key.currentState?.element as RootContext;
+
+  BuildContext? get navigationContext => context?.navigationContext;
 
   /// Notifies state of [ControlRoot] and sets new [AppState].
   ///
   /// [args] - Arguments to child Builders and Widgets.
   /// [clearNavigator] - Clears root [Navigator].
   bool setAppState(AppState state, {bool clearNavigator = true}) {
-    if (clearNavigator) {
-      try {
-        Navigator.of(context).popUntil((route) => route.isFirst);
-      } catch (err) {
-        printDebug(err.toString());
-      }
-    }
-
-    if (isMounted) {
-      context.changeAppState(state);
-
-      return true;
-    }
-
-    printDebug('No State found to notify.');
-
-    return false;
+    return context?.changeAppState(state, clearNavigator: clearNavigator) ??
+        false;
   }
 
   /// Changes [AppState] to [AppState.init]
@@ -146,19 +133,24 @@ class ControlRoot extends ControlWidget {
 
   @override
   Widget build(CoreContext context) {
+    final root = context as RootContext;
     printAction(() =>
-        'BUILD CONTROL ROOT: ${Parse.name((context as RootContext).appState)} | ${ThemeConfig.preferredTheme} --- ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
+        'BUILD CONTROL ROOT: ${Parse.name(root.appState)} | ${ThemeConfig.preferredTheme} --- ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');
 
     return builder(
-      context as RootContext,
+      root,
       ControlBuilder<AppState>(
         control: context.value<AppState>(),
         valueConverter: (_) => context.appState,
-        builder: (context, value) => CaseWidget<AppState>(
-          activeCase: value,
-          builders: AppStateBuilder.fillBuilders(states),
-          transitions: AppStateBuilder.fillTransitions(states),
-        ),
+        builder: (context, value) {
+          root.navigationContext = context;
+
+          return CaseWidget<AppState>(
+            activeCase: value,
+            builders: AppStateBuilder.fillBuilders(states),
+            transitions: AppStateBuilder.fillTransitions(states),
+          );
+        },
       ),
     );
   }
@@ -171,6 +163,8 @@ class RootContext extends CoreContext {
   AppState get appState => value<AppState>().value ?? AppState.init;
 
   ThemeConfig? get themeConfig => get<ThemeConfig>();
+
+  BuildContext? navigationContext;
 
   RootContext(super.widget);
 
@@ -189,10 +183,18 @@ class RootContext extends CoreContext {
     el.visitChildren(_rebuildElementTree);
   }
 
-  void changeAppState(AppState state) => value<AppState>().value = state;
+  bool changeAppState(AppState state, {bool clearNavigator = true}) {
+    if (clearNavigator && navigationContext != null) {
+      Navigator.of(navigationContext!).popUntil((route) => route.isFirst);
+    }
 
-  void changeTheme(dynamic key, [bool preferred = true]) =>
-      themeConfig?.changeTheme(key, preferred);
+    value<AppState>().value = state;
+
+    return true;
+  }
+
+  bool changeTheme(dynamic key, [bool preferred = true]) =>
+      themeConfig?.changeTheme(key, preferred) ?? false;
 
   @override
   void notifyState() {
