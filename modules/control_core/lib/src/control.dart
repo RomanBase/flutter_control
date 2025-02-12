@@ -121,6 +121,18 @@ class Control {
       factory.init(key: key, args: args);
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// BUT only if object is found in internal store
+  ///
+  /// Returns concrete object or null.
+  static T? maybe<T>({dynamic key}) {
+    if (!factory.containsKey(factory.keyOf<T>(key: key))) {
+      return null;
+    }
+
+    return factory.get<T>(key: key);
+  }
+
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// If object is not found, then [value] is used.
   /// When [value] is used and [store] is set, then [value] will be stored into [ControlFactory] for future lookups.
   ///
