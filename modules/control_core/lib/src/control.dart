@@ -121,6 +121,18 @@ class Control {
       factory.init(key: key, args: args);
 
   /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// BUT only if object is found in internal store
+  ///
+  /// Returns concrete object or null.
+  static T? maybe<T>({dynamic key}) {
+    if (!factory.containsItem<T>(key: key)) {
+      return null;
+    }
+
+    return factory.get<T>(key: key);
+  }
+
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
   /// If object is not found, then [value] is used.
   /// When [value] is used and [store] is set, then [value] will be stored into [ControlFactory] for future lookups.
   ///
@@ -360,7 +372,7 @@ class ControlFactory with Disposable {
     assert(key != null);
 
     if (_items.containsKey(key)) {
-      final item = _items[key] as T?;
+      final item = _items[key] as T;
 
       if (item != null) {
         _init(
@@ -563,13 +575,21 @@ class ControlFactory with Disposable {
   }
 
   /// Checks if given [key] is in Factory.
-  /// Looks to store and initializers.
+  /// Looks to store and factories.
   ///
   /// This function do not check subtypes!
   ///
   /// Returns true if [key] is found.
   bool containsKey(dynamic key) =>
-      _items.containsKey(key) || key is Type && _factory.containsKey(key);
+      _items.containsKey(key) || (key is Type && _factory.containsKey(key));
+
+  /// Checks if given [key] is already initialized in Factory.
+  /// Looks just to store. (factories are not included)
+  ///
+  /// This function do not check subtypes!
+  ///
+  /// Returns true if [key] is found.
+  bool containsItem<T>({dynamic key}) => _items.containsKey(keyOf<T>(key: key));
 
   /// Checks if Type is in Factory.
   /// Looks to store and initializers.
