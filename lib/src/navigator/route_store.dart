@@ -315,6 +315,15 @@ class RouteMask {
       }
     }
 
+    if (route.identifier.contains('?')) {
+      final args = route.identifier.split('?')[1];
+
+      args.split('&').forEach((value) {
+        final arg = value.split('=');
+        map[arg[0]] = arg[1];
+      });
+    }
+
     return map;
   }
 }
