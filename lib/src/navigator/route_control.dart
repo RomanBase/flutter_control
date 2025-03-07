@@ -63,6 +63,8 @@ class ControlRoute {
   /// Check [RouteStore.routeIdentifier] for more info about Store keys.
   late String identifier;
 
+  RouteMask get mask => RouteMask.of(_mask ?? identifier);
+
   String? _mask;
 
   /// Required Widget builder.
@@ -78,6 +80,8 @@ class ControlRoute {
   /// Default private constructor.
   /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
   ControlRoute._();
+
+  String pathOf([dynamic args]) => _buildPath(RouteArgs._(this, mask, args));
 
   String _buildPath(RouteArgs args) => RouteStore.routePathIdentifier(
         identifier: identifier,

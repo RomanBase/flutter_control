@@ -453,7 +453,9 @@ extension RootContextRouterExt on RootContext {
       (settings.name == '/' && root != null)
           ? root.call()
           : Control.get<RouteStore>()?.routing.generate(this, settings);
+}
 
+extension BuildContextRouterExt on CoreContext {
   Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
 
   Future<dynamic> restoreNavigation() async => Control.get<RouteStore>()
