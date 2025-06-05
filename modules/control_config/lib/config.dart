@@ -1,7 +1,6 @@
 library control_config;
 
 import 'dart:convert';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:control_core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
