@@ -2,25 +2,38 @@ part of control_config;
 
 ControlPrefs get _prefs => PrefsProvider.instance;
 
-class PrefModel<T> {
+class PrefModel<T> implements Listenable {
   final String key;
   final T? defaultValue;
+
+  final _listeners = <VoidCallback>[];
 
   final ValueGetter<T> get;
   final ValueSetter<T?> set;
 
   T get value => get();
 
-  set value(T? value) => set(value);
+  set value(T? value) {
+    set(value);
+    notify();
+  }
 
-  const PrefModel({
+  PrefModel({
     required this.key,
     this.defaultValue,
     required this.get,
     required this.set,
   });
 
-  void clear() => _prefs.set(key, null);
+  void clear() => set(null);
+
+  void notify() => _listeners.forEach((listener) => listener());
+
+  @override
+  void addListener(VoidCallback listener) => _listeners.add(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => _listeners.remove(listener);
 
   static PrefModel<bool> boolean(String key, {bool defaultValue = false}) =>
       PrefModel<bool>(
