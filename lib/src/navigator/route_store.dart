@@ -315,6 +315,15 @@ class RouteMask {
       }
     }
 
+    if (route.identifier.contains('?')) {
+      final args = route.identifier.split('?')[1];
+
+      args.split('&').forEach((value) {
+        final arg = value.split('=');
+        map[arg[0]] = arg[1];
+      });
+    }
+
     return map;
   }
 }
@@ -436,12 +445,62 @@ class RoutingProvider {
     return null;
   }
 
-  Future<dynamic> restoreRouteNavigation(
-      BuildContext context, RouteNavigator navigator) async {
-    final route = restore(context);
+  List<Route> restoreAll(BuildContext context, List<dynamic> subRoutes) {
+    final store = Control.get<RouteStore>()!;
+    final settings = store.routing.popSettings(context);
 
-    if (route != null) {
-      return navigator.openRoute(route);
+    final output = <Route>[];
+
+    if (settings == null) {
+      return output;
+    }
+
+    final route = store.routing.generate(context, settings);
+
+    if (route == null) {
+      return output;
+    }
+
+    for (final sub in subRoutes) {
+      final subMask = store.getRoute(sub)?.mask;
+
+      if (subMask == null) {
+        continue;
+      }
+
+      if (!subMask.match(RouteMask.of(route.settings.name))) {
+        final path =
+            subMask.format(ControlArgs.of(route.settings.arguments).data);
+
+        final subRoute =
+            store.routing.generate(context, RouteSettings(name: path));
+
+        if (subRoute != null) {
+          output.add(subRoute);
+        }
+      }
+    }
+
+    output.add(route);
+
+    return output;
+  }
+
+  Future<dynamic> restoreRouteNavigation(
+      BuildContext context, RouteNavigator navigator,
+      [List<dynamic> subRoutes = const []]) async {
+    if (subRoutes.isEmpty) {
+      final route = restore(context);
+
+      if (route != null) {
+        return navigator.openRoute(route);
+      }
+    } else {
+      final routes = restoreAll(context, subRoutes);
+
+      for (final route in routes) {
+        navigator.openRoute(route);
+      }
     }
 
     return null;
@@ -453,10 +512,14 @@ extension RootContextRouterExt on RootContext {
       (settings.name == '/' && root != null)
           ? root.call()
           : Control.get<RouteStore>()?.routing.generate(this, settings);
+}
 
+extension BuildContextRouterExt on CoreContext {
   Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
 
-  Future<dynamic> restoreNavigation() async => Control.get<RouteStore>()
-      ?.routing
-      .restoreRouteNavigation(this, navigator);
+  Future<dynamic> restoreNavigation(
+          [List<dynamic> subRoutes = const []]) async =>
+      Control.get<RouteStore>()
+          ?.routing
+          .restoreRouteNavigation(this, navigator, subRoutes);
 }
