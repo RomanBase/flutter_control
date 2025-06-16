@@ -58,7 +58,7 @@ abstract class ObservableValue<T> implements ObservableBase<T> {
   ControlSubscription<T> listen(VoidCallback action) =>
       subscribe((_) => action());
 
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
       {bool current = true, args});
 }
 
@@ -100,7 +100,7 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   _ObservableHandler(this._parent);
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
           {bool current = true, dynamic args}) =>
       _parent.subscribe(
         action,
@@ -125,6 +125,8 @@ class ControlObservable<T> extends ObservableModel<T> {
   /// DO NOT modify this list externally!
   @protected
   final subs = <ControlSubscription<T>>[];
+
+  final _toDispose = <Disposable>[];
 
   /// Checks if observable can serve changes to [subs].
   /// Activity can be [pause] and [resume].
@@ -288,6 +290,25 @@ class ControlObservable<T> extends ObservableModel<T> {
   ControlSubscription<T> createSubscription([dynamic args]) =>
       ControlSubscription<T>();
 
+  ControlSubscription<U> wrap<U>(ObservableValue<U> other,
+      {T Function(U value)? converter, bool autoDispose = true}) {
+    final sub = other.subscribe((value) {
+      if (converter != null) {
+          setValue(converter(value));
+      } else {
+        setValue(value as T);
+      }
+    });
+
+    _toDispose.add(sub);
+
+    if (autoDispose) {
+      _toDispose.add(other);
+    }
+
+    return sub;
+  }
+
   @override
   void cancel(ControlSubscription<T> subscription) {
     subscription.invalidate();
@@ -322,6 +343,10 @@ class ControlObservable<T> extends ObservableModel<T> {
     }
 
     subs.clear();
+
+    for (final value in _toDispose) {
+      value.dispose();
+    }
   }
 
   @override
@@ -379,7 +404,7 @@ class DelayedObservable<T> extends ObservableModel<T> {
       );
 
   @override
-  ControlSubscription<T> subscribe(ValueCallback<T?> action,
+  ControlSubscription<T> subscribe(ValueCallback<T> action,
           {bool current = true, args}) =>
       parent.subscribe(
         action,
