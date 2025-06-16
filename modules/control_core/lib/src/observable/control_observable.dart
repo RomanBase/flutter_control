@@ -294,7 +294,7 @@ class ControlObservable<T> extends ObservableModel<T> {
       {T Function(U value)? converter, bool autoDispose = true}) {
     final sub = other.subscribe((value) {
       if (converter != null) {
-          setValue(converter(value));
+        setValue(converter(value));
       } else {
         setValue(value as T);
       }

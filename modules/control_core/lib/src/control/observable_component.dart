@@ -42,8 +42,10 @@ mixin ObservableComponent<T> on ControlModel
   @override
   void notify() => _parent.notify();
 
-  @override
-  ObservableValue<U> cast<U>() => this as ObservableValue<U>;
+  @protected
+  ControlSubscription<U> wrap<U>(ObservableValue<U> other,
+          {T Function(U value)? converter, bool autoDispose = true}) =>
+      _parent.wrap(other, converter: converter, autoDispose: autoDispose);
 
   @override
   void dispose() {
@@ -80,6 +82,11 @@ mixin NotifierComponent on ControlModel
 
   @override
   void notify() => _parent.notify();
+
+  @protected
+  ControlSubscription<U> wrap<U>(ObservableValue<U> other,
+          {bool autoDispose = true}) =>
+      _parent.wrap(other, autoDispose: autoDispose);
 
   @override
   void dispose() {
