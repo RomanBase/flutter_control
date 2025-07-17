@@ -98,7 +98,7 @@ class ControlPrefs {
 }
 
 mixin PrefsProvider {
-  static ControlPrefs get instance => Control.get<ControlPrefs>()!;
+  static ControlPrefs get instance => Control.use<ControlPrefs>(value: () => ControlPrefs());
 
   ControlPrefs get prefs => instance;
 }
