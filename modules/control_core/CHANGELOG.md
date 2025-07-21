@@ -1,3 +1,9 @@
+## 1.3.1
+ - More Control options
+   - use
+   - maybe
+   - getAsync
+
 ## 1.2.1
 - Control modules and providers
 

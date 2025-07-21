@@ -103,6 +103,17 @@ class Control {
   static T? get<T>({dynamic key, dynamic args, bool withInjector = true}) =>
       factory.get<T>(key: key, args: args, withInjector: withInjector);
 
+  /// Returns object of requested type by given [key] or by [Type] from [ControlFactory].
+  /// Given [args] are passed to [Initializable.init] if new instance of object is constructed.
+  ///
+  /// If object is not found in internal store, then factory tries to initialize new one via [ControlFactory.init].
+  /// When initialized object is [LazyControl] then this object is stored into Factory.
+  ///
+  /// Returns concrete object or null.
+  static Future<T?> getAsync<T>(
+          {dynamic key, dynamic args, bool withInjector = true}) async =>
+      get<T>(key: key, args: args, withInjector: withInjector);
+
   /// Stores [value] with given [key] in [ControlFactory]. When given [key] is null, then key is [T] or generated from [Type] of given [value] - check [ControlFactory.keyOf] for more info.
   /// Object with same [key] previously stored in factory is overridden.
   /// Returns [key] of the stored [value].
@@ -226,14 +237,14 @@ class ControlFactory with Disposable {
   /// Use [onReady] to listen [initialize] completion.
   ///
   /// Returns `true` if Factory is initialized, including [initAsync].
-  bool get isInitialized => _initialized && _completer == null;
+  bool get isInitialized => _initialized && _completer.isCompleted;
 
   /// Runtime debug value. Default value is [false].
   bool debug = false;
 
   /// Completer for factory initialization.
   /// Use [onReady] to listen this completer.
-  Completer? _completer = Completer();
+  Completer _completer = Completer();
 
   /// Callable class - [get].
   T? call<T>({dynamic key, dynamic args, bool withInjector = true}) =>
@@ -242,7 +253,13 @@ class ControlFactory with Disposable {
   /// Completes when Factory is initialized including [initAsync].
   ///
   /// Returns [Future] of init [Completer].
-  Future<void>? onReady() async => _completer?.future;
+  Future<void> onReady() async {
+    if (_completer.isCompleted) {
+      return;
+    }
+
+    return _completer.future;
+  }
 
   /// Initialization of this factory.
   /// This function should be called first before any use of factory store.
@@ -301,8 +318,7 @@ class ControlFactory with Disposable {
       await initAsync();
     }
 
-    _completer!.complete();
-    _completer = null;
+    _completer.complete();
   }
 
   /// Loads module into this factory.
