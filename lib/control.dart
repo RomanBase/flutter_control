@@ -2,7 +2,6 @@ library flutter_control;
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
-import 'package:flutter_control/src/hook/control_hook.dart';
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
@@ -23,6 +22,10 @@ part 'src/component/input_control.dart';
 
 part 'src/hook/animation_controller.dart';
 
+part 'src/hook/control_hook.dart';
+
+part 'src/hook/overlay_extension.dart';
+
 part 'src/hook/scroll_controller.dart';
 
 part 'src/hook/theme_data.dart';
@@ -30,8 +33,6 @@ part 'src/hook/theme_data.dart';
 part 'src/hook/ticker.dart';
 
 part 'src/component/layout.dart';
-
-part 'src/component/overlay.dart';
 
 part 'src/navigator/control_navigator.dart';
 
@@ -46,6 +47,8 @@ part 'src/navigator/route_store.dart';
 part 'src/app/scope.dart';
 
 part 'src/util/interval_curve.dart';
+
+part 'src/util/continuous_curve.dart';
 
 part 'src/component/cross_transition.dart';
 

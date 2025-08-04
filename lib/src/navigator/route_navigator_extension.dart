@@ -40,7 +40,7 @@ extension RouteNavigatorExtension on CoreContext {
 
   void backToRoot({Route? open}) => navigator.backToRoot(open: open);
 
-  bool close(CoreContext context, [dynamic result]) {
+  bool close([dynamic result]) {
     final route = getActiveRoute();
 
     if (route != null) {
@@ -52,4 +52,52 @@ extension RouteNavigatorExtension on CoreContext {
 
   bool closeRoute(Route route, [dynamic result]) =>
       navigator.closeRoute(route, result);
+
+  Future<dynamic> openView({
+    required WidgetBuilder builder,
+    dynamic identifier,
+    bool root = false,
+    bool replacement = false,
+    dynamic args,
+    RouteBuilderFactory? route,
+    RouteTransitionFactory? transition,
+  }) {
+    ControlRoute cr =
+        ControlRoute.build(identifier: identifier ?? '#', builder: builder);
+
+    if (route != null) {
+      cr = cr.viaRoute(route);
+    } else if (transition != null) {
+      cr = cr.viaTransition(transition);
+    }
+
+    return cr
+        .navigator(navigator)
+        .openRoute(root: root, replacement: replacement, args: args);
+  }
+
+  Future<dynamic> openPage<T>({
+    dynamic identifier,
+    bool root = false,
+    bool replacement = false,
+    dynamic args,
+    RouteBuilderFactory? route,
+    RouteTransitionFactory? transition,
+  }) {
+    RouteHandler? rh = routeOf<T>(identifier);
+
+    if (rh == null) {
+      throw 'Route not found: $T, $identifier';
+    }
+
+    if (route != null) {
+      rh = rh.viaRoute(route);
+    }
+
+    if (transition != null) {
+      rh = rh.viaTransition(transition);
+    }
+
+    return rh.openRoute(root: root, replacement: replacement, args: args);
+  }
 }

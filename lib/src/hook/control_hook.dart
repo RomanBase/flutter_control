@@ -1,4 +1,4 @@
-import 'package:flutter_control/control.dart';
+part of flutter_control;
 
 mixin LazyHook<T> implements Disposable {
   dynamic key;

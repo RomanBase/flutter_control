@@ -17,17 +17,17 @@ class IntervalCurve extends Curve {
   @override
   double transformInternal(double t) {
     if (t < begin) {
-      return 0.0;
+      return curve.transform(0.0);
     }
 
     if (t > end) {
-      return 1.0;
+      return curve.transform(1.0);
     }
 
     final length = end - begin;
     t -= begin;
 
-    return curve.transformInternal(t / length);
+    return curve.transform(t / length);
   }
 }
 

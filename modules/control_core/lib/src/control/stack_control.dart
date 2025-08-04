@@ -14,7 +14,7 @@ class StackControl<T> extends ObservableModel<T?> {
   @override
   bool get isValid => _parent.isValid;
 
-  /// Current/Last value of stack.
+  /// Current/Top value of stack.
   @override
   T? get value => _parent.value;
 
@@ -45,6 +45,10 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Number of items in stack.
   int get length => _stack.length;
 
+  /// Index of active pointer.
+  /// Returns negative value when stack is empty.
+  int get pointer => length - 1;
+
   /// Returns value in stack by index.
   operator [](int index) => _stack[index];
 
@@ -60,9 +64,9 @@ class StackControl<T> extends ObservableModel<T?> {
   }
 
   /// Push given [value] to the end of stack.
-  /// If [value] is same as 'active' value, then nothing happens.
-  void push(T? value) {
-    if (this.value == value) {
+  /// If [unique] is set and [value] is same as 'active' value, then nothing happens.
+  void push(T? value, {bool unique = true}) {
+    if (unique && this.value == value) {
       return;
     }
 
