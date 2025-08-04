@@ -3,7 +3,7 @@ part of '../../core.dart';
 /// Observable stack based on [ObservableModel].
 class StackControl<T> extends ObservableModel<T?> {
   /// Current stack of values.
-  final List<T?> _stack = <T>[];
+  final List<T> _stack = <T>[];
 
   /// Holds current value and serves as concrete observable.
   final _parent = ControlObservable<T?>(null);
@@ -36,7 +36,12 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Pushes this value to stack and set it as root value.
   set root(T? value) {
     _root = true;
-    pushStack([value], clearOrigin: true);
+
+    if (value == null) {
+      clear();
+    } else {
+      pushStack([value], clearOrigin: true);
+    }
   }
 
   /// Checks if stack contains enough items to pop last one.
@@ -48,6 +53,9 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Index of active pointer.
   /// Returns negative value when stack is empty.
   int get pointer => length - 1;
+
+  /// List (copy) of all values stored in stack
+  List<T> get values => List.of(_stack, growable: false);
 
   /// Returns value in stack by index.
   operator [](int index) => _stack[index];
@@ -65,7 +73,7 @@ class StackControl<T> extends ObservableModel<T?> {
 
   /// Push given [value] to the end of stack.
   /// If [unique] is set and [value] is same as 'active' value, then nothing happens.
-  void push(T? value, {bool unique = true}) {
+  void push(T value, {bool unique = true}) {
     if (unique && this.value == value) {
       return;
     }
@@ -85,12 +93,20 @@ class StackControl<T> extends ObservableModel<T?> {
 
   /// Pushes whole [stack].
   /// Set [clearOrigin] to clear previous stack.
-  void pushStack(Iterable<T?> stack, {bool clearOrigin = false}) {
+  void pushStack(Iterable<T> stack, {bool clearOrigin = false}) {
     if (clearOrigin) {
       _stack.clear();
     }
 
     _stack.addAll(stack);
+
+    _notifyParent();
+  }
+
+  /// Swaps [value] at given [index]
+  void swap(T value, int index) {
+    _stack.removeAt(index);
+    _stack.insert(index, value);
 
     _notifyParent();
   }
@@ -150,7 +166,7 @@ class StackControl<T> extends ObservableModel<T?> {
       return;
     }
 
-    final item = _last;
+    final item = _last as T;
 
     _stack.clear();
     _stack.add(item);
@@ -187,11 +203,13 @@ class StackControl<T> extends ObservableModel<T?> {
   bool contains(T item) => _stack.contains(item);
 
   /// Sets [value] to parent control.
-  void _notifyParent() => _parent.value = _last;
+  void _notifyParent([bool force = true]) =>
+      _parent.setValue(_last, forceNotify: force);
 
   @override
+  @Deprecated('Use [push]')
   void setValue(T? value, {bool notify = true, bool forceNotify = false}) =>
-      push(value);
+      push(value as T);
 
   @override
   void cancel(ControlSubscription<T?> subscription) =>
