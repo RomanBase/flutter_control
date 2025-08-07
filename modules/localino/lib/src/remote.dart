@@ -160,7 +160,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
   DateTime? lastUpdate(String locale) => _getLocalSync()[locale];
 
   Map<String, DateTime> _getLocalSync() => Parse.toKeyMap<String, DateTime>(
-      prefs.getJson(Localino.preference_key_sync),
+      prefs.getData(Localino.preference_key_sync),
       (key, value) => key as String,
       converter: (value) => Parse.date(value)!);
 
@@ -180,7 +180,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (changed) {
-      prefs.setJson(Localino.preference_key_sync,
+      prefs.setData(Localino.preference_key_sync,
           data.map((key, value) => MapEntry(key, value.toIso8601String())));
     }
   }
@@ -209,7 +209,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     });
 
     if (changed) {
-      prefs.setJson(Localino.preference_key_sync,
+      prefs.setData(Localino.preference_key_sync,
           data.map((key, value) => MapEntry(key, value.toIso8601String())));
     }
   }
