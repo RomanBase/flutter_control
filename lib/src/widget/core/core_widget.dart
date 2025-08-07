@@ -6,7 +6,7 @@ part of flutter_control;
 /// Check [ControlWidget] and their variants as concrete implementation of this class.
 abstract class CoreWidget extends StatefulWidget {
   /// Init args of this widget.
-  /// This is passed to [CoreContext]. Retrieve concrete arg with [CoreContext.get], [CoreContext.use] when needed.
+  /// This is passed to [CoreContext]. Retrieve concrete arg with [CoreContext._get], [CoreContext.use] when needed.
   final Map initArgs;
 
   /// Abstract implementation of base control widget, that initializes [CoreContext] and handles state management and lifecycle of given resources.

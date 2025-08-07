@@ -1,3 +1,6 @@
+## 1.3.3
+- Model abstraction
+
 ## 1.3.0
 - Added `PrefModel`
 

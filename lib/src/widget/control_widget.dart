@@ -7,7 +7,7 @@ part of flutter_control;
 ///  - [context] is here fully usable without restrictions.
 ///  - Best place to register state notifiers, hooks and other resources.
 ///
-/// Retrieve these references with [CoreContext.get].
+/// Retrieve these references with [CoreContext._get].
 ///
 /// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
 /// Check [OnLayout] mixin to process resources after view is adjusted.
@@ -42,7 +42,7 @@ class BaseControlState extends CoreState<BaseControlWidget> {
 ///  - Best place to register state notifiers, hooks and other resources.
 ///
 /// [initControl], [initControls] registers given [ControlModel]s to this Widget. Check [DisposeHandler] and [ReferenceCounter] to prevent early dispose of given Models.
-/// Retrieve these references with [CoreContext.get].
+/// Retrieve these references with [CoreContext._get].
 ///
 /// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
 /// Check [OnLayout] mixin to process resources after view is adjusted.
@@ -103,7 +103,7 @@ abstract class SingleControlWidget<T extends ControlModel>
 ///  - Best place to register state notifiers, hooks and other resources.
 ///
 /// [initControls] registers given [ControlModel]s to this Widget. Check [DisposeHandler] and [ReferenceCounter] to prevent early dispose of given Models.
-/// Retrieve these references with [CoreContext.get].
+/// Retrieve these references with [CoreContext._get].
 ///
 /// Check [InitProvider] and [LazyProvider] mixins to inject this Widget.
 /// Check [OnLayout] mixin to process resources after view is adjusted.
