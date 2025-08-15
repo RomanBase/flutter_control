@@ -40,8 +40,10 @@ mixin LocalinoProvider {
 
   ///[Localino.localizeOr]
   @protected
-  String localizeOr(String key, List<String> alterKeys) =>
-      localization.localizeOr(key, alterKeys);
+  String localizeOr(String key,
+          {List<String>? alterKeys, String? defaultValue}) =>
+      localization.localizeOr(key,
+          alterKeys: alterKeys, defaultValue: defaultValue);
 
   ///[Localino.localizeFormat]
   @protected

@@ -100,4 +100,10 @@ extension RouteNavigatorExtension on CoreContext {
 
     return rh.openRoute(root: root, replacement: replacement, args: args);
   }
+
+  bool get atRoot {
+    final route = ModalRoute.of(this);
+
+    return route != null && route.isFirst;
+  }
 }

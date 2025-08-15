@@ -1,57 +1,80 @@
 part of flutter_control;
 
-extension RouteExtension on CoreContext {
-  Future<dynamic> openView({
-    required WidgetBuilder builder,
-    dynamic identifier,
-    bool root = false,
-    bool replacement = false,
-    dynamic args,
-    RouteBuilderFactory? route,
-    RouteTransitionFactory? transition,
+extension OverlayExtension on CoreContext {
+  OverlayEntry? showOverlay({
+    required CoreContext context,
+    required dynamic key,
+    required Widget Function(Rect parent) builder,
+    GlobalKey? parentKey,
+    bool barrierDismissible = true,
   }) {
-    ControlRoute cr =
-        ControlRoute.build(identifier: identifier ?? '#', builder: builder);
+    final overlay = Overlay.of(context);
 
-    if (route != null) {
-      cr = cr.viaRoute(route);
-    } else if (transition != null) {
-      cr = cr.viaTransition(transition);
+    if (context.args.containsKey(ObjectTag.of(key))) {
+      return getOverlay(context, key);
     }
 
-    return cr
-        .navigator(navigator)
-        .openRoute(root: root, replacement: replacement, args: args);
+    if (key is GlobalKey && parentKey == null) {
+      parentKey = key;
+    }
+
+    final box = (parentKey?.currentState?.context.findRenderObject() ??
+        context.findRenderObject()) as RenderBox;
+    final location = box.localToGlobal(Offset.zero);
+    final size = box.size;
+
+    final child = builder(
+        Rect.fromLTWH(location.dx, location.dy, size.width, size.height));
+
+    final entry = OverlayEntry(
+      builder: (_) => barrierDismissible
+          ? Stack(
+              children: [
+                GestureDetector(
+                  onTap: () => hideOverlay(context, key),
+                ),
+                child,
+              ],
+            )
+          : child,
+    );
+
+    context.args.add(key: ObjectTag.of(key), value: entry);
+
+    overlay.insert(entry);
+
+    return entry;
   }
 
-  Future<dynamic> openPage<T>({
-    dynamic identifier,
-    bool root = false,
-    bool replacement = false,
-    dynamic args,
-    RouteBuilderFactory? route,
-    RouteTransitionFactory? transition,
-  }) {
-    RouteHandler? rh = routeOf<T>(identifier);
+  OverlayEntry? getOverlay(CoreContext context, dynamic key) =>
+      context.args.get<OverlayEntry>(key: ObjectTag.of(key));
 
-    if (rh == null) {
-      throw 'Route not found: $T, $identifier';
+  bool hideOverlay(CoreContext context, dynamic key) {
+    final overlay = getOverlay(context, key);
+
+    if (overlay != null) {
+      overlay.remove();
+      context.args.remove(key: ObjectTag.of(key));
+
+      return true;
     }
 
-    if (route != null) {
-      rh = rh.viaRoute(route);
-    }
-
-    if (transition != null) {
-      rh = rh.viaTransition(transition);
-    }
-
-    return rh.openRoute(root: root, replacement: replacement, args: args);
+    return false;
   }
 
-  bool get atRoot {
-    final route = ModalRoute.of(this);
+  bool clearOverlays(CoreContext context) {
+    final items = context.args.getAll<OverlayEntry>();
 
-    return route != null && route.isFirst;
+    if (items.isNotEmpty) {
+      items.forEach((element) {
+        element.remove();
+      });
+
+      context.args.removeAll<OverlayEntry>();
+
+      return true;
+    }
+
+    return false;
   }
 }

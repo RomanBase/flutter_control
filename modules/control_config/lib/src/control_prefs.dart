@@ -23,6 +23,10 @@ class ControlPrefs {
     return prefs;
   }
 
+  bool contains(String key) => prefs?.containsKey(key) ?? false;
+
+  void remove(String key) => prefs?.remove(key);
+
   void set(String key, String? value) => prefs?.setString(key, value ?? '');
 
   String? get(String key, {String? defaultValue}) {
@@ -71,7 +75,7 @@ class ControlPrefs {
   double getDouble(String key, {double defaultValue = 0.0}) =>
       prefs?.getDouble(key) ?? defaultValue;
 
-  void setJson(String key, dynamic value) {
+  void setData(String key, dynamic value) {
     if (value == null) {
       prefs?.remove(key);
       return;
@@ -80,7 +84,7 @@ class ControlPrefs {
     prefs?.setString(key, jsonEncode(value));
   }
 
-  T? getJson<T>(String key, {ValueConverter<T>? converter}) {
+  T? getData<T>(String key, {ValueConverter<T>? converter}) {
     final raw = get(key);
 
     if (raw == null) {

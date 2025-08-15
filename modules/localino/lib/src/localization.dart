@@ -494,18 +494,21 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// If given [key] is not found, then tries to localize one of [alterKeys].
   ///
   /// Enable/Disable debug mode to show/hide missing localizations.
-  String localizeOr(String key, List<String> alterKeys) {
+  String localizeOr(String key,
+      {List<String>? alterKeys, String? defaultValue}) {
     if (_data.containsKey(key)) {
       return _data[key];
     }
 
-    for (final alterKey in alterKeys) {
-      if (_data.containsKey(alterKey)) {
-        return _data[alterKey];
+    if (alterKeys != null) {
+      for (final alterKey in alterKeys) {
+        if (_data.containsKey(alterKey)) {
+          return _data[alterKey];
+        }
       }
     }
 
-    return debug ? '${key}_$_locale' : '';
+    return defaultValue ?? (debug ? '${key}_$_locale' : '');
   }
 
   /// Tries to localize text by given [key].
