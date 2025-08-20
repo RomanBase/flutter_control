@@ -8,6 +8,8 @@ class FutureBlock {
   /// Callback of this delayed future.
   VoidCallback? _callback;
 
+  Duration? _duration;
+
   /// Returns true if last delay is in progress.
   bool get isActive => _timer != null && _timer!.isActive;
 
@@ -22,7 +24,7 @@ class FutureBlock {
     cancel();
 
     _callback = onDone;
-    _timer = Timer(duration, () {
+    _timer = Timer(_duration = duration, () {
       onDone();
       cancel();
     });
@@ -31,19 +33,21 @@ class FutureBlock {
   /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
   /// Can be called multiple times - only last call will be handled.
   /// returns `true` if action is delayed.
-  /// returns `false` when this future block is already finished. Re-trigger with [delayed] or set [retrigger].
-  bool postpone(Duration duration,
-      {VoidCallback? onDone, bool retrigger = false}) {
+  bool postpone(
+      {Duration? duration, VoidCallback? onDone, bool retrigger = true}) {
     if (onDone != null) {
       _callback = onDone;
     }
 
-    if (isActive || retrigger) {
-      if (_callback == null) {
-        throw 'Invalid Callback';
-      }
+    if (duration != null) {
+      _duration = duration;
+    }
 
-      delayed(duration, _callback!);
+    if (isActive || retrigger) {
+      assert(_duration != null && _callback != null,
+          'Invalid FutureBlock - provider both [duration] and [onDone].');
+
+      delayed(_duration!, _callback!);
     }
 
     return isActive;
@@ -60,19 +64,20 @@ class FutureBlock {
   }
 
   /// Extends or Creates new [FutureBlock].
-  factory FutureBlock.extend(Duration duration,
-      {FutureBlock? parent, VoidCallback? onDone}) {
-    if (parent == null) {
-      if (onDone == null) {
-        return FutureBlock();
-      }
+  factory FutureBlock.extend(
+      {FutureBlock? parent,
+      Duration? duration,
+      VoidCallback? onDone,
+      bool retrigger = true}) {
+    final block = FutureBlock();
+    block._duration = duration ?? parent?._duration;
+    block._callback = onDone ?? parent?._callback;
 
-      return FutureBlock()..delayed(duration, onDone);
-    }
+    parent?.cancel();
 
-    final block = FutureBlock()
-      ..postpone(duration, onDone: onDone ?? parent._callback, retrigger: true);
-    parent.cancel();
+    block.postpone(retrigger: (parent?.isActive ?? false) || retrigger);
+
+    parent?.cancel();
 
     return block;
   }

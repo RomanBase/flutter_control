@@ -1,8 +1,11 @@
+## 1.3.2
+- FutureBlock extension and retrigger options
+
 ## 1.3.1
- - More Control options
-   - use
-   - maybe
-   - getAsync
+- More Control options
+  - use
+  - maybe
+  - getAsync
 
 ## 1.2.1
 - Control modules and providers
