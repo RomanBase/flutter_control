@@ -8,10 +8,14 @@ class FutureBlock {
   /// Callback of this delayed future.
   VoidCallback? _callback;
 
+  /// Current delay duration.
   Duration? _duration;
 
   /// Returns true if last delay is in progress.
   bool get isActive => _timer != null && _timer!.isActive;
+
+  /// Returns true if callback and duration is set.
+  bool get isSet => _callback != null && _duration != null;
 
   /// Re-triggerable, re-usable delayed Future.
   /// This is just empty constructor.
@@ -24,10 +28,7 @@ class FutureBlock {
     cancel();
 
     _callback = onDone;
-    _timer = Timer(_duration = duration, () {
-      onDone();
-      cancel();
-    });
+    _timer = Timer(_duration = duration, trigger);
   }
 
   /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
@@ -44,8 +45,11 @@ class FutureBlock {
     }
 
     if (isActive || retrigger) {
-      assert(_duration != null && _callback != null,
-          'Invalid FutureBlock - provider both [duration] and [onDone].');
+      if (_duration == null || _callback == null) {
+        printDebug(
+            'Invalid FutureBlock - provider both [duration] and [onDone].');
+        return false;
+      }
 
       delayed(_duration!, _callback!);
     }
@@ -53,12 +57,24 @@ class FutureBlock {
     return isActive;
   }
 
-  /// Cancels current delayed action.
-  void cancel() {
-    if (_timer != null) {
+  /// Triggers current callback early.
+  void trigger() {
+    _callback?.call();
+    stop();
+  }
+
+  /// Stops current timer.
+  void stop() {
+    if (_timer?.isActive ?? false) {
       _timer!.cancel();
-      _timer = null;
     }
+
+    _timer = null;
+  }
+
+  /// Stops current timer and cancels delayed action.
+  void cancel() {
+    stop();
 
     _callback = null;
   }
