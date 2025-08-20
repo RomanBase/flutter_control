@@ -89,8 +89,6 @@ class FutureBlock {
     block._duration = duration ?? parent?._duration;
     block._callback = onDone ?? parent?._callback;
 
-    parent?.cancel();
-
     block.postpone(retrigger: (parent?.isActive ?? false) || retrigger);
 
     parent?.cancel();
