@@ -10,13 +10,13 @@ class UnitId {
       'aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ0123456789';
   static const hex = '0123456789ABCDEF';
 
-  static String get units => aZn;
+  static String units = aZn;
 
-  static String get instanceId => randomId(length: 4, sequence: aZn);
+  static String instanceId = randomId(length: 4, sequence: aZn);
 
   static int instanceCounter = 0;
 
-  static int seed = DateTime.now().toUtc().microsecondsSinceEpoch;
+  static int seed = DateTime.timestamp().microsecondsSinceEpoch;
 
   static VoidCallback? onChanged;
 
@@ -65,9 +65,7 @@ class UnitId {
 
   /// Returns random String with given [length] and settings.
   static String randomId({int length = 8, String sequence = az}) {
-    final output = randomFromSequence(length, sequence);
-
-    return output;
+    return randomFromSequence(length, sequence);
   }
 
   /// Returns random String with given [length] of chars form [sequence].
