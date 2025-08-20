@@ -31,12 +31,16 @@ class FutureBlock {
   /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
   /// Can be called multiple times - only last call will be handled.
   /// returns `true` if action is delayed.
-  /// returns `false` when this future block is already finished. Re-trigger with [delayed].
-  bool postpone(Duration duration) {
-    if (isActive) {
+  /// returns `false` when this future block is already finished. Re-trigger with [delayed] or set [retrigger].
+  bool postpone(Duration duration,
+      {VoidCallback? onDone, bool retrigger = false}) {
+    if (onDone != null) {
+      _callback = onDone;
+    }
+
+    if (isActive || retrigger) {
       if (_callback == null) {
-        printDebug('Invalid Callback');
-        return false;
+        throw 'Invalid Callback';
       }
 
       delayed(duration, _callback!);
@@ -55,6 +59,26 @@ class FutureBlock {
     _callback = null;
   }
 
+  /// Extends or Creates new [FutureBlock].
+  factory FutureBlock.extend(Duration duration,
+      {FutureBlock? parent, VoidCallback? onDone}) {
+    if (parent == null) {
+      if (onDone == null) {
+        return FutureBlock();
+      }
+
+      return FutureBlock()..delayed(duration, onDone);
+    }
+
+    final block = FutureBlock()
+      ..postpone(duration, onDone: onDone ?? parent._callback, retrigger: true);
+    parent.cancel();
+
+    return block;
+  }
+
+  /// Runs delayed [onDone] callback.
+  /// Returns new [FutureBlock] to control actions.
   static FutureBlock run(Duration duration, VoidCallback onDone) =>
       FutureBlock()..delayed(duration, onDone);
 
