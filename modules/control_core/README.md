@@ -1,47 +1,111 @@
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
 
 ---
-
-Flutter Control is complex library to maintain App and State management.\
-Library merges multiple functionality under one hood. This approach helps to tidily bound separated logic into complex solution.
+Core library for FLutter and Dart projects.\
+Simple **Service Locator** to access objects from anywhere. Easy way to switch the implementation of interfaces and for mocks/tests.
+Solves **Event Handling** across app.
+Implements **Observables** for more robust Change/ValueNotifier and simplified Streams.
+Adds **Model** and **Control** classes to line basic lifecycle of classes.
 
 ```dart
 import 'package:control_core/core.dart';
 ```
-
 ---
 
-**Flutter Control Core**
-- `Control` Main static class. Initializes `ControlFactory` that serves as Service Locator with Factory and object initialization.
-- `ControlFactory` Is responsible for creating and storing given `factories` and `entries`. Then locating this services and retrieving on demand.\
-  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.
-- `ControlModule` holds all resources for custom extension. Factory will load these `modules` and stores dependencies.
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
+**Control Factory**
+- `Control` Main and only singleton class. Initializes `ControlFactory` that serves as **Service Locator** with Factory and object initialization.
+- `ControlFactory` Is responsible for creating and storing given `factories` and `entries` (like singletons). Then locating this services and retrieving on demand.\
+  - Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key (typically Interfaces).
+  - Also **custom** factory can be created with `Control.newFactory()` to separate factories from global/default factory.
+- `ControlModule` robust way how to load all resources into factory at once. Easy way how to 'plug in/out' modules.
 
 ```dart
-    Control.initControl(
+void main() {
+  Control.initControl(
+    entries: {
+      CounterListControl: CounterListControl(),
+    },
+    factories: {
+      CounterIterface: (_) => CounterModel(),
+    },
+    modules: [
+      LocalinoModule(LocalinoOptions()),
+    ],
+    initAsync: () async {
+      await loadAppConfig();
+    },
+  );
+  
+  Control.set<AnotherControl>(value: AnotherControl()); //Adds new 'singleton' 
+  Control.add<CounterIterface>(value: BetterCounterModel()); //Changes factory of CounterIterface
+  
+  final counter = Control.get<CounterIterface>()!; // Returns implementation of BetterCounterModel
+}
+```
+
+- `LazyControl` mixin marks object to work as lazy singleton.
+- `Control.use` another way how to dynamically register and retrieve lazy singleton with initialization of concrete - default implementation.
+
+```dart
+class LazyCounterModel extends ControlModel with LazyControl {
+}
+
+void main() {
+  Control.add<LazyCounterModel>(init: (_) => LazyCounterModel());
+  Control.get<LazyCounterModel>(); // will initialize (if not exists) LazyCounterModel and stores it in ControlFactory, then retrieves concrete class
+
+  Control.use<LateCounter>(value: () => LateCounter()); // will initialize (if not exists) LateCounter and stores it in ControlFactory, then retrieves concrete class
+}
+```
+
+- Dependency vs Property Injection. *Best practice depends on your project and internal ideologies*.
+  - Dependency Injection in Constructor is better readable - what dependencies are required to build concreate class.
+  - Property Injection is more dynamic and works well with Dart mixins and extensions, but requires deeper knowledge of own code.
+```dart
+
+class A {}
+
+class B {
+  final A ref;
+
+  const B(this.ref); //Dependency Injection
+}
+
+class C {
+  A get ref => Control.get<A>()!; // Property Injection
+}
+
+void main() {
+  Control.initFactory(
       entries: {
-        CounterListControl: CounterListControl(),
+        C: C(),
       },
       factories: {
-        CounterModel: (_) => CounterModel(),
-        CounterDetailControl: (args) => CounterDetailControl(model: Parse.getArg<CounterModel>(args)),
-      },
-      modules: [
-        LocalinoModule(LocalinoOptions()),  
-      ],
-      initAsync: () async {
-        await loadAppConfig();
-      },
-    );
+        A: (_) => A(),
+        B: (_) => B(Control.get<A>()),
+      }
+  );
+}
+
 ```
 
 ---
 
-- `ControlModel` is base class to maintain Business Logic parts.\
-  `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
-  `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
+**Global Event System**
+
+- `ControlBroadcast` Event stream across whole App. Default broadcaster is part of `ControlFactory` and is stored there.\
+  Every subscription is bound to it's `key` and `Type` so notification to Listeners arrives only for expected data.\
+  With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of the App to the another, even to Widgets and their States.
+  Also **custom** broadcaster can be created to separate events from global/default stream.
+
+```dart
+  BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
+  BraodcastProvider.broadcast('on_count_changed', 10);
+```
+
+---
+
+**Observables**
 
 - `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
   With `ControlBuilder` and `ControlBuilderGroup` on the Widget side ([flutter_control] library). These universal builder widgets can handle all possible types of Notifiers.
@@ -74,16 +138,33 @@ import 'package:control_core/core.dart';
     void add() => counter.value++;
 ```
 
-**Global Event System**
-
-- `ControlBroadcast` Event stream across whole App. Default broadcaster is part of `ControlFactory` and is stored there.\
-  Every subscription is bound to it's `key` and `Type` so notification to Listeners arrives only for expected data.\
-  With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of App to the another, even to Widgets and their States.
-  Also custom broadcaster can be created to separate events from global/default stream.
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/broadcaster.png)
+- `NotifierComponent`, `ObservableComponent<T>` are mixins that transforms any class to `Observable`.
 
 ```dart
-  BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
-  BraodcastProvider.broadcast('on_count_changed', 10);
+class CounterModel extends BaseModel with ObservableComponent<int> {
+  CounterModel() {
+    value = 0;
+  }
+
+  void add() => value = value! + 1;
+}
+
 ```
+
+---
+
+**Business Logic**
+
+- `ControlModel` is base class to maintain Business Logic parts.\
+  `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
+  `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
+
+---
+
+**Part of Control Family**
+Flutter Control:  https://pub.dev/packages/flutter_control
+Control Core:     https://pub.dev/packages/control_core
+Control Config:   https://pub.dev/packages/control_config
+Localino:         https://pub.dev/packages/localino
+Localino Live:    https://pub.dev/packages/localino_live
+Localino Builder: https://pub.dev/packages/localino_builder
