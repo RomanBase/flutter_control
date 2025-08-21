@@ -68,7 +68,7 @@ You can also register objects and factories dynamically after initialization.
 // Register a new singleton.
 Control.set<AnotherControl>(value: AnotherControl());
 
-// Override an existing factory.
+// Register a new factory.
 Control.add<CounterInterface>(init: (_) => BetterCounterModel());
 ```
 
@@ -84,11 +84,12 @@ class LazyCounterModel extends ControlModel with LazyControl {
 void main() {
   Control.add<LazyCounterModel>(init: (_) => LazyCounterModel());
 
-  // The LazyCounterModel is not created yet.
+  // ... The LazyCounterModel is not created yet.
 
   final counter = Control.get<LazyCounterModel>()!; // Now it's created and stored.
 
   // When the counter is disposed, it will be removed from the factory.
+  counter.dispose();
 }
 ```
 
@@ -246,13 +247,14 @@ The `control_core` library provides a set of base classes for organizing your ap
 
 ## ControlModel
 
-`ControlModel` is the fundamental base class for all business logic components. It provides a simple lifecycle with `init()` and `dispose()` methods, and it can be easily integrated with the `ControlFactory` for dependency injection.
-`BaseModel` is a lightweight version of `ControlModel` that is ideal for smaller, more focused pieces of business logic. By default, `BaseModel` prefers a "soft dispose," meaning it won't be automatically disposed by the `ControlFactory` and must be disposed manually.
-`BaseControl` is a more robust version of `ControlModel` that is designed for complex business logic. It ensures that the `onInit()` method is called only once, making it ideal for controllers that manage a significant amount of state or interact with multiple services. `BaseControl` is typically used for long-lived objects that are managed by the `ControlFactory`.
+Is the fundamental base class for all business logic components. It provides a simple lifecycle with `init()` and `dispose()` methods, and it can be easily integrated with the `ControlFactory` for dependency injection.
+*   **`BaseModel`** is a lightweight version of `ControlModel` that is ideal for smaller, more focused pieces of business logic. By default, `BaseModel` prefers a "soft dispose," meaning it won't be automatically disposed by the `ControlFactory` and must be disposed manually.
+*   **`BaseControl`** is a more robust version of `ControlModel` that is designed for complex business logic. It ensures that the `onInit()` method is called only once, making it ideal for controllers that manage a significant amount of state or interact with multiple services. `BaseControl` is typically used for long-lived objects that are managed by the `ControlFactory`.
 
 ## Lifecycle Management: Initializable and DisposeHandler
 
-`control_core` provides two key components for managing the lifecycle of your objects: `Initializable` and `DisposeHandler`. These are used by `ControlModel` and its subclasses to provide a consistent and predictable lifecycle.
+`control_core` provides two key components for managing the lifecycle of your objects: `Initializable` and `DisposeHandler`.
+- These are used by `ControlModel` and its subclasses to provide a consistent and predictable lifecycle.
 
 ### Initializable
 
@@ -358,8 +360,8 @@ args.add<bool>(key: 'is_admin', value: true);
 
 ```dart
 UnitId.instanceId = 'hello';
-UnitId.instanceCounter = prefs.get('counter', defaultValue: 5);
-UnitId.onChanged = () => prefs.set('counter', UnitId.instanceCounter);
+UnitId.instanceCounter = LocalPrefs.get('counter', defaultValue: 5);
+UnitId.onChanged = () => LocalPrefs.set('counter', UnitId.instanceCounter);
 
 // Generate a unique ID based on the current timestamp in {cycleId}_${instanceId}_${instanceCounter} format.
 final nextId = UnitId.nextId();
@@ -368,7 +370,7 @@ printDebug(nextId); // Prints ABC123_hello_6
 
 ---
 
-**Part of Control Family**
+**Part of Control Family: https://github.com/RomanBase/flutter_control**
 Flutter Control:  https://pub.dev/packages/flutter_control
 Control Core:     https://pub.dev/packages/control_core
 Control Config:   https://pub.dev/packages/control_config
