@@ -1,6 +1,6 @@
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
 
-[![Structure](https://github.com/OWNER/REPOSITORY/actions/workflows/dart/badge.svg)](https://github.com/RomanBase/flutter_control)
+[![Structure](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml/badge.svg)](https://github.com/RomanBase/flutter_control)
 
 
 ---

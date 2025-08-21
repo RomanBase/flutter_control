@@ -1,4 +1,5 @@
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
+[![Structure](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml/badge.svg)](https://github.com/RomanBase/flutter_control)
 
 ---
 Core library for FLutter and Dart projects.
