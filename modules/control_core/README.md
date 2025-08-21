@@ -371,9 +371,9 @@ printDebug(nextId); // Prints ABC123_hello_6
 ---
 
 **Part of Control Family: https://github.com/RomanBase/flutter_control**
-Flutter Control:  https://pub.dev/packages/flutter_control
-Control Core:     https://pub.dev/packages/control_core
-Control Config:   https://pub.dev/packages/control_config
-Localino:         https://pub.dev/packages/localino
-Localino Live:    https://pub.dev/packages/localino_live
-Localino Builder: https://pub.dev/packages/localino_builder
+* Flutter Control:  https://pub.dev/packages/flutter_control
+* Control Core:     https://pub.dev/packages/control_core
+* Control Config:   https://pub.dev/packages/control_config
+* Localino:         https://pub.dev/packages/localino
+* Localino Live:    https://pub.dev/packages/localino_live
+* Localino Builder: https://pub.dev/packages/localino_builder
