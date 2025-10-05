@@ -1,13 +1,15 @@
 part of flutter_control;
 
 /// Mixin class to enable navigation for [ControlWidget]
-extension RouteNavigatorExtension on CoreContext {
+extension RouteNavigatorExtension on BuildContext {
   ControlNavigator get navigator => ControlNavigator(this);
 
   /// Returns currently active [Route].
   /// [Route] is typically stored in [ControlArgHolder] during navigation handling and is passed as argument.
   /// If Route is not stored in arguments, closest Route from Navigation Stack is returned.
-  Route? getActiveRoute() => args.get<Route>() ?? ModalRoute.of(this);
+  Route? getActiveRoute() =>
+      (this is CoreContext ? (this as CoreContext).args.get<Route>() : null) ??
+      ModalRoute.of(this);
 
   /// {@macro route-store-get}
   RouteHandler? routeOf<T>([dynamic identifier]) =>

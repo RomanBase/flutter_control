@@ -8,8 +8,14 @@ class FutureBlock {
   /// Callback of this delayed future.
   VoidCallback? _callback;
 
+  /// Current delay duration.
+  Duration? _duration;
+
   /// Returns true if last delay is in progress.
   bool get isActive => _timer != null && _timer!.isActive;
+
+  /// Returns true if callback and duration is set.
+  bool get isSet => _callback != null && _duration != null;
 
   /// Re-triggerable, re-usable delayed Future.
   /// This is just empty constructor.
@@ -22,39 +28,76 @@ class FutureBlock {
     cancel();
 
     _callback = onDone;
-    _timer = Timer(duration, () {
-      onDone();
-      cancel();
-    });
+    _timer = Timer(_duration = duration, trigger);
   }
 
   /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
   /// Can be called multiple times - only last call will be handled.
   /// returns `true` if action is delayed.
-  /// returns `false` when this future block is already finished. Re-trigger with [delayed].
-  bool postpone(Duration duration) {
-    if (isActive) {
-      if (_callback == null) {
-        printDebug('Invalid Callback');
+  bool postpone(
+      {Duration? duration, VoidCallback? onDone, bool retrigger = true}) {
+    if (onDone != null) {
+      _callback = onDone;
+    }
+
+    if (duration != null) {
+      _duration = duration;
+    }
+
+    if (isActive || retrigger) {
+      if (_duration == null || _callback == null) {
+        printDebug(
+            'Invalid FutureBlock - provider both [duration] and [onDone].');
         return false;
       }
 
-      delayed(duration, _callback!);
+      delayed(_duration!, _callback!);
     }
 
     return isActive;
   }
 
-  /// Cancels current delayed action.
-  void cancel() {
-    if (_timer != null) {
+  /// Triggers current callback early.
+  void trigger() {
+    _callback?.call();
+    stop();
+  }
+
+  /// Stops current timer.
+  void stop() {
+    if (_timer?.isActive ?? false) {
       _timer!.cancel();
-      _timer = null;
     }
+
+    _timer = null;
+  }
+
+  /// Stops current timer and cancels delayed action.
+  void cancel() {
+    stop();
 
     _callback = null;
   }
 
+  /// Extends or Creates new [FutureBlock].
+  factory FutureBlock.extend(
+      {FutureBlock? parent,
+      Duration? duration,
+      VoidCallback? onDone,
+      bool retrigger = true}) {
+    final block = FutureBlock();
+    block._duration = duration ?? parent?._duration;
+    block._callback = onDone ?? parent?._callback;
+
+    block.postpone(retrigger: (parent?.isActive ?? false) || retrigger);
+
+    parent?.cancel();
+
+    return block;
+  }
+
+  /// Runs delayed [onDone] callback.
+  /// Returns new [FutureBlock] to control actions.
   static FutureBlock run(Duration duration, VoidCallback onDone) =>
       FutureBlock()..delayed(duration, onDone);
 

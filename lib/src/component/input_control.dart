@@ -59,6 +59,12 @@ class InputControl extends TextEditingController with DisposeHandler {
   /// Callback of [text] changes.
   ValueCallback<String>? _onChanged;
 
+  /// Postponed callback of [text] changes.
+  FutureBlock? _onChangedDelay;
+
+  /// Mark to call [_onChanged] when submit.
+  bool _onChangedDone = false;
+
   /// Checks if 'next' control is chained.
   bool get isNextChained => _next != null;
 
@@ -103,8 +109,24 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Sets callback to [change] event.
   /// Returns this control.
-  InputControl changed(ValueCallback<String> onChanged) {
+  InputControl changed(ValueCallback<String> onChanged,
+      {Duration? delay, bool onDone = false}) {
     _onChanged = onChanged;
+    _onChangedDone = onDone;
+
+    if (delay == null) {
+      _onChangedDelay = null;
+    } else {
+      _onChangedDelay = FutureBlock.extend(
+        parent: _onChangedDelay,
+        duration: delay,
+        onDone: () {
+          _onChanged?.call(text);
+        },
+        retrigger: false,
+      );
+    }
+
     return this;
   }
 
@@ -119,7 +141,17 @@ class InputControl extends TextEditingController with DisposeHandler {
     focusNext();
 
     if (_onDone != null) {
-      _onDone!();
+      if (_onChangedDone) {
+        if (_onChangedDelay != null) {
+          _onChangedDelay!.trigger();
+        } else {
+          _onChanged?.call(this.text);
+        }
+      } else {
+        _onChangedDelay?.stop();
+      }
+
+      _onDone!.call();
     }
   }
 
@@ -138,7 +170,9 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Notifies [changed] event.
   void change(String text) {
-    if (_onChanged != null) {
+    if (_onChangedDelay != null) {
+      _onChangedDelay = FutureBlock.extend(parent: _onChangedDelay);
+    } else if (_onChanged != null) {
       _onChanged!(text);
     }
   }
@@ -149,7 +183,17 @@ class InputControl extends TextEditingController with DisposeHandler {
     validate();
 
     if (_onDone != null) {
-      _onDone!();
+      if (_onChangedDone) {
+        if (_onChangedDelay != null) {
+          _onChangedDelay!.trigger();
+        } else {
+          _onChanged?.call(this.text);
+        }
+      } else {
+        _onChangedDelay?.stop();
+      }
+
+      _onDone!.call();
 
       if (!all) {
         return;
