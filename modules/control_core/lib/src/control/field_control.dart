@@ -278,7 +278,7 @@ class FieldControl<T> extends ObservableModel<T?> {
   }
 
   @override
-  void cancel(ControlSubscription<T?> subscription) {
+  void cancel(ControlSubscription subscription) {
     assert(subscription is FieldSubscription);
     final sub = subscription as FieldSubscription;
 

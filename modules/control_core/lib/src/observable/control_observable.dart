@@ -26,7 +26,7 @@ extension ObservableBaseExt on ObservableBase {
   ObservableGroup merge(Object other) => ObservableGroup([this, other]);
 }
 
-extension ObservableValuext on ObservableValue {
+extension ObservableValuExt on ObservableValue {
   /// Cast this observable.
   ObservableValue<U> cast<U>() => this as ObservableValue<U>;
 }

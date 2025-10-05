@@ -65,7 +65,7 @@ void main() async {
       expect(exactKey, 'string');
       expect(exactTypeKey, String);
 
-      final autoKey = factory.set(value: ActionControl.empty(broadcast: false));
+      final autoKey = factory.set(value: ActionControl.empty());
       final typeKey = factory.set<FieldControl>(value: FieldControl());
 
       expect(autoKey, ActionControl);
