@@ -5,6 +5,22 @@ enum ParseIgnore {
   both,
 }
 
+class ParseEntity {
+  final String? from;
+  final String? to;
+  final String keyType;
+  final bool copyWith;
+  final bool copyWithData;
+
+  const ParseEntity({
+    this.from = 'Json',
+    this.to = 'Json',
+    this.keyType = 'snake_case',
+    this.copyWith = true,
+    this.copyWithData = true,
+  });
+}
+
 class ParseValue<T> {
   final String? key;
   final bool raw;
@@ -26,19 +42,5 @@ class ParseValue<T> {
     this.entryConverter,
     this.fromConverter,
     this.toConverter,
-  });
-}
-
-class ParseEntity {
-  final String? from;
-  final String? to;
-  final String? list;
-  final String keyType;
-
-  const ParseEntity({
-    this.from = 'Json',
-    this.to = 'Json',
-    this.list = 'List',
-    this.keyType = 'snake_case',
   });
 }

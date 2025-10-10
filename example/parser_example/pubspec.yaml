@@ -13,16 +13,18 @@ dependencies:
   flutter_control:
     path: ../../
   control_annotations:
-    path: ../../control_annotations
+    path: ../../modules/control_annotations
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  process_run: ^0.13.1
+
   flutter_lints: ^2.0.0
   build_runner: ^2.4.9
   control_builder:
-    path: ../../control_builder
+    path: ../../modules/control_builder
 
 flutter:
   uses-material-design: true

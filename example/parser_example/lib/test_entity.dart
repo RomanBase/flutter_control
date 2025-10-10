@@ -19,6 +19,7 @@ class TestEntity {
   final int? count;
 
   final DateTime timestamp;
+  final DateTime? time2;
 
   final TestEnum enm;
 
@@ -27,8 +28,9 @@ class TestEntity {
     required this.base,
     this.count,
     required this.timestamp,
+    this.time2,
     this.enm = TestEnum.none,
   });
 
-  factory TestEntity.fromJson(Map<String, dynamic> data) => $TestEntityFactory.fromJson(data);
+  factory TestEntity.fromJson(Map<String, dynamic> data) => TestEntityFactory.fromJson(data);
 }
