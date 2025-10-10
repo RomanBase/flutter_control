@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 
 import 'package:macros/macros.dart';
@@ -14,8 +15,9 @@ macro class DisposeMacro implements ClassDefinitionMacro {
     disposeBuilder.augment(FunctionBodyCode.fromParts([
       '{\n',
       'printDebug(\'augment dispose\');\n',
-      '}',
+      '}\n',
     ]));
   }
 
 }
+*/

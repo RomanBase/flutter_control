@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 
 import 'package:macros/macros.dart';
@@ -78,7 +79,7 @@ macro class ParseEntity implements ClassDeclarationsMacro {
     final methods = await MacroMethod.getMethods(clazz, builder);
 
     builder.declareInLibrary(DeclarationCode.fromString('import \'package:control_core/core.dart\';'));
-    builder.declareInLibrary(DeclarationCode.fromString(''));
+    builder.declareInLibrary(DeclarationCode.fromString('\n'));
 
     if (list != null) {
       builder.declareInType(DeclarationCode.fromParts([
@@ -96,7 +97,7 @@ macro class ParseEntity implements ClassDeclarationsMacro {
     }
 
     if (to != null) {
-      builder.declareInType(DeclarationCode.fromString(''));
+      builder.declareInType(DeclarationCode.fromString('\n'));
       builder.declareInType(DeclarationCode.fromParts([
         'Map<String, dynamic> to$to() => {\n',
         ...fields.where((e) => !e.ignoreTo).map((e) => '${_key(e.key, e.customKey)}: ${_jsonValue(e, methods)},\n'),
@@ -250,3 +251,4 @@ macro class ParseEntity implements ClassDeclarationsMacro {
     return value;
   }
 }
+*/

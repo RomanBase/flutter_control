@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 
 import 'package:macros/macros.dart';
@@ -255,3 +256,4 @@ class MacroMethod {
 
   bool get hasParams => declaration.positionalParameters.isNotEmpty;
 }
+*/

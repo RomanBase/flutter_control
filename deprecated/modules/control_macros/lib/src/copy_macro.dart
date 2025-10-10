@@ -1,3 +1,4 @@
+/*
 import 'dart:async';
 
 import 'package:macros/macros.dart';
@@ -38,3 +39,4 @@ macro class CopyEntity implements ConstructorDeclarationsMacro {
 
 
 }
+*/
