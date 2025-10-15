@@ -6,8 +6,12 @@ part 'test_entity2.g.dart';
 
 class AbsEntity {
   final String abc;
+  final DateTime? timestamp;
 
-  const AbsEntity({required this.abc});
+  const AbsEntity({
+    required this.abc,
+    this.timestamp,
+  });
 }
 
 @ParseEntity(from: 'Fire', to: 'Fire')
@@ -62,7 +66,8 @@ class TestEntity2 extends AbsEntity {
     this.rawMap,
     this.dnc,
     this.toIgnore,
+    //timestamp missing
   });
 
-  factory TestEntity2.fromJson(Map<String, dynamic> data) => TestEntity2Factory.fromFire(data);
+  factory TestEntity2.fromJson(Map<String, dynamic> data) => _fromFire(data);
 }

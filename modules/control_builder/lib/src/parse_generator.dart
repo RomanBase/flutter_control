@@ -42,10 +42,15 @@ class ParseGenerator extends Generator {
     final copyWith = annotation.read('copyWith').boolValue;
     final copyWithData = annotation.read('copyWithData').boolValue;
 
+    final allFields = _collectFields(element);
+    final constructorParams = element.unnamedConstructor?.parameters ?? [];
+    final constructorFieldNames = constructorParams.map((p) => p.name).toSet();
+    final constructorFields = allFields.where((f) => constructorFieldNames.contains(f.name)).toList();
+
     final buffer = StringBuffer();
 
     buffer.writeln('$className _from$fromMethod(Map<String, dynamic> data) => $className(');
-    for (final field in element.fields) {
+    for (final field in constructorFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
       final fieldAnnotation = _getParseValueAnnotation(field);
@@ -75,7 +80,7 @@ class ParseGenerator extends Generator {
 
     // TOJSON
     buffer.writeln('  Map<String, dynamic> to$toMethod() => {');
-    for (final field in element.fields) {
+    for (final field in allFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
       final fieldAnnotation = _getParseValueAnnotation(field);
@@ -97,7 +102,7 @@ class ParseGenerator extends Generator {
 
     if (copyWith) {
       buffer.writeln('  $className copyWith({');
-      for (final field in element.fields) {
+      for (final field in constructorFields) {
         if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
         buffer.writeln('    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
@@ -105,7 +110,7 @@ class ParseGenerator extends Generator {
 
       buffer.write('}) => $className(');
 
-      for (final field in element.fields) {
+      for (final field in constructorFields) {
         if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
         buffer.writeln('    ${field.name}: ${field.name} ?? this.${field.name},');
@@ -115,7 +120,7 @@ class ParseGenerator extends Generator {
 
     if (copyWithData) {
       buffer.writeln('  $className copyWithData(Map<String, dynamic> data) => $className(');
-      for (final field in element.fields) {
+      for (final field in constructorFields) {
         if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
         final fieldAnnotation = _getParseValueAnnotation(field);
@@ -145,6 +150,20 @@ class ParseGenerator extends Generator {
 
     buffer.writeln('}');
     return buffer.toString();
+  }
+
+  List<FieldElement> _collectFields(ClassElement element) {
+    final fields = List<FieldElement>.from(element.fields);
+    final supertype = element.supertype;
+
+    if (supertype != null && supertype.element.name != 'Object') {
+      final superElement = supertype.element;
+      if (superElement is ClassElement) {
+        fields.insertAll(0, _collectFields(superElement));
+      }
+    }
+
+    return fields;
   }
 
   String _getParserPrimitive(DartType type, String value) {

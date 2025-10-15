@@ -32,5 +32,5 @@ class TestEntity {
     this.enm = TestEnum.none,
   });
 
-  factory TestEntity.fromJson(Map<String, dynamic> data) => TestEntityFactory.fromJson(data);
+  factory TestEntity.fromJson(Map<String, dynamic> data) => _fromJson(data);
 }
