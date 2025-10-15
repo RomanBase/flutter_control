@@ -4,8 +4,14 @@ import 'package:parser_example/test_entity.dart';
 
 part 'test_entity2.g.dart';
 
+class AbsEntity {
+  final String abc;
+
+  const AbsEntity({required this.abc});
+}
+
 @ParseEntity(from: 'Fire', to: 'Fire')
-class TestEntity2 {
+class TestEntity2 extends AbsEntity {
   @ParseValue(key: 'server_id', ignore: ParseIgnore.to)
   final String id;
 
@@ -23,7 +29,7 @@ class TestEntity2 {
 
   final Map<String, TestEntity> testMap;
   final Map<TestEnum, TestEnum> testEnumMap;
-  final Map<String, String> strMap;
+  final Map<String, String>? strMap;
 
   @ParseValue(raw: true)
   final Map? rawMap;
@@ -41,6 +47,7 @@ class TestEntity2 {
   final String dncDefault = '#';
 
   const TestEntity2({
+    required super.abc,
     required this.id,
     this.count,
     this.entity,

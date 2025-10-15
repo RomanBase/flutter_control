@@ -1,17 +1,17 @@
 name: control_builder
 description: Builder for control_core code generation.
-version: 0.1.0
+version: 0.1.0-beta
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
+  control_annotations: ^0.1.0-beta
+
   analyzer: ^6.4.1
   build: ^2.4.1
   source_gen: ^1.5.0
   recase: ^4.1.0
-  control_annotations: 
-    path: ../control_annotations
 
 dev_dependencies:
   build_runner: ^2.4.9

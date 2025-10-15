@@ -44,10 +44,7 @@ class ParseGenerator extends Generator {
 
     final buffer = StringBuffer();
 
-    // FROM FACTORY
-    buffer.writeln('extension ${className}Factory on $className {\n');
-
-    buffer.writeln('  static $className from$fromMethod(Map<String, dynamic> data) => $className(');
+    buffer.writeln('$className _from$fromMethod(Map<String, dynamic> data) => $className(');
     for (final field in element.fields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
@@ -56,7 +53,7 @@ class ParseGenerator extends Generator {
 
       final fromConverter = fieldAnnotation?.peek('fromConverter')?.revive().source.fragment;
       if (fromConverter != null && fromConverter.isNotEmpty) {
-        buffer.writeln('    ${field.name}: $fromConverter(data),');
+        buffer.writeln('  ${field.name}: $fromConverter(data),');
         continue;
       }
 
@@ -64,14 +61,17 @@ class ParseGenerator extends Generator {
       final key = _getKey(field, keyType, fieldAnnotation);
 
       if (raw) {
-        buffer.writeln('    ${field.name}: data[\'$key\'],');
+        buffer.writeln('  ${field.name}: data[\'$key\'],');
         continue;
       }
 
       final parser = _getParser(field, key, fieldAnnotation);
-      buffer.writeln('    ${field.name}: $parser,');
+      buffer.writeln('  ${field.name}: $parser,');
     }
-    buffer.writeln('  );\n');
+    buffer.writeln(');\n');
+
+    // FROM FACTORY
+    buffer.writeln('extension ${className}Factory on $className {\n');
 
     // TOJSON
     buffer.writeln('  Map<String, dynamic> to$toMethod() => {');
@@ -175,7 +175,7 @@ class ParseGenerator extends Generator {
       final converter = annotation?.peek('converter')?.revive().source.fragment;
 
       final itemConverter = (converter != null && converter.isNotEmpty) ? converter : _getConverter(argType, 'item');
-      return '$parser.toList(data[\'$key\'], converter: $itemConverter)';
+      return 'Parse.toList(data[\'$key\'], converter: $itemConverter)';
     }
 
     if (type is InterfaceType && type.isDartCoreMap) {
@@ -192,7 +192,7 @@ class ParseGenerator extends Generator {
 
       final converterFunction = convertEntryFunction == null ? 'converter: $convertFunction' : 'entryConverter: $convertEntryFunction';
 
-      return '$parser.toKeyMap(data[\'$key\'], ${keyFunction}, $converterFunction)';
+      return 'Parse.toKeyMap(data[\'$key\'], ${keyFunction}, $converterFunction)';
     }
 
     final typeElement = type.element;

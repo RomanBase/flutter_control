@@ -1,7 +1,7 @@
 builders:
   parser:
     import: "package:control_builder/control_builder.dart"
-    builder_factories: [ "parseBuilder" ]
+    builder_factories: [ "parse" ]
     build_extensions: { ".dart": [ ".g.dart" ] }
     auto_apply: dependents
     build_to: source
