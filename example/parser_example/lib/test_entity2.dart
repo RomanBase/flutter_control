@@ -4,6 +4,7 @@ import 'package:parser_example/test_entity.dart';
 
 part 'test_entity2.g.dart';
 
+@ParseEntity()
 class AbsEntity {
   final String abc;
   final DateTime? timestamp;
@@ -19,6 +20,8 @@ class AbsEntity {
     this.timestamp2,
     this.timestamp3,
   });
+
+  factory AbsEntity.fromJson(Map<String, dynamic> data) => _fromJson(data);
 }
 
 @ParseEntity(from: 'Fire', to: 'Fire')
@@ -57,6 +60,7 @@ class TestEntity2 extends AbsEntity {
   set dncSetter(dynamic value) {}
 
   final String dncDefault = '#';
+  final AbsEntity? absEntity;
 
   const TestEntity2({
     required super.abc,
@@ -78,6 +82,7 @@ class TestEntity2 extends AbsEntity {
     //timestamp missing
     super.timestamp2,
     super.timestamp3,
+    this.absEntity,
   });
 
   factory TestEntity2.fromJson(Map<String, dynamic> data) => _fromFire(data);

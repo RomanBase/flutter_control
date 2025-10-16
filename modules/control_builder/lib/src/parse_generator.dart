@@ -287,12 +287,15 @@ class ParseGenerator extends Generator {
 
     final typeElement = type.element;
     if (typeElement is ClassElement) {
+      String classParser = '${typeElement.name}.fromJson(data[\'$key\'])';
+
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
         final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'Json';
-        final parser = '${typeElement.name}.from$fromMethod(data[\'$key\'])';
-        return '${nullable ? 'data.containsKey(\'$key\') ? $parser : null' : '$parser'}';
+        classParser = '${typeElement.name}.from$fromMethod(data[\'$key\'])';
       }
+
+      return '${nullable ? 'data.containsKey(\'$key\') ? $classParser : null' : '$classParser'}';
     }
 
     return 'data[\'$key\']${ignoreDefault ? '' : _getDefaultValue(annotation, type, true)}';
