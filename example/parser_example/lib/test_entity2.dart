@@ -8,9 +8,16 @@ class AbsEntity {
   final String abc;
   final DateTime? timestamp;
 
+  @ParseValue(raw: true)
+  final DateTime? timestamp2;
+
+  final DateTime? timestamp3;
+
   const AbsEntity({
     required this.abc,
     this.timestamp,
+    this.timestamp2,
+    this.timestamp3,
   });
 }
 
@@ -19,8 +26,9 @@ class TestEntity2 extends AbsEntity {
   @ParseValue(key: 'server_id', ignore: ParseIgnore.to)
   final String id;
 
-  final int? count;
-  final TestEntity? entity;
+  final int count;
+  final TestEntity entity;
+  final TestEntity? entity2;
   final TestEnum enm;
   final List list;
   final List<TestEntity> testList;
@@ -53,8 +61,9 @@ class TestEntity2 extends AbsEntity {
   const TestEntity2({
     required super.abc,
     required this.id,
-    this.count,
-    this.entity,
+    this.count = 0,
+    required this.entity,
+    this.entity2,
     this.enm = TestEnum.none,
     this.list = const [],
     this.testList = const [],
@@ -67,6 +76,8 @@ class TestEntity2 extends AbsEntity {
     this.dnc,
     this.toIgnore,
     //timestamp missing
+    super.timestamp2,
+    super.timestamp3,
   });
 
   factory TestEntity2.fromJson(Map<String, dynamic> data) => _fromFire(data);

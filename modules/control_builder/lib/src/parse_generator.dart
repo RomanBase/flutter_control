@@ -130,7 +130,7 @@ class ParseGenerator extends Generator {
 
         final fromConverter = fieldAnnotation?.peek('fromConverter')?.revive().source.fragment;
         if (fromConverter != null && fromConverter.isNotEmpty) {
-          buffer.writeln('    ${field.name}: $contains $fromConverter(data) : this.${field.name},');
+          buffer.writeln('    ${field.name}: $contains $fromConverter(data) : ${field.name},');
           continue;
         }
 
@@ -138,12 +138,12 @@ class ParseGenerator extends Generator {
         final key = _getKey(field, keyType, fieldAnnotation);
 
         if (raw || field.type is DynamicType) {
-          buffer.writeln('    ${field.name}: data[\'$key\'] ?? this.${field.name},');
+          buffer.writeln('    ${field.name}: data[\'$key\'] ?? ${field.name},');
           continue;
         }
 
         final parser = _getParser(field, key, fieldAnnotation, true);
-        buffer.writeln('    ${field.name}: $contains $parser : this.${field.name},');
+        buffer.writeln('    ${field.name}: $contains $parser : ${field.name},');
       }
       buffer.writeln('  );\n');
     }
@@ -179,7 +179,7 @@ class ParseGenerator extends Generator {
   String _getParser(FieldElement field, String key, ConstantReader? annotation, [bool ignoreDefault = false]) {
     final type = field.type;
     final defaultValueStr = ignoreDefault ? '' : _getDefaultValue(annotation, type);
-    final nullable = type.isNullable;
+    final nullable = ignoreDefault ? false : type.isNullable;
     final parser = nullable ? 'ParseN' : 'Parse';
 
     if (type.isDartCoreString) return '$parser.string(data[\'$key\']$defaultValueStr)';
@@ -219,7 +219,8 @@ class ParseGenerator extends Generator {
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
         final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'Json';
-        return '${typeElement.name}.from$fromMethod(data)';
+        final parser = '${typeElement.name}.from$fromMethod(data[\'$key\'])';
+        return '${nullable ? 'data.containsKey(\'$key\') ? $parser : null' : '$parser'}';
       }
     }
 
@@ -289,11 +290,14 @@ class ParseGenerator extends Generator {
 
     final typeElement = type.element;
     if (typeElement is ClassElement) {
+      String toMethod = 'Json';
+
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'Json';
-        return '$name${nullable ? '?' : ''}.to$toMethod()';
+        toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'Json';
       }
+
+      return '$name${nullable ? '?' : ''}.to$toMethod()';
     }
 
     return '$name';

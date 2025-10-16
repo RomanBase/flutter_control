@@ -1,6 +1,6 @@
 name: control_builder
 description: Builder for control_core code generation.
-version: 0.2.0-beta
+version: 0.3.0-beta
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
