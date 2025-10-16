@@ -41,6 +41,7 @@ class ParseGenerator extends Generator {
     final keyType = annotation.read('keyType').stringValue;
     final copyWith = annotation.read('copyWith').boolValue;
     final copyWithData = annotation.read('copyWithData').boolValue;
+    final bool storeModel = true;
 
     final allFields = _collectFields(element);
     final constructorParams = element.unnamedConstructor?.parameters ?? [];
@@ -78,7 +79,7 @@ class ParseGenerator extends Generator {
     // FROM FACTORY
     buffer.writeln('extension ${className}Factory on $className {\n');
 
-    // TOJSON
+    // TO JSON
     buffer.writeln('  Map<String, dynamic> to$toMethod() => {');
     for (final field in allFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
@@ -100,6 +101,7 @@ class ParseGenerator extends Generator {
     }
     buffer.writeln('  };\n');
 
+    // COPY WITH
     if (copyWith) {
       buffer.writeln('  $className copyWith({');
       for (final field in constructorFields) {
@@ -115,9 +117,11 @@ class ParseGenerator extends Generator {
 
         buffer.writeln('    ${field.name}: ${field.name} ?? this.${field.name},');
       }
+
       buffer.writeln('  );\n');
     }
 
+    // COPY WITH DATA
     if (copyWithData) {
       buffer.writeln('  $className copyWithData(Map<String, dynamic> data) => $className(');
       for (final field in constructorFields) {
@@ -149,6 +153,73 @@ class ParseGenerator extends Generator {
     }
 
     buffer.writeln('}');
+
+    // STORE MODEL
+    if (storeModel) {
+      buffer.writeln('''
+      mixin ${className}Store {
+        late $className ${className.camelCase};
+      
+        @protected
+        void onUpdate${className}(Map<String, dynamic> data);
+      
+        void updateData${className}(Map<String, dynamic> data) {
+          ${className.camelCase} = ${className.camelCase}.copyWithData(data);
+      
+          if (this is ObservableNotifier) {
+            (this as ObservableNotifier).notify();
+          }
+        }
+      ''');
+
+      buffer.writeln('void update$className({');
+      for (final field in constructorFields) {
+        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+
+        buffer.writeln('    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
+      }
+      buffer.write('}){');
+      buffer.writeln('final data = {');
+
+      for (final field in constructorFields) {
+        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+
+        final fieldAnnotation = _getParseValueAnnotation(field);
+        if (_shouldIgnore(fieldAnnotation, ParseIgnore.to)) continue;
+
+        final toConverter = fieldAnnotation?.peek('toConverter')?.revive().source.fragment;
+        final key = _getKey(field, keyType, fieldAnnotation);
+        if (toConverter != null && toConverter.isNotEmpty) {
+          buffer.writeln('    if(${field.name} != null) \'$key\': $toConverter(${field.name}),');
+          continue;
+        }
+
+        final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
+        final serializer = raw ? field.name : _getSerializer(field, notNull: true);
+
+        buffer.writeln('    if(${field.name} != null) \'$key\': $serializer,');
+      }
+      buffer.writeln('  };\n');
+
+      buffer.writeln('  ${className.camelCase} = ${className.camelCase}.copyWith(');
+      for (final field in constructorFields) {
+        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+
+        buffer.writeln('    ${field.name}: ${field.name},');
+      }
+      buffer.writeln('  );\n');
+
+      buffer.writeln('    onUpdate${className}(data);\n');
+      buffer.writeln('''
+          if (this is ObservableNotifier) {
+            (this as ObservableNotifier).notify();
+          }
+      ''');
+
+      buffer.writeln('    }');
+      buffer.writeln('}');
+    }
+
     return buffer.toString();
   }
 
@@ -264,9 +335,9 @@ class ParseGenerator extends Generator {
     return '($keyName, $varName) => ${valueType.element?.name}${valueType.isNullable ? '?' : ''}.fromJson($valueName)';
   }
 
-  String _getSerializer(FieldElement field) {
+  String _getSerializer(FieldElement field, {bool notNull = false}) {
     final type = field.type;
-    final nullable = type.isNullable;
+    final nullable = notNull ? false : type.isNullable;
     final name = field.name;
 
     if (type.isPrimitive) return name;
