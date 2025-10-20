@@ -50,7 +50,7 @@ class ParseGenerator extends Generator {
 
     final buffer = StringBuffer();
 
-    buffer.writeln('$className _from$fromMethod(Map<String, dynamic> data) => $className(');
+    buffer.writeln('$className $fromMethod(Map<String, dynamic> data) => $className(');
     for (final field in constructorFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
@@ -80,7 +80,7 @@ class ParseGenerator extends Generator {
     buffer.writeln('extension ${className}Factory on $className {\n');
 
     // TO JSON
-    buffer.writeln('  Map<String, dynamic> to$toMethod() => {');
+    buffer.writeln('  Map<String, dynamic> $toMethod() => {');
     for (final field in allFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
