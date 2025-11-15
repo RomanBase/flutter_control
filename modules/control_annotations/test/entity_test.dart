@@ -32,5 +32,6 @@ class TestParser extends ParseEntity {
 }
 
 class TestValue extends ParseValue {
-  const TestValue(String key) : super(key: key, converter: const TestConverter());
+  const TestValue(String key)
+      : super(key: key, converter: const TestConverter());
 }

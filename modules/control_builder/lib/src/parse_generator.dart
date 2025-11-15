@@ -20,7 +20,8 @@ class ParseGenerator extends Generator {
     }
 
     for (final element in elements) {
-      final generated = _generateForParseEntity(element.element, element.annotation);
+      final generated =
+          _generateForParseEntity(element.element, element.annotation);
       result.writeln(generated);
     }
 
@@ -46,13 +47,18 @@ class ParseGenerator extends Generator {
     final allFields = _collectFields(element);
     final constructorParams = element.unnamedConstructor?.parameters ?? [];
     final constructorFieldNames = constructorParams.map((p) => p.name).toSet();
-    final constructorFields = allFields.where((f) => constructorFieldNames.contains(f.name)).toList();
+    final constructorFields =
+        allFields.where((f) => constructorFieldNames.contains(f.name)).toList();
 
     final buffer = StringBuffer();
 
-    buffer.writeln('$className $fromMethod(Map<String, dynamic> data, [$style = null]) => $className(');
+    buffer.writeln(
+        '$className $fromMethod(Map<String, dynamic> data, [$style = null]) => $className(');
     for (final field in constructorFields) {
-      if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+      if (field.isStatic ||
+          field.isConst ||
+          (field.isFinal && field.hasInitializer) ||
+          field.isSynthetic) continue;
 
       final fieldAnnotation = _getParseValueAnnotation(field);
       if (_shouldIgnore(fieldAnnotation, ParseIgnore.from)) continue;
@@ -76,7 +82,10 @@ class ParseGenerator extends Generator {
     // TO JSON
     buffer.writeln('  Map<String, dynamic> $toMethod() => {');
     for (final field in allFields) {
-      if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+      if (field.isStatic ||
+          field.isConst ||
+          (field.isFinal && field.hasInitializer) ||
+          field.isSynthetic) continue;
 
       final fieldAnnotation = _getParseValueAnnotation(field);
       if (_shouldIgnore(fieldAnnotation, ParseIgnore.to)) continue;
@@ -94,17 +103,25 @@ class ParseGenerator extends Generator {
     if (copyWith) {
       buffer.writeln('  $className copyWith({');
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
-        buffer.writeln('    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
+        buffer.writeln(
+            '    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
       }
 
       buffer.write('}) => $className(');
 
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
-        buffer.writeln('    ${field.name}: ${field.name} ?? this.${field.name},');
+        buffer
+            .writeln('    ${field.name}: ${field.name} ?? this.${field.name},');
       }
 
       buffer.writeln('  );\n');
@@ -112,14 +129,19 @@ class ParseGenerator extends Generator {
 
     // COPY WITH DATA
     if (copyFrom) {
-      buffer.writeln('  $className copy${fromMethod.replaceAll('_', '').pascalCase}(Map<String, dynamic> data) => $className(');
+      buffer.writeln(
+          '  $className copy${fromMethod.replaceAll('_', '').pascalCase}(Map<String, dynamic> data) => $className(');
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
         final fieldAnnotation = _getParseValueAnnotation(field);
         if (_shouldIgnore(fieldAnnotation, ParseIgnore.from)) continue;
 
-        final contains = 'data.containsKey(\'${_getKey(field, style, fieldAnnotation)}\') ?';
+        final contains =
+            'data.containsKey(\'${_getKey(field, style, fieldAnnotation)}\') ?';
 
         final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
         final key = _getKey(field, style, fieldAnnotation);
@@ -157,36 +179,50 @@ class ParseGenerator extends Generator {
 
       buffer.writeln('void update$className({');
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
-        buffer.writeln('    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
+        buffer.writeln(
+            '    ${field.type}${field.type.isNullable ? '' : '?'} ${field.name},');
       }
       buffer.write('}){');
       buffer.writeln('final data = {');
 
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
         final fieldAnnotation = _getParseValueAnnotation(field);
         if (_shouldIgnore(fieldAnnotation, ParseIgnore.to)) continue;
 
-        final toConverter = fieldAnnotation?.peek('toConverter')?.revive().source.fragment;
+        final toConverter =
+            fieldAnnotation?.peek('toConverter')?.revive().source.fragment;
         final key = _getKey(field, style, fieldAnnotation);
         if (toConverter != null && toConverter.isNotEmpty) {
-          buffer.writeln('    if(${field.name} != null) \'$key\': $toConverter(${field.name}),');
+          buffer.writeln(
+              '    if(${field.name} != null) \'$key\': $toConverter(${field.name}),');
           continue;
         }
 
         final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
-        final serializer = raw ? field.name : _getSerializer(field, notNull: true);
+        final serializer =
+            raw ? field.name : _getSerializer(field, notNull: true);
 
         buffer.writeln('    if(${field.name} != null) \'$key\': $serializer,');
       }
       buffer.writeln('  };\n');
 
-      buffer.writeln('  ${className.camelCase} = ${className.camelCase}.copyWith(');
+      buffer.writeln(
+          '  ${className.camelCase} = ${className.camelCase}.copyWith(');
       for (final field in constructorFields) {
-        if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
+        if (field.isStatic ||
+            field.isConst ||
+            (field.isFinal && field.hasInitializer) ||
+            field.isSynthetic) continue;
 
         buffer.writeln('    ${field.name}: ${field.name},');
       }
@@ -225,29 +261,40 @@ class ParseGenerator extends Generator {
     if (type.isDartCoreInt) return 'Parser.toInteger($value)';
     if (type.isDartCoreDouble) return 'Parser.toDouble($value)';
     if (type.isDartCoreBool) return 'Parser.toBool$value)';
-    if (type.isEnum) return 'Parser.toEnum($value, ${type.element?.name}.values)';
+    if (type.isEnum)
+      return 'Parser.toEnum($value, ${type.element?.name}.values)';
 
     return value;
   }
 
-  String _getParser(FieldElement field, String key, ConstantReader? annotation, [bool ignoreDefault = false]) {
+  String _getParser(FieldElement field, String key, ConstantReader? annotation,
+      [bool ignoreDefault = false]) {
     final type = field.type;
-    final defaultValueStr = ignoreDefault ? '' : _getDefaultValue(annotation, type);
+    final defaultValueStr =
+        ignoreDefault ? '' : _getDefaultValue(annotation, type);
     final nullable = ignoreDefault ? false : type.isNullable;
     final parser = nullable ? 'ParseN' : 'Parse';
 
-    if (type.isDartCoreString) return '$parser.string(data[\'$key\']$defaultValueStr)';
-    if (type.isDartCoreInt) return '$parser.toInteger(data[\'$key\']$defaultValueStr)';
-    if (type.isDartCoreDouble) return '$parser.toDouble(data[\'$key\']$defaultValueStr)';
-    if (type.isDartCoreBool) return '$parser.toBool(data[\'$key\']$defaultValueStr)';
-    if (type.element?.name == 'DateTime') return 'Parse.date(data[\'$key\']$defaultValueStr)${type.isNullable ? '' : '!'}';
-    if (type.isEnum) return '$parser.toEnum(data[\'$key\'], ${type.element?.name}.values$defaultValueStr)';
+    if (type.isDartCoreString)
+      return '$parser.string(data[\'$key\']$defaultValueStr)';
+    if (type.isDartCoreInt)
+      return '$parser.toInteger(data[\'$key\']$defaultValueStr)';
+    if (type.isDartCoreDouble)
+      return '$parser.toDouble(data[\'$key\']$defaultValueStr)';
+    if (type.isDartCoreBool)
+      return '$parser.toBool(data[\'$key\']$defaultValueStr)';
+    if (type.element?.name == 'DateTime')
+      return 'Parse.date(data[\'$key\']$defaultValueStr)${type.isNullable ? '' : '!'}';
+    if (type.isEnum)
+      return '$parser.toEnum(data[\'$key\'], ${type.element?.name}.values$defaultValueStr)';
 
     if (type is InterfaceType && type.isDartCoreList) {
       final argType = type.typeArguments.first;
       final converter = annotation?.peek('converter')?.revive().source.fragment;
 
-      final itemConverter = (converter != null && converter.isNotEmpty) ? converter : _getConverter(argType, 'item');
+      final itemConverter = (converter != null && converter.isNotEmpty)
+          ? converter
+          : _getConverter(argType, 'item');
       return 'Parse.toList(data[\'$key\'], converter: $itemConverter)';
     }
 
@@ -255,15 +302,26 @@ class ParseGenerator extends Generator {
       final keyType = type.typeArguments[0];
       final valueType = type.typeArguments[1];
 
-      final keyConverter = annotation?.peek('keyConverter')?.revive().source.fragment;
+      final keyConverter =
+          annotation?.peek('keyConverter')?.revive().source.fragment;
       final converter = annotation?.peek('converter')?.revive().source.fragment;
-      final entryConverter = annotation?.peek('entryConverter')?.revive().source.fragment;
+      final entryConverter =
+          annotation?.peek('entryConverter')?.revive().source.fragment;
 
-      final keyFunction = (keyConverter != null && keyConverter.isNotEmpty) ? keyConverter : _getEntryConverter(keyType, valueType, 'key', 'value', true);
-      final convertFunction = (converter != null && converter.isNotEmpty) ? converter : _getConverter(valueType, 'value');
-      final convertEntryFunction = (entryConverter != null && entryConverter.isNotEmpty) ? entryConverter : null;
+      final keyFunction = (keyConverter != null && keyConverter.isNotEmpty)
+          ? keyConverter
+          : _getEntryConverter(keyType, valueType, 'key', 'value', true);
+      final convertFunction = (converter != null && converter.isNotEmpty)
+          ? converter
+          : _getConverter(valueType, 'value');
+      final convertEntryFunction =
+          (entryConverter != null && entryConverter.isNotEmpty)
+              ? entryConverter
+              : null;
 
-      final converterFunction = convertEntryFunction == null ? 'converter: $convertFunction' : 'entryConverter: $convertEntryFunction';
+      final converterFunction = convertEntryFunction == null
+          ? 'converter: $convertFunction'
+          : 'entryConverter: $convertEntryFunction';
 
       return 'Parse.toKeyMap(data[\'$key\'], ${keyFunction}, $converterFunction)';
     }
@@ -272,10 +330,14 @@ class ParseGenerator extends Generator {
     if (typeElement is ClassElement) {
       String classParser = '${typeElement.name}.fromJson(data[\'$key\'])';
 
-      final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
+      final entityAnnotation =
+          _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
-        classParser = '${typeElement.name}.${fromMethod.replaceAll('_', '')}(data[\'$key\'])';
+        final fromMethod =
+            ConstantReader(entityAnnotation).peek('from')?.stringValue ??
+                'fromJson';
+        classParser =
+            '${typeElement.name}.${fromMethod.replaceAll('_', '')}(data[\'$key\'])';
       }
 
       return '${nullable ? 'data.containsKey(\'$key\') ? $classParser : null' : '$classParser'}';
@@ -285,15 +347,21 @@ class ParseGenerator extends Generator {
   }
 
   String _getConverter(DartType type, String varName) {
-    if (type.isPrimitive || type.element?.name == 'dynamic') return '($varName) => $varName';
-    if (type.element?.name == 'DateTime') return '($varName) => Parse.date($varName)${type.isNullable ? '' : '!'}';
-    if (type.isEnum) return '($varName) => Parse.toEnum($varName, ${type.element?.name}.values)';
+    if (type.isPrimitive || type.element?.name == 'dynamic')
+      return '($varName) => $varName';
+    if (type.element?.name == 'DateTime')
+      return '($varName) => Parse.date($varName)${type.isNullable ? '' : '!'}';
+    if (type.isEnum)
+      return '($varName) => Parse.toEnum($varName, ${type.element?.name}.values)';
 
     final typeElement = type.element;
     if (typeElement is ClassElement) {
-      final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
+      final entityAnnotation =
+          _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
+        final fromMethod =
+            ConstantReader(entityAnnotation).peek('from')?.stringValue ??
+                'fromJson';
         return '($varName) => ${typeElement.name}${type.isNullable ? '?' : ''}.${fromMethod.replaceAll('_', '')}($varName)';
       }
     }
@@ -301,19 +369,27 @@ class ParseGenerator extends Generator {
     return '($varName) => ${type.element?.name}${type.isNullable ? '?' : ''}.fromJson($varName)';
   }
 
-  String _getEntryConverter(DartType keyType, DartType varType, String keyName, String varName, [bool useKey = false]) {
+  String _getEntryConverter(
+      DartType keyType, DartType varType, String keyName, String varName,
+      [bool useKey = false]) {
     final valueName = useKey ? keyName : varName;
     final valueType = useKey ? keyType : varType;
 
-    if (valueType.isPrimitive || valueType.element?.name == 'dynamic') return '($keyName, $varName) => ${_getParserPrimitive(valueType, valueName)}';
-    if (valueType.element?.name == 'DateTime') return '($keyName, $varName) => Parse.date($valueName)${valueType.isNullable ? '' : '!'}';
-    if (valueType.isEnum) return '($keyName, $varName) => Parse.toEnum($valueName, ${valueType.element?.name}.values)';
+    if (valueType.isPrimitive || valueType.element?.name == 'dynamic')
+      return '($keyName, $varName) => ${_getParserPrimitive(valueType, valueName)}';
+    if (valueType.element?.name == 'DateTime')
+      return '($keyName, $varName) => Parse.date($valueName)${valueType.isNullable ? '' : '!'}';
+    if (valueType.isEnum)
+      return '($keyName, $varName) => Parse.toEnum($valueName, ${valueType.element?.name}.values)';
 
     final typeElement = valueType.element;
     if (typeElement is ClassElement) {
-      final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
+      final entityAnnotation =
+          _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
+        final fromMethod =
+            ConstantReader(entityAnnotation).peek('from')?.stringValue ??
+                'fromJson';
         return '($keyName, $varName) => ${typeElement.name}${valueType.isNullable ? '?' : ''}.${fromMethod.replaceAll('_', '')}($valueName)';
       }
     }
@@ -327,7 +403,8 @@ class ParseGenerator extends Generator {
     final name = field.name;
 
     if (type.isPrimitive) return name;
-    if (type.element?.name == 'DateTime') return '$name${nullable ? '?' : ''}.toIso8601String()';
+    if (type.element?.name == 'DateTime')
+      return '$name${nullable ? '?' : ''}.toIso8601String()';
     if (type.isEnum) return '$name${nullable ? '?' : ''}.name';
 
     if (type is InterfaceType && type.isDartCoreList) {
@@ -349,9 +426,11 @@ class ParseGenerator extends Generator {
     if (typeElement is ClassElement) {
       String toMethod = 'Json';
 
-      final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
+      final entityAnnotation =
+          _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'toJson';
+        toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ??
+            'toJson';
       }
 
       return '$name${nullable ? '?' : ''}.$toMethod()';
@@ -367,9 +446,12 @@ class ParseGenerator extends Generator {
 
     final typeElement = type.element;
     if (typeElement is ClassElement) {
-      final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
+      final entityAnnotation =
+          _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'toJson';
+        final toMethod =
+            ConstantReader(entityAnnotation).peek('to')?.stringValue ??
+                'toJson';
         return '$varName${type.isNullable ? '?' : ''}.$toMethod()';
       }
     }
@@ -385,7 +467,8 @@ class ParseGenerator extends Generator {
 
   bool _shouldIgnore(ConstantReader? annotation, ParseIgnore ignore) {
     if (annotation == null) return false;
-    final ignoreValue = annotation.peek('ignore')?.objectValue.getField('index')?.toIntValue();
+    final ignoreValue =
+        annotation.peek('ignore')?.objectValue.getField('index')?.toIntValue();
     return ignoreValue == ignore.index || ignoreValue == ParseIgnore.both.index;
   }
 
@@ -407,7 +490,8 @@ class ParseGenerator extends Generator {
     }
   }
 
-  String _getDefaultValue(ConstantReader? annotation, DartType type, [bool qq = false]) {
+  String _getDefaultValue(ConstantReader? annotation, DartType type,
+      [bool qq = false]) {
     final reader = annotation?.peek('defaultValue');
 
     if (reader == null || reader.isNull) {
@@ -416,7 +500,9 @@ class ParseGenerator extends Generator {
 
     if (type.isEnum) {
       final revived = reader.revive();
-      return qq ? ' ?? ${revived.source.fragment}.${revived.accessor}' : ', defaultValue: ${revived.source.fragment}.${revived.accessor}';
+      return qq
+          ? ' ?? ${revived.source.fragment}.${revived.accessor}'
+          : ', defaultValue: ${revived.source.fragment}.${revived.accessor}';
     }
 
     final literal = reader.literalValue;
@@ -430,9 +516,15 @@ class ParseGenerator extends Generator {
 }
 
 extension on DartType {
-  bool get isNullable => nullabilitySuffix == NullabilitySuffix.question || this is DynamicType;
+  bool get isNullable =>
+      nullabilitySuffix == NullabilitySuffix.question || this is DynamicType;
 
-  bool get isPrimitive => isDartCoreString || isDartCoreInt || isDartCoreDouble || isDartCoreBool || isDartCoreObject;
+  bool get isPrimitive =>
+      isDartCoreString ||
+      isDartCoreInt ||
+      isDartCoreDouble ||
+      isDartCoreBool ||
+      isDartCoreObject;
 
   bool get isEnum => element is EnumElement;
 }

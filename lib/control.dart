@@ -1,5 +1,7 @@
 library flutter_control;
 
+import 'dart:ui';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
 
@@ -23,6 +25,8 @@ part 'src/component/input_control.dart';
 part 'src/hook/animation_controller.dart';
 
 part 'src/hook/control_hook.dart';
+
+part 'src/hook/device.dart';
 
 part 'src/hook/overlay_extension.dart';
 
