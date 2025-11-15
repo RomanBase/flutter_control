@@ -5,21 +5,27 @@ enum ParseIgnore {
   both,
 }
 
+enum ParseStyle {
+  snake_case,
+  camelCase,
+  PascalCase,
+}
+
 class ParseEntity {
   final String? from;
   final String? to;
-  final String keyType;
+  final ParseStyle style;
   final bool copyWith;
-  final bool copyWithData;
+  final bool copyFrom;
   final bool storeMixin;
   final ParseConverter? converter;
 
   const ParseEntity({
     this.from = '_fromJson',
     this.to = 'toJson',
-    this.keyType = 'snake_case',
+    this.style = ParseStyle.snake_case,
     this.copyWith = true,
-    this.copyWithData = true,
+    this.copyFrom = true,
     this.storeMixin = true,
     this.converter,
   });

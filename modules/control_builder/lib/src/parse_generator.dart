@@ -38,9 +38,9 @@ class ParseGenerator extends Generator {
     final className = element.name;
     final fromMethod = annotation.read('from').stringValue;
     final toMethod = annotation.read('to').stringValue;
-    final keyType = annotation.read('keyType').stringValue;
+    final style = annotation.read('style').stringValue;
     final copyWith = annotation.read('copyWith').boolValue;
-    final copyWithData = annotation.read('copyWithData').boolValue;
+    final copyFrom = annotation.read('copyFrom').boolValue;
     final bool storeModel = true;
 
     final allFields = _collectFields(element);
@@ -50,21 +50,15 @@ class ParseGenerator extends Generator {
 
     final buffer = StringBuffer();
 
-    buffer.writeln('$className $fromMethod(Map<String, dynamic> data) => $className(');
+    buffer.writeln('$className $fromMethod(Map<String, dynamic> data, [$style = null]) => $className(');
     for (final field in constructorFields) {
       if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
       final fieldAnnotation = _getParseValueAnnotation(field);
       if (_shouldIgnore(fieldAnnotation, ParseIgnore.from)) continue;
 
-      final fromConverter = fieldAnnotation?.peek('fromConverter')?.revive().source.fragment;
-      if (fromConverter != null && fromConverter.isNotEmpty) {
-        buffer.writeln('  ${field.name}: $fromConverter(data),');
-        continue;
-      }
-
       final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
-      final key = _getKey(field, keyType, fieldAnnotation);
+      final key = _getKey(field, style, fieldAnnotation);
 
       if (raw) {
         buffer.writeln('  ${field.name}: data[\'$key\'],');
@@ -87,12 +81,7 @@ class ParseGenerator extends Generator {
       final fieldAnnotation = _getParseValueAnnotation(field);
       if (_shouldIgnore(fieldAnnotation, ParseIgnore.to)) continue;
 
-      final toConverter = fieldAnnotation?.peek('toConverter')?.revive().source.fragment;
-      final key = _getKey(field, keyType, fieldAnnotation);
-      if (toConverter != null && toConverter.isNotEmpty) {
-        buffer.writeln('    \'$key\': $toConverter(${field.name}),');
-        continue;
-      }
+      final key = _getKey(field, style, fieldAnnotation);
 
       final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
       final serializer = raw ? field.name : _getSerializer(field);
@@ -122,24 +111,18 @@ class ParseGenerator extends Generator {
     }
 
     // COPY WITH DATA
-    if (copyWithData) {
-      buffer.writeln('  $className copyWithData(Map<String, dynamic> data) => $className(');
+    if (copyFrom) {
+      buffer.writeln('  $className copy${fromMethod.replaceAll('_', '').pascalCase}(Map<String, dynamic> data) => $className(');
       for (final field in constructorFields) {
         if (field.isStatic || field.isConst || (field.isFinal && field.hasInitializer) || field.isSynthetic) continue;
 
         final fieldAnnotation = _getParseValueAnnotation(field);
         if (_shouldIgnore(fieldAnnotation, ParseIgnore.from)) continue;
 
-        final contains = 'data.containsKey(\'${_getKey(field, keyType, fieldAnnotation)}\') ?';
-
-        final fromConverter = fieldAnnotation?.peek('fromConverter')?.revive().source.fragment;
-        if (fromConverter != null && fromConverter.isNotEmpty) {
-          buffer.writeln('    ${field.name}: $contains $fromConverter(data) : ${field.name},');
-          continue;
-        }
+        final contains = 'data.containsKey(\'${_getKey(field, style, fieldAnnotation)}\') ?';
 
         final raw = fieldAnnotation?.peek('raw')?.boolValue ?? false;
-        final key = _getKey(field, keyType, fieldAnnotation);
+        final key = _getKey(field, style, fieldAnnotation);
 
         if (raw || field.type is DynamicType) {
           buffer.writeln('    ${field.name}: data[\'$key\'] ?? ${field.name},');
@@ -163,8 +146,8 @@ class ParseGenerator extends Generator {
         @protected
         void onUpdate${className}(Map<String, dynamic> data);
       
-        void updateData${className}(Map<String, dynamic> data) {
-          ${className.camelCase} = ${className.camelCase}.copyWithData(data);
+        void update${className}${fromMethod.replaceAll('_', '').pascalCase}(Map<String, dynamic> data) {
+          ${className.camelCase} = ${className.camelCase}.copy${fromMethod.replaceAll('_', '').pascalCase}(data);
       
           if (this is ObservableNotifier) {
             (this as ObservableNotifier).notify();
@@ -188,7 +171,7 @@ class ParseGenerator extends Generator {
         if (_shouldIgnore(fieldAnnotation, ParseIgnore.to)) continue;
 
         final toConverter = fieldAnnotation?.peek('toConverter')?.revive().source.fragment;
-        final key = _getKey(field, keyType, fieldAnnotation);
+        final key = _getKey(field, style, fieldAnnotation);
         if (toConverter != null && toConverter.isNotEmpty) {
           buffer.writeln('    if(${field.name} != null) \'$key\': $toConverter(${field.name}),');
           continue;
@@ -291,8 +274,8 @@ class ParseGenerator extends Generator {
 
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'Json';
-        classParser = '${typeElement.name}.from$fromMethod(data[\'$key\'])';
+        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
+        classParser = '${typeElement.name}.${fromMethod.replaceAll('_', '')}(data[\'$key\'])';
       }
 
       return '${nullable ? 'data.containsKey(\'$key\') ? $classParser : null' : '$classParser'}';
@@ -310,8 +293,8 @@ class ParseGenerator extends Generator {
     if (typeElement is ClassElement) {
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'Json';
-        return '($varName) => ${typeElement.name}${type.isNullable ? '?' : ''}.from$fromMethod($varName)';
+        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
+        return '($varName) => ${typeElement.name}${type.isNullable ? '?' : ''}.${fromMethod.replaceAll('_', '')}($varName)';
       }
     }
 
@@ -330,8 +313,8 @@ class ParseGenerator extends Generator {
     if (typeElement is ClassElement) {
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'Json';
-        return '($keyName, $varName) => ${typeElement.name}${valueType.isNullable ? '?' : ''}.from$fromMethod($valueName)';
+        final fromMethod = ConstantReader(entityAnnotation).peek('from')?.stringValue ?? 'fromJson';
+        return '($keyName, $varName) => ${typeElement.name}${valueType.isNullable ? '?' : ''}.${fromMethod.replaceAll('_', '')}($valueName)';
       }
     }
 
@@ -368,10 +351,10 @@ class ParseGenerator extends Generator {
 
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'Json';
+        toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'toJson';
       }
 
-      return '$name${nullable ? '?' : ''}.to$toMethod()';
+      return '$name${nullable ? '?' : ''}.$toMethod()';
     }
 
     return '$name';
@@ -386,8 +369,8 @@ class ParseGenerator extends Generator {
     if (typeElement is ClassElement) {
       final entityAnnotation = _parseEntityChecker.firstAnnotationOf(typeElement);
       if (entityAnnotation != null) {
-        final toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'Json';
-        return '$varName${type.isNullable ? '?' : ''}.to$toMethod()';
+        final toMethod = ConstantReader(entityAnnotation).peek('to')?.stringValue ?? 'toJson';
+        return '$varName${type.isNullable ? '?' : ''}.$toMethod()';
       }
     }
 
@@ -406,13 +389,13 @@ class ParseGenerator extends Generator {
     return ignoreValue == ignore.index || ignoreValue == ParseIgnore.both.index;
   }
 
-  String _getKey(FieldElement field, String keyType, ConstantReader? annotation) {
+  String _getKey(FieldElement field, String style, ConstantReader? annotation) {
     final customKey = annotation?.peek('key')?.stringValue;
     if (customKey != null && customKey.isNotEmpty) {
       return customKey;
     }
 
-    switch (keyType) {
+    switch (style) {
       case 'snake_case':
         return field.name.snakeCase;
       case 'camelCase':

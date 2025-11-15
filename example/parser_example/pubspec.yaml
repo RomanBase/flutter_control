@@ -13,7 +13,8 @@ dependencies:
   flutter_control:
     path: ../../
 
-  control_annotations: any
+  control_annotations:
+    path: ../../modules/control_annotations
 
 dev_dependencies:
   flutter_test:

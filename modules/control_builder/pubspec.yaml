@@ -6,7 +6,8 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  control_annotations: ^0.1.0-beta
+  control_annotations:
+    path: ../control_annotations
 
   analyzer: ^6.4.1
   build: ^2.4.1

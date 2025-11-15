@@ -4,12 +4,12 @@ import 'package:parser_example/test_entity2.dart';
 
 void main() {
   TestEntity.fromJson({})
-    ..copyWithData({})
+    ..copyFromJson({})
     ..copyWith()
     ..toJson();
 
   TestEntity2.fromJson({})
-    ..copyWithData({})
+    ..copyFromFire({})
     ..copyWith()
     ..toFire();
 }

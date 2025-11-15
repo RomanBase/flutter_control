@@ -24,7 +24,7 @@ class AbsEntity {
   factory AbsEntity.fromJson(Map<String, dynamic> data) => _fromJson(data);
 }
 
-@ParseEntity(from: 'Fire', to: 'Fire')
+@ParseEntity(from: '_fromFire', to: 'toFire', style: ParseStyle.PascalCase)
 class TestEntity2 extends AbsEntity {
   @ParseValue(key: 'server_id', ignore: ParseIgnore.to)
   final String id;
