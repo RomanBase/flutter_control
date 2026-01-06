@@ -7,13 +7,16 @@ final modules = [
   'localino',
   'localino_live',
   'localino_builder',
+  'control_annotations',
+  'control_builder',
 ];
 
 final examples = [
-  'test_example',
+  'counter',
+  'parser_example',
 ];
 
-Shell rootShell() => _shell;
+Shell get shell => _shell;
 
 Shell moduleShell(String name) => _shell.cd('modules/$name');
 

@@ -1,4 +1,4 @@
-import 'package:control_annotations/annotations.dart';
+import '../lib/annotations.dart';
 
 @ParseEntity(converter: TestConverter())
 class TestEntity {

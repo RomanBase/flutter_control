@@ -1,8 +1,6 @@
 import 'package:flutter_control/control.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'mock_widget.dart';
-
 void main() {
   test('generic', () {
     final g1 = Generic();

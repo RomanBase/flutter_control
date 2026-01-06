@@ -7,7 +7,7 @@ import 'package:control_annotations/annotations.dart';
 import 'package:recase/recase.dart';
 
 class ParseGenerator extends Generator {
-  final _parseEntityChecker = TypeChecker.fromRuntime(ParseEntity);
+  final _parseEntityChecker = TypeChecker.typeNamed(ParseEntity);
 
   @override
   String? generate(LibraryReader library, BuildStep buildStep) {
@@ -36,7 +36,7 @@ class ParseGenerator extends Generator {
       );
     }
 
-    final className = element.name;
+    final className = element.name!;
     final fromMethod = annotation.read('from').stringValue;
     final toMethod = annotation.read('to').stringValue;
     final style = annotation.read('style').stringValue;
@@ -45,7 +45,8 @@ class ParseGenerator extends Generator {
     final bool storeModel = true;
 
     final allFields = _collectFields(element);
-    final constructorParams = element.unnamedConstructor?.parameters ?? [];
+    final constructorParams =
+        element.unnamedConstructor?.formalParameters ?? [];
     final constructorFieldNames = constructorParams.map((p) => p.name).toSet();
     final constructorFields =
         allFields.where((f) => constructorFieldNames.contains(f.name)).toList();
@@ -53,7 +54,7 @@ class ParseGenerator extends Generator {
     final buffer = StringBuffer();
 
     buffer.writeln(
-        '$className $fromMethod(Map<String, dynamic> data, [$style = null]) => $className(');
+        '$className $fromMethod(Map<String, dynamic> data) => $className(');
     for (final field in constructorFields) {
       if (field.isStatic ||
           field.isConst ||
@@ -400,7 +401,7 @@ class ParseGenerator extends Generator {
   String _getSerializer(FieldElement field, {bool notNull = false}) {
     final type = field.type;
     final nullable = notNull ? false : type.isNullable;
-    final name = field.name;
+    final name = field.name!;
 
     if (type.isPrimitive) return name;
     if (type.element?.name == 'DateTime')
@@ -460,7 +461,7 @@ class ParseGenerator extends Generator {
   }
 
   ConstantReader? _getParseValueAnnotation(FieldElement field) {
-    final checker = TypeChecker.fromRuntime(ParseValue);
+    final checker = TypeChecker.typeNamed(ParseValue);
     final annotation = checker.firstAnnotationOf(field);
     return annotation != null ? ConstantReader(annotation) : null;
   }
@@ -478,15 +479,17 @@ class ParseGenerator extends Generator {
       return customKey;
     }
 
+    final name = field.name!;
+
     switch (style) {
       case 'snake_case':
-        return field.name.snakeCase;
+        return name.snakeCase;
       case 'camelCase':
-        return field.name.camelCase;
+        return name.camelCase;
       case 'PascalCase':
-        return field.name.pascalCase;
+        return name.pascalCase;
       default:
-        return field.name;
+        return name;
     }
   }
 

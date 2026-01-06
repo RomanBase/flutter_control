@@ -20,10 +20,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  process_run: ^0.13.1
+  process_run: ^1.2.4
+  build_runner: ^2.10.4
 
-  flutter_lints: ^2.0.0
-  build_runner: ^2.4.9
   control_builder:
     path: ../../modules/control_builder
 
