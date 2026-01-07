@@ -113,6 +113,24 @@ class FutureBlock {
       await Future.wait(futuresToWait);
     }
   }
+
+  /// Sequential wait.
+  /// When [continuous] set and returns `false` then sequence is terminated.
+  /// Returns list of results.
+  static Future<List<T>> sequence<T>(Iterable<ValueGetter<Future<T>>> futures,
+      {bool Function(T value)? continuous}) async {
+    final results = <T>[];
+
+    for (final future in futures) {
+      results.add(await future());
+
+      if (continuous != null && !continuous(results.last)) {
+        break;
+      }
+    }
+
+    return results;
+  }
 }
 
 /// Helps to block part of code for minimum-given time.

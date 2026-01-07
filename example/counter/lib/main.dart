@@ -1,5 +1,6 @@
 import 'package:counter/src/loader_indicator.dart';
 import 'package:counter/src/static_theme.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_control/control.dart';
 import 'package:localino/localino.dart';
 import 'package:intl/intl.dart';

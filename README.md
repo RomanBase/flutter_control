@@ -16,7 +16,6 @@ import 'package:flutter_control/control.dart';
  - **Widget State Management** - UI / Logic separation. Controlling State and UI updates.
  - **Dependency Injection** - Factory, Singleton, Lazy initialization and Service Locator.
  - **Navigation and Routing** - Routes, transitions and passing arguments to other pages and Models.
- - **Localization** - Json based localization with basic formatting.
  - **Event System** - Global event/data stream to easily notify app events.
 
 ---
@@ -26,8 +25,6 @@ import 'package:flutter_control/control.dart';
 - `ControlFactory` Is responsible for creating and storing given `factories` and `entries`. Then locating this services and retrieving on demand.\
   Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.
 - `ControlModule` holds all resources for custom extension. Factory will load these `modules` and stores dependencies.
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/service_locator.png)
   
 ```dart
     Control.initControl(
@@ -68,7 +65,7 @@ import 'package:flutter_control/control.dart';
         Localino,
       ],
       app: (context, home) => MaterialApp(
-        title: setup.title('app_name', 'Example App'),
+        title: LocalinoProvider.instance.localizeOr('app_name', defaultValue: 'Example App')
         theme: context.themeConfig?.value,
         home: home,
         locale: LocalinoProvider.instance.currentLocale,
@@ -94,8 +91,6 @@ import 'package:flutter_control/control.dart';
 - `ControlModel` is base class to maintain Business Logic parts.\
   `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
   `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/states_events.png)
 
 - `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
   With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
@@ -133,11 +128,6 @@ import 'package:flutter_control/control.dart';
 
 ---
 
-Structure below shows how data and events flows between UI and Controls. `ControlWidget` can use multiple `ControlModel`s with multiple Models, Streams and Observables..
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/architecture_flow.png)
-
----
-
 **Localization**
 
 - Moved to [Localino](https://pub.dev/packages/localino) package.
@@ -148,8 +138,6 @@ Structure below shows how data and events flows between UI and Controls. `Contro
   Every subscription is bound to it's `key` and/or `Type` so notification to Listeners arrives only for expected data.\
   With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of App to the another, even to Widgets and their States.
   Also custom broadcaster can be created to separate events from default stream.
-
-![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/broadcaster.png)
 
 ```dart
   BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
@@ -201,17 +189,6 @@ Structure below shows how data and events flows between UI and Controls. `Contro
     } 
   }
 ```
----
-
-**Other classes**
-
-- `DisposeHandler` - mixin for any class, helps with object disposing.
-- `PrefsProvider` - mixin for any class, helps to store user preferences - based on [shared_preferences](https://pub.dartlang.org/packages/shared_preferences).
-- `Parse` Helps to parse json primitives and Iterables. Also helps to look up Lists and Maps for objects.
-- `FutureBlock` Retriggerable delay.
-- `DelayBlock` Delay to wrap a block of code to prevent 'super fast' completion and UI jiggles.
-
----
 
 Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/example) at Git repository for more complex solutions and how to use this library.
 More examples comes in future..

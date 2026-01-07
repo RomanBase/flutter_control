@@ -1,4 +1,4 @@
-part of '../../core.dart';
+part of flutter_control;
 
 class UnitId {
   const UnitId._();

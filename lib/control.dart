@@ -4,17 +4,18 @@ import 'dart:ui';
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_control/control.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' hide RefreshCallback;
+import 'dart:math' as math;
 
 export 'package:control_config/config.dart';
 export 'package:control_core/core.dart';
-export 'package:flutter/material.dart';
-export 'package:flutter/cupertino.dart' hide RefreshCallback;
 
 part 'src/app/app_state.dart';
 
 part 'src/app/control_root.dart';
 
-part 'src/app/theme_control.dart';
+part 'src/app/theme_config.dart';
 
 part 'src/component/case_widget.dart';
 
@@ -53,6 +54,10 @@ part 'src/app/scope.dart';
 part 'src/util/interval_curve.dart';
 
 part 'src/util/continuous_curve.dart';
+
+part 'src/util/object_tag.dart';
+
+part 'src/util/unit_id.dart';
 
 part 'src/component/cross_transition.dart';
 

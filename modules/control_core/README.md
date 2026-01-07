@@ -89,18 +89,20 @@ void main() {
 
   final counter = Control.get<LazyCounterModel>()!; // Now it's created and stored.
 
-  // When the counter is disposed, it will be removed from the factory.
+  // When the counter is disposed, it will be removed from the factory store.
   counter.dispose();
 }
 ```
 
 ## Dependency Injection vs. Property Injection
 
-`control_core` supports both dependency injection and property injection.
+`control_core` helps with both dependency injection and property injection.
 
 **Dependency Injection (Constructor Injection)**
 
 ```dart
+
+
 class A {}
 
 class B {
@@ -190,9 +192,11 @@ BroadcastProvider.broadcastEvent(key: 'on_button_pressed');
 
 `ActionControl` is a lightweight observable that is ideal for notifying listeners about simple value changes. It comes in three main variants:
 
-*   **`ActionControl.single(value)`**: Allows only one listener to be subscribed at a time.
-*   **`ActionControl.broadcast(value)`**: Allows multiple listeners to be subscribed.
-*   **`ActionControl.empty()`**: A nullable version that can be used with one or more listeners.
+*   **`ActionControl.single<T>(value)`**: Allows only one listener to be subscribed at a time.
+*   **`ActionControl.broadcast<T>(value)`**: Allows multiple listeners to be subscribed.
+*   **`ActionControl.empty<T?>()`**: A nullable version that can be used with one or more listeners.
+*   **`ActionControl.leaf<T>(model)`**: A notification bubbling. Listen to child model and propagates notification upwards.
+*   **`ActionControl.provider<T>(key)`**: Subscribes to global `BoardcastProvider`.
 
 ```dart
 // Create a broadcast ActionControl with an initial value of 0.
@@ -207,7 +211,7 @@ counter.value++;
 
 ## FieldControl
 
-`FieldControl` is a more robust observable that is built around `Stream` and `StreamController`. It is well-suited for more complex scenarios, such as handling user input, validating data, and working with asynchronous operations.
+`FieldControl` is a more robust observable that is built around `Stream` and `StreamController`. It is well-suited for more complex scenarios and working with asynchronous operations.
 
 `FieldControl` can be created with an initial value, or it can be subscribed to a `Stream` or `Future`. It also provides a `sink` for adding new values to the stream.
 
@@ -222,11 +226,10 @@ counter.subscribe((value) => print('Counter value: $value'));
 counter.value++;
 ```
 
-`FieldControl` also comes with pre-built variants for common use cases, such as `StringControl`, `NumberControl`, and `ListControl`. These variants provide additional functionality, such as validation, regex matching, and value clamping.
-
 ## ObservableComponent
 
 The `ObservableComponent<T>` mixin allows you to transform any class into an observable. This is useful for creating custom models and controls that can be observed by other parts of your application.
+The `ObservableNotifier` is simpler version without value.
 
 ```dart
 class CounterModel extends BaseModel with ObservableComponent<int> {
@@ -240,6 +243,14 @@ class CounterModel extends BaseModel with ObservableComponent<int> {
 }
 ```
 
+## ControlSubscription
+
+Subscription can filter inputs
+
+```dart
+final counter = ActionControl.broadcast<int>(0);
+final sub = counter.subscribe((value) => print(value)).filter((value) => value % 2 == 0).until((value) => value >= 10);
+```
 ---
 
 # Business Logic
@@ -328,14 +339,14 @@ block.delayed(Duration(milliseconds: 500), () {
 // Postpone the execution by another 500 milliseconds.
 block.postpone(duration: Duration(milliseconds: 500));
 
-// Cancel the delayed execution.
-block.cancel();
-
 // Triggers callback early.
 block.trigger();
 
-// Creates new FutureBlock from given parent to retrigger process
-final restore = Block.extend(parent: block, duration: Duration(seconds: 1));
+// Cancel the delayed execution.
+block.cancel();
+
+// Creates new FutureBlock from given parent to extend or retrigger process. Parent is canceled.
+final restore = FutureBlock.extend(parent: block, duration: Duration(seconds: 1));
 ```
 
 ## ControlArgs

@@ -4,6 +4,7 @@ part of '../../core.dart';
 /// [ActionControl.single] - Only one sub can be active.
 /// [ActionControl.broadcast] - Multiple subs can be used.
 /// [ActionControl.empty] - Null version - one or multiple subs can be used.
+/// [ActionControl.leaf] - Value bubbles notification to parent.
 /// [ActionControl.provider] - Subscription to global [BroadcastProvider].
 class ActionControl<T> extends ControlObservable<T> {
   ///Default private constructor.
@@ -11,21 +12,17 @@ class ActionControl<T> extends ControlObservable<T> {
 
   /// Strict implementation of [ObservableValue] based on [ControlObservable].
   /// Only one sub can be active. Last given [subscribe] is held.
-  /// Check [broadcast] or [empty] to support more listeners.
   static ActionControl<T> single<T>(T value) => _ActionControlSingle<T>(value);
 
   /// Strict implementation of [ObservableValue] based on [ControlObservable].
   /// Multiple subs can be used.
-  /// Check [single] or [empty] for different approaches.
   static ActionControl<T> broadcast<T>(T value) => ActionControl<T>._(value);
 
   /// Strict implementation of [ObservableValue] based on [ControlObservable].
-  /// Check [ActionControl.single], [ActionControl.broadcast].
   static ActionControl<T?> empty<T>({T? value}) => ActionControl<T?>._(value);
 
   /// Strict implementation of [ObservableValue] based on [ControlObservable].
   /// Leaf expects another [ObservableValue] as [value]. Change Notification then bubbles upwards - from [value] to this.
-  /// Check [ActionControl.single], [ActionControl.broadcast].
   static ActionControl<T?> leaf<T extends ObservableBase>({T? value}) =>
       _ActionControlLeaf<T>(value);
 

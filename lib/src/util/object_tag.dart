@@ -1,11 +1,7 @@
-part of '../../core.dart';
+part of flutter_control;
 
-class ObjectTag {
-  final Object? value;
-
-  ValueKey get key => ValueKey(value);
-
-  const ObjectTag._(this.value);
+class ObjectTag extends ValueKey {
+  const ObjectTag._(super.value);
 
   factory ObjectTag.of(Object? object) =>
       object is ObjectTag ? object : ObjectTag._(object ?? UnitId.nextId());

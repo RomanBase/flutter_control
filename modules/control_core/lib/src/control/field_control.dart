@@ -360,28 +360,31 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 /// Extended version of [FieldControl] specified to [List].
 /// TODO [4.2.0]: ready to refactor
 class ListControl<T> extends FieldControl<List<T>> {
-  /// [value] can't be `null`.
-  List<T> get _list => value!;
+  @override
+  List<T> get value => super.value!;
+
+  @override
+  set value(List<T>? value) => super.setValue(value ?? []);
 
   /// Returns number of items in list.
-  int get length => _list.length;
+  int get length => value.length;
 
   /// Return true if there is no item.
   @override
-  bool get isEmpty => _list.isEmpty;
+  bool get isEmpty => value.isEmpty;
 
   /// Return true if there is one or more items.
   @override
-  bool get isNotEmpty => _list.isNotEmpty;
+  bool get isNotEmpty => value.isNotEmpty;
 
   /// Returns the object at given index.
-  T? operator [](int index) => containsIndex(index) ? _list[index] : null;
+  T? operator [](int index) => containsIndex(index) ? value[index] : null;
 
   /// [List.last]
-  T? get last => isNotEmpty ? _list.last : null;
+  T? get last => isNotEmpty ? value.last : null;
 
   /// [List.first]
-  T? get first => isNotEmpty ? _list.first : null;
+  T? get first => isNotEmpty ? value.first : null;
 
   /// [FieldControl] of [List].
   ListControl([Iterable<T>? items]) {
@@ -429,10 +432,10 @@ class ListControl<T> extends FieldControl<List<T>> {
   @override
   void setValue(Iterable<T>? value,
       {bool notify = true, bool forceNotify = false}) {
-    _list.clear();
+    this.value.clear();
 
     if (value != null) {
-      _list.addAll(value);
+      this.value.addAll(value);
     }
 
     if (notify || forceNotify) {
@@ -442,34 +445,34 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Adds item to List and notifies stream.
   void add(T item) {
-    _list.add(item);
+    value.add(item);
 
     notify();
   }
 
   /// Adds all items to List and notifies stream.
   void addAll(Iterable<T> items) {
-    _list.addAll(items);
+    value.addAll(items);
 
     notify();
   }
 
   /// Adds item to List at given index and notifies stream.
   void insert(int index, T item) {
-    _list.insert(index, item);
+    value.insert(index, item);
 
     notify();
   }
 
   /// Replaces first item in List for given [test]
   bool replace(T item, Predicate<T> test, [bool notify = true]) {
-    final index = _list.indexWhere(test);
+    final index = value.indexWhere(test);
 
     final replace = index >= 0;
 
     if (replace) {
-      _list.removeAt(index);
-      _list.insert(index, item);
+      value.removeAt(index);
+      value.insert(index, item);
 
       if (notify) {
         this.notify();
@@ -490,7 +493,7 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Removes item from List and notifies stream.
   bool remove(T? item) {
-    final removed = _list.remove(item);
+    final removed = value.remove(item);
 
     if (removed) {
       notify();
@@ -501,7 +504,7 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// Removes item from List at given index and notifies stream.
   T removeAt(int index) {
-    final T item = _list.removeAt(index);
+    final T item = value.removeAt(index);
 
     notify();
 
@@ -510,20 +513,20 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// [Iterable.removeWhere].
   void removeWhere(Predicate<T> test) {
-    _list.removeWhere(test);
+    value.removeWhere(test);
     notify();
   }
 
   /// Swaps position of items at given indexes
   void swap(int indexA, int indexB) {
-    T a = _list[indexA];
-    T b = _list[indexB];
+    T a = value[indexA];
+    T b = value[indexB];
 
-    _list.removeAt(indexA);
-    _list.insert(indexA, b);
+    value.removeAt(indexA);
+    value.insert(indexA, b);
 
-    _list.removeAt(indexB);
-    _list.insert(indexB, a);
+    value.removeAt(indexB);
+    value.insert(indexB, a);
 
     notify();
   }
@@ -531,7 +534,7 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// [Iterable.clear].
   void clear({bool disposeItems = false}) {
     if (disposeItems) {
-      for (final item in _list) {
+      for (final item in value) {
         if (item is Disposable) {
           item.dispose();
         }
@@ -543,64 +546,70 @@ class ListControl<T> extends FieldControl<List<T>> {
 
   /// [Iterable.sort].
   void sort([int Function(T a, T b)? compare]) {
-    _list.sort(compare);
+    value.sort(compare);
+    notify();
+  }
+
+  /// Reorders list
+  void reorder(int oldIndex, int newIndex) {
+    value.reorder(oldIndex, newIndex);
     notify();
   }
 
   /// [Iterable.shuffle].
   void shuffle([math.Random? random]) {
-    _list.shuffle(random);
+    value.shuffle(random);
     notify();
   }
 
   /// [Iterable.map].
-  Iterable<E> map<E>(E Function(T item) f) => _list.map(f);
+  Iterable<E> map<E>(E Function(T item) f) => value.map(f);
 
   /// [Iterable.contains].
-  bool contains(Object object) => _list.contains(object);
+  bool contains(Object object) => value.contains(object);
 
   /// [Iterable.forEach].
-  void forEach(void Function(T item) f) => _list.forEach(f);
+  void forEach(void Function(T item) f) => value.forEach(f);
 
   /// [Iterable.reduce].
-  T reduce(T Function(T value, T element) combine) => _list.reduce(combine);
+  T reduce(T Function(T value, T element) combine) => value.reduce(combine);
 
   /// [Iterable.fold].
   E fold<E>(E initialValue, E Function(E previousValue, T element) combine) =>
-      _list.fold(initialValue, combine);
+      value.fold(initialValue, combine);
 
   /// [Iterable.every].
-  bool every(bool Function(T element) test) => _list.every(test);
+  bool every(bool Function(T element) test) => value.every(test);
 
   /// [Iterable.join].
-  String join([String separator = ""]) => _list.join(separator);
+  String join([String separator = ""]) => value.join(separator);
 
   /// [Iterable.any].
-  bool any(bool Function(T element) test) => _list.any(test);
+  bool any(bool Function(T element) test) => value.any(test);
 
   /// [Iterable.toList].
-  List<T> toList({bool growable = true}) => _list.toList(growable: growable);
+  List<T> toList({bool growable = true}) => value.toList(growable: growable);
 
   /// [Iterable.toSet].
-  Set<T> toSet() => _list.toSet();
+  Set<T> toSet() => value.toSet();
 
   /// [Iterable.take].
-  Iterable<T> take(int count) => _list.take(count);
+  Iterable<T> take(int count) => value.take(count);
 
   /// [Iterable.takeWhile].
-  Iterable<T> takeWhile(bool Function(T value) test) => _list.takeWhile(test);
+  Iterable<T> takeWhile(bool Function(T value) test) => value.takeWhile(test);
 
   /// [Iterable.skip].
-  Iterable<T> skip(int count) => _list.skip(count);
+  Iterable<T> skip(int count) => value.skip(count);
 
   /// [Iterable.skipWhile].
-  Iterable<T> skipWhile(bool Function(T value) test) => _list.skipWhile(test);
+  Iterable<T> skipWhile(bool Function(T value) test) => value.skipWhile(test);
 
   /// [Iterable.firstWhere].
   /// If no element satisfies [test], then return null.
   T? firstWhere(Predicate<T> test) {
     try {
-      return _list.firstWhere(test);
+      return value.firstWhere(test);
     } on StateError {
       return null;
     }
@@ -610,43 +619,43 @@ class ListControl<T> extends FieldControl<List<T>> {
   /// If no element satisfies [test], then return null.
   T? lastWhere(Predicate<T> test) {
     try {
-      return _list.lastWhere(test);
+      return value.lastWhere(test);
     } on StateError {
       return null;
     }
   }
 
   /// [Iterable.where].
-  Iterable<T> where(Predicate<T> test) => _list.where(test);
+  Iterable<T> where(Predicate<T> test) => value.where(test);
 
   /// [Iterable.indexWhere]
   int indexWhere(Predicate<T> test, [int start = 0]) =>
-      _list.indexWhere(test, start);
+      value.indexWhere(test, start);
 
   /// [List.lastIndexWhere].
   int lastIndexWhere(bool Function(T element) test, [int? start]) =>
-      _list.lastIndexWhere(test, start);
+      value.lastIndexWhere(test, start);
 
   /// [Iterable.indexOf]
-  int indexOf(T object) => _list.indexOf(object);
+  int indexOf(T object) => value.indexOf(object);
 
   /// [List.lastIndexOf].
-  int lastIndexOf(T element, [int? start]) => _list.lastIndexOf(element, start);
+  int lastIndexOf(T element, [int? start]) => value.lastIndexOf(element, start);
 
   /// [List.sublist].
-  List<T> sublist(int start, [int? end]) => _list.sublist(start, end);
+  List<T> sublist(int start, [int? end]) => value.sublist(start, end);
 
   /// [List.getRange].
-  Iterable<T> getRange(int start, int end) => _list.getRange(start, end);
+  Iterable<T> getRange(int start, int end) => value.getRange(start, end);
 
   /// [List.asMap].
-  Map<int, T> asMap() => _list.asMap();
+  Map<int, T> asMap() => value.asMap();
 
   @override
   void dispose() {
     super.dispose();
 
-    _list.clear();
+    value.clear();
   }
 }
 
@@ -665,7 +674,7 @@ enum LoadingStatus {
 
 /// Extended [FieldControl] specified to control [LoadingStatus].
 /// TODO [4.2.0]: ready to refactor
-class LoadingControl extends FieldControl<LoadingStatus> {
+class LoadingControl extends ControlObservable<LoadingStatus> {
   /// Returns true if [value] is [LoadingStatus.done].
   bool get isDone => value == LoadingStatus.done;
 
@@ -683,7 +692,7 @@ class LoadingControl extends FieldControl<LoadingStatus> {
   dynamic message;
 
   /// [FieldControl] of [LoadingStatus].
-  LoadingControl([LoadingStatus super.status = LoadingStatus.initial]);
+  LoadingControl([super.status = LoadingStatus.initial]);
 
   /// Changes status and sets inner message.
   void setStatus(LoadingStatus status, {dynamic msg}) {
@@ -706,128 +715,4 @@ class LoadingControl extends FieldControl<LoadingStatus> {
 
   /// Changes status to [LoadingStatus.unknown] and sets inner message.
   void unknown({dynamic msg}) => setStatus(LoadingStatus.unknown, msg: msg);
-}
-
-//########################################################################################
-//########################################################################################
-//########################################################################################
-
-@Deprecated(
-    'New general extensions comes with ObservableModel. Will be removed in 4.2.0')
-class StringControl extends FieldControl<String?> {
-  /// Returns 'true' if value is 'null' or empty String.
-  @override
-  bool get isEmpty => value?.isEmpty ?? true;
-
-  /// Returns 'true' if value is not 'null' and not empty.
-  @override
-  bool get isNotEmpty => value?.isNotEmpty ?? false;
-
-  /// Current regex for validation.
-  /// [setWithRegex] will be called if regex is not null.
-  String? regex;
-
-  /// Checks if [regex] is filled and validation is required.
-  bool get requestValidation => regex != null;
-
-  /// [FieldControl] of [String].
-  StringControl([super.value]);
-
-  /// [FieldControl] of [String] with [regex] validation.
-  StringControl.withRegex({String? value, this.regex}) {
-    setWithRegex(value);
-  }
-
-  @override
-  void setValue(String? value, {bool notify = true, bool forceNotify = false}) {
-    if (requestValidation) {
-      setWithRegex(value, notify: notify, forceNotify: forceNotify);
-    } else {
-      super.setValue(value, notify: notify, forceNotify: forceNotify);
-    }
-  }
-
-  /// Sets given [value] only if [regex] matches.
-  ///
-  /// [regex] - override of [StringControl.regex] -> one of them can't be 'null'.
-  ///
-  /// Regex is typically used with [StringControl.withRegex] constructor and then setting value via [setValue] or [value] setter.
-  void setWithRegex(String? value,
-      {String? regex, bool notify = true, bool forceNotify = false}) {
-    assert(regex != null || this.regex != null);
-
-    regex ??= this.regex;
-
-    if (RegExp(regex!).hasMatch(value ?? '')) {
-      super.setValue(value, notify: notify, forceNotify: forceNotify);
-    } else {
-      printDebug('value [$value] has not match regex [$regex]');
-    }
-  }
-}
-
-@Deprecated(
-    'New general extensions comes with ObservableModel. Will be removed in 4.2.0')
-class NumberControl<T extends num> extends FieldControl<T> {
-  /// Inclusive lower bound value;
-  late T min;
-
-  /// Inclusive upper bound value;
-  late T max;
-
-  /// Checks if clamping is required
-  bool clamp = true;
-
-  /// Checks if clamping is possible
-  bool get clampable => min != max;
-
-  /// Checks if clamping is required and [value] is equal to [min].
-  bool get atMin => clamp && value == min;
-
-  /// Checks if clamping is required and [value] is equal to [max].
-  bool get atMax => clamp && value == max;
-
-  /// [FieldControl] of [num].
-  NumberControl([super.value]) {
-    setRange(null, null);
-  }
-
-  /// [FieldControl] of [num] with [min] - [max] clamping.
-  /// [min] - default 0
-  /// [max] - default 1
-  NumberControl.inRange({T? value, T? min, T? max, this.clamp = true}) {
-    setRange(min, max ?? _castValue(1));
-    setValue(value);
-  }
-
-  void setRange(T? min, T? max) {
-    this.min = min ?? _castValue(0);
-    this.max = max ?? _castValue(0);
-  }
-
-  T _castValue(num value) {
-    if (T is int) {
-      return value.toInt() as T;
-    } else {
-      return value.toDouble() as T;
-    }
-  }
-
-  @override
-  void setValue(T? value, {bool notify = true, bool forceNotify = false}) {
-    if (clampable) {
-      if (clamp) {
-        super.setValue(_castValue((value ?? min).clamp(min, max)),
-            notify: notify, forceNotify: forceNotify);
-      } else {
-        if (value! >= min && value <= max) {
-          super.setValue(value, notify: notify, forceNotify: forceNotify);
-        } else {
-          printDebug('value [$value] is not within range [$min - $max]');
-        }
-      }
-    } else {
-      super.setValue(value, notify: notify, forceNotify: forceNotify);
-    }
-  }
 }

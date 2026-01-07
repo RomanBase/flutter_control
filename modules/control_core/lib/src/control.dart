@@ -49,6 +49,7 @@ class Control {
     Map? entries,
     Map<Type, InitFactory>? factories,
     List<ControlModule> modules = const [],
+    Future Function(List<ControlModule> modules)? initModules,
     Future Function()? initAsync,
   }) {
     if (isInitialized) {
@@ -81,8 +82,11 @@ class Control {
         await FutureBlock.wait([
           for (ControlModule module in modules)
             if (!module.preInit) module.init(),
-          initAsync?.call(),
         ]);
+
+        await initModules?.call(modules);
+
+        await initAsync?.call();
       },
     );
 

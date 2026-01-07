@@ -92,7 +92,7 @@ class ControlArgs implements Disposable {
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
   /// Returns object of given [key] or initialize [defaultValue] and stores that value to [data] store.
-  T? getWithFactory<T>({dynamic key, T Function()? defaultValue}) {
+  T? use<T>({dynamic key, T Function()? defaultValue}) {
     final item = Parse.getArgFromMap<T>(_args, key: key);
 
     if (item == null && defaultValue != null) {

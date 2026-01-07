@@ -1,20 +1,22 @@
 part of '../../core.dart';
 
-typedef ParamDecoratorFormat = String Function(String input);
+typedef ParseDecoratorFormat = String Function(String input);
 
 /// Base param decorators for [Parse.format].
-class ParamDecorator {
+class ParseDecorator {
+  const ParseDecorator._();
+
   /// Empty decorator. 'input' => 'input'
-  static ParamDecoratorFormat get none => (input) => input;
+  static ParseDecoratorFormat get none => (input) => input;
 
   /// Curl braces decorator. 'input' => '{input}'
-  static ParamDecoratorFormat get curl => (input) => '{$input}';
+  static ParseDecoratorFormat get curl => (input) => '{$input}';
 
   /// Dollar sign decorator. 'input' => '$input'
-  static ParamDecoratorFormat get dollar => (input) => '\$$input';
+  static ParseDecoratorFormat get dollar => (input) => '\$$input';
 
   /// Percent sign decorator. 'input' => '%input'
-  static ParamDecoratorFormat get percent => (input) => '%$input';
+  static ParseDecoratorFormat get percent => (input) => '%$input';
 }
 
 /// Helps to parse basic nullable objects.
@@ -128,9 +130,9 @@ class Parse {
 
   /// Replaces [params] in [input] string
   /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
-  /// Set custom [ParamDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
+  /// Set custom [ParseDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
   ///
-  /// Default decorator is set to [ParamDecorator.curl]
+  /// Default decorator is set to [ParseDecorator.curl]
   ///
   /// 'Weather in {city} is {temp}°{symbol}'
   /// Then [params] are:
@@ -142,8 +144,8 @@ class Parse {
   ///
   /// Returns formatted string.
   static String format(String input, Map<String, String> params,
-      [ParamDecoratorFormat? decorator]) {
-    decorator ??= ParamDecorator.curl;
+      [ParseDecoratorFormat? decorator]) {
+    decorator ??= ParseDecorator.curl;
 
     params.forEach(
         (key, value) => input = input.replaceFirst(decorator!(key), value));
@@ -304,8 +306,8 @@ class Parse {
     return null;
   }
 
-  /// Safety converts value to give [Type]
-  /// If conversion fails, then is [defaultValue] returned.
+  /// Safety converts value to given [Type]
+  /// If conversion fails, then [defaultValue] is returned.
   static T? convert<T>(dynamic value,
       {required ValueConverter<T> converter, T? defaultValue}) {
     try {
@@ -318,7 +320,7 @@ class Parse {
   }
 
   /// Safety converts value to give [Type]
-  /// If conversion fails, then is [defaultValue] returned.
+  /// If conversion fails, then [defaultValue] is returned.
   static T? convertEntry<T>(dynamic key, dynamic value,
       {required EntryConverter<T> converter, T? defaultValue}) {
     try {
@@ -456,85 +458,12 @@ class Parse {
   ///
   /// List, Map, Iterable.
   ///
-  /// Use [converter] or [entryConverter] to convert values.
-  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<dynamic, T> toMap<T>(dynamic value,
-      {ValueConverter<T>? converter,
-      EntryConverter<T>? entryConverter,
-      bool hardCast = false}) {
-    final items = <dynamic, T>{};
-
-    if (value == null) {
-      return items;
-    }
-
-    if (value is Iterable) {
-      value = value.toList().asMap();
-    }
-
-    if (value is Map) {
-      if (converter != null) {
-        value.forEach((key, item) {
-          final mapItem = convert(item, converter: converter);
-
-          if (mapItem != null) {
-            items[key] = mapItem;
-          }
-        });
-      } else if (entryConverter != null) {
-        value.forEach((key, item) {
-          final mapItem = convertEntry(key, item, converter: entryConverter);
-
-          if (mapItem != null) {
-            items[key] = mapItem;
-          }
-        });
-      } else {
-        if (hardCast) {
-          try {
-            return value.cast<dynamic, T>();
-          } catch (err) {
-            printDebug(err.toString());
-          }
-        }
-
-        value.forEach((key, item) {
-          if (item is T) {
-            items[key] = item;
-          }
-        });
-      }
-    } else {
-      if (converter != null) {
-        final listItem = convert(value, converter: converter);
-
-        if (listItem != null) {
-          items[0] = listItem;
-        }
-      } else if (entryConverter != null) {
-        final listItem = convertEntry(0, value, converter: entryConverter);
-
-        if (listItem != null) {
-          items[0] = listItem;
-        }
-      } else {
-        if (value is T) {
-          items[0] = value;
-        }
-      }
-    }
-
-    return items;
-  }
-
-  /// Tries to parse value into Map.
-  ///
-  /// List, Map, Iterable.
-  ///
   /// Use [converter] or [entryConverter] to convert value to [T]. [keyConverter] converts key to [K].
   /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
-  static Map<K, T> toKeyMap<K, T>(dynamic value, EntryConverter<K> keyConverter,
-      {ValueConverter<T>? converter, EntryConverter<T>? entryConverter}) {
+  static Map<K, T> toMap<K, T>(dynamic value,
+      {EntryConverter<K>? key,
+      ValueConverter<T>? converter,
+      EntryConverter<T>? entryConverter}) {
     final items = <K, T>{};
 
     if (value == null) {
@@ -545,13 +474,15 @@ class Parse {
       value = value.toList().asMap();
     }
 
+    key ??= (key, _) => key as K;
+
     if (value is Map) {
       if (converter != null) {
         value.forEach((key, item) {
           final mapItem = convert(item, converter: converter);
 
           if (mapItem != null) {
-            items[keyConverter(key, item)] = mapItem;
+            items[key!(key, item)] = mapItem;
           }
         });
       } else if (entryConverter != null) {
@@ -559,13 +490,13 @@ class Parse {
           final mapItem = convertEntry(key, item, converter: entryConverter);
 
           if (mapItem != null) {
-            items[keyConverter(key, item)] = mapItem;
+            items[key!(key, item)] = mapItem;
           }
         });
       } else {
         value.forEach((key, item) {
           if (item is T) {
-            items[keyConverter(key, item)] = item;
+            items[key!(key, item)] = item;
           }
         });
       }
@@ -574,28 +505,23 @@ class Parse {
         final listItem = convert(value, converter: converter);
 
         if (listItem != null) {
-          items[keyConverter(0, listItem)] = listItem;
+          items[key(null, listItem)] = listItem;
         }
       } else if (entryConverter != null) {
         final listItem = convertEntry(0, value, converter: entryConverter);
 
         if (listItem != null) {
-          items[keyConverter(0, listItem)] = listItem;
+          items[key(null, listItem)] = listItem;
         }
       } else {
         if (value is T) {
-          items[keyConverter(0, value)] = value;
+          items[key(null, value)] = value;
         }
       }
     }
 
     return items;
   }
-
-  /// Converts [value] and additional [data] into Map of arguments.
-  /// Check [ControlArgs] for more info.
-  static Map toArgs(dynamic value, {dynamic data}) =>
-      (ControlArgs.of(value)..set(data)).data;
 
   /// Tries to return item of given [key] or [Type].
   /// If none found, then [defaultValue] is returned.
@@ -621,8 +547,12 @@ class Parse {
     }
 
     if (value is String) {
-      return getArgFromString<T>(value,
-          key: key, predicate: predicate, defaultValue: defaultValue);
+      try {
+        return getArg<T>(jsonDecode(value),
+            key: key, predicate: predicate, defaultValue: defaultValue);
+      } catch (err) {
+        printDebug(err);
+      }
     }
 
     return defaultValue;
@@ -701,29 +631,6 @@ class Parse {
     return defaultValue;
   }
 
-  /// Converts input [value] to json, then tries to return object of given [key], [Type] or [predicate].
-  /// If none found, then [defaultValue] is returned.
-  static T? getArgFromString<T>(String? value,
-      {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
-    if (value == null || value.isEmpty) {
-      return defaultValue;
-    }
-
-    final json = jsonDecode(value);
-
-    if (json is Map) {
-      return getArgFromMap<T>(json,
-          key: key, predicate: predicate, defaultValue: defaultValue);
-    }
-
-    if (json is Iterable) {
-      return getArgFromList<T>(json,
-          predicate: predicate, defaultValue: defaultValue);
-    }
-
-    return defaultValue;
-  }
-
   /// Creates copy of given [map] and filters out [null] values. Also empty [Iterable] or [String] is not included in returned [Map].
   static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)
     ..removeWhere((key, value) =>
@@ -733,30 +640,94 @@ class Parse {
         (value is String && value.isEmpty));
 }
 
-extension ObjectExtension on Object {
-  ObjectTag asTag() => ObjectTag.of(hashCode);
-
-  ControlArgs asArg() => ControlArgs.of(this);
-}
-
 extension MapExtension on Map {
   /// [Parse.getArgFromMap].
   T? getArg<T>(
-          {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) =>
+          {dynamic key,
+          bool Function(dynamic)? predicate,
+          T? defaultValue,
+          T? Function()? builder}) =>
       Parse.getArgFromMap<T>(this,
-          key: key, predicate: predicate, defaultValue: defaultValue);
+          key: key, predicate: predicate, defaultValue: defaultValue) ??
+      builder?.call();
 
   /// [Parse.fill].
-  Map<K, V?> fill<K, V>() => Parse.fill(this as Map<K, V?>);
+  Map<K, V> fill<K, V>() => Parse.fill(this) as Map<K, V>;
+}
+
+extension ListExt<E> on List<E> {
+  void swapByIndex(int a, int b) {
+    if (a > b) {
+      final c = a;
+      a = b;
+      b = c;
+    }
+
+    final itemA = this[a];
+    final itemB = this[b];
+
+    removeAt(b);
+    removeAt(a);
+
+    insert(a, itemB);
+    insert(b, itemA);
+  }
+
+  void reorder(int oldIndex, int newIndex) {
+    final element = removeAt(oldIndex);
+
+    if (oldIndex > newIndex) {
+      insert(newIndex, element);
+    } else {
+      insert(newIndex - 1, element);
+    }
+  }
+
+  List<T> iterate<T>(T Function(int index, E e) toElement,
+          [bool growable = false]) =>
+      List.generate(length, (index) => toElement(index, this[index]),
+          growable: growable);
+
+  List<T> iterateReversed<T>(T Function(int index, int rIndex, E e) toElement,
+          [bool growable = false]) =>
+      List.generate(length, (index) {
+        final rIndex = length - index - 1;
+        return toElement(index, rIndex, this[rIndex]);
+      }, growable: growable);
+
+  List<List<E>?> foldBy(int count) {
+    final list = <List<E>?>[];
+
+    if (length <= count) {
+      list.add(this);
+    } else {
+      List<E>? current;
+
+      for (int i = 0; i < length; i++) {
+        if (i % count == 0) {
+          current = <E>[];
+          list.add(current);
+        }
+
+        current!.add(this[i]);
+      }
+    }
+
+    return list;
+  }
 }
 
 extension IterableExtension on Iterable {
   Iterable<T?> nullable<T>() => cast<T?>();
 
   /// [Parse.getArgFromList].
-  T? getArg<T>({bool Function(dynamic)? predicate, T? defaultValue}) =>
+  T? getArg<T>(
+          {bool Function(dynamic)? predicate,
+          T? defaultValue,
+          T? Function()? builder}) =>
       Parse.getArgFromList<T>(this,
-          predicate: predicate, defaultValue: defaultValue);
+          predicate: predicate, defaultValue: defaultValue) ??
+      builder?.call();
 
   List<T> insertEvery<T>(T Function(T item) builder, {T? header, T? footer}) {
     final list = expand((item) sync* {
@@ -789,6 +760,4 @@ extension IterableExtension on Iterable {
 
     return null;
   }
-
-  Map toKeyMap() => Parse.toKeyMap(this, (key, value) => value.runtimeType);
 }

@@ -4,10 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
 import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
-
-export 'package:flutter/foundation.dart';
 
 part 'src/broadcast.dart';
 
@@ -27,8 +24,6 @@ part 'src/control/stack_control.dart';
 
 part 'src/module.dart';
 
-part 'src/util/object_tag.dart';
-
 part 'src/observable/control_observable.dart';
 
 part 'src/observable/control_subscription.dart';
@@ -45,13 +40,11 @@ part 'src/util/lazy_initializer.dart';
 
 part 'src/util/parser.dart';
 
-part 'src/util/unit_id.dart';
-
 typedef InitFactory<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);
 
-typedef ValueConverter<T> = T Function(dynamic value);
-typedef EntryConverter<T> = T Function(Object key, dynamic value);
+typedef ValueConverter<T> = T Function(Object? value);
+typedef EntryConverter<T> = T Function(Object? key, Object? value);
 
 typedef Predicate<T> = bool Function(T value);
 

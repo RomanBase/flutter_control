@@ -1,17 +1,16 @@
 part of '../../core.dart';
 
-/// Observable stack based on [ObservableModel].
-class StackControl<T> extends ObservableModel<T?> {
+/// Observable Stack based on [ObservableValue].
+class StackControl<T> extends ObservableValue<T?>
+    implements ObservableNotifier {
   /// Current stack of values.
   final List<T> _stack = <T>[];
 
   /// Holds current value and serves as concrete observable.
   final _parent = ControlObservable<T?>(null);
 
-  @override
   bool get isActive => _parent.isActive;
 
-  @override
   bool get isValid => _parent.isValid;
 
   /// Current/Top value of stack.
@@ -58,7 +57,7 @@ class StackControl<T> extends ObservableModel<T?> {
   List<T> get values => List.of(_stack, growable: false);
 
   /// Returns value in stack by index.
-  operator [](int index) => _stack[index];
+  T operator [](int index) => _stack[index];
 
   /// Observable list.
   /// [push] new value to the top of the stack. This becomes 'active' value.
@@ -107,6 +106,13 @@ class StackControl<T> extends ObservableModel<T?> {
   void swap(T value, int index) {
     _stack.removeAt(index);
     _stack.insert(index, value);
+
+    _notifyParent();
+  }
+
+  /// Reorders [value] to given [index].
+  void reorder(T value, int index) {
+    _stack.reorder(_stack.indexOf(value), index);
 
     _notifyParent();
   }
@@ -176,7 +182,7 @@ class StackControl<T> extends ObservableModel<T?> {
 
   /// Pops if [canPop] and returns `false`.
   /// Returns `true` if there is nothing to pop.
-  bool navigateBack() {
+  bool maybePop() {
     if (canPop) {
       pop();
 
@@ -192,24 +198,12 @@ class StackControl<T> extends ObservableModel<T?> {
   /// Enables root value. So stack can pop only to first value.
   void enableRoot() => _root = false;
 
-  /// Clears all values in stack. Even if [isRooted] is set to true.
-  void clear() {
-    _stack.clear();
-
-    _notifyParent();
-  }
-
   /// Checks if given [item] is in stack.
   bool contains(T item) => _stack.contains(item);
 
   /// Sets [value] to parent control.
   void _notifyParent([bool force = true]) =>
       _parent.setValue(_last, forceNotify: force);
-
-  @override
-  @Deprecated('Use [push]')
-  void setValue(T? value, {bool notify = true, bool forceNotify = false}) =>
-      push(value as T);
 
   @override
   void cancel(ControlSubscription<T?> subscription) =>
@@ -229,6 +223,13 @@ class StackControl<T> extends ObservableModel<T?> {
 
   @override
   void notify() => _parent.notify();
+
+  /// Clears all values in stack. Even if [isRooted] is set to true.
+  void clear() {
+    _stack.clear();
+
+    _notifyParent();
+  }
 
   @override
   void dispose() {
