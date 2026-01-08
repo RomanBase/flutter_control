@@ -1,7 +1,22 @@
 part of '../../core.dart';
 
-/// Mixin implementation of ObservableValue to enhance [ControlModel].
-/// In most of cases used with [BaseModel] to create observable model.
+/// A mixin that adds [ObservableValue] capabilities to a [ControlModel].
+///
+/// By using this mixin, a `ControlModel` can hold a value and notify listeners
+/// whenever it changes, effectively becoming a self-contained piece of reactive state.
+///
+/// Example:
+/// ```dart
+/// class CounterModel extends BaseModel with ObservableComponent<int> {
+///   CounterModel() {
+///     value = 0; // Set initial value
+///   }
+///
+///   void increment() {
+///     value = (value ?? 0) + 1;
+///   }
+/// }
+/// ```
 mixin ObservableComponent<T> on ControlModel
     implements ObservableValue<T?>, ObservableNotifier {
   /// Actual observable to subscribe.
@@ -55,8 +70,20 @@ mixin ObservableComponent<T> on ControlModel
   }
 }
 
-/// Mixin implementation of ObservableChannel.
-/// In most of cases used with [BaseModel] to create observable model.
+/// A mixin that adds [ObservableChannel] capabilities to a [ControlModel].
+///
+/// This turns a model into a notification channel that can signal events to listeners
+/// without carrying a specific data value.
+///
+/// Example:
+/// ```dart
+/// class FormModel extends BaseModel with NotifierComponent {
+///   void submit() {
+///     //... form submission logic
+///     notify(); // Signal that the form has been submitted.
+///   }
+/// }
+/// ```
 mixin NotifierComponent on ControlModel
     implements ObservableChannel, ObservableNotifier {
   /// Actual control to subscribe.

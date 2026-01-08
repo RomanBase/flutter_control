@@ -1,5 +1,12 @@
 part of '../../core.dart';
 
+/// A class that groups multiple observables into a single `ObservableValue`.
+///
+/// An `ObservableGroup` listens to all joined observables. When any of them notify,
+/// the group notifies its own listeners. The `value` of the group is an `Iterable`
+/// containing the current values of all the observables in the group.
+///
+/// This is useful for reacting to changes in a combination of states.
 class ObservableGroup extends ObservableValue<Iterable?>
     implements ObservableNotifier {
   final _items = <DisposableToken>[];
@@ -13,10 +20,13 @@ class ObservableGroup extends ObservableValue<Iterable?>
   @override
   Iterable get value => _parent.value ?? [];
 
+  /// The number of observables in the group.
   int get length => _items.length;
 
+  /// Accesses the value of an observable in the group by its index.
   operator [](int index) => _getValue(_items[index]);
 
+  /// Creates a group, optionally pre-filled with an initial list of observables.
   ObservableGroup([Iterable? observables]) {
     observables?.forEach((item) => join(item));
   }
@@ -41,6 +51,11 @@ class ObservableGroup extends ObservableValue<Iterable?>
 
   Iterable _getValues() => _items.map((item) => _getValue(item));
 
+  /// Adds a new observable to the group.
+  ///
+  /// The group will start listening to the provided [observable] for changes.
+  ///
+  /// Returns a [DisposableToken] that can be used to remove the observable from the group.
   DisposableToken join(Object observable) {
     final event = DisposableClient(parent: this);
 

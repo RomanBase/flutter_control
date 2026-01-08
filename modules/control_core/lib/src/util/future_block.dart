@@ -1,6 +1,20 @@
 part of '../../core.dart';
 
-/// Whole class that serves as [Future.delayed].
+/// A utility class for creating a re-triggerable, cancellable delayed future.
+///
+/// This is useful for debouncing actions, such as waiting for a user to stop
+/// typing before performing a search.
+///
+/// Example:
+/// ```dart
+/// final searchDebouncer = FutureBlock();
+///
+/// void onSearchQueryChanged(String query) {
+///   searchDebouncer.delayed(Duration(milliseconds: 500), () {
+///     print('Performing search for: $query');
+///   });
+/// }
+/// ```
 class FutureBlock {
   /// Timer for delayed future.
   Timer? _timer;
@@ -22,8 +36,10 @@ class FutureBlock {
   /// Use [delayed] to start timer.
   FutureBlock();
 
-  /// Starts delay for given [duration]. Given callback can be postponed or canceled.
-  /// If timer is active, then new delay is triggered and [duration] is restarted.
+  /// Starts or restarts the timer for a given [duration].
+  ///
+  /// When the timer completes, [onDone] is executed. If `delayed` is called again
+  /// while a timer is active, the previous timer is canceled and a new one starts.
   void delayed(Duration duration, VoidCallback onDone) {
     cancel();
 
@@ -31,9 +47,10 @@ class FutureBlock {
     _timer = Timer(_duration = duration, trigger);
   }
 
-  /// Re-trigger current delay action and sets new [duration], but block is postponed only when current delay [isActive].
-  /// Can be called multiple times - only last call will be handled.
-  /// returns `true` if action is delayed.
+  /// Postpones the currently scheduled action.
+  ///
+  /// If a timer is active, it will be reset with the new (or existing) duration.
+  /// If `retrigger` is true and no timer is active, a new one will be started.
   bool postpone(
       {Duration? duration, VoidCallback? onDone, bool retrigger = true}) {
     if (onDone != null) {
@@ -57,7 +74,7 @@ class FutureBlock {
     return isActive;
   }
 
-  /// Triggers current callback early.
+  /// Immediately executes the scheduled callback and stops the timer.
   void trigger() {
     _callback?.call();
     stop();
@@ -72,7 +89,7 @@ class FutureBlock {
     _timer = null;
   }
 
-  /// Stops current timer and cancels delayed action.
+  /// Cancels the scheduled action and stops the timer.
   void cancel() {
     stop();
 
@@ -105,7 +122,7 @@ class FutureBlock {
   static Future nextFrame(VoidCallback action) =>
       Future.delayed(const Duration(), action);
 
-  /// Same as [Future.wait] but nullable.
+  /// A utility equivalent to `Future.wait`, but it safely handles `null` futures in the list.
   static Future wait(Iterable<Future?> futures) async {
     final futuresToWait = futures.where((item) => item != null).cast<Future>();
 
@@ -114,9 +131,9 @@ class FutureBlock {
     }
   }
 
-  /// Sequential wait.
-  /// When [continuous] set and returns `false` then sequence is terminated.
-  /// Returns list of results.
+  /// Executes a sequence of future-producing functions one after another.
+  ///
+  /// - [continuous]: An optional callback that can stop the sequence early if it returns `false`.
   static Future<List<T>> sequence<T>(Iterable<ValueGetter<Future<T>>> futures,
       {bool Function(T value)? continuous}) async {
     final results = <T>[];
@@ -133,10 +150,17 @@ class FutureBlock {
   }
 }
 
-/// Helps to block part of code for minimum-given time.
-/// Just wrap code with [start] and [finish].
-/// If code runs fast, then finish is awaited for rest of [duration].
-/// If code runs too slowly, then finish is triggered immediately.
+/// A helper to ensure a block of asynchronous code takes a minimum amount of time to complete.
+///
+/// This is useful for preventing jarring UI flashes when an operation finishes
+/// too quickly (e.g., a loading indicator that appears and disappears instantly).
+///
+/// Example:
+/// ```dart
+/// final delay = DelayBlock(Duration(milliseconds: 500));
+/// await veryFastApiCall();
+/// await delay.finish(); // This will wait for the remaining time.
+/// ```
 class DelayBlock {
   /// Delay in milliseconds.
   late int _millis;
@@ -154,15 +178,15 @@ class DelayBlock {
     }
   }
 
-  /// Sets start timestamp.
-  /// Can be called multiple times - timestamp is updated and delay postponed.
+  /// Starts the timer. This should be called before the async operation begins.
   void start() {
     _start = DateTime.now();
   }
 
-  /// awaits delay finish.
-  /// If code runs fast, then finish is awaited for rest of [duration].
-  /// If code runs too slowly, then finish is triggered immediately.
+  /// Awaits the completion of the delay block.
+  ///
+  /// If the time elapsed since [start] was called is less than the specified
+  /// duration, this will await the remaining time. Otherwise, it completes immediately.
   Future<void> finish() {
     final currentDelay = DateTime.now().difference(_start).inMilliseconds;
     final delay = _millis - currentDelay;

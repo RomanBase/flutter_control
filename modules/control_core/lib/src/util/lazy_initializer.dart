@@ -1,7 +1,9 @@
 part of '../../core.dart';
 
-/// Lazily build value once and holds it for whole time.
-/// TODO: Not used anymore? Marked as deprecated for now - if used then refactor (constructor and set).
+/// Lazily builds and caches a value. The value is created only once on the first access.
+///
+/// @deprecated This class is not actively used and will be removed in a future version.
+/// Consider using `lazy` property patterns or `ControlFactory` for lazy initialization.
 @Deprecated('Will be removed in future')
 class LazyInitializer<T> {
   /// Current value.
@@ -39,7 +41,8 @@ class LazyInitializer<T> {
     return false;
   }
 
-  /// Returns current value or build new one and store it for later get.
+  /// Returns the cached value. If the value has not been created yet,
+  /// it calls the builder, caches the result, and then returns it.
   T get() => _value ?? (_value = _builder!());
 
   /// Sets holder to dirty, so next [set] will override builder.

@@ -1,23 +1,33 @@
 part of '../../core.dart';
 
-/// Class that can be notified about any changes.
+/// An interface for objects that can be notified to propagate changes.
+///
+/// Implementing this class allows an object to be a target of a notification,
+/// typically triggering it to update its listeners or state.
 abstract class ObservableNotifier {
   /// Notify this object to propagate changes.
   void notify();
 }
 
-/// Observable Interface.
-/// Clients can subscribe to listen changes.
+/// The fundamental interface for an observable object.
+///
+/// It defines the core ability to be listened to for changes and to be disposed of
+/// when no longer needed.
+///
+/// - [T]: The type of value this observable deals with. For channels without a value, this is `void`.
 abstract class ObservableBase<T> implements Disposable {
-  /// Serves for internal data or marker.
-  /// Exposed to public API due to usage as custom 'client' data.
+  /// Optional data that can be attached to the observable, often for internal
+  /// use by components or for tracking purposes.
   dynamic internalData;
 
-  /// Subscribe to listen future changes.
-  /// Returns [ControlSubscription] for later connection close.
+  /// Subscribes to the observable to be notified of changes.
+  ///
+  /// The provided [action] callback will be executed whenever the observable fires.
+  ///
+  /// Returns a [ControlSubscription] which can be used to cancel the subscription.
   ControlSubscription<T> listen(VoidCallback action);
 
-  /// Cancels given [subscription].
+  /// Cancels a subscription, preventing it from receiving further notifications.
   void cancel(ControlSubscription<T> subscription);
 }
 
@@ -31,9 +41,10 @@ extension ObservableValuExt on ObservableValue {
   ObservableValue<U> cast<U>() => this as ObservableValue<U>;
 }
 
-/// Simple observable channel that notifies others about changes.
-/// These changes are typically not part of this class.
-/// Channel serves more like robust callback system.
+/// An observable that acts as a simple notification channel, without carrying a value.
+///
+/// It's useful for signaling events where no data payload is necessary.
+/// Listeners are simply notified that an event has occurred.
 abstract class ObservableChannel implements ObservableBase<void> {
   @override
   dynamic internalData;
@@ -41,14 +52,20 @@ abstract class ObservableChannel implements ObservableBase<void> {
   @override
   ControlSubscription<void> listen(VoidCallback action) => subscribe(action);
 
+  /// Subscribes to the channel. The [action] is a `VoidCallback` since no value is passed.
+  ///
+  /// - [action]: The callback to execute when the channel notifies.
+  /// - [current]: This parameter is typically ignored for channels as there is no value to deliver.
+  /// - [args]: Optional arguments for the subscription.
   ControlSubscription subscribe(VoidCallback action,
       {bool current = true, args});
 }
 
-/// Simple observable that notifies others about [value] changes.
-/// Actual value is stored within this class.
+/// An observable that holds and notifies about changes to a single [value].
+///
+/// This is the most common type of observable, used for representing reactive state.
 abstract class ObservableValue<T> implements ObservableBase<T> {
-  /// Current value of this observable.
+  /// The current value held by the observable.
   T get value;
 
   @override
@@ -58,11 +75,19 @@ abstract class ObservableValue<T> implements ObservableBase<T> {
   ControlSubscription<T> listen(VoidCallback action) =>
       subscribe((_) => action());
 
+  /// Subscribes to changes in the observable's [value].
+  ///
+  /// - [action]: The callback to execute, which receives the new value.
+  /// - [current]: If `true`, the [action] is immediately called with the current [value].
+  /// - [args]: Optional arguments for the subscription.
   ControlSubscription<T> subscribe(ValueCallback<T> action,
       {bool current = true, args});
 }
 
-/// Base class to implement Observable variable.
+/// An abstract base class for creating a custom [ObservableValue].
+///
+/// It provides a standard structure for managing a value and notifying listeners,
+/// including helper properties and a robust `setValue` method.
 abstract class ObservableModel<T> extends ObservableValue<T>
     implements ObservableNotifier {
   /// Checks if [value] is not set.
@@ -83,10 +108,13 @@ abstract class ObservableModel<T> extends ObservableValue<T>
   /// If value is different then [notify] is called.
   set value(T value) => setValue(value);
 
-  /// Robust [value] setter.
-  /// [notify] when set is called when [value] is different.
-  /// Disable [notify] to prevent propagation of this value change. This can be handy when we change [value] multiple times during one function call and we want to notify just last change.
-  /// Enable [forceNotify] to notify listeners even if [value] is not changed.
+  /// Sets the observable's value.
+  ///
+  /// - [value]: The new value to set.
+  /// - [notify]: If `true` (default), listeners will be notified of the change. Set to `false`
+  ///   to update the value silently.
+  /// - [forceNotify]: If `true`, listeners will be notified even if the new value is the same
+  ///   as the old one.
   void setValue(T value, {bool notify = true, bool forceNotify = false});
 }
 
@@ -118,7 +146,11 @@ class _ObservableHandler<T> extends ObservableValue<T> {
   }
 }
 
-/// Observable class that handles listeners and [value] changes.
+/// The primary concrete implementation of an observable value.
+///
+/// This class manages a value, a list of subscribers, and handles the logic for
+/// notifying subscribers when the value changes. It also provides factory constructors
+/// to easily create observables from other reactive sources like `Stream`s and `Future`s.
 class ControlObservable<T> extends ObservableModel<T> {
   /// Active subscriptions of this observable.
   /// This is exposed just for debug and test purposes.
@@ -152,24 +184,24 @@ class ControlObservable<T> extends ObservableModel<T> {
   /// This object must call [dispose] to release resources.
   ControlObservable(this._value);
 
-  /// Returns null version of observable.
+  /// Creates an observable that can hold a nullable value.
   static ControlObservable<T?> empty<T>([T? value]) =>
       ControlObservable<T?>(value);
 
-  /// Wraps given [observable]. Can be handy to 'hide' concrete functionality.
+  /// Wraps an existing observable to hide its concrete implementation, exposing only the `ObservableValue` interface.
   static ObservableValue<T?> handle<T>(ObservableModel<T?> observable) =>
       _ObservableHandler<T?>(observable);
 
-  /// Creates an observable from given [object].
-  /// This method is able to consume:
-  ///  - [ObservableValue] - [ControlObservable], [ActionControl], [FieldControl], [ObservableComponent]
-  ///  - [ObservableChannel] - [NotifierComponent]
-  ///  - [Stream]
-  ///  - [Future]
-  ///  - [Listenable], [ValueListenable] - [ChangeNotifier], [ValueNotifier]
-  ///  - if unsupported type is given, then ObservableValue is created with given object, if T is met.
-  ///  If given [object] serves any kind of result, then [value] is set.
-  ///  Check [ofChannel], [ofStream], [ofFuture], [ofListenable] constructors.
+  /// A powerful factory that creates an [ObservableValue] from various sources.
+  ///
+  /// This method can adapt the following types into a unified observable interface:
+  ///  - [ObservableValue]: Returns the object itself.
+  ///  - [Stream]: Creates an observable that updates its value with each stream event.
+  ///  - [Future]: Creates an observable that sets its value upon future completion.
+  ///  - [Listenable] / [ValueListenable]: Creates an observable that listens for notifications.
+  ///  - [ObservableChannel]: Creates an observable that notifies when the channel fires.
+  ///
+  /// If an unsupported object is provided, it will be wrapped in an observable as the initial value.
   static ObservableValue<T?> of<T>(Object? object) {
     if (T == dynamic) {
       if (object is ObservableValue) {

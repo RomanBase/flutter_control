@@ -1,26 +1,27 @@
 part of '../../core.dart';
 
+/// An extension on `ObservableModel<bool>` providing convenience methods
+/// for working with boolean observables.
 extension ObservableBoolExt on ObservableModel<bool> {
-  /// Checks if [value] is 'true'.
+  /// Checks if the observable's current value is `true`.
   bool get isTrue => value == true;
 
-  /// Checks if [value] is 'false' or 'null'.
+  /// Checks if the observable's current value is `false` or `null`.
   bool get isFalse => value != true;
 
-  /// Toggles current value and notifies listeners.
-  /// 'true' -> 'false'
-  /// 'false' -> 'true'
+  /// Toggles the boolean value (`true` to `false`, or `false`/`null` to `true`)
+  /// and notifies listeners.
+  ///
+  /// Returns the new value.
   bool toggle() {
     setValue(isTrue ? false : true);
 
     return value;
   }
 
-  /// Sets value to 'true'.
-  /// Listeners are notified if [value] is changed.
+  /// Sets the observable's value to `true` and notifies listeners.
   void setTrue() => setValue(true);
 
-  /// Sets value to 'false'.
-  /// Listeners are notified if [value] is changed.
+  /// Sets the observable's value to `false` and notifies listeners.
   void setFalse() => setValue(false);
 }

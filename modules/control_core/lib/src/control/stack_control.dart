@@ -1,6 +1,11 @@
 part of '../../core.dart';
 
-/// Observable Stack based on [ObservableValue].
+/// An observable stack that manages a list of values and notifies listeners
+/// about changes to the top of the stack.
+///
+/// `StackControl` is ideal for managing navigation state or any scenario requiring
+/// a LIFO (Last-In, First-Out) data structure with reactivity. The `value` of the
+/// control always reflects the item at the top of the stack.
 class StackControl<T> extends ObservableValue<T?>
     implements ObservableNotifier {
   /// Current stack of values.
@@ -13,7 +18,7 @@ class StackControl<T> extends ObservableValue<T?>
 
   bool get isValid => _parent.isValid;
 
-  /// Current/Top value of stack.
+  /// The current value at the top of the stack.
   @override
   T? get value => _parent.value;
 
@@ -29,10 +34,11 @@ class StackControl<T> extends ObservableValue<T?>
   /// First value in stack.
   T? get _first => _stack.isEmpty ? null : _stack.first;
 
-  /// Root/First value of stack.
+  /// The root (first) value of the stack if it is rooted.
   T? get root => isRooted ? _first : null;
 
-  /// Pushes this value to stack and set it as root value.
+  /// Sets the root value of the stack.
+  /// This clears the stack and pushes the given value as the new root.
   set root(T? value) {
     _root = true;
 
@@ -43,7 +49,8 @@ class StackControl<T> extends ObservableValue<T?>
     }
   }
 
-  /// Checks if stack contains enough items to pop last one.
+  /// Checks if the stack can be popped.
+  /// If rooted, it can be popped only if there is more than one item.
   bool get canPop => isRooted ? _stack.length > 1 : _stack.isNotEmpty;
 
   /// Number of items in stack.
@@ -53,16 +60,16 @@ class StackControl<T> extends ObservableValue<T?>
   /// Returns negative value when stack is empty.
   int get pointer => length - 1;
 
-  /// List (copy) of all values stored in stack
+  /// A copy of all values currently in the stack.
   List<T> get values => List.of(_stack, growable: false);
 
   /// Returns value in stack by index.
   T operator [](int index) => _stack[index];
 
-  /// Observable list.
-  /// [push] new value to the top of the stack. This becomes 'active' value.
-  /// [pop] value from the top of the stack. Previous, if any, becomes 'active' value.
-  /// If [root] is set, stack will [pop] only until last value.
+  /// Creates an observable stack.
+  ///
+  /// - [value]: An optional initial value to push onto the stack.
+  /// - [root]: If `true`, the stack is rooted, preventing it from being popped empty.
   StackControl({T? value, bool root = false}) {
     _root = root;
     if (value != null) {
@@ -70,8 +77,9 @@ class StackControl<T> extends ObservableValue<T?>
     }
   }
 
-  /// Push given [value] to the end of stack.
-  /// If [unique] is set and [value] is same as 'active' value, then nothing happens.
+  /// Pushes a new [value] onto the top of the stack and notifies listeners.
+  ///
+  /// - [unique]: If `true`, the value is only pushed if it's different from the current top value.
   void push(T value, {bool unique = true}) {
     if (unique && this.value == value) {
       return;
@@ -81,8 +89,8 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Push given [value] to the end of stack.
-  /// Previous occurrence of [value] is removed from stack.
+  /// Pushes a given [value] to the top, ensuring it appears only once in the stack.
+  /// If the value already exists, its previous occurrence is removed.
   void pushUnique(T value) {
     _stack.remove(value);
     _stack.add(value);
@@ -90,8 +98,9 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Pushes whole [stack].
-  /// Set [clearOrigin] to clear previous stack.
+  /// Pushes an entire [stack] of items.
+  ///
+  /// - [clearOrigin]: If `true`, clears the existing stack before pushing the new items.
   void pushStack(Iterable<T> stack, {bool clearOrigin = false}) {
     if (clearOrigin) {
       _stack.clear();
@@ -102,7 +111,7 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Swaps [value] at given [index]
+  /// Swaps the value at a given [index] with a new [value].
   void swap(T value, int index) {
     _stack.removeAt(index);
     _stack.insert(index, value);
@@ -110,15 +119,15 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Reorders [value] to given [index].
+  /// Moves an existing [value] to a new [index] in the stack.
   void reorder(T value, int index) {
     _stack.reorder(_stack.indexOf(value), index);
 
     _notifyParent();
   }
 
-  /// Pops last [value] from stack.
-  /// Previous value, if any, becomes 'active' value.
+  /// Removes the top value from the stack and notifies listeners.
+  /// The next item in the stack becomes the new `value`.
   void pop() {
     if (!canPop) {
       return;
@@ -129,29 +138,30 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Pops to given [value]. All top values are removed from stack.
+  /// Pops the stack until the given [value] is at the top.
+  /// All items above the target [value] are removed.
   void popTo(T value) {
     int index = _stack.indexOf(value);
 
     if (index > -1) {
-      _stack.removeRange(index, _stack.length);
+      _stack.removeRange(index + 1, _stack.length);
     }
 
     _notifyParent();
   }
 
-  /// Pops to [value] of given [test]. All top values are removed from stack.
+  /// Pops the stack until an item passes the [test] predicate.
   void popUntil(Predicate<T?> test) {
     int index = _stack.indexWhere(test);
 
     if (index > -1) {
-      _stack.removeRange(index, _stack.length);
+      _stack.removeRange(index + 1, _stack.length);
     }
 
     _notifyParent();
   }
 
-  /// Pops to root/first value of stack. All top values are removed from stack.
+  /// Pops all items until only the root/first item remains.
   void popToFirst() {
     if (!canPop) {
       return;
@@ -165,8 +175,7 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Clears stack, but active value stays on top.
-  /// All previous values are removed from stack.
+  /// Clears the stack, leaving only the current top item.
   void popToLast() {
     if (!canPop) {
       return;
@@ -180,8 +189,9 @@ class StackControl<T> extends ObservableValue<T?>
     _notifyParent();
   }
 
-  /// Pops if [canPop] and returns `false`.
-  /// Returns `true` if there is nothing to pop.
+  /// Pops the stack if possible.
+  ///
+  /// Returns `false` if a pop occurred, `true` if the stack could not be popped.
   bool maybePop() {
     if (canPop) {
       pop();
@@ -192,11 +202,11 @@ class StackControl<T> extends ObservableValue<T?>
     return true;
   }
 
-  /// Disables root value. So stack can pop all values.
+  /// Disables the root, allowing the stack to be popped until it is empty.
   void disableRoot() => _root = false;
 
-  /// Enables root value. So stack can pop only to first value.
-  void enableRoot() => _root = false;
+  /// Enables the root, preventing the stack from being popped beyond the first item.
+  void enableRoot() => _root = true;
 
   /// Checks if given [item] is in stack.
   bool contains(T item) => _stack.contains(item);
@@ -224,7 +234,7 @@ class StackControl<T> extends ObservableValue<T?>
   @override
   void notify() => _parent.notify();
 
-  /// Clears all values in stack. Even if [isRooted] is set to true.
+  /// Clears all values in stack, even if rooted.
   void clear() {
     _stack.clear();
 

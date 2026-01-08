@@ -2,11 +2,14 @@
 [![Structure](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml/badge.svg)](https://github.com/RomanBase/flutter_control)
 
 ---
-Core library for FLutter and Dart projects.
-Simple **Service Locator** to access objects from anywhere. Easy way to switch the implementation of interfaces and for mocks/tests.
-Solves **Event Handling** across app.
-Implements **Observables** for more robust Change/ValueNotifier and simplified Streams.
-Adds **Model** and **Control** classes to line basic lifecycle of classes.
+`control_core` is the foundational library for Flutter and Dart projects, offering a robust set of tools for building scalable and maintainable applications. It simplifies state management, dependency injection, and event handling.
+
+Key features include:
+-   **Service Locator**: A powerful `ControlFactory` for managing dependencies and enabling easy testing and module swapping.
+-   **Global Event System**: A `ControlBroadcast` mechanism for decoupled communication across your application.
+-   **Observables**: A comprehensive system of `ControlObservable` and its specialized variants ([ActionControl], [FieldControl], [ListControl], [LoadingControl]) for reactive state management.
+-   **Business Logic Models**: Structured base classes ([ControlModel], [BaseModel], [BaseControl]) that provide consistent lifecycle management and promote clean architecture.
+-   **Lifecycle Management**: Fine-grained control over object initialization and disposal using `Initializable`, `Disposable`, and `DisposeHandler`.
 
 ```dart
 import 'package:control_core/core.dart';
@@ -24,21 +27,24 @@ The `Control` factory must be initialized before it can be used. This is typical
 ```dart
 void main() {
   Control.initControl(
-    // Register singleton instances.
+    // Register singleton instances: objects available immediately.
     entries: {
-      CounterListControl: CounterListControl(),
+      Logger: Logger(level: LogLevel.INFO),
     },
-    // Register factories for lazy initialization.
+    // Register factories for lazy initialization: objects created on demand.
     factories: {
-      CounterInterface: (_) => CounterModel(),
+      ApiService: (_) => RestApiService(),
+      UserRepository: (_) => DbUserRepository(Control.get<DatabaseConnection>()!),
     },
-    // Use modules to organize your dependencies.
+    // Use modules to organize your dependencies and their initialization.
     modules: [
-      LocalinoModule(LocalinoOptions()),
+      MyFeatureModule(), // Custom module bundling its own entries, factories, and init logic.
     ],
-    // Perform asynchronous initialization.
+    // Perform asynchronous initialization tasks.
     initAsync: () async {
-      await loadAppConfig();
+      // Example: Load initial configuration or warm up a service.
+      await AppConfig.load();
+      Control.get<ApiService>()?.initConnection();
     },
   );
 }
@@ -54,11 +60,14 @@ void main() {
 You can retrieve objects from the factory using the `Control.get()` method.
 
 ```dart
-// Retrieve by type.
-final counter = Control.get<CounterInterface>()!;
+// Retrieve an object by its type (most common).
+final apiService = Control.get<ApiService>()!;
 
-// Retrieve by key.
-final apiKey = Control.get<String>(key: 'api_key');
+// Retrieve an object by a custom key (useful for multiple instances of the same type).
+final userPreferences = Control.get<SharedPreferences>(key: 'user_prefs');
+
+// Retrieve an object asynchronously (useful in async contexts, though get() is synchronous).
+final config = await Control.getAsync<AppConfig>();
 ```
 
 ## Dynamic Registration
@@ -66,11 +75,11 @@ final apiKey = Control.get<String>(key: 'api_key');
 You can also register objects and factories dynamically after initialization.
 
 ```dart
-// Register a new singleton.
-Control.set<AnotherControl>(value: AnotherControl());
+// Register a new singleton instance at runtime.
+Control.set<AnalyticsService>(value: FirebaseAnalyticsService());
 
-// Register a new factory.
-Control.add<CounterInterface>(init: (_) => BetterCounterModel());
+// Register a new factory for a type at runtime.
+Control.add<NotificationService>(init: (_) => PushNotificationService());
 ```
 
 ## LazyControl
@@ -78,31 +87,51 @@ Control.add<CounterInterface>(init: (_) => BetterCounterModel());
 The `LazyControl` mixin allows you to create objects that are lazily initialized and automatically removed from the factory when they are disposed.
 
 ```dart
-class LazyCounterModel extends ControlModel with LazyControl {
-  // ...
+/// The `LazyControl` mixin ensures that an object, when managed by `ControlFactory`,
+/// is automatically removed from the factory's store when its `dispose()` method is called.
+/// This is particularly useful for models with a distinct lifecycle, ensuring proper cleanup.
+class UserSessionModel extends ControlModel with LazyControl {
+  String? userId;
+
+  UserSessionModel() {
+    print('UserSessionModel created');
+  }
+
+  @override
+  void init(Map args) {
+    userId = args['userId'];
+  }
+
+  @override
+  void dispose() {
+    print('UserSessionModel disposed');
+    super.dispose(); // This calls Control.remove(key: factoryKey)
+  }
 }
 
-void main() {
-  Control.add<LazyCounterModel>(init: (_) => LazyCounterModel());
+// Example Usage:
+void setupSession() {
+  Control.add<UserSessionModel>(init: (args) => UserSessionModel()..init(args));
 
-  // ... The LazyCounterModel is not created yet.
+  // UserSessionModel is not instantiated yet.
 
-  final counter = Control.get<LazyCounterModel>()!; // Now it's created and stored.
+  final session = Control.get<UserSessionModel>(args: {'userId': 'user123'}); // Instantiated and stored.
+  print('Current User ID: ${session?.userId}');
 
-  // When the counter is disposed, it will be removed from the factory store.
-  counter.dispose();
+  session?.dispose(); // Model is disposed and automatically removed from ControlFactory.
+  final disposedSession = Control.get<UserSessionModel>(); // Returns null, or a new instance if factory supports it.
 }
 ```
 
 ## Dependency Injection vs. Property Injection
 
-`control_core` helps with both dependency injection and property injection.
+`control_core` supports common dependency injection patterns, allowing you to manage how dependencies are provided to your classes.
 
-**Dependency Injection (Constructor Injection)**
+**Constructor Injection (Dependency Injection)**
+
+This is the preferred method for explicit dependencies, making classes easier to test and understand.
 
 ```dart
-
-
 class A {}
 
 class B {
@@ -115,7 +144,7 @@ void main() {
   Control.initControl(
     factories: {
       A: (_) => A(),
-      B: (_) => B(Control.get<A>()!),
+      B: (_) => B(Control.get<A>()!), // B depends on A, injected via constructor.
     },
   );
 }
@@ -123,8 +152,11 @@ void main() {
 
 **Property Injection**
 
+Useful for optional dependencies or when dependencies are only needed in specific methods, or for models that are themselves dependencies.
+
 ```dart
 class C {
+  // Lazily retrieve dependency when needed.
   A get ref => Control.get<A>()!;
 }
 
@@ -144,29 +176,32 @@ void main() {
 
 # Global Event System
 
-The `control_core` library provides a global event system that allows different parts of your application to communicate with each other without having a direct reference. This is achieved through the `ControlBroadcast` class and the `BroadcastProvider`.
+The `control_core` library provides a global event system for decoupled communication using `BroadcastProvider`. This static utility class offers a simple interface to the underlying `ControlBroadcast`, enabling components to send and receive data or events without direct dependencies.
 
-## ControlBroadcast
-
-The `ControlBroadcast` class is a global stream that allows you to broadcast data and events. The stream is driven by keys and object types, so listeners only receive the data they are interested in.
-
-## BroadcastProvider
-
-The `BroadcastProvider` is a static class that provides a simple interface for interacting with the default `ControlBroadcast` instance.
+The system supports two main types of communication:
+-   **Object Broadcasting**: Sending data objects to interested listeners.
+-   **Event Broadcasting**: Sending simple notifications without a data payload.
 
 ### Subscribing to Events
 
 You can subscribe to events using the `BroadcastProvider.subscribe()` and `BroadcastProvider.subscribeEvent()` methods.
 
 ```dart
-// Subscribe to an event with a specific key and type.
-BroadcastProvider.subscribe<int>('on_count_changed', (value) {
-  print('Count changed: $value');
+// Subscribe to an object broadcast with a specific key and expected type.
+// The listener receives the value when broadcasted.
+BroadcastProvider.subscribe<int>('cart_item_count', (count) {
+  print('Cart item count updated: $count');
 });
 
-// Subscribe to an event with a specific key.
-BroadcastProvider.subscribeEvent('on_button_pressed', () {
-  print('Button pressed');
+// Subscribe to a simple event broadcast with a specific key.
+// The listener is notified without receiving a specific value.
+BroadcastProvider.subscribeEvent('user_logged_out', () {
+  print('User has logged out.');
+});
+
+// You can also subscribe using only the type (e.g., if the type acts as the key).
+BroadcastProvider.subscribeOf<User>( (user) {
+    print('User data changed: ${user?.name}');
 });
 ```
 
@@ -175,11 +210,14 @@ BroadcastProvider.subscribeEvent('on_button_pressed', () {
 You can broadcast events using the `BroadcastProvider.broadcast()` and `BroadcastProvider.broadcastEvent()` methods.
 
 ```dart
-// Broadcast a value.
-BroadcastProvider.broadcast<int>(key: 'on_count_changed', value: 10);
+// Broadcast a data object. Listeners subscribed to 'cart_item_count' of type int will be notified.
+BroadcastProvider.broadcast<int>(key: 'cart_item_count', value: 5);
 
-// Broadcast an event.
-BroadcastProvider.broadcastEvent(key: 'on_button_pressed');
+// Broadcast a simple event. Listeners subscribed to 'user_logged_out' will be notified.
+BroadcastProvider.broadcastEvent(key: 'user_logged_out');
+
+// Broadcast an object using its type as the key.
+BroadcastProvider.broadcast<User>(value: User(name: 'Jane Doe'));
 ```
 
 ---
@@ -190,131 +228,201 @@ BroadcastProvider.broadcastEvent(key: 'on_button_pressed');
 
 ## ActionControl
 
-`ActionControl` is a lightweight observable that is ideal for notifying listeners about simple value changes. It comes in three main variants:
+`ActionControl` is a versatile implementation of `ControlObservable` offering specialized behaviors for managing and reacting to value changes. It's suitable for simple reactive properties.
 
-*   **`ActionControl.single<T>(value)`**: Allows only one listener to be subscribed at a time.
-*   **`ActionControl.broadcast<T>(value)`**: Allows multiple listeners to be subscribed.
-*   **`ActionControl.empty<T?>()`**: A nullable version that can be used with one or more listeners.
-*   **`ActionControl.leaf<T>(model)`**: A notification bubbling. Listen to child model and propagates notification upwards.
-*   **`ActionControl.provider<T>(key)`**: Subscribes to global `BoardcastProvider`.
+Key variants:
+-   **`ActionControl.single<T>(value)`**: An observable that enforces a single active subscriber. When a new listener subscribes, any previous listener is automatically unsubscribed.
+-   **`ActionControl.broadcast<T>(value)`**: A standard observable allowing multiple listeners to subscribe and react to changes.
+-   **`ActionControl.empty<T?>()`**: A variant that explicitly handles nullable types, enabling clear state management for potentially absent values.
+-   **`ActionControl.leaf<T extends ObservableBase>(model)`**: Creates a bubbling observable. It wraps another `ObservableBase` (the "leaf") and propagates its notifications upwards to this `ActionControl`'s listeners.
+-   **`ActionControl.provider<T>(key)`**: An observable that automatically synchronizes its value with the global `BroadcastProvider`. Changes to this control's value are broadcasted globally, and incoming broadcasts update the control's value.
 
+Example:
 ```dart
-// Create a broadcast ActionControl with an initial value of 0.
+// Create a broadcast ActionControl with an initial integer value.
 final counter = ActionControl.broadcast<int>(0);
 
-// Subscribe to the counter and print the new value whenever it changes.
+// Subscribe to the counter. The callback receives the updated value.
 counter.subscribe((value) => print('Counter value: $value'));
 
-// Increment the counter's value. This will trigger the subscription.
-counter.value++;
+// Increment the counter. This triggers all subscribed listeners.
+counter.value++; // Output: Counter value: 1
+counter.value = 5; // Output: Counter value: 5
 ```
 
 ## FieldControl
 
-`FieldControl` is a more robust observable that is built around `Stream` and `StreamController`. It is well-suited for more complex scenarios and working with asynchronous operations.
+`FieldControl` is a more robust, stream-centric observable built upon Dart's `Stream` and `StreamController`. It's particularly well-suited for complex reactive scenarios, handling asynchronous data flows, and integrating with external streams (e.g., from network requests or user input fields).
 
-`FieldControl` can be created with an initial value, or it can be subscribed to a `Stream` or `Future`. It also provides a `sink` for adding new values to the stream.
+Key capabilities:
+-   **Stream Integration**: Can be created from or subscribe to existing `Stream`s.
+-   **Asynchronous Operations**: Easily manages values from `Future`s.
+-   **Sinks**: Provides a `sink` to programmatically add new values to its internal stream.
 
+Example:
 ```dart
-// Create a FieldControl with an initial value of 0.
-final counter = FieldControl<int>(0);
+// Create a FieldControl with an initial integer value.
+final inputField = FieldControl<String>('initial text');
 
-// Subscribe to the counter and print the new value whenever it changes.
-counter.subscribe((value) => print('Counter value: $value'));
+// Subscribe to changes in the input field.
+inputField.subscribe((text) => print('Input changed: $text'));
 
-// Increment the counter's value. This will add the new value to the stream and trigger the subscription.
-counter.value++;
+// Simulate user input. This updates the value and notifies subscribers.
+inputField.setValue('Hello World'); // Output: Input changed: Hello World
+
+// You can also feed values via its sink.
+inputField.sink.add('New text from sink'); // Output: Input changed: New text from sink
 ```
 
 ## ObservableComponent
 
-The `ObservableComponent<T>` mixin allows you to transform any class into an observable. This is useful for creating custom models and controls that can be observed by other parts of your application.
-The `ObservableNotifier` is simpler version without value.
+The `ObservableComponent<T>` and `NotifierComponent` mixins enhance any `ControlModel` by giving it reactive capabilities.
 
+-   **`ObservableComponent<T>`**: Transforms a `ControlModel` into an `ObservableValue<T?>`. The model can hold a value of type `T` and notify listeners when that value changes.
+-   **`NotifierComponent`**: Transforms a `ControlModel` into an `ObservableChannel`. The model can send simple notifications (events without data) to listeners.
+
+Example with `ObservableComponent`:
 ```dart
 class CounterModel extends BaseModel with ObservableComponent<int> {
   CounterModel() {
-    value = 0;
+    value = 0; // Set initial value
   }
 
   void increment() {
-    value = value! + 1;
+    // Updating 'value' automatically notifies all subscribers.
+    value = (value ?? 0) + 1;
   }
 }
+
+// In a UI widget:
+// final counterModel = Control.get<CounterModel>();
+// counterModel.subscribe((count) => print('Counter UI update: $count'));
+// counterModel.increment();
+```
+
+Example with `NotifierComponent`:
+```dart
+class FormSubmitModel extends BaseModel with NotifierComponent {
+  void submitForm() {
+    // ... form processing logic ...
+    notify(); // Signal that the form has been submitted (event without data).
+  }
+}
+
+// In a UI widget or service:
+// final formModel = Control.get<FormSubmitModel>();
+// formModel.subscribe(() => showSnackBar('Form submitted successfully!'));
+// formModel.submitForm();
 ```
 
 ## ControlSubscription
 
-Subscription can filter inputs
+A `ControlSubscription` represents an active listener to an observable. It's returned when you call `subscribe()` on an observable and provides powerful methods for managing the listener's behavior and lifecycle.
 
+Key features of `ControlSubscription`:
+-   **`filter(Predicate<T> predicate)`**: Only notify the subscriber if the new value passes the given test.
+-   **`until(Predicate<T> predicate)`**: Automatically cancel the subscription once a value passes the given test.
+-   **`once()`**: Cancel the subscription after the first notification.
+-   **`cancel()`**: Manually stop the subscription.
+
+Example:
 ```dart
-final counter = ActionControl.broadcast<int>(0);
-final sub = counter.subscribe((value) => print(value)).filter((value) => value % 2 == 0).until((value) => value >= 10);
+final gameScore = ActionControl.broadcast<int>(0);
+
+// Subscribe to gameScore, but only react if the score is even,
+// and automatically unsubscribe once the score reaches 10 or more.
+final scoreSubscription = gameScore
+    .subscribe((score) => print('Even score: $score'))
+    .filter((score) => score % 2 == 0)
+    .until((score) => score >= 10);
+
+gameScore.value = 1; // No output (filtered)
+gameScore.value = 2; // Output: Even score: 2
+gameScore.value = 7; // No output (filtered)
+gameScore.value = 10; // Output: Even score: 10 (and subscription is now cancelled)
+gameScore.value = 12; // No output (subscription already cancelled)
 ```
 ---
 
 # Business Logic
 
-The `control_core` library provides a set of base classes for organizing your application's business logic. These classes provide a consistent structure and lifecycle for your models and controls.
+The `control_core` library provides a structured approach to implementing business logic through a hierarchy of model classes: `ControlModel`, `BaseModel`, and `BaseControl`. These classes standardize lifecycle management, initialization, and disposal.
 
-## ControlModel
-
-Is the fundamental base class for all business logic components. It provides a simple lifecycle with `init()` and `dispose()` methods, and it can be easily integrated with the `ControlFactory` for dependency injection.
-*   **`BaseModel`** is a lightweight version of `ControlModel` that is ideal for smaller, more focused pieces of business logic. By default, `BaseModel` prefers a "soft dispose," meaning it won't be automatically disposed by the `ControlFactory` and must be disposed manually.
-*   **`BaseControl`** is a more robust version of `ControlModel` that is designed for complex business logic. It ensures that the `onInit()` method is called only once, making it ideal for controllers that manage a significant amount of state or interact with multiple services. `BaseControl` is typically used for long-lived objects that are managed by the `ControlFactory`.
+-   **`ControlModel`**: The foundational abstract class for all business logic components. It integrates `Initializable` and `DisposeHandler` to provide a consistent lifecycle with `init()`, `mount()`, and `dispose()` methods. All other models extend this class.
+-   **`BaseModel`**: A lightweight concrete implementation of `ControlModel`, ideal for simpler, more focused business logic. By default, `BaseModel` utilizes a "soft dispose" strategy (via `preferSoftDispose`), meaning it might not be automatically fully disposed by `ControlFactory` and often requires manual disposal when truly finished.
+-   **`BaseControl`**: A robust concrete implementation of `ControlModel`, designed for complex business logic components like feature controllers or long-lived services. It enforces that its `onInit()` method is called only once (via `preventMultiInit`), making it suitable for managing significant state or orchestrating multiple services. `BaseControl` instances are typically managed by the `ControlFactory`.
 
 ## Lifecycle Management: Initializable and DisposeHandler
 
-`control_core` provides two key components for managing the lifecycle of your objects: `Initializable` and `DisposeHandler`.
-- These are used by `ControlModel` and its subclasses to provide a consistent and predictable lifecycle.
+`control_core` provides sophisticated mechanisms for managing object lifecycles, ensuring proper initialization and resource cleanup. These are primarily facilitated by the `Initializable` interface and the `DisposeHandler` mixin, both integrated into `ControlModel` and its derivatives.
 
 ### Initializable
 
-The `Initializable` class provides a standard way to initialize an object after its constructor has been called. This is useful for late property injection and for scenarios where you need to pass arguments to an object after it has been created.
+The `Initializable` interface defines a standard `init(Map args)` method, offering a consistent way to configure objects after their construction. This is especially useful for:
+-   **Late Property Injection**: Providing dependencies or configuration values post-construction.
+-   **Complex Setup**: Performing setup that requires the object to be fully constructed first.
 
+Example:
 ```dart
 class MyService implements Initializable {
-  late final String apiKey;
+  late String apiKey;
 
   @override
   void init(Map args) {
-    apiKey = args['api_key'];
+    apiKey = args['api_key'] as String;
+    print('MyService initialized with API Key: $apiKey');
   }
 }
 
 void main() {
+  Control.add<MyService>(init: (args) => MyService()..init(args));
   final service = Control.get<MyService>(args: {'api_key': '12345'});
+  // Output: MyService initialized with API Key: 12345
 }
 ```
 
 ### Disposable and DisposeHandler
 
-The `DisposeHandler` mixin provides a robust way to manage the disposal of your objects. It allows you to control whether an object should be disposed automatically by the `ControlFactory` or if it should be disposed manually.
+The `Disposable` mixin marks an object as requiring resource cleanup via its `dispose()` method. The `DisposeHandler` mixin extends this by providing fine-grained control over when and how `dispose()` is called, offering "soft" and "hard" disposal strategies.
 
-The `preferSoftDispose` property determines the disposal behavior:
+Key properties of `DisposeHandler`:
+-   **`preventDispose`**: If `true`, calls to `requestDispose()` are ignored, requiring manual `dispose()`.
+-   **`preferSoftDispose`**: If `true`, `requestDispose()` will call `softDispose()` instead of the full `dispose()`. `softDispose()` is for partial cleanup (e.g., stopping active operations) when an object might be reused.
+-   **`requestDispose(Object? sender)`**: The primary method to initiate disposal, respecting `preventDispose` and `preferSoftDispose` settings.
 
-*   **`true` (default for `BaseModel`):** The object will not be disposed automatically by the `ControlFactory`. You are responsible for calling the `dispose()` method manually.
-*   **`false` (default for `BaseControl`):** The object will be disposed automatically by the `ControlFactory` when it is no longer needed.
-
+Example:
 ```dart
 class MyResource with DisposeHandler {
+  bool _isOpen = false;
+
   void open() {
+    _isOpen = true;
     print('Resource opened');
   }
 
   @override
+  void softDispose() {
+    print('Resource softly disposed (e.g., paused)');
+    // Cancel subscriptions, pause operations, but don't fully destroy.
+  }
+
+  @override
   void dispose() {
-    super.dispose();
-    print('Resource closed');
+    super.dispose(); // Always call super.dispose() for mixins.
+    _isOpen = false;
+    print('Resource fully disposed (e.g., closed connections)');
   }
 }
 
 void main() {
   final resource = MyResource();
   resource.open();
-  // ...
-  resource.requestDispose(); // soft dispose
-  resource.dispose(); // hard dispose
+
+  resource.preferSoftDispose = true; // Set to prefer soft dispose
+  resource.requestDispose(); // Output: Resource softly disposed (e.g., paused)
+
+  resource.preferSoftDispose = false; // Set to prefer full dispose
+  resource.requestDispose(); // Output: Resource fully disposed (e.g., closed connections)
 }
 ```
 
@@ -326,58 +434,89 @@ void main() {
 
 ## FutureBlock
 
-`FutureBlock` is a utility class that allows you to delay the execution of a function and easily manage the timer.
+`FutureBlock` is a powerful utility for managing delayed and asynchronous operations, functioning similarly to a debounce mechanism. It allows you to schedule a `VoidCallback` to run after a specified duration, with the ability to re-trigger or cancel the delay.
 
+Key features:
+-   **Debouncing**: Prevents a function from being called too frequently by resetting the timer with each new call.
+-   **Cancellable**: The scheduled action can be explicitly canceled before execution.
+-   **Re-triggerable**: The delay can be extended or restarted.
+
+Example:
 ```dart
-final block = FutureBlock();
+final searchDebouncer = FutureBlock();
 
-// Delay the execution of a function by 500 milliseconds.
-block.delayed(Duration(milliseconds: 500), () {
-  print('This will be executed after 500ms');
-});
+void onSearchQueryChanged(String query) {
+  print('Typing: $query');
+  searchDebouncer.delayed(Duration(milliseconds: 300), () {
+    print('Searching for: $query'); // This runs 300ms after typing stops.
+  });
+}
 
-// Postpone the execution by another 500 milliseconds.
-block.postpone(duration: Duration(milliseconds: 500));
+onSearchQueryChanged('apple');
+onSearchQueryChanged('app'); // This cancels the previous 'apple' delay.
+onSearchQueryChanged('apply'); // This cancels the previous 'app' delay.
+// Output after 300ms of inactivity: Searching for: apply
 
-// Triggers callback early.
-block.trigger();
+// --- Other functionalities ---
+// block.trigger(); // Immediately executes the scheduled callback and stops the timer.
+// block.cancel();  // Cancels any pending delayed execution.
 
-// Cancel the delayed execution.
-block.cancel();
-
-// Creates new FutureBlock from given parent to extend or retrigger process. Parent is canceled.
-final restore = FutureBlock.extend(parent: block, duration: Duration(seconds: 1));
+// You can extend an existing FutureBlock (the parent is canceled).
+// final anotherBlock = FutureBlock.extend(parent: searchDebouncer, duration: Duration(seconds: 1));
 ```
 
 ## ControlArgs
 
-`ControlArgs` is a versatile class for storing and passing arguments. It can handle various data types and provides a convenient way to access and manage data.
+`ControlArgs` is a versatile utility class for storing, passing, and retrieving arguments in a type-safe and flexible manner. It's especially useful in conjunction with `ControlFactory` for initializing objects with dynamic configurations or dependencies.
 
+Key features:
+-   **Dynamic Input**: Can parse arguments from `Map`s, `Iterable`s, or single objects.
+-   **Type-Safe Retrieval**: Easily retrieve values by type or by key.
+-   **Combination**: Merge multiple `ControlArgs` instances.
+
+Example:
 ```dart
-final args = ControlArgs.of({'name': 'John Doe', 'age': 30});
+// Create ControlArgs from various sources.
+final args = ControlArgs.of({
+  'userName': 'Jane Doe',
+  'age': 30,
+  MyService: MyService(), // Can store actual objects by their type.
+  'settings': {'theme': 'dark'},
+});
 
-// Get a value by key.
-final name = args.get<String>(key: 'name');
+// Retrieve values by key and type.
+final userName = args.get<String>(key: 'userName'); // 'Jane Doe'
+final userAge = args.get<int>(key: 'age');         // 30
+final myService = args.get<MyService>();          // Instance of MyService
+final theme = args.get<Map>(key: 'settings')?['theme']; // 'dark'
 
-// Get a value by type.
-final age = args.get<int>();
+// Add a new value (type-inferred or with explicit key).
+args.add<bool>(key: 'isAdmin', value: true);
 
-// Add a new value.
-args.add<bool>(key: 'is_admin', value: true);
+// Check if a key exists.
+if (args.containsKey('isAdmin')) {
+  print('Is Admin: ${args.get<bool>(key: 'isAdmin')}'); // Is Admin: true
+}
 ```
 
 ## UnitId
 
-`UnitId` is a utility class for generating unique IDs with instance marker.
+`UnitId` is a utility for generating unique identifiers (UIDs) within the application, often used for tracking instances or events. It allows for custom prefixes and counters.
 
+Example:
 ```dart
-UnitId.instanceId = 'hello';
-UnitId.instanceCounter = LocalPrefs.get('counter', defaultValue: 5);
-UnitId.onChanged = () => LocalPrefs.set('counter', UnitId.instanceCounter);
+// Configure UnitId with a custom instance ID and a persistent counter.
+UnitId.instanceId = 'APP_INSTANCE_ALPHA';
+// Assume LocalPrefs is a persistent storage utility
+// UnitId.instanceCounter = LocalPrefs.get('unit_id_counter', defaultValue: 0);
+// UnitId.onChanged = () => LocalPrefs.set('unit_id_counter', UnitId.instanceCounter);
 
-// Generate a unique ID based on the current timestamp in {cycleId}_${instanceId}_${instanceCounter} format.
-final nextId = UnitId.nextId();
-printDebug(nextId); // Prints ABC123_hello_6
+// Generate a unique ID. The format is typically {timestamp_base36}_{instanceId}_{counter}.
+final firstId = UnitId.nextId();
+print('Generated ID: $firstId'); // Example: 1A2B3C_APP_INSTANCE_ALPHA_1
+
+final secondId = UnitId.nextId();
+print('Generated ID: $secondId'); // Example: 1A2B3D_APP_INSTANCE_ALPHA_2
 ```
 
 ---

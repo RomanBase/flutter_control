@@ -1,14 +1,30 @@
 part of '../../core.dart';
 
-/// Stores data as key:object arguments.
+/// A flexible container for managing arguments passed between different parts of the application.
+///
+/// `ControlArgs` simplifies passing and retrieving data, especially during object
+/// initialization via `ControlFactory`. It can parse various data structures like
+/// `Map`, `Iterable`, or other `ControlArgs` into a unified key-value store.
+///
+/// Example:
+/// ```dart
+/// // Create args from a map and an object.
+/// final args = ControlArgs.of({
+///   'id': 123,
+///   'user': User(name: 'Alex'),
+/// });
+///
+/// // Retrieve values
+/// final id = args.get<int>(key: 'id');
+/// final user = args.get<User>(); // Retrieves by type
+/// ```
 class ControlArgs implements Disposable {
   /// Map of stored data.
   final Map _args;
 
-  /// Currently stored data.
-  /// Use [ControlArgs.set], [ControlArgs.get], [ControlArgs.add] functions or [] to operate with [data] store.
-  /// Exposed to public API for easy access.
-  /// DO NOT modify this data directly !
+  /// A read-only view of the underlying data map.
+  ///
+  /// To modify the data, use methods like [set], [add], or [combine].
   Map get data => _args;
 
   /// Stores data as arguments.
@@ -31,12 +47,14 @@ class ControlArgs implements Disposable {
   /// Consider using [ControlArgs.set] or [ControlArgs.add] to prevent use of misleading [key].
   void operator []=(dynamic key, dynamic value) => _args[key] = value;
 
-  /// Parses input data and stores them as key: value pair.
-  /// Can store any type of data - Map, Iterable, Objects and more..
-  /// [Map] - is directly added to data store.
-  /// [Iterable] - is parsed and data are stored under their [Type].
-  /// [Object] - is stored under his [Type].
-  /// Other [ControlArgs] is combined.
+  /// Parses and adds dynamic data to the argument store.
+  ///
+  /// This method intelligently handles different data types:
+  /// - `Map`: Merges the map's key-value pairs.
+  /// - `ControlArgs`: Combines the data from the other `ControlArgs` instance.
+  /// - `Iterable`: Adds each item, using its runtime type as the key. If all items
+  ///   are of the same type, the whole iterable is stored as well.
+  /// - Other `Object`: Stores the object using its runtime type as the key.
   void set(dynamic args) {
     if (args == null) {
       return;
@@ -65,12 +83,13 @@ class ControlArgs implements Disposable {
     }
   }
 
-  /// Adds [value] to data store under given [key].
-  /// [ControlFactory.keyOf] is used to determine store key.
+  /// Adds a [value] to the store with an optional [key].
+  ///
+  /// If [key] is not provided, it is inferred from the type `T` or the value's runtime type.
   void add<T>({dynamic key, required dynamic value}) =>
       _args[Control.factory.keyOf<T>(key: key, value: value)] = value;
 
-  /// Combines this store with given [args].
+  /// Merges the data from another [ControlArgs] instance into this one.
   void combine(ControlArgs args) {
     _args.addAll(args._args);
   }
@@ -87,11 +106,18 @@ class ControlArgs implements Disposable {
   /// Whether this args contains the given [key].
   bool containsKey(dynamic key) => _args.containsKey(key);
 
-  /// Returns object of given [key] or [defaultValue].
+  /// Retrieves a value of type [T] from the store.
+  ///
+  /// Lookup is performed by [key] if provided, otherwise by type [T].
+  /// Returns [defaultValue] if no matching value is found.
   T? get<T>({dynamic key, T? defaultValue}) =>
       Parse.getArgFromMap<T>(_args, key: key, defaultValue: defaultValue);
 
-  /// Returns object of given [key] or initialize [defaultValue] and stores that value to [data] store.
+  /// Retrieves a value, or creates and stores a default value if not found.
+  ///
+  /// A "get-or-create" utility. If a value for the given [key] or type is not
+  /// found, the [defaultValue] function is called, and its result is stored
+  /// before being returned.
   T? use<T>({dynamic key, T Function()? defaultValue}) {
     final item = Parse.getArgFromMap<T>(_args, key: key);
 

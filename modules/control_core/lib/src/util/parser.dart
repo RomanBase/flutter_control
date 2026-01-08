@@ -2,30 +2,31 @@ part of '../../core.dart';
 
 typedef ParseDecoratorFormat = String Function(String input);
 
-/// Base param decorators for [Parse.format].
+/// A collection of decorators for string formatting with [Parse.format].
 class ParseDecorator {
   const ParseDecorator._();
 
-  /// Empty decorator. 'input' => 'input'
+  /// An empty decorator that returns the input unchanged. 'input' => 'input'
   static ParseDecoratorFormat get none => (input) => input;
 
-  /// Curl braces decorator. 'input' => '{input}'
+  /// A decorator that wraps the input in curly braces. 'input' => '{input}'
   static ParseDecoratorFormat get curl => (input) => '{$input}';
 
-  /// Dollar sign decorator. 'input' => '$input'
+  /// A decorator that prepends a dollar sign. 'input' => '$input'
   static ParseDecoratorFormat get dollar => (input) => '\$$input';
 
-  /// Percent sign decorator. 'input' => '%input'
+  /// A decorator that prepends a percent sign. 'input' => '%input'
   static ParseDecoratorFormat get percent => (input) => '%$input';
 }
 
-/// Helps to parse basic nullable objects.
+/// A utility class with static methods for parsing data types that can explicitly return `null`.
+///
+/// This is in contrast to the main [Parse] class, where methods typically return a
+/// non-nullable default value on failure.
 class ParseN {
   const ParseN._();
 
-  /// Tries to parse value into [String].
-  ///
-  /// If none found, then 'null' is returned.
+  /// Tries to parse a value into a [String]. Returns `null` on failure.
   static String? string(dynamic value) {
     if (value is String) {
       return value;
@@ -38,11 +39,8 @@ class ParseN {
     return null;
   }
 
-  /// Tries to parse value into [integer].
-  ///
-  /// null, int, double, bool, String
-  ///
-  /// If none found, then 'null' is returned.
+  /// Tries to parse a value into an [int]. Returns `null` on failure.
+  /// Handles `int`, `double`, `bool`, and `String` inputs.
   static int? toInteger(dynamic value) {
     if (value is int) {
       return value;
@@ -67,11 +65,8 @@ class ParseN {
     return null;
   }
 
-  /// Tries to parse value into [double].
-  ///
-  /// null, int, double, bool, String.
-  ///
-  /// If none found, then 'null' is returned.
+  /// Tries to parse a value into a [double]. Returns `null` on failure.
+  /// Handles `int`, `double`, `bool`, and `String` inputs.
   static double? toDouble(dynamic value) {
     if (value is double) {
       return value;
@@ -96,11 +91,8 @@ class ParseN {
     return null;
   }
 
-  /// Tries to parse value into [bool].
-  ///
-  /// null, int, double, bool, String.
-  ///
-  /// If none found, then 'null' is returned.
+  /// Tries to parse a value into a [bool]. Returns `null` on failure.
+  /// Handles `int`, `double`, `bool`, and `String` inputs.
   static bool? toBool(dynamic value) {
     if (value is bool) {
       return value;
@@ -124,25 +116,19 @@ class ParseN {
   }
 }
 
-/// Helps to parse basic objects.
+/// A utility class with static methods for robust data parsing and type conversion.
 class Parse {
   const Parse._();
 
-  /// Replaces [params] in [input] string
-  /// Simply replaces strings with params. For more complex formatting can be better to use [Intl].
-  /// Set custom [ParseDecoratorFormat] to decorate param, for example: 'city' => '{city}' or 'city' => '$city'
+  /// Formats a string by replacing placeholders with values from a map.
   ///
-  /// Default decorator is set to [ParseDecorator.curl]
+  /// Placeholders in the [input] string are identified by the [decorator].
+  /// The default decorator is [ParseDecorator.curl], which looks for `{key}`.
   ///
-  /// 'Weather in {city} is {temp}°{symbol}'
-  /// Then [params] are:
-  /// {
-  /// {'city': 'California'},
-  /// {'temp': '25.5'},
-  /// {'symbol': 'C'},
-  /// }
-  ///
-  /// Returns formatted string.
+  /// Example:
+  /// ```dart
+  /// Parse.format('Hello, {name}!', {'name': 'World'}); // "Hello, World!"
+  /// ```
   static String format(String input, Map<String, String> params,
       [ParseDecoratorFormat? decorator]) {
     decorator ??= ParseDecorator.curl;
@@ -153,11 +139,9 @@ class Parse {
     return input;
   }
 
-  /// Tries to parse [value] int [DateTime]
+  /// Tries to parse a dynamic value into a [DateTime].
   ///
-  /// [num] - milliseconds or seconds - [isSec] `true`
-  /// [String] - ISO formatted date and time.
-  /// Timestamp or any other object with `toDate` method.
+  /// Supports numbers (timestamps in milliseconds or seconds) and ISO 8601 strings.
   static DateTime? date(dynamic value, {bool inSec = false}) {
     if (value is num) {
       return DateTime.fromMillisecondsSinceEpoch(
@@ -175,9 +159,8 @@ class Parse {
     }
   }
 
-  /// Tries to parse value into [String].
-  ///
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to parse a dynamic value into a [String].
+  /// Returns [defaultValue] if parsing fails or the value is null.
   static String string(dynamic value, {String defaultValue = ''}) {
     if (value is String) {
       return value;
@@ -190,11 +173,8 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into [integer].
-  ///
-  /// null, int, double, bool, String
-  ///
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to parse a dynamic value into an [int].
+  /// Returns [defaultValue] if parsing fails.
   static int toInteger(dynamic value, {int defaultValue = 0}) {
     if (value is int) {
       return value;
@@ -221,11 +201,8 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into [double].
-  ///
-  /// null, int, double, bool, String.
-  ///
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to parse a dynamic value into a [double].
+  /// Returns [defaultValue] if parsing fails.
   static double toDouble(dynamic value, {double defaultValue = 0.0}) {
     if (value is double) {
       return value;
@@ -250,11 +227,8 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to parse value into [bool].
-  ///
-  /// null, int, double, bool, String.
-  ///
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to parse a dynamic value into a [bool].
+  /// Returns [defaultValue] if parsing fails.
   static bool toBool(dynamic value, {bool defaultValue = false}) {
     if (value is bool) {
       return value;
@@ -277,8 +251,9 @@ class Parse {
     return defaultValue;
   }
 
-  /// Parse input [value] to String and then to enum. Parsing is case insensitive.
-  /// If enum of given name is not found, [defaultValue] or first value from [enums] is returned.
+  /// Parses a string representation of an enum into its corresponding enum value.
+  /// The comparison is case-insensitive.
+  /// Returns [defaultValue] or the first enum value if parsing fails.
   static T toEnum<T>(dynamic value, List<T> enums, {T? defaultValue}) {
     if (value == null) {
       return defaultValue ?? enums[0];
@@ -290,8 +265,8 @@ class Parse {
         orElse: () => defaultValue ?? enums[0]);
   }
 
-  /// Returns name of given enum [value].
-  /// If given [value] is empty or not enum, null is returned.
+  /// Returns the string name of an enum value (e.g., `MyEnum.value` => `"value"`).
+  /// Returns `null` if the input is not a valid enum.
   static String? fromEnum(dynamic value) {
     if (value == null) {
       return null;
@@ -306,8 +281,8 @@ class Parse {
     return null;
   }
 
-  /// Safety converts value to given [Type]
-  /// If conversion fails, then [defaultValue] is returned.
+  /// Safely converts a dynamic value to type [T] using a [converter] function.
+  /// Returns [defaultValue] if the conversion throws an error.
   static T? convert<T>(dynamic value,
       {required ValueConverter<T> converter, T? defaultValue}) {
     try {
@@ -319,8 +294,8 @@ class Parse {
     return defaultValue;
   }
 
-  /// Safety converts value to give [Type]
-  /// If conversion fails, then [defaultValue] is returned.
+  /// Safely converts a key-value pair to type [T] using an [entryConverter] function.
+  /// Returns [defaultValue] if the conversion throws an error.
   static T? convertEntry<T>(dynamic key, dynamic value,
       {required EntryConverter<T> converter, T? defaultValue}) {
     try {
@@ -333,10 +308,8 @@ class Parse {
     return defaultValue;
   }
 
-  /// Converts given [value] to String - input [value] name is parsed based on [Type].
-  /// Primitives are just converted to [String].
-  /// For [Enum] value name is parsed.
-  /// Otherwise [Type] name is returned.
+  /// Converts a dynamic value to a descriptive string name.
+  /// Handles primitives, enums, and types.
   static String name(dynamic value) {
     if (value == null) {
       return 'none';
@@ -367,20 +340,19 @@ class Parse {
     return value.runtimeType.toString();
   }
 
-  /// Returns [Type] from given [T] or [value].
-  /// Returns `dynamic` if [T] is not passed and [value] is `null`.
+  /// Returns the [Type] from a generic argument `T` or a dynamic `value`.
+  /// Defaults to `dynamic` if type information is unavailable.
   static Type type<T>([dynamic value]) =>
       T != dynamic ? T : (value?.runtimeType ?? dynamic);
 
-  /// Returns 'true' if [T] is nullable.
+  /// Returns `true` if the generic type `T` is nullable.
   static bool nullableType<T>() => null is T || T == dynamic;
 
-  /// Tries to parse value into List.
+  /// Tries to parse a dynamic value into a `List<T>`.
   ///
-  /// List, Map, Iterable.
-  ///
-  /// Use [converter] or [entryConverter] to convert values into new List.
-  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
+  /// Supports `List`, `Map` (uses values), and other `Iterable`s.
+  /// - [converter]/[entryConverter]: Functions to convert each item to type `T`.
+  /// - [hardCast]: If `true`, attempts a direct `cast<T>()`, which is faster but can fail at runtime.
   static List<T> toList<T>(dynamic value,
       {ValueConverter<T>? converter,
       EntryConverter<T>? entryConverter,
@@ -454,12 +426,11 @@ class Parse {
     return items;
   }
 
-  /// Tries to parse value into Map.
+  /// Tries to parse a dynamic value into a `Map<K, T>`.
   ///
-  /// List, Map, Iterable.
-  ///
-  /// Use [converter] or [entryConverter] to convert value to [T]. [keyConverter] converts key to [K].
-  /// Use [hardCast] if you are sure that [value] contains expected Types and there is no need to convert items.
+  /// Supports `List`, `Map`, and other `Iterable`s.
+  /// - [key]: A function to convert a source key into the target key of type `K`.
+  /// - [converter]/[entryConverter]: Functions to convert each value to type `T`.
   static Map<K, T> toMap<K, T>(dynamic value,
       {EntryConverter<K>? key,
       ValueConverter<T>? converter,
@@ -523,9 +494,15 @@ class Parse {
     return items;
   }
 
-  /// Tries to return item of given [key] or [Type].
-  /// If none found, then [defaultValue] is returned.
-  /// Currently supports [Parse.getArgFromMap], [Parse.getArgFromList] and [Parse.getArgFromString]
+  /// Dynamically retrieves an argument from a nested data structure (`Map`, `Iterable`, `ControlArgs`).
+  ///
+  /// This is a powerful utility for extracting a value without knowing the exact
+  /// structure of the source data.
+  ///
+  /// - [value]: The source data structure.
+  /// - [key]: An optional key to look for in a `Map`.
+  /// - [predicate]: An optional test to find an item in an `Iterable`.
+  /// - [defaultValue]: A fallback value if nothing is found.
   static T? getArg<T>(dynamic value,
       {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
     if (value is T && T != dynamic) {
@@ -558,9 +535,9 @@ class Parse {
     return defaultValue;
   }
 
-  /// Tries to return item of given [key], [Type] or [predicate].
-  /// If [key] is not specified, then [Parse.getArgFromList] is used.
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to return an item from a map by [key], [Type], or [predicate].
+  ///
+  /// If [key] is not specified, it falls back to searching the map's values.
   static T? getArgFromMap<T>(Map? map,
       {dynamic key, bool Function(dynamic)? predicate, T? defaultValue}) {
     if (map == null) {
@@ -601,8 +578,7 @@ class Parse {
         predicate: predicate, defaultValue: defaultValue);
   }
 
-  /// Tries to return object of given [Type] or [predicate].
-  /// If none found, then [defaultValue] is returned.
+  /// Tries to return an item from an iterable by [Type] or [predicate].
   static T? getArgFromList<T>(Iterable? iterable,
       {bool Function(dynamic)? predicate, T? defaultValue}) {
     if (iterable == null) {
@@ -631,7 +607,7 @@ class Parse {
     return defaultValue;
   }
 
-  /// Creates copy of given [map] and filters out [null] values. Also empty [Iterable] or [String] is not included in returned [Map].
+  /// Creates a copy of a map, filtering out null keys, null values, and empty iterables/strings.
   static Map<K, V> fill<K, V>(Map<K, V> map) => Map.from(map)
     ..removeWhere((key, value) =>
         key == null ||
@@ -641,7 +617,7 @@ class Parse {
 }
 
 extension MapExtension on Map {
-  /// [Parse.getArgFromMap].
+  /// An extension method equivalent to [Parse.getArgFromMap].
   T? getArg<T>(
           {dynamic key,
           bool Function(dynamic)? predicate,
@@ -651,7 +627,7 @@ extension MapExtension on Map {
           key: key, predicate: predicate, defaultValue: defaultValue) ??
       builder?.call();
 
-  /// [Parse.fill].
+  /// An extension method equivalent to [Parse.fill].
   Map<K, V> fill<K, V>() => Parse.fill(this) as Map<K, V>;
 }
 
@@ -718,9 +694,10 @@ extension ListExt<E> on List<E> {
 }
 
 extension IterableExtension on Iterable {
+  /// Casts an iterable to be nullable.
   Iterable<T?> nullable<T>() => cast<T?>();
 
-  /// [Parse.getArgFromList].
+  /// An extension method equivalent to [Parse.getArgFromList].
   T? getArg<T>(
           {bool Function(dynamic)? predicate,
           T? defaultValue,

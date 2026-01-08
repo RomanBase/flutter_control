@@ -1,5 +1,9 @@
 part of '../../core.dart';
 
+/// A [ControlSubscription] that also implements [StreamSubscription].
+///
+/// This is used by [FieldControl] to bridge the gap between the control framework's
+/// subscription model and Dart's native `Stream` subscriptions.
 class FieldSubscription<T> extends ControlSubscription<T>
     implements StreamSubscription<T?> {
   final StreamSubscription<T?> _sub;
@@ -88,7 +92,13 @@ class FieldSubscription<T> extends ControlSubscription<T>
   }
 }
 
-/// Stream based version of [ObservableModel].
+/// A `Stream`-based implementation of [ObservableModel].
+///
+/// `FieldControl` wraps a `StreamController` to provide a reactive value holder
+/// that interoperates seamlessly with Dart's `Stream` ecosystem.
+///
+/// It is useful for representing values that change over time, especially when
+/// dealing with form fields or data coming from asynchronous sources.
 class FieldControl<T> extends ObservableModel<T?> {
   /// Current broadcast [StreamController].
   final StreamController<T?> _stream = StreamController<T?>.broadcast();
@@ -96,10 +106,10 @@ class FieldControl<T> extends ObservableModel<T?> {
   /// List of subscribers for later dispose.
   final _subscriptions = <FieldSubscription>[];
 
-  /// Default sink of this controller.
-  /// Use [sinkConverter] to convert input data.
+  /// A `Sink` to add new values to the control.
   Sink<T> get sink => FieldSink<T>(this);
 
+  /// The underlying `Stream` that emits values when the control changes.
   Stream<T?> get stream => _stream.stream;
 
   /// Current value.
@@ -125,8 +135,8 @@ class FieldControl<T> extends ObservableModel<T?> {
     }
   }
 
-  /// Initializes [FieldControl] and subscribes it to given [stream].
-  /// Check [subscribeTo] function for more info.
+  /// Initializes [FieldControl] and subscribes it to a given [stream].
+  /// See [subscribeTo] for more info.
   factory FieldControl.of(Stream stream,
       {T? initValue,
       Function? onError,
@@ -163,7 +173,7 @@ class FieldControl<T> extends ObservableModel<T?> {
     }
   }
 
-  /// Notifies current [Stream].
+  /// Notifies the underlying [Stream] with the current value.
   @override
   void notify() {
     if (!_stream.isClosed) {
@@ -171,7 +181,7 @@ class FieldControl<T> extends ObservableModel<T?> {
     }
   }
 
-  /// Returns [Sink] with custom [ValueConverter].
+  /// Returns a [Sink] that uses a custom [ValueConverter] to transform input data.
   Sink sinkConverter(ValueConverter<T> converter) =>
       FieldSinkConverter(this, converter);
 
@@ -192,9 +202,9 @@ class FieldControl<T> extends ObservableModel<T?> {
     return sub;
   }
 
-  /// Sets [value] after [future] finishes.
-  /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
-  /// Returns [Future] to await and register other callbacks.
+  /// Sets the control's [value] after a [future] completes.
+  ///
+  /// An optional [converter] can be used to transform the future's result.
   Future onFuture(Future future, {ValueConverter? converter}) => future
           .then(
               (value) => setValue(converter == null ? value : converter(value)))
@@ -202,11 +212,15 @@ class FieldControl<T> extends ObservableModel<T?> {
         printDebug(err);
       });
 
-  /// Subscribes this field to given [Stream].
-  /// Controller will subscribe to input stream and will listen for changes and populate this changes into own stream.
-  /// Via [ValueConverter] is possible to convert object from input [Stream] type to own stream [value].
-  /// [StreamSubscription] is automatically closed during dispose phase of [FieldControl].
-  /// Returns [FieldSubscription] for manual cancellation.
+  /// Subscribes this field to an external [Stream].
+  ///
+  /// The control will listen for changes and update its own value, broadcasting
+  /// the changes to its own stream.
+  ///
+  /// - [converter]: An optional function to convert values from the input stream.
+  ///
+  /// Returns a [FieldSubscription] for manual cancellation. The subscription is
+  /// automatically disposed of when the `FieldControl` is disposed.
   FieldSubscription subscribeTo(Stream stream,
       {Function? onError,
       void Function()? onDone,
@@ -255,6 +269,7 @@ class FieldControl<T> extends ObservableModel<T?> {
     );
   }
 
+  /// Subscribes to the control's stream with full `StreamSubscription` callbacks.
   FieldSubscription<T> subscribeStream(void Function(T? event) onData,
       {Function? onError,
       void Function()? onDone,
@@ -288,7 +303,7 @@ class FieldControl<T> extends ObservableModel<T?> {
     sub._cancelStreamSub();
   }
 
-  /// Clears subscribers, but didn't close [Stream] entirely.
+  /// Clears subscribers, but doesn't close the underlying [Stream].
   void softDispose() {
     _clearSubscriptions();
   }
@@ -313,7 +328,7 @@ class FieldControl<T> extends ObservableModel<T?> {
   }
 }
 
-/// Standard [Sink] for [FieldControl].
+/// A standard [Sink] for a [FieldControl].
 class FieldSink<T> implements Sink<T> {
   /// Parent [FieldControl] to pass value in.
   FieldControl? _target;
@@ -336,8 +351,8 @@ class FieldSink<T> implements Sink<T> {
   }
 }
 
-/// Extended [FieldSink] with converter for [FieldControl]
-/// Converts [value] and then sends it to Field.
+/// An extended [FieldSink] that uses a converter.
+/// It converts the added data before passing it to the [FieldControl].
 class FieldSinkConverter<T> extends FieldSink<dynamic> {
   /// Value Converter - initialized in constructor
   final ValueConverter<T> converter;
@@ -357,8 +372,10 @@ class FieldSinkConverter<T> extends FieldSink<dynamic> {
 //########################################################################################
 //########################################################################################
 
-/// Extended version of [FieldControl] specified to [List].
-/// TODO [4.2.0]: ready to refactor
+/// An extended version of [FieldControl] specialized for managing a `List<T>`.
+///
+/// It provides common list manipulation methods (`add`, `remove`, `sort`, etc.),
+/// automatically notifying listeners when the list is modified.
 class ListControl<T> extends FieldControl<List<T>> {
   @override
   List<T> get value => super.value!;
@@ -663,6 +680,7 @@ class ListControl<T> extends FieldControl<List<T>> {
 //########################################################################################
 //########################################################################################
 
+/// Represents the status of an asynchronous operation.
 enum LoadingStatus {
   initial,
   progress,
@@ -672,8 +690,10 @@ enum LoadingStatus {
   unknown,
 }
 
-/// Extended [FieldControl] specified to control [LoadingStatus].
-/// TODO [4.2.0]: ready to refactor
+/// An extended [FieldControl] specialized for managing a [LoadingStatus].
+///
+/// This is useful for tracking the state of an async operation (e.g., an API call)
+/// and providing an optional `message` (e.g., an error message).
 class LoadingControl extends ControlObservable<LoadingStatus> {
   /// Returns true if [value] is [LoadingStatus.done].
   bool get isDone => value == LoadingStatus.done;
@@ -687,11 +707,10 @@ class LoadingControl extends ControlObservable<LoadingStatus> {
   /// Returns true if [message] is not null.
   bool get hasMessage => message != null;
 
-  /// Inner message of LoadingStatus.
-  /// Can be used to hold error or any other loading message.
+  /// An optional message associated with the current status (e.g., an error string).
   dynamic message;
 
-  /// [FieldControl] of [LoadingStatus].
+  /// Creates a [LoadingControl] with an initial status.
   LoadingControl([super.status = LoadingStatus.initial]);
 
   /// Changes status and sets inner message.

@@ -1,9 +1,15 @@
 part of '../../core.dart';
 
-/// Subscription part of [ObservableValue].
-/// Since [invalidate] is introduced, [dispose] is ignored by [ControlObservable].
+/// Represents a subscription to an [ObservableValue].
+///
+/// A subscription is created when you `listen` or `subscribe` to an observable.
+/// It holds the callback to be executed and provides methods to control the
+/// subscription's lifecycle and behavior, such as filtering events or unsubscribing.
+///
+/// While `dispose()` can be called to manually cancel, the subscription is usually
+/// managed by its parent observable.
 class ControlSubscription<T> implements Disposable {
-  /// Reference to Observable.
+  /// A reference to the parent observable this subscription is attached to.
   ObservableValue? _parent;
 
   /// Callback function no notify when observable is changed.
@@ -27,26 +33,33 @@ class ControlSubscription<T> implements Disposable {
   /// Checks if callback to serve is available.
   bool get isCallbackAttached => _callback != null;
 
-  /// Activate this subscription.
-  /// Given [callback] will serve changes via observable.
+  /// Activates the subscription by linking it to a parent observable and setting a callback.
+  ///
+  /// This is called internally by the observable when a subscription is created.
   void initSubscription(ObservableValue parent, [ValueCallback<T>? callback]) {
     _parent = parent;
     _callback = callback;
   }
 
-  /// Sets test to [filter] observable values.
+  /// Applies a filter to the subscription.
+  ///
+  /// The subscription's callback will only be invoked if the new value
+  /// passes the [filter] predicate.
   ControlSubscription<T> filter(Predicate<T>? filter) {
     _filter = filter;
     return this;
   }
 
-  /// Sets test to [predicate] when to cancel this subscription.
+  /// Sets a condition to automatically cancel the subscription.
+  ///
+  /// The subscription will be canceled after receiving the first value
+  /// for which the [predicate] returns `true`.
   ControlSubscription<T> until(Predicate<T>? predicate) {
     _until = predicate;
     return this;
   }
 
-  /// Serve just one change. After this subscription cancels.
+  /// Configures the subscription to be canceled after the first notification.
   ControlSubscription<T> once() {
     _until = (value) => true;
     return this;
@@ -58,9 +71,10 @@ class ControlSubscription<T> implements Disposable {
   /// Checks if is time to close this subscription.
   bool _closePass(T value) => _until?.call(value) ?? false;
 
-  /// Notify sub with given [value].
-  /// Check [filter] and [until] to modify callback.
-  /// When sub is ready to [invalidate], then parent observer will remove sub from its listeners.
+  /// Notifies the subscription with a new value.
+  ///
+  /// This is called by the parent observable. It respects the [filter] and [until]
+  /// conditions before invoking the callback.
   void notifyCallback(T value) {
     if (!isActive || !_filterPass(value)) {
       return;
@@ -73,10 +87,13 @@ class ControlSubscription<T> implements Disposable {
     }
   }
 
+  /// Pauses the subscription, temporarily stopping notifications.
   void pause() => _active = false;
 
+  /// Resumes a paused subscription.
   void resume() => _active = isValid;
 
+  /// Cancels the subscription and removes it from the parent observable.
   void cancel() {
     _active = false;
     _parent?.cancel(this);
@@ -84,6 +101,9 @@ class ControlSubscription<T> implements Disposable {
     invalidate();
   }
 
+  /// Marks the subscription as invalid, detaching it from its parent and callback.
+  ///
+  /// This is used by the parent observable to clean up subscriptions.
   void invalidate() {
     _active = false;
     _parent = null;

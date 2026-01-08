@@ -1,25 +1,34 @@
 part of '../../core.dart';
 
-/// Standard initialization of object right after constructor.
-/// In this approach constructor can be empty and [args] can contains all required dependencies. Kind of late property injection.
+/// An interface for objects that can be initialized with arguments after construction.
+///
+/// This allows for a form of dependency injection or late initialization where
+/// dependencies are provided via the [init] method instead of the constructor.
 abstract class Initializable {
-  /// Init is typically called right after constructor.
-  /// [args] - these arguments are typically passed through factory.
+  /// Initializes the object with a map of arguments.
+  ///
+  /// This method is typically called by a factory (like `ControlFactory`) immediately
+  /// after the object is instantiated.
+  ///
+  /// - [args]: A map of arguments, often used to pass dependencies or configuration.
   void init(Map args) {}
 }
 
-/// Base class within to implement Business logic.
-/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
-/// Pass init [args] right after constructor to configure this model.
-/// Comes with [DisposeHandler] so we can control how [dispose] will be handled.
-/// When not restricted, [init] and [dispose] can be called multiple times during lifecycle of this model.
-/// More specific use is implemented within [BaseControl] and [BaseModel].
+/// The foundational class for business logic models in the control framework.
+///
+/// It establishes a common lifecycle with [init], [mount], and [dispose] methods.
+/// It also includes [DisposeHandler] to manage how `dispose` is handled.
+///
+/// By default, [init] and [dispose] can be called multiple times. For more
+/// specific behaviors, see [BaseModel] and [BaseControl].
 class ControlModel with DisposeHandler implements Initializable {
   @override
   void init(Map args) {}
 
-  /// Used to register interface/handler/notifier etc.
-  /// Can be called multiple times with different objects!
+  /// A lifecycle method for attaching external objects, such as notifiers or handlers.
+  ///
+  /// This can be called multiple times with different objects to establish connections
+  /// between the model and other parts of the application.
   void mount(Object? object) {}
 
   @override
@@ -31,12 +40,16 @@ class ControlModel with DisposeHandler implements Initializable {
   }
 }
 
-/// Base class within to implement lightweight Business logic.
-/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
-/// When not restricted, [init] can be called multiple times during lifecycle of this model.
-/// Since this model [preferSoftDispose] by default, [dispose] must be called manually !
+/// A lightweight business logic model that prefers soft disposal by default.
 ///
-/// BaseModels are typically constructed and initialized manually within code, but also can be constructed through [ControlFactory] (Check [Control] service locator).
+/// `BaseModel` is intended for objects that are often created and destroyed, but
+/// where a full `dispose` might be premature (e.g., items in a list).
+///
+/// By default, `preferSoftDispose` is `true`, meaning `requestDispose` will call
+/// `softDispose` instead of the full `dispose`. A manual call to `dispose` is
+/// still required for final cleanup.
+///
+/// It's suitable for manual instantiation or retrieval from the [ControlFactory].
 ///
 /// Check [BaseControl] for more robust implementation of [ControlModel].
 /// Check [ObservableComponent], [NotifierComponent] mixins to create observable version of model.
@@ -53,14 +66,15 @@ class BaseModel extends ControlModel {
   }
 }
 
-/// Base class within to implement robust Business logic.
-/// This class is typically extended by custom BL Models to provide homogenous API through all code base.
-/// [init] is 'replaced' with [onInit] that is called just once ([preventMultiInit] is set by default).
+/// A robust business logic model that ensures `onInit` is called only once.
 ///
-/// BaseControls are typically constructed by [ControlFactory] (Check [Control] service locator).
+/// `BaseControl` is designed for more complex components like page controllers or
+/// services that should have a single, reliable initialization phase.
+///
+/// It's typically constructed and managed by the [ControlFactory] and often used
+/// with mixins like [LazyControl] and [ReferenceCounter] for automatic lifecycle management.
 ///
 /// Check [BaseModel] for more lightweight implementation of [ControlModel].
-/// Check [LazyControl], [ReferenceCounter] mixins to create even more powerful implementation.
 class BaseControl extends ControlModel {
   /// Init check.
   bool _isInitialized = false;
@@ -68,9 +82,13 @@ class BaseControl extends ControlModel {
   /// Return 'true' if init function was called before.
   bool get isInitialized => _isInitialized;
 
-  /// Prevents multiple initialization and [onInit] will be called just once.
+  /// A flag to ensure `onInit` is called only once. Set to `false` to allow multiple initializations.
   bool preventMultiInit = true;
 
+  /// Overrides the default `init` to guard against multiple initializations.
+  ///
+  /// It calls [onInit] the first time it's executed and does nothing on subsequent calls
+  /// if [preventMultiInit] is `true`.
   @override
   @mustCallSuper
   void init(Map args) {
@@ -84,16 +102,17 @@ class BaseControl extends ControlModel {
     onInit(args);
   }
 
-  /// Init is typically called right after constructor.
-  /// Is called just once. To enable multi init set [preventMultiInit] to false.
-  /// [args] - these arguments are typically passed through factory.
+  /// The main initialization method, called once after the constructor.
+  ///
+  /// Use this method for your primary setup logic.
+  ///
+  /// - [args]: Arguments passed from the factory.
   void onInit(Map args) {}
 
-  /// Reload model and data.
+  /// A method to refresh or reload the model's data.
   Future<void> reload() async {}
 
-  /// Invalidates Model and sets [isInitialized] to false.
-  /// In some cases, from this point model can be re-initialized.
+  /// Resets the model's initialization state, allowing [onInit] to be called again.
   void invalidate() {
     _isInitialized = false;
   }
