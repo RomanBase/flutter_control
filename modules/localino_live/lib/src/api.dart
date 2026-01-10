@@ -1,10 +1,14 @@
 part of localino_live;
 
+/// An implementation of [LocalinoRemoteApi] that uses the Localino REST API.
 class _LocalinoLiveApi implements LocalinoRemoteApi {
+  /// The remote repository for fetching data from the API.
   LocalinoRemoteRepo get remoteRepo => LocalinoLive.repo(options.access);
 
+  /// The local repository for caching data on the device.
   LocalinoLocalRepo get localRepo => LocalinoLive.cache();
 
+  /// The remote options containing space, project, and access credentials.
   final LocalinoRemoteOptions options;
 
   _LocalinoLiveApi(this.options);
