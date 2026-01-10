@@ -102,7 +102,7 @@ void main() {
     });
 
     test('map', () {
-      final parse1 = Parse.toMap<int, int>(list);
+      final parse1 = Parse.toMap<int, int>(list, converter: (value) => value);
       final parse2 = Parse.toMap<dynamic, int>(list);
       final parse3 = Parse.toMap<dynamic, String>(list,
           converter: (item) => item.toString());
@@ -118,6 +118,7 @@ void main() {
       expect(parse1.length, 10);
       expect(parse2.length, 10);
       expect(parse3.length, 10);
+      expect(parse1[0], 0);
       expect(parse3[0], '0');
 
       expect(parse4.length, 10);

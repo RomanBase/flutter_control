@@ -43,8 +43,8 @@ part 'src/util/parser.dart';
 typedef InitFactory<T> = T Function(dynamic args);
 typedef ValueCallback<T> = void Function(T value);
 
-typedef ValueConverter<T> = T Function(Object? value);
-typedef EntryConverter<T> = T Function(Object? key, Object? value);
+typedef ValueConverter<T> = T Function(dynamic value);
+typedef EntryConverter<T> = T Function(dynamic key, dynamic value);
 
 typedef Predicate<T> = bool Function(T value);
 
