@@ -31,6 +31,8 @@ class LocalinoDelegate extends LocalizationsDelegate<Localino> {
   @override
   bool shouldReload(LocalizationsDelegate old) => false;
 
+  /// Returns list of supported locales from [Localino] assets.
+  /// If no assets are provided, then system locales are returned.
   List<Locale> supportedLocales() {
     final list = <Locale>[];
 
