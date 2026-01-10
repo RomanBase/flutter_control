@@ -1,3 +1,5 @@
+/// A comprehensive Flutter framework for state management, dependency injection, and navigation,
+/// designed to be scalable and easy to use.
 library flutter_control;
 
 import 'dart:ui';
@@ -76,5 +78,6 @@ part 'src/widget/controllable_widget.dart';
 
 part 'src/widget/field_builder.dart';
 
+/// A builder function for widgets that depend on a value of type [T].
 typedef ControlWidgetBuilder<T> = Widget Function(
     BuildContext context, T value);

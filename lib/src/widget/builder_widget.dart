@@ -1,18 +1,21 @@
 part of flutter_control;
 
-/// Subscribes to given [control] and notifies [builder] when object changes.
-/// [control] object is typically: [ObservableValue] like [ActionControl] or [ObservableComponent], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].\
-/// Check [ControlObservable.of] for full list of supported observables.
+/// A widget that subscribes to an observable object and rebuilds when the object notifies of a change.
+///
+/// The [control] object can be of various types, including [ValueListenable],
+/// [Listenable], [Stream], [Future], or any [ObservableValue] from the Control framework.
+/// See [ControlObservable.of] for a full list of supported types.
 class ControlBuilder<T> extends StatefulWidget {
-  /// Control to subscribe.
+  /// The observable object to subscribe to.
   final dynamic control;
 
-  /// Widget builder.
+  /// A builder function that is called when the control notifies of a change.
   final ControlWidgetBuilder<T> builder;
 
-  /// Widget builder for non value.
+  /// An optional builder for the case when the control's value is `null`.
   final WidgetBuilder? noData;
 
+  /// An optional function to convert the control's value to the desired type [T].
   final T Function(dynamic)? valueConverter;
 
   const ControlBuilder({
@@ -126,25 +129,26 @@ class _ControlBuilderState<T> extends _ValueState<ControlBuilder<T>, T> {
   }
 }
 
-/// Subscribes to multiple [Stream], [Observable] and [Listenable] objects and listens about changes.
-/// Whenever one of [controls] notifies about change, Widget is rebuild.
-/// Supports [ControlObservable] - [ActionControl], [FieldControl], [ValueListenable], [Listenable], [Stream] and [Future].
+/// A widget that subscribes to a list of observable objects and rebuilds when any of them notify of a change.
+///
+/// Supported observable types are the same as for [ControlBuilder].
 class ControlBuilderGroup extends StatefulWidget {
-  /// List of Controls that will notify this Widget about changes.
+  /// A list of observable objects to subscribe to.
   final List controls;
 
-  /// Widget builder.
-  /// Builder passes [value] as List of values from given [controls]. If object don't have value (eg. [Listenable]), actual object is returned.
-  /// Value order is same as [controls] order.
+  /// A builder function that is called when any of the controls notify of a change.
+  /// The builder receives a list of the current values from the controls.
   final ControlWidgetBuilder<List?> builder;
 
-  /// Checks if pass [controls] to [builder] instead of 'values'.
+  /// If `true`, the builder will receive the list of control objects themselves
+  /// instead of their values.
   final bool passControls;
 
-  /// Builds Widget every time when data in [controls] are changed.
-  /// [controls] - List of objects that will notifies Widget to rebuild. Supports [ActionControl], [FieldControl], [StateControl], [ValueListenable] and [Listenable].
-  /// [builder] - Widget builder, passes [value] as List of values from given [controls].
-  /// [passControls] - Passes [controls] to [builder] instead of 'values'.
+  /// Creates a [ControlBuilderGroup].
+  ///
+  /// [controls] A list of objects to listen to (e.g., [ActionControl], [ValueListenable]).
+  /// [builder] A function that builds the widget based on the latest values from the controls.
+  /// [passControls] If true, passes the control objects themselves to the builder instead of their values.
   const ControlBuilderGroup({
     super.key,
     required this.controls,
@@ -156,9 +160,9 @@ class ControlBuilderGroup extends StatefulWidget {
   _ControlBuilderGroupState createState() => _ControlBuilderGroupState();
 }
 
-/// State of [ControlBuilderGroup].
+/// State for [ControlBuilderGroup].
 class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
-  /// All active subs.
+  /// All active subscriptions.
   final _subs = <Disposable>[];
 
   final _observables = <ObservableValue>[];
@@ -170,7 +174,7 @@ class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
     _initSubs();
   }
 
-  /// Maps values from Controls to List.
+  /// Maps the values from the listened controls to a list.
   List _mapValues() {
     if (widget.passControls) {
       return widget.controls;
@@ -179,7 +183,7 @@ class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
     return _observables.map((e) => e.value).toList();
   }
 
-  /// Subscribes to Controls and listen each about changes.
+  /// Subscribes to all controls in the list.
   void _initSubs() {
     widget.controls.forEach((control) {
       final observable = ControlObservable.of(control);
@@ -198,7 +202,7 @@ class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
     value = _mapValues();
   }
 
-  /// Notifies State and maps Control values.
+  /// Notifies the state to rebuild and updates the current values.
   void _notifyState() => notifyValue(_mapValues());
 
   @override
@@ -229,7 +233,7 @@ class _ControlBuilderGroupState extends _ValueState<ControlBuilderGroup, List> {
   @override
   Widget build(BuildContext context) => widget.builder(context, value);
 
-  /// Disposes all Subscriptions and Listeners.
+  /// Disposes all active subscriptions.
   void _disposeSubs() {
     _subs.forEach((item) => item.dispose());
     _subs.clear();

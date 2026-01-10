@@ -44,6 +44,8 @@ class CaseWidget<T> extends StatefulWidget {
     this.soft = true,
   }) : super(key: key);
 
+  /// A convenience builder for [CaseWidget] that uses a [ControlBuilder] to
+  /// listen to a `control` and automatically update the active case.
   static Widget builder<T>({
     Key? key,
     required dynamic control,

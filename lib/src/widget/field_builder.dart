@@ -1,11 +1,14 @@
 part of flutter_control;
 
-/// Extends [StreamBuilder] and adds some functionality to be used easily with [FieldControl].
-/// If no [Widget] is [build] then empty [Container] is returned.
+/// A specialized [StreamBuilder] for use with a [FieldControl].
+///
+/// It automatically uses the control's `stream` and `value` for the builder's
+/// `stream` and `initialData` properties.
 class FieldStreamBuilder<T> extends StreamBuilder<T?> {
-  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
-  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
-  /// [builder] - required Widget builder. [AsyncSnapshot] is passing data to handle.
+  /// Creates a [FieldStreamBuilder].
+  ///
+  /// [control] The [FieldControl] that provides the data stream.
+  /// [builder] A builder that creates a widget based on the [AsyncSnapshot] from the stream.
   FieldStreamBuilder({
     super.key,
     required FieldControl<T> control,
@@ -22,13 +25,16 @@ class FieldStreamBuilder<T> extends StreamBuilder<T?> {
   }
 }
 
-/// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
+/// A convenience widget that builds itself based on the state of a [FieldControl].
+///
+/// It simplifies handling the `snapshot.hasData` case from a [StreamBuilder].
 class FieldBuilder<T> extends FieldStreamBuilder<T> {
-  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
-  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
-  /// [builder] - required Widget builder. Non 'null' [T] value is passed directly.
-  /// [noData] - Widget to show, when value is 'null'.
-  /// [nullOk] - Determine where to handle 'null' values. 'true' - 'null' will be passed to [builder].
+  /// Creates a [FieldBuilder].
+  ///
+  /// [control] The [FieldControl] to listen to.
+  /// [builder] A builder that is called with the control's value.
+  /// [noData] An optional widget to display when the control's value is `null`.
+  /// [nullOk] If `true`, the [builder] will be called even with `null` values.
   FieldBuilder({
     super.key,
     required FieldControl<T> control,
@@ -50,13 +56,17 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
             });
 }
 
-/// Extended [FieldStreamBuilder] providing data check above [AsyncSnapshot] and calling corresponding build function.
+/// A convenience widget that builds itself based on the state of a [FieldControl]
+/// containing a [List].
+///
+/// It simplifies handling the case where the list might be empty.
 class ListBuilder<T> extends FieldStreamBuilder<List<T>?> {
-  /// Stream based Widget builder. Listening [FieldControlStream.stream] about changes.
-  /// [control] - required Stream controller. [FieldControl] or [FieldControlSub].
-  /// [builder] - required Widget builder. Only non empty [List] is passed directly to handle.
-  /// [noData] - Widget to show, when List is empty.
-  /// [nullOk] - Determine where to handle empty List. 'true' - empty List will be passed to [builder].
+  /// Creates a [ListBuilder].
+  ///
+  /// [control] The [FieldControl] that holds the list.
+  /// [builder] A builder that is called with the list.
+  /// [noData] An optional widget to display when the list is empty or `null`.
+  /// [nullOk] If `true`, the [builder] will be called even with an empty or `null` list.
   ListBuilder({
     super.key,
     required FieldControl<List<T>> control,
@@ -79,8 +89,10 @@ class ListBuilder<T> extends FieldStreamBuilder<List<T>?> {
         );
 }
 
-/// Extended [FieldStreamBuilder] version specified to build [LoadingStatus] states.
-/// Internally uses [CaseWidget] to animate Widget crossing.
+/// A widget that builds itself based on the [LoadingStatus] of a [LoadingControl].
+///
+/// It uses a [CaseWidget] internally to display different widgets for each
+/// loading state (e.g., progress, done, error).
 class LoadingBuilder extends ControllableWidget<LoadingControl> {
   final WidgetBuilder? initial;
   final WidgetBuilder? progress;
@@ -92,19 +104,15 @@ class LoadingBuilder extends ControllableWidget<LoadingControl> {
   final CrossTransition? transition;
   final Map<LoadingStatus, CrossTransition>? transitions;
 
-  /// Builds Widget based on current [LoadingStatus].
-  /// Uses [CaseWidget] to handle current state and Widget animation.
+  /// Creates a [LoadingBuilder].
   ///
-  /// [initial] - Initial Widget before loading starts (barely used).
-  /// [progress] - Loading Widget, by default [CircularProgressIndicator] is build.
-  /// [done] - Widget when loading is completed.
-  /// [error] - Error Widget, by default [Text] with [LoadingControl.message] is build.
-  /// [outdated], [unknown] - Mostly same as [done] with some badge.
-  /// [transition] - Transition between Widgets. By default [CrossTransitions.fadeOutFadeIn] is used.
-  /// [transitions] - Case specific transitions.
+  /// Provide a builder for each [LoadingStatus] you want to handle.
   ///
-  ///  If status don't have default builder, empty [Container] is build.
-  ///  'null' is considered as [LoadingStatus.initial].
+  /// - [control]: The [LoadingControl] to monitor.
+  /// - [progress]: A widget to show while loading. Defaults to [CircularProgressIndicator].
+  /// - [done]: A widget to show when loading is complete.
+  /// - [error]: A widget to show when an error occurs.
+  /// - [transition]: The default transition between states. Defaults to [CrossTransition.fadeOutFadeIn].
   LoadingBuilder({
     super.key,
     required super.control,

@@ -1,10 +1,13 @@
 part of flutter_control;
 
+/// An abstract provider for a list of [ControlRoute]s.
 abstract class RoutingStoreProvider {
+  /// The list of routes provided.
   List<ControlRoute> get routes;
 
   RoutingStoreProvider();
 
+  /// Creates a [RoutingStoreProvider] from a list of routes and other providers.
   factory RoutingStoreProvider.of(
           {List<ControlRoute> routes = const [],
           List<RoutingStoreProvider> providers = const []}) =>
@@ -23,7 +26,9 @@ class _RoutingStoreProvider extends RoutingStoreProvider {
   _RoutingStoreProvider(this.routes);
 }
 
+/// A [ControlModule] for initializing and providing a [RouteStore].
 class RoutingModule extends ControlModule<RouteStore> {
+  /// The initial list of routes for the store.
   final List<ControlRoute> routes;
 
   @override
@@ -47,9 +52,13 @@ class RoutingModule extends ControlModule<RouteStore> {
   Future init() async {}
 }
 
+/// A specialized version of [ControlArgs] for route handling.
+/// It contains the [ControlRoute], [RouteMask], and any passed arguments.
 class RouteArgs extends ControlArgs {
+  /// The route definition.
   ControlRoute get route => get<ControlRoute>()!;
 
+  /// The path mask for the route.
   RouteMask get mask => get<RouteMask>()!;
 
   RouteArgs._(ControlRoute route, RouteMask mask, [dynamic args])
@@ -58,44 +67,44 @@ class RouteArgs extends ControlArgs {
     add(value: mask);
   }
 
+  /// Formats the route's path with the given [args].
   String format(dynamic args, [ParseDecoratorFormat? decorator]) =>
       mask.format(args, decorator);
 }
 
-/// Stores [ControlRoute] by identifier key - [RouteStore.routeIdentifier].
-/// Instance of [RouteStore] is stored in [ControlFactory] -> 'Control.get<RouteStore>()'.
+/// Stores [ControlRoute] definitions, mapping them by a unique identifier.
 ///
-/// Typically not used directly, but via framework:
-///   - fill routes: [Control.initControl] or add routes directly.
-///   - retrieve route: [ControlRoute.of].
+/// This class acts as a central repository for all registered routes in the application.
+/// An instance of [RouteStore] is typically registered with the global [ControlFactory].
+///
+/// Routes are usually added at app startup and then retrieved using [ControlRoute.of].
 class RouteStore {
+  /// The routing provider for generating routes.
   late RoutingProvider routing = RoutingProvider._(this);
 
-  /// Map based Route Store.
-  /// Key: [RouteStore.routeIdentifier].
-  /// Value: [RouteControl].
+  /// The internal map holding the route definitions.
+  /// Key: A unique route identifier, see [RouteStore.routeIdentifier].
+  /// Value: The [ControlRoute] definition.
   final _routes = Map<String, ControlRoute>();
 
+  /// A list of path masks for efficient route matching.
   final _masks = <RouteMask>[];
 
-  /// Stores Routes with their Identifiers.
-  ///
-  /// Typically not used directly, but via framework:
-  ///   - fill: [Control.initControl] or [ControlRoute] routes property.
-  ///   - retrieve route: [ControlRoute.of].
+  /// Creates a [RouteStore], optionally initializing it with a list of [routes].
   RouteStore([List<ControlRoute>? routes]) {
     if (routes != null) {
       addRoutes(routes);
     }
   }
 
-  /// Adds [ControlRoute] one by one to [RouteStore].
+  /// Adds a list of [ControlRoute]s to the store.
   void addRoutes(List<ControlRoute> routes) {
     routes.forEach((item) => addRoute(item));
   }
 
-  /// Adds given [route] to [RouteStore].
-  /// Returns store key.
+  /// Adds a single [route] to the store.
+  /// Overwrites an existing route if the identifier is the same.
+  /// Returns the identifier used to store the route.
   String? addRoute<T>(ControlRoute route) {
     final identifier = route.identifier;
 
@@ -113,9 +122,10 @@ class RouteStore {
     return identifier;
   }
 
-  /// Returns [ControlRoute] of given [Type] or [identifier] - check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// Retrieves a [ControlRoute] from the store.
   ///
-  /// Using [Type] as route key is recommended.
+  /// The route can be identified by its [Type] or a custom string [identifier].
+  /// Using a [Type] is recommended for type safety.
   ControlRoute? getRoute<T>([dynamic identifier]) {
     identifier = routeIdentifier<T>(identifier);
 
@@ -134,11 +144,12 @@ class RouteStore {
     return null;
   }
 
-  /// Resolves identifier for given route [Type] and [name].
-  /// Similar to [ControlFactory.keyOf], but also accepts [String] as valid [value] key.
-  /// This method is mainly used by framework to determine identifier of [ControlRoute] stored in [RouteStore].
+  /// Resolves a unique identifier for a route.
   ///
-  /// Returned identifier is formatted as path -> '/name'.
+  /// This method is used by the framework to create a consistent key for storing
+  /// and retrieving routes in the [RouteStore].
+  ///
+  /// The identifier is formatted as a path (e.g., '/HomePage').
   static String routeIdentifier<T>([dynamic value]) {
     if (value == null && T != dynamic) {
       value = T;
@@ -165,7 +176,7 @@ class RouteStore {
 
   static RouteMask routePathMask(String path) => RouteMask.of(path);
 
-  /// Alters given [identifier] with [path].
+  /// Builds a full route path with path segments and query parameters.
   static String routePathIdentifier<T>(
       {dynamic identifier, dynamic path, dynamic args}) {
     if (path == null) {
@@ -372,18 +383,25 @@ class _PathSegment {
   }
 }
 
+/// Provides route generation logic, typically used with `onGenerateRoute`.
 class RoutingProvider {
+  /// The parent [RouteStore] containing all route definitions.
   final RouteStore parent;
 
+  /// A callback to handle route generation.
   RouteFactory? onGenerate;
 
   RoutingProvider._(this.parent);
 
+  /// Retrieves [RouteSettings] that were stored during a previous navigation attempt
+  /// (e.g., when the app was launched from a deep link before initialization).
   RouteSettings? popSettings(BuildContext context) =>
       (context is RootContext ? context : context.root)
           .args
           .pop<RouteSettings>();
 
+  /// Generates a [Route] based on the provided [settings].
+  /// This is the core logic for `onGenerateRoute`.
   Route? generate(BuildContext context, RouteSettings settings,
       {bool? active, RouteFactory? onGenerate}) {
     if (onGenerate != null) {
@@ -435,6 +453,7 @@ class RoutingProvider {
         ));
   }
 
+  /// Restores a route from previously popped settings.
   Route? restore(BuildContext context) {
     final settings = popSettings(context);
 
@@ -486,6 +505,7 @@ class RoutingProvider {
     return output;
   }
 
+  /// Restores and navigates to a route from previously stored settings.
   Future<dynamic> restoreRouteNavigation(
       BuildContext context, RouteNavigator navigator,
       [List<dynamic> subRoutes = const []]) async {
@@ -507,16 +527,21 @@ class RoutingProvider {
   }
 }
 
+/// Extension on [RootContext] for routing.
 extension RootContextRouterExt on RootContext {
+  /// Generates a route, with a special case for the root ('/') route.
   Route? generateRoute(RouteSettings settings, {Route Function()? root}) =>
       (settings.name == '/' && root != null)
           ? root.call()
           : Control.get<RouteStore>()?.routing.generate(this, settings);
 }
 
+/// Extension on [CoreContext] for routing.
 extension BuildContextRouterExt on CoreContext {
+  /// Restores a single route from stored settings.
   Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
 
+  /// Restores a route and its sub-routes from stored settings and navigates to them.
   Future<dynamic> restoreNavigation(
           [List<dynamic> subRoutes = const []]) async =>
       Control.get<RouteStore>()

@@ -71,7 +71,9 @@ class _TickerProvider implements Disposable, TickerProvider {
   }
 }
 
+/// Extension hook on [CoreContext] to provide a [TickerProvider].
 extension TickerHook on CoreContext {
+  /// Returns a [TickerProvider] that is hooked to the lifecycle of the [CoreContext].
   _TickerProvider get ticker => use<_TickerProvider>(value: () {
         final provider = _TickerProvider();
         provider._muteTicker(TickerMode.of(this));
@@ -80,15 +82,19 @@ extension TickerHook on CoreContext {
       });
 }
 
+/// A mixin for a [ControlModel] that requires a [TickerProvider].
+///
+/// This mixin allows a `ControlModel` to create and manage `AnimationController`s
+/// by gaining access to a `TickerProvider` from the hosting widget.
 mixin TickerComponent on ControlModel {
-  /// Active provider. In fact provider can be used from different [ControlModel].
+  /// The active [TickerProvider]. Can be from a different [ControlModel].
   TickerProvider? _ticker;
 
-  /// Returns active [TickerProvider] provided by Widget or passed by other Control.
+  /// Returns the active [TickerProvider].
   @protected
   TickerProvider? get ticker => _ticker;
 
-  /// Checks if [TickerProvider] is set.
+  /// Checks if a [TickerProvider] is available.
   bool get isTickerAvailable => _ticker != null;
 
   @override
@@ -100,7 +106,8 @@ mixin TickerComponent on ControlModel {
     }
   }
 
-  /// Sets vsync. Called by framework during [State] initialization when used with [CoreWidget] and [TickerControl].
+  /// Sets the [TickerProvider]. Called by the framework during [State]
+  /// initialization when used with a [CoreWidget].
   void provideTicker(TickerProvider ticker) {
     _ticker = ticker;
 
@@ -108,7 +115,8 @@ mixin TickerComponent on ControlModel {
   }
 
   /// Callback after [provideTicker] is executed.
-  /// Serves to created [AnimationController] and to set initial animation state.
+  ///
+  /// This is the ideal place to create [AnimationController]s and set up initial animations.
   void onTickerInitialized(TickerProvider ticker);
 
   @override

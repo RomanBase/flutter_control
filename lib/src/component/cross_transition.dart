@@ -2,21 +2,28 @@ part of flutter_control;
 
 const _kCrossDuration = const Duration(milliseconds: 300);
 
-/// Holds anim duration and transition builder.
+/// Defines a transition between two widgets, typically used with [AnimatedSwitcher] or [CaseWidget].
+/// It consists of two separate transitions: one for the widget coming in, and one for the widget going out.
 class CrossTransition {
   static get _progress => Tween<double>(begin: 0.0, end: 1.0);
 
-  /// Duration/length of animated transition.
+  /// The duration of the transition.
   final Duration duration;
 
-  /// Duration/length of animated transition.
+  /// The duration of the reverse transition. If not provided, [duration] is used.
   final Duration? reverseDuration;
 
+  /// The transition builder for the widget that is entering the view.
   final AnimatedSwitcherTransitionBuilder transitionIn;
+
+  /// The transition builder for the widget that is leaving the view.
   final AnimatedSwitcherTransitionBuilder transitionOut;
 
-  /// [duration] - [Animation] length.
-  /// [transition] - Builds Transition Widget based on input [Animation] and in/out Widgets.
+  /// Creates a [CrossTransition].
+  ///
+  /// [duration] - The length of the animation.
+  /// [transitionIn] - Builds the transition for the incoming widget.
+  /// [transitionOut] - Builds the transition for the outgoing widget.
   const CrossTransition({
     this.duration = _kCrossDuration,
     this.reverseDuration,
@@ -24,6 +31,8 @@ class CrossTransition {
     required this.transitionOut,
   });
 
+  /// Creates a [CrossTransition] where the incoming and outgoing widgets
+  /// use the same transition builder.
   CrossTransition.single({
     this.duration = _kCrossDuration,
     this.reverseDuration,
@@ -31,6 +40,10 @@ class CrossTransition {
   })  : transitionIn = transition,
         transitionOut = transition;
 
+  /// Creates a [RouteTransitionFactory] for use with [ControlRouteTransition].
+  ///
+  /// This allows using a [CrossTransition] for page transitions, separating
+  /// the animation of the incoming (foreground) and outgoing (background) pages.
   static RouteTransitionFactory route(
           {required CrossTransition background,
           required CrossTransition foreground,
@@ -66,9 +79,13 @@ class CrossTransition {
         return child;
       };
 
+  /// Builds the [AnimatedSwitcherTransitionBuilder] for this transition.
+  ///
+  /// If [reverse] is true, the in/out animations are swapped.
   AnimatedSwitcherTransitionBuilder build({bool reverse = false}) =>
       (child, anim) => _builder(child, anim, null, reverse);
 
+  /// Builds a [RouteTransitionFactory] for this transition.
   RouteTransitionFactory buildRoute({bool reverse = false}) =>
       route(background: this, foreground: this, reverse: reverse);
 
@@ -88,6 +105,7 @@ class CrossTransition {
     return transitionOut.call(child, animation);
   }
 
+  /// A fade transition where the outgoing widget fades out partially before the new one fades in.
   factory CrossTransition.fade({
     Duration? duration,
     Duration? reverseDuration,
@@ -113,6 +131,7 @@ class CrossTransition {
         ),
       );
 
+  /// A fade transition where the outgoing widget fades out completely before the new one fades in.
   factory CrossTransition.fadeOutFadeIn({
     Duration? duration,
     Duration? reverseDuration,
@@ -124,6 +143,7 @@ class CrossTransition {
         curveOut: Curves.easeIn.to(0.35).reversed, // 1.0 -> 0.65
       );
 
+  /// A standard cross-fade transition.
   factory CrossTransition.fadeCross({
     Duration? duration,
     Duration? reverseDuration,
@@ -135,6 +155,8 @@ class CrossTransition {
         curveOut: Curves.easeOut,
       );
 
+  /// A slide transition. The incoming widget slides in from [begin] and the
+  /// outgoing widget slides out towards [end].
   factory CrossTransition.slide({
     Duration? duration,
     Duration? reverseDuration,
@@ -164,6 +186,7 @@ class CrossTransition {
         ),
       );
 
+  /// A scale and fade transition.
   factory CrossTransition.scale({
     Duration? duration,
     Duration? reverseDuration,

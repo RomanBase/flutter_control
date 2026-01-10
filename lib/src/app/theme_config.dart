@@ -20,6 +20,8 @@ class CupertinoThemeConfig extends ThemeConfig<CupertinoThemeData> {
   });
 }
 
+/// Manages theme data and preferences for the application.
+/// It can be used to switch between different themes and persist the user's choice.
 class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   static const preference_key = 'control_theme';
 

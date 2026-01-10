@@ -1,71 +1,70 @@
 part of flutter_control;
 
-/// Ties up [RouteNavigator] and [ControlRoute].
+/// Legacy - waiting for refactor.
+/// Connects a [ControlRoute] with a [RouteNavigator] to execute navigation.
 ///
-/// Initializes [Widget], builds [Route] with given properties and pushes this route to [Navigator].
-/// Do not open multiple routes from one handler !
+/// This class builds a [Route] from a [ControlRoute] and pushes it to the
+/// navigator. It's designed for a single navigation action; do not reuse a
+/// [RouteHandler] instance for multiple `openRoute` calls.
 class RouteHandler {
-  /// Implementation of navigator.
+  /// The navigator implementation to use for pushing routes.
   final RouteNavigator navigator;
 
-  /// Implementation of provider.
+  /// The route definition and provider.
   final ControlRoute routeProvider;
 
-  /// Future of navigation result.
+  /// A future that completes with the result of the route when it is popped.
   Future<dynamic>? _result;
 
-  /// Future of navigation result.
-  /// This future is finished when Route is closed.
+  /// A future that completes with the result of the route when it is popped.
   Future<dynamic>? get result => _result;
 
-  /// Current route.
+  /// The actual [Route] instance that was built and pushed.
   Route<dynamic>? _route;
 
-  /// Actual [Route] build.
+  /// The actual [Route] instance that was built and pushed.
   Route? get route => _route;
 
-  /// Checks if this handler did his job.
-  /// Do not open multiple routes from one handler !
+  /// Whether this handler has already been used to open a route.
   bool get isHandled => _result != null;
 
-  /// Route name. This identifier is typically stored in [RouteStore].
-  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// The unique identifier of the route being handled.
+  /// See [RouteStore.routeIdentifier] for more information.
   String? get identifier => routeProvider.identifier;
 
-  /// Builds [Widget] and pushes [Route] to [Navigator].
+  /// Creates a [RouteHandler].
   ///
-  /// [navigator] - Implementation of [RouteNavigator] - typically [ControlWidget] with [RouteControl] mixin.
-  /// [routeProvider] - Route settings and builder.
-  ///
-  /// Do not open multiple routes from one handler !
+  /// This is typically not called directly but rather through [ControlRoute.navigator].
   RouteHandler(this.navigator, this.routeProvider);
 
-  /// Creates copy of [RouteHandler] with given builder.
+  /// Creates a copy of this [RouteHandler] with a new [RouteBuilderFactory].
   ///
-  /// @{macro route-route}
+  /// {@macro route-route}
   RouteHandler viaRoute(RouteBuilderFactory builder) =>
       RouteHandler(navigator, routeProvider.viaRoute(builder));
 
-  /// Creates copy of [RouteHandler] with given transition.
+  /// Creates a copy of this [RouteHandler] with a new transition.
   ///
-  /// @{macro route-transition}
+  /// {@macro route-transition}
   RouteHandler viaTransition(RouteTransitionFactory transition) =>
       RouteHandler(navigator, routeProvider.viaTransition(transition));
 
-  /// Creates copy of [RouteHandler] with given path name.
+  /// Creates a copy of this [RouteHandler] with a new path configuration.
   ///
-  /// @{macro route-path}
+  /// {@macro route-path}
   RouteHandler path(
           {InitFactory<dynamic>? name, InitFactory<dynamic>? query}) =>
       RouteHandler(navigator, routeProvider.path(path: name, query: query));
 
-  /// Creates copy of [RouteHandler] with given identifier.
+  /// Creates a copy of this [RouteHandler] with a new identifier.
   ///
-  /// @{macro route-named}
+  /// {@macro route-name}
   RouteHandler named(String identifier) =>
       RouteHandler(navigator, routeProvider.named(identifier));
 
-  /// @{macro route-open}
+  /// Builds the route and pushes it to the navigator.
+  ///
+  /// {@macro route-open}
   Future<dynamic> openRoute(
       {bool root = false, bool replacement = false, dynamic args}) {
     printDebug("open route: ${routeProvider.identifier} from $navigator");

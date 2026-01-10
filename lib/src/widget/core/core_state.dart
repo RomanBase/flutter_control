@@ -1,26 +1,33 @@
 part of flutter_control;
 
-/// Base abstract [State] of [CoreWidget].
-/// Dependency changes and lifecycle of resources are controlled by [CoreContext]. But this State still notifies Element.
+/// The base [State] object for a [CoreWidget].
+///
+/// It is intrinsically linked to a [CoreContext] (its [Element]), which handles
+/// dependency management and the lifecycle of registered resources. This state's
+/// primary roles are to trigger rebuilds via [notifyState] and to host the
+/// standard [State] lifecycle callbacks, which are then proxied to the
+/// [CoreContext] and [CoreWidget].
 abstract class CoreState<T extends CoreWidget> extends State<T> {
-  /// Retype [context] of this state to [CoreContext].
-  /// [CoreWidget] comes with [CoreContext] by default.
+  /// A typed getter for the widget's context, which is always a [CoreContext].
   CoreContext get element => context as CoreContext;
 
-  /// Reference to [CoreContext.args].
+  /// A shortcut to access the arguments and dependencies stored in the [CoreContext].
   ControlArgs get args => element.args;
 
-  /// Checks if [Element] is 'dirty' and needs rebuild.
+  /// Checks if the element is marked as dirty and needs to be rebuilt.
   bool get isDirty => element.dirty;
 
-  /// Callback, controlled by [CoreContext].
-  /// State is ready with all dependencies and [context] is fully usable without restrictions.
+  /// A callback from [CoreContext], indicating that the state has been fully
+  /// initialized and all dependencies are ready.
   ///
-  /// Use [initState] for early initialization.
+  /// This is the recommended place for initialization logic that requires a
+  /// fully usable [BuildContext].
   void onInit() {}
 
-  /// Notify this state to schedule rebuild.
-  /// [setState] is called only if [context] is ready and Widget is not scheduled for rebuild.
+  /// Schedules a rebuild of the widget.
+  ///
+  /// To prevent unnecessary rebuilds, it only calls `setState` if the widget
+  /// is mounted and not already marked as dirty.
   void notifyState() {
     if (mounted && !isDirty) {
       setState(() {});

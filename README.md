@@ -1,194 +1,259 @@
+# Flutter Control
+
 ![Structure](https://raw.githubusercontent.com/RomanBase/flutter_control/master/doc/logo.png)
 
-[![Structure](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml/badge.svg)](https://github.com/RomanBase/flutter_control)
+[![Build Status](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml/badge.svg)](https://github.com/RomanBase/flutter_control/actions/workflows/dart.yml)
+[![Pub Version](https://img.shields.io/pub/v/flutter_control)](https://pub.dev/packages/flutter_control)
 
+A comprehensive framework for building robust and scalable Flutter applications. Flutter Control streamlines state management, dependency injection, and navigation, providing a structured approach to application development.
 
----
+## Features
 
-Flutter Control is complex library to maintain App and State management.\
-Library merges multiple functionality under one hood. This approach helps to tidily bound separated logic into complex solution.
+-   **Modular State Management**: Manage both global application state and granular widget-level state effectively.
+-   **Powerful Dependency Injection**: Built-in Service Locator with Factory and Singleton patterns for efficient dependency management.
+-   **Flexible Navigation & Routing**: Define routes, manage transitions, and pass arguments seamlessly across your app.
+-   **Reactive Programming**: Observable patterns ([ActionControl], [FieldControl]) integrated with UI builders for dynamic updates.
+-   **Global Event System**: A robust broadcast mechanism for application-wide event communication.
+-   **Theming & Localization**: Integrated support for dynamic themes and internationalization (via [Localino]).
+-   **Modular Architecture**: Organize your app into independent modules for better maintainability and scalability.
+
+## Getting Started
+
+### 1. Add Dependency
+
+Add `flutter_control` to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_control: # Use the latest version from pub.dev
+```
+
+### 2. Basic Setup
+
+Initialize the core framework in your `main.dart` and wrap your app with `ControlRoot`.
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter_control/control.dart';
-```
 
- - **App State Management** - Managing application state, localization, theme and other global App changes.
- - **Widget State Management** - UI / Logic separation. Controlling State and UI updates.
- - **Dependency Injection** - Factory, Singleton, Lazy initialization and Service Locator.
- - **Navigation and Routing** - Routes, transitions and passing arguments to other pages and Models.
- - **Event System** - Global event/data stream to easily notify app events.
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
----
+  // 1. Initialize Control Framework
+  await Control.initControl(
+    // Register your app's dependencies (models, services)
+    entries: {
+      MyService: MyService(),
+    },
+    initializers: {
+      MyControl: (args) => MyControl(Control.get<MyService>(args)!),
+    },
+    // Register modules (e.g., LocalinoModule for localization)
+    modules: [
+      // LocalinoModule(LocalinoLive.options()), // If using localino_live
+    ],
+    // Perform asynchronous initialization tasks
+    initAsync: () async {
+      // await loadAppConfig();
+    },
+  );
 
-**Flutter Control Core**
-- `Control` Main static class. Initializes `ControlFactory` that serves as Service Locator with Factory and object initialization.
-- `ControlFactory` Is responsible for creating and storing given `factories` and `entries`. Then locating this services and retrieving on demand.\
-  Factory has own **Storage**. Objects in this storage are accessible via custom **key** or **Type**. Best practice is to use Type as a key.
-- `ControlModule` holds all resources for custom extension. Factory will load these `modules` and stores dependencies.
-  
-```dart
-    Control.initControl(
-      entries: {
-        CounterListControl: CounterListControl(),
-      },
-      initializers: {
-        CounterModel: (_) => CounterModel(),
-        CounterDetailControl: (args) => CounterDetailControl(model: Parse.getArg<CounterModel>(args)),
-      },
-      modules: [
-        LocalinoModule(LocalinoLive.options()),
-      ],
-      initAsync: () async {
-        loadAppConfig();
-      },
-    );
-```
+  runApp(MyApp());
+}
 
-- `ControlRoot` Wraps basic app flow and global state management - Theme, Locale, Home Widget. It's just shortcut to start with Flutter Control.
-
-```dart
-    ControlRoot(
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // 2. Wrap your app with ControlRoot
+    return ControlRoot(
+      // Configure global theme management
       theme: MaterialThemeConfig(
         themes: {
           Brightness.light: () => ThemeData.light(),
           Brightness.dark: () => ThemeData.dark(),
+          'custom': () => ThemeData.dark().copyWith(primaryColor: Colors.purple),
         }
       ),
+      // Define application states (e.g., init, auth, main)
       states: [
         AppState.init.build(builder: (_) => LoadingPage()),
         AppState.main.build(
-          builder: (_) => DashboardPage(),
-          transition: TransitionToDashboard(),
+          builder: (_) => HomePage(),
+          transition: CrossTransition.fade(), // Optional transition between states
         ),
+        // Add more states like AppState.auth, AppState.onboarding
       ],
-      builders: [
-        Localino,
-      ],
-      app: (context, home) => MaterialApp(
-        title: LocalinoProvider.instance.localizeOr('app_name', defaultValue: 'Example App')
-        theme: context.themeConfig?.value,
-        home: home,
-        locale: LocalinoProvider.instance.currentLocale,
-        supportedLocales: setup.supportedLocales,
-        localizationsDelegates: [
-          ...
-        ],        
+      // The main app builder, usually MaterialApp or CupertinoApp
+      builder: (context, home) => MaterialApp(
+        title: 'Flutter Control App', // Replace with your app title
+        theme: context.themeConfig?.value, // Dynamic theme from ControlRoot
+        home: home, // The currently active AppState widget
+        // Localization setup (if using Localino)
+        // locale: LocalinoProvider.instance.currentLocale,
+        // supportedLocales: LocalinoProvider.delegate.supportedLocales(),
+        // localizationsDelegates: [
+        //   LocalinoProvider.delegate,
+        //   GlobalMaterialLocalizations.delegate,
+        //   GlobalWidgetsLocalizations.delegate,
+        //   GlobalCupertinoLocalizations.delegate,
+        // ],
+        // Route generation
+        onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
       ),
     );
+  }
+}
+
+// Example pages
+class LoadingPage extends BaseControlWidget {
+  @override
+  Widget build(CoreContext context) {
+    // Navigate to main state after some loading
+    Future.delayed(Duration(seconds: 2), () => ControlScope.root.setMainState());
+    return Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
+}
+
+class HomePage extends BaseControlWidget {
+  @override
+  Widget build(CoreContext context) {
+    return Scaffold(appBar: AppBar(title: Text('Home Page')), body: Center(child: Text('Welcome!')));
+  }
+}
+
+// Example service and control
+class MyService {}
+class MyControl extends ControlModel {
+  final MyService _service;
+  MyControl(this._service);
+}
 ```
 
----
+## Core Concepts
 
-- `ControlWidget` is base abstract class (**StatefulWidget**) to maintain larger UI parts of App (Pages and complex Widgets). Widget is created with default `ControlState` to correctly reflect lifecycle of Widget to Models. So there is no need to create custom [State].\
-  Widget will **init** all containing Models and pass arguments to them.\
-  `ControlWidget` has mutable State to control state management.
-   
-- `SingleControlWidget` is focused to single **ControlModel**. But still can handle multiple Controls.
+### Control Framework Core
 
-- `ControllableWidget` - Subscribes to one or more `Observable` - [ObservableComponent], [ActionControl], [FieldControl], [Stream], [Future], [Listenable]\
-  Whenever state of [ControlObservable] is changed, this Widget is rebuild.
-   
-- `ControlModel` is base class to maintain Business Logic parts.\
-  `BaseControl` is extended version of [ControlModel] with more functionality. Mainly used for robust Logic parts.\
-  `BaseModel` is extended but lightweight version of [ControlModel]. Mainly used to control smaller logic parts.\
+-   **`Control`**: The central static class for initializing and accessing the framework's core functionalities, including the `ControlFactory`.
+-   **`ControlFactory`**: A powerful Service Locator and Dependency Injection container. It manages the lifecycle and instantiation of your app's services, models, and other dependencies, making them accessible throughout the application.
+-   **`ControlModule`**: Enables modularity by encapsulating related dependencies and configurations. Modules are loaded by `ControlFactory` to register their services.
 
-- `ControlObservable` and `ControlSubscription` are core underlying observable system and abstract base for other concrete robust implementations - mainly [ActionControl] and [FieldControl].\
-  With `ControlBuilder` and `ControlBuilderGroup` on the Widget side. These universal builder widgets can handle all possible types of Notifiers.
+### Application Lifecycle & State
 
-- `ActionControl` is one type of Observable used in this Library. It's quite lightweight and is used to notify listeners about value changes.\
-  Has tree main variants - **Single** (just one listener), **Broadcast** (multiple listeners) and **Empty** (null).\
-  4th variant is **provider** that subscribe to global [BroadcastProvider].\
-  On the Widget side is `ControlBuilder` to dynamically build Widgets. It's also possible to use `ControlBuilderGroup` to group values of multiple Observables.\
-  Upon dismiss of [ActionControl], every `ControlSubscription` is closed.
+-   **`ControlRoot`**: The root widget of your application that orchestrates global state management, including:
+    -   **`AppState`**: Defines distinct states of your application (e.g., `init`, `auth`, `main`). `ControlRoot` transitions between these states, allowing you to easily switch between different UI flows.
+    -   **`ThemeConfig`**: Manages dynamic theming (light, dark, custom) and persists user theme preferences.
 
-```dart
-    final counter = ActionControl.broadcast<int>(0);
+## State Management
 
-    ControlBuilder<int>(
+### Widget-Level State
+
+-   **`CoreWidget`**: The base `StatefulWidget` for all control widgets, creating a `CoreContext` which acts as a powerful element for local dependency injection and state management within the widget tree.
+-   **`ControlWidget`**: A flexible base class for widgets that manage one or more [ControlModel]s, providing robust lifecycle management and automatic UI updates.
+-   **`SingleControlWidget<T>`**: Optimized for widgets that primarily depend on a single [ControlModel] of type `T`, automatically resolving and providing it.
+-   **`ControllableWidget<T>`**: A reactive widget that rebuilds automatically when a provided `control` (single or list of observables) notifies of changes.
+
+### Models
+
+-   **`ControlModel`**: The base class for defining your application's business logic and state. Models are framework-aware and can interact with the dependency injection and event systems.
+-   **`BaseControl`**: An extended version of `ControlModel` with additional functionalities, typically used for more complex and robust logic components.
+-   **`BaseModel`**: A lightweight variant of `ControlModel`, suitable for simpler logic components.
+
+### Reactive Observables
+
+-   **`ControlObservable`**: An abstraction for various observable types ([ActionControl], [FieldControl], [ValueListenable], [Stream], [Future]), providing a unified way to subscribe to changes.
+-   **`ActionControl`**: A lightweight observable primarily used for notifying listeners about value changes. Supports single, broadcast, and empty variants.
+    ```dart
+    final counter = ActionControl.broadcast<int>(0); // Create an observable int
+
+    // ... later in your UI ...
+    ControlBuilder<int>( // Rebuilds automatically when `counter` changes
       control: counter,
-      builder: (context, value) => Text('$value'),
+      builder: (context, value) => Text('Count: $value'),
     );
-```
 
-- `FieldControl` is more robust Observable solution around `Stream` and `StreamController`. Primarily is used to notify Widgets and to provide events about value changes.\
-  Can listen `Stream`, `Future` or subscribe to another [FieldControl] with possibility to filter and convert values.\
-  [FieldControl] comes with pre-build primitive variants as `StringControl`, `NumberControl`, etc., where is possible to use validation, regex or value clamping. And also `ListControl` to work with Iterables.\
-  On the Widget side is `FieldBuilder` and `ControlBuilder` to dynamically build Widgets. Also `ControlBuilderGroup` for use with multiple Observables. It's also possible to use standard `StreamBuilder`.\
-  `FieldSink` or `FieldSinkConverter` provides **Sink** of [FieldControl].\
-  Upon dismiss of [FieldControl], every `FieldSubscription` is closed.
+    // To update the value:
+    // counter.value++;
+    ```
+-   **`FieldControl`**: A more robust observable built around Dart Streams, ideal for complex data flows, validation, and transformations. Comes with specialized variants like `StringControl`, `NumberControl`, and `ListControl`.
+    ```dart
+    final usernameField = FieldControl<String>('', validator: (value) => value.isEmpty ? 'Required' : null);
 
-```dart
-    final counter = FieldControl<int>(0);
-
-    FieldBuilder<int>(
-      control: counter,
-      builder: (context, value) => Text(value.toString()),
+    // ... later in your UI ...
+    FieldBuilder<String>( // Rebuilds and handles validation messages
+      control: usernameField,
+      builder: (context, value) => TextField(
+        controller: usernameField,
+        decoration: InputDecoration(errorText: usernameField.error),
+      ),
     );
-```
 
----
+    // To update the value:
+    // usernameField.value = 'new_username';
+    ```
+-   **`ControlBuilder` / `ControlBuilderGroup`**: Widgets that automatically subscribe to `ControlObservable`s (or a list of them) and rebuild their children when changes are notified.
 
-**Localization**
+## Navigation & Routing
 
-- Moved to [Localino](https://pub.dev/packages/localino) package.
+-   **`ControlRoute`**: Defines application routes with associated widgets, dynamic path parameters, custom transitions, and navigation arguments. Routes are typically registered centrally.
+-   **`RouteStore`**: A central repository for all defined `ControlRoute`s, making them discoverable and reusable throughout the application.
+-   **`RouteNavigator`**: An abstract interface for performing navigation actions (push, pop, replace). `ControlNavigator` is the default Flutter implementation.
+-   **`RouteHandler`**: Binds a `ControlRoute` to a `RouteNavigator`, providing a fluent API to open routes with specific configurations.
 
-**Global Event System**  
-  
-- `ControlBroadcast` Event stream across whole App. Default broadcaster is part of `ControlFactory` and is stored there.\
-  Every subscription is bound to it's `key` and/or `Type` so notification to Listeners arrives only for expected data.\
-  With `BroadcastProvider` is possible to subscribe to any stream and send data or events from one end of App to the another, even to Widgets and their States.
-  Also custom broadcaster can be created to separate events from default stream.
-
-```dart
-  BroadcastProvider.subscribe<int>('on_count_changed', (value) => updateCount(value));
-  BraodcastProvider.broadcast('on_count_changed', 10);
-```
-
-**Navigation and Routing**
-
-- `ControlRoute` Specifies `Route` with `Transition` and [WidgetBuilder] for `RouteHandler`. Handler then solves navigation and passes **args** to Widgets and Models.\
-  Use `Dependency` mixin to enable this argument injection into [ControlWidget].
-- Routes are stored in `RouteStore`.
-
-```dart
-    Control.initControl(
+    ```dart
+    // 1. Define and register routes in Control.initControl or RoutingModule
+    await Control.initControl(
       modules: [
-        RoutingModule(
-          [
-            ControlRoute.build<DetailPage>(builder: (_) => DetailPage()),
-            ControlRoute.build(key: 'detail_super', builder: (_) => DetailPage()).path('super').viaTransition(_transitionBuilder),  
-          ]
-        );
+        RoutingModule([
+          ControlRoute.build<UserPage>(builder: (_) => UserPage()),
+          ControlRoute.build(identifier: 'profile_edit', builder: (_) => ProfileEditPage())
+             .viaTransition(CrossTransition.slide()), // Custom transition
+        ]),
       ],
     );
 
-    class ListPage extends ControlWidget with RouteControl {
-      Widget build(CoreContext context){
-        ...
-        onPressed: () => context.routeOf<DetailPage>().openRoute();
-        onPressed: () => context.routeOf<DetailPage>().viaTransition(_transitionBuilder).openRoute();
-        onPressed: () => context.routeOf(key: 'detail_super').openRoute();
-        ...
-      };
+    // 2. Navigate from any BuildContext
+    class MyWidget extends BaseControlWidget {
+      @override
+      Widget build(CoreContext context) {
+        return ElevatedButton(
+          onPressed: () {
+            // Navigate to UserPage using its type
+            context.routeOf<UserPage>()?.openRoute();
+            
+            // Navigate to 'profile_edit' using its identifier and arguments
+            context.routeOf(identifier: 'profile_edit')?.openRoute(args: {'userId': 123});
+          },
+          child: Text('Go to User Page'),
+        );
+      }
     }
-```
+    ```
 
-- Initial app routing is handled with `RoutingProvider`, that stores initial route for later use (after app is initialized, auth confirmed, etc.).
+## Global Event System
 
-```dart
-  ControlRoot(
-    builder(context, home) => MaterialApp(
-      onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
-    )
-  );
+-   **`ControlBroadcast`**: Provides an application-wide event stream. You can subscribe to specific event types/keys and broadcast data across your app, decoupled from the widget tree.
+-   **`BroadcastProvider`**: A utility class to easily `subscribe` to and `broadcast` events via the `ControlBroadcast` instance managed by `ControlFactory`.
 
-  class HomePage extends ControlWidget {
-    void onInit(CoreContext context, Map args){
-      //Restores initial route navigation from from onGenerateRoute 
-      context.root.restoreNavigation();
-    } 
-  }
-```
+    ```dart
+    // Subscribe to an event
+    BroadcastProvider.subscribe<int>('on_counter_update', (value) {
+      print('Counter updated to: $value');
+    });
 
-Check set of [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/example) at Git repository for more complex solutions and how to use this library.
-More examples comes in future..
+    // Broadcast an event
+    BroadcastProvider.broadcast('on_counter_update', 10);
+    ```
+
+## Ecosystem
+
+Flutter Control is part of a larger ecosystem of packages designed to enhance your development workflow:
+
+-   **[Localino](https://pub.dev/packages/localino)**: Comprehensive JSON-based localization solution for Flutter, offering dynamic locale management and string formatting.
+-   **[Localino Live](https://pub.dev/packages/localino_live)**: Enables Over-The-Air (OTA) translation updates by connecting `Localino` to the [localino.app](https://localino.app) backend.
+-   **[Localino Builder](https://pub.dev/packages/localino_builder)**: Code generation for `Localino`, providing type-safe access to translations and automated setup.
+
+## Examples
+
+Explore the [Flutter Control Examples](https://github.com/RomanBase/flutter_control/tree/master/example) repository for practical demonstrations and more complex solutions using this library.

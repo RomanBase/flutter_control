@@ -1,6 +1,16 @@
 part of flutter_control;
 
+/// An extension on [CoreContext] to manage [OverlayEntry]s.
 extension OverlayControl on CoreContext {
+  /// Shows an [OverlayEntry] and associates it with a [key].
+  ///
+  /// [key] A unique key to identify the overlay.
+  /// [builder] A builder function that returns the widget to be displayed in the overlay.
+  ///           It receives the bounds of the parent widget.
+  /// [parentKey] A [GlobalKey] to identify the parent widget and determine the overlay position.
+  /// [parentContext] A [BuildContext] to identify the parent widget. If not provided, `parentKey` is used.
+  /// [barrierDismissible] If true, the overlay can be dismissed by tapping outside of it.
+  /// Returns the created [OverlayEntry], or `null` if the context is not mounted.
   OverlayEntry? showOverlay({
     required dynamic key,
     required Widget Function(Rect parent) builder,
@@ -60,9 +70,12 @@ extension OverlayControl on CoreContext {
     return entry;
   }
 
+  /// Retrieves an existing [OverlayEntry] by its [key].
   OverlayEntry? getOverlay(dynamic key) =>
       args.get<OverlayEntry>(key: ObjectTag.of(key));
 
+  /// Hides and removes an [OverlayEntry] identified by [key].
+  /// Returns `true` if the overlay was found and removed.
   bool hideOverlay(dynamic key) {
     final overlay = getOverlay(key);
 
@@ -76,6 +89,8 @@ extension OverlayControl on CoreContext {
     return false;
   }
 
+  /// Removes all overlays managed by this context.
+  /// Returns `true` if any overlays were removed.
   bool clearOverlays() {
     final items = args.getAll<OverlayEntry>();
 
