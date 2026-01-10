@@ -90,8 +90,8 @@ class CoreElement extends StatefulElement {
       return args.get<T>(key: key)!;
     }
 
-    final item = args.getWithFactory<T>(key: key, defaultValue: value) ??
-        Control.get<T>(key: key);
+    final item =
+        args.use<T>(key: key, defaultValue: value) ?? Control.get<T>(key: key);
 
     assert(item != null,
         'There is nothing to take: $T | $key. Please provide [T Function()? value] or register new factory/entry within ControlFactory');

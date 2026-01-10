@@ -1,6 +1,9 @@
 import 'package:ci/ci.dart' as ci;
 
 void main(List<String> args) async {
+  await ci.dartfmt();
+  return;
+
   await _fix('--code=annotate_overrides');
   await _fix('--code=prefer_const_constructors');
   await _fix('--code=prefer_const_constructors_in_immutables');
@@ -15,8 +18,6 @@ void main(List<String> args) async {
   await _fix('--code=unnecessary_this');
   await _fix('--code=unused_import');
   await _fix('--code=use_super_parameters');
-
-  await ci.dartfmt();
 }
 
 Future<void> _fix(String arg) => ci.shell.run('dart fix --apply $arg');

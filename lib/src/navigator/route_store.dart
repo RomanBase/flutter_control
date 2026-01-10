@@ -58,7 +58,7 @@ class RouteArgs extends ControlArgs {
     add(value: mask);
   }
 
-  String format(dynamic args, [ParamDecoratorFormat? decorator]) =>
+  String format(dynamic args, [ParseDecoratorFormat? decorator]) =>
       mask.format(args, decorator);
 }
 
@@ -255,7 +255,7 @@ class RouteMask {
     return true;
   }
 
-  String format(dynamic args, [ParamDecoratorFormat? decorator]) {
+  String format(dynamic args, [ParseDecoratorFormat? decorator]) {
     if (args == null || this.args.isEmpty) {
       return path;
     }
@@ -273,18 +273,18 @@ class RouteMask {
         _segment = _segment.nextMask();
       }
 
-      return Parse.format(path, map, ParamDecorator.none);
+      return Parse.format(path, map, ParseDecorator.none);
     }
 
     if (args is Map) {
       return Parse.format(
           path,
-          Parse.toKeyMap(args, (key, value) => '$key',
-              converter: (value) => '$value'),
+          Parse.toMap(args,
+              key: (key, value) => '$key', converter: (value) => '$value'),
           decorator);
     }
 
-    return Parse.format(path, {this.args.first: '$args'}, ParamDecorator.none);
+    return Parse.format(path, {this.args.first: '$args'}, ParseDecorator.none);
   }
 
   Map<String, dynamic> params(RouteMask other,

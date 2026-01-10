@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:control_core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
 part 'src/control_prefs.dart';
 part 'src/pref_model.dart';
