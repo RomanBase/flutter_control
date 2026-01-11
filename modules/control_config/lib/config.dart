@@ -20,6 +20,10 @@ class ConfigModule extends ControlModule<ControlPrefs> {
   @override
   int get priority => 100;
 
+  ConfigModule() {
+    initModule();
+  }
+
   /// Initializes the module by either retrieving an existing [ControlPrefs]
   /// instance from the [ControlFactory] or creating a new one if not present.
   @override
