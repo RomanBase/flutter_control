@@ -54,7 +54,7 @@ class _ActionControlSingle<T> extends ActionControl<T> {
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T> action,
-      {bool current = true, dynamic args}) {
+      {bool current = false, dynamic args}) {
     if (subCount > 0) {
       subs.clear();
     }

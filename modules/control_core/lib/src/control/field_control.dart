@@ -255,7 +255,7 @@ class FieldControl<T> extends ObservableModel<T?> {
 
   @override
   FieldSubscription<T> subscribe(ValueCallback<T?> action,
-      {bool current = true, dynamic args}) {
+      {bool current = false, dynamic args}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(action);
 
@@ -274,7 +274,7 @@ class FieldControl<T> extends ObservableModel<T?> {
       {Function? onError,
       void Function()? onDone,
       bool cancelOnError = false,
-      bool current = true}) {
+      bool current = false}) {
     // ignore: cancel_subscriptions
     final subscription = _stream.stream.listen(
       onData,

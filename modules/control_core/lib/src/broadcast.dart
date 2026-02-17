@@ -86,7 +86,7 @@ class ControlBroadcast implements ObservableNotifier, Disposable {
   /// Returns a [BroadcastSubscription] that can be used to manage the subscription.
   BroadcastSubscription subscribe(
     ValueCallback action, {
-    bool current = true,
+    bool current = false,
     required BroadcastSubscriptionArgs args,
   }) {
     final sub = _createSubscription(args);
@@ -127,7 +127,7 @@ class ControlBroadcast implements ObservableNotifier, Disposable {
   BroadcastSubscription<T> subscribeTo<T>(
     Object key,
     ValueChanged<T?> onData, {
-    bool current = true,
+    bool current = false,
     bool nullOk = true,
   }) =>
       subscribe(
@@ -152,7 +152,7 @@ class ControlBroadcast implements ObservableNotifier, Disposable {
   /// Returns a [BroadcastSubscription] to manage the subscription.
   BroadcastSubscription<T> subscribeOf<T>(
     ValueChanged<T?> onData, {
-    bool current = true,
+    bool current = false,
     bool nullOk = true,
   }) {
     assert(T != dynamic);

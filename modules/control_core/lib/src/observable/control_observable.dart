@@ -58,7 +58,7 @@ abstract class ObservableChannel implements ObservableBase<void> {
   /// - [current]: This parameter is typically ignored for channels as there is no value to deliver.
   /// - [args]: Optional arguments for the subscription.
   ControlSubscription subscribe(VoidCallback action,
-      {bool current = true, args});
+      {bool current = false, args});
 }
 
 /// An observable that holds and notifies about changes to a single [value].
@@ -81,7 +81,7 @@ abstract class ObservableValue<T> implements ObservableBase<T> {
   /// - [current]: If `true`, the [action] is immediately called with the current [value].
   /// - [args]: Optional arguments for the subscription.
   ControlSubscription<T> subscribe(ValueCallback<T> action,
-      {bool current = true, args});
+      {bool current = false, args});
 }
 
 /// An abstract base class for creating a custom [ObservableValue].
@@ -129,7 +129,7 @@ class _ObservableHandler<T> extends ObservableValue<T> {
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T> action,
-          {bool current = true, dynamic args}) =>
+          {bool current = false, dynamic args}) =>
       _parent.subscribe(
         action,
         current: current,
@@ -305,7 +305,7 @@ class ControlObservable<T> extends ObservableModel<T> {
 
   @override
   ControlSubscription<T> subscribe(ValueCallback<T> action,
-      {bool current = true, dynamic args}) {
+      {bool current = false, dynamic args}) {
     final sub = createSubscription();
     subs.add(sub);
 

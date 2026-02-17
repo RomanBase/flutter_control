@@ -222,7 +222,7 @@ class StackControl<T> extends ObservableValue<T?>
   @override
   ControlSubscription<T?> subscribe(
     ValueCallback<T?> action, {
-    bool current = true,
+    bool current = false,
     args,
   }) =>
       _parent.subscribe(
