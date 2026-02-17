@@ -1,8 +1,12 @@
 part of flutter_control;
 
+/// A [Curve] that combines multiple curves into a single continuous curve.
+/// Each curve is given an equal portion of the timeline.
 class ContinuousCurve extends Curve {
+  /// The list of curves to combine.
   final List<Curve> curves;
 
+  /// Creates a continuous curve from a list of curves.
   const ContinuousCurve({required this.curves});
 
   @override
@@ -29,9 +33,12 @@ class ContinuousCurve extends Curve {
   }
 }
 
+/// A curve that reverses the output of another curve.
 class ReverseCurve extends Curve {
+  /// The curve to reverse.
   final Curve curve;
 
+  /// Creates a reverse curve.
   const ReverseCurve({required this.curve});
 
   @override
@@ -40,9 +47,12 @@ class ReverseCurve extends Curve {
   }
 }
 
+/// Extension on [Curve] to provide convenience methods for combining and reversing curves.
 extension ContinuousCurveExt on Curve {
+  /// Returns a [ReverseCurve] that is the reverse of this curve.
   Curve get reversed => ReverseCurve(curve: this);
 
+  /// Joins this curve with another curve to create a [ContinuousCurve].
   Curve join(Curve other) {
     final curves = <Curve>[];
 

@@ -23,12 +23,15 @@ abstract class LocalinoRemoteApi {
 }
 
 class LocalinoRemote with PrefsProvider implements Disposable {
+  /// Remote options.
   LocalinoRemoteOptions? options;
 
   Localino? _instance;
 
+  /// Link to [Localino] instance.
   Localino get instance => _instance ?? LocalinoProvider.instance;
 
+  /// Manually set [Localino] instance.
   set instance(Localino? instance) => _instance = instance;
 
   LocalinoRemoteApi? get _api => Control.get<LocalinoRemoteApi>(args: options);
@@ -37,8 +40,10 @@ class LocalinoRemote with PrefsProvider implements Disposable {
 
   bool _enable = false;
 
+  /// [true] if remote is enabled and ready to use.
   bool get enabled => _enable;
 
+  /// Default constructor for [LocalinoRemote].
   LocalinoRemote({Localino? instance, this.options}) : _instance = instance;
 
   bool _ensureModule() {
@@ -57,6 +62,10 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return _api != null;
   }
 
+  /// Initializes remote and enables features.
+  /// [locales] - List of supported locales with modification timestamps. Used to clear local cache.
+  /// [remoteSync] - Enables remote sync of translations on locale change.
+  /// [initialFetch] - Executes initial fetch of remote translations.
   void initialize(
       {Map<String, DateTime>? locales,
       bool remoteSync = false,
@@ -72,11 +81,13 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     }
   }
 
+  /// Disables remote and disposes subscription.
   void disable() {
     _enable = false;
     _sub?.dispose();
   }
 
+  /// Enables remote sync of translations on locale change.
   Future<bool> enableAutoSync({bool initialFetch = true}) async {
     if (_sub != null) {
       printDebug('Remote sync is already initialized');
@@ -96,6 +107,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return _enable;
   }
 
+  /// Fetches remote translations for given [locale].
+  /// If no [locale] is provided, then [Localino.locale] is used.
   Future<bool> getRemoteTranslations(
       {String? locale, DateTime? timestamp}) async {
     if (!_ensureModule()) {
@@ -137,6 +150,8 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     return result.isNotEmpty;
   }
 
+  /// Fetches local cached translations for given [locale].
+  /// If no [locale] is provided, then [Localino.locale] is used.
   Future<Map<String, dynamic>> getLocalTranslations({String? locale}) async {
     if (!_ensureModule()) {
       return {};
@@ -157,12 +172,13 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     }
   }
 
+  /// Returns last update timestamp for given [locale].
   DateTime? lastUpdate(String locale) => _getLocalSync()[locale];
 
-  Map<String, DateTime> _getLocalSync() => Parse.toKeyMap<String, DateTime>(
-      prefs.getData(Localino.preference_key_sync),
-      (key, value) => key as String,
-      converter: (value) => Parse.date(value)!);
+  Map<String, DateTime> _getLocalSync() =>
+      Parse.toMap<String, DateTime>(prefs.getData(Localino.preference_key_sync),
+          key: (key, value) => key as String,
+          converter: (value) => Parse.date(value)!);
 
   void _updateLocalSync(Map<String, DateTime> locales) {
     if (kIsWeb) {
@@ -185,6 +201,7 @@ class LocalinoRemote with PrefsProvider implements Disposable {
     }
   }
 
+  /// Mounts local cache and clears outdated data.
   void mountLocalCache(Map<String, DateTime> locales) async {
     if (!_ensureModule()) {
       return;

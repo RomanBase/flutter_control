@@ -4,7 +4,6 @@ import 'dart:convert';
 
 import 'package:control_core/core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
 
 part 'src/control_prefs.dart';
 part 'src/pref_model.dart';
@@ -20,6 +19,10 @@ class ConfigModule extends ControlModule<ControlPrefs> {
   /// Sets a high priority to ensure `ControlPrefs` is initialized early.
   @override
   int get priority => 100;
+
+  ConfigModule() {
+    initModule();
+  }
 
   /// Initializes the module by either retrieving an existing [ControlPrefs]
   /// instance from the [ControlFactory] or creating a new one if not present.

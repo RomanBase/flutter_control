@@ -53,7 +53,7 @@ class AppStateBuilder {
 /// Other predefined States (as [AppState.onboarding]) can be used to separate main App States and their flow.
 /// It's possible to create custom States by extending [AppState].
 ///
-/// Change State via [ControlRootScope] -> [Control.root].
+/// Change State via [ControlScope.root].
 class AppState {
   static const init = const AppState();
 
@@ -67,6 +67,7 @@ class AppState {
 
   const AppState();
 
+  /// Creates an [AppStateBuilder] for this state.
   AppStateBuilder build(WidgetBuilder builder, {CrossTransition? transition}) =>
       AppStateBuilder(
         this,

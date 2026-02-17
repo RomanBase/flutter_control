@@ -1,11 +1,17 @@
 part of flutter_control;
 
+/// Provides access to the control framework's dependency injection system
+/// within a specific [BuildContext]. It allows retrieving dependencies from the
+/// nearest [CoreState] ancestor in the widget tree.
 class ControlScope {
+  /// The build context from which to start the search for dependencies.
   final BuildContext context;
 
   const ControlScope._(this.context);
 
-  /// [parent] should be [BuildContext], [Element] or [State]
+  /// Creates a [ControlScope] for a given [parent] context.
+  ///
+  /// [parent] should be a [BuildContext], [Element], or [State].
   factory ControlScope.of([dynamic parent]) {
     BuildContext? context;
 
@@ -22,8 +28,15 @@ class ControlScope {
     return ControlScope._(context!);
   }
 
+  /// Accesses the root scope of the application for managing global state.
   static _ControlRootScope get root => _ControlRootScope();
 
+  /// Retrieves a dependency of type [T] from the widget tree, searching upwards
+  /// from the current [context].
+  ///
+  /// [key] An optional key to identify a specific instance of the dependency.
+  /// [args] Optional arguments to pass if the dependency needs to be created.
+  /// [factory] An optional [ControlFactory] to use for dependency creation.
   T? get<T>({dynamic key, dynamic args, ControlFactory? factory}) =>
       _get<T>(factory, key: key, args: args);
 

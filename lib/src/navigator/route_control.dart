@@ -6,24 +6,29 @@ typedef RouteArgFactory = dynamic Function(RouteArgs args);
 typedef RouteTransitionFactory = Widget Function(
     BuildContext context, ControlRouteTransitionSetup setup, Widget child);
 
-/// [Route] builder with given settings.
-/// Using [Type] as route identifier is recommended.
+/// Defines a route, its builder, and navigation settings.
+///
+/// This class is used to register routes in the [RouteStore] and provides a
+/// fluent API for customizing route behavior, such as transitions and path parameters.
+/// Using a [Type] as a route identifier is recommended for type-safe navigation.
 class ControlRoute {
   static RouteStore get _store => Control.get<RouteStore>()!;
 
-  /// Builds [Route] via [builder] with given [identifier] and [settings].
-  /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
-  /// [mask] - specific url mask, that can be used for dynamic routing - check [RouteStore.routePathMask] for more info. E.g. /project/{pid}/user{uid}
-  /// [settings] - Additional [Route] settings.
+  /// Creates a [ControlRoute] from a [WidgetBuilder].
   ///
-  /// Typically used within [Control.initControl] or [ControlRoot].
+  /// A [Type] or [identifier] is required to uniquely identify the route.
+  ///
+  /// [mask] A specific URL mask for dynamic routing (e.g., `/project/{pid}/user/{uid}`).
+  /// [path] A factory to build dynamic path segments.
+  /// [query] A factory to build query parameters.
+  ///
+  /// Typically used within [Control.initControl] or [ControlRoot]:
   /// ```
   ///   routes: [
   ///     ControlRoute.build<SettingsPage>(builder: (_) => SettingsPage()),
   ///     ControlRoute.build(identifier: 'settings', builder: (_) => SettingsPage()),
   ///   ]
   /// ```
-  /// Using [Type] as route identifier is recommended.
   static ControlRoute build<T>({
     dynamic identifier,
     required WidgetBuilder builder,
@@ -41,10 +46,10 @@ class ControlRoute {
       .._queryBuilder = query;
   }
 
-  /// Holds [Route] with given [identifier].
-  /// Useful for specific or generated Routes.
+  /// Creates a [ControlRoute] from a pre-built [Route] object.
+  /// Useful for integrating with third-party packages or custom [Route] implementations.
   ///
-  /// Check [RouteControl.build] for classic [WidgetBuilder] version.
+  /// Check [ControlRoute.build] for the standard [WidgetBuilder] approach.
   static ControlRoute route<T>({
     dynamic identifier,
     required Route route,
@@ -59,26 +64,28 @@ class ControlRoute {
         .._queryBuilder = query
         ..viaRoute((builder, settings) => route);
 
-  /// Route name. This identifier is typically stored in [RouteStore].
-  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// The unique identifier for the route.
+  /// See [RouteStore.routeIdentifier] for more info on how keys are generated.
   late String identifier;
 
+  /// The route's path mask for dynamic routing.
   RouteMask get mask => RouteMask.of(_mask ?? identifier);
 
   String? _mask;
 
-  /// Required Widget builder.
+  /// The builder for the route's widget.
   WidgetBuilder? _builder;
 
-  /// Custom Route builder.
+  /// The custom builder for the [Route] itself (e.g., [MaterialPageRoute]).
   RouteBuilderFactory? _routeBuilder;
 
+  /// The factory for building dynamic path segments.
   RouteArgFactory? _pathBuilder;
 
+  /// The factory for building query parameters.
   RouteArgFactory? _queryBuilder;
 
-  /// Default private constructor.
-  /// Use static constructors - [ControlRoute.build], [ControlRoute.route] or [ControlRoute.of].
+  /// Private constructor. Use one of the static factory methods to create an instance.
   ControlRoute._();
 
   String pathOf([dynamic args]) => _buildPath(RouteArgs._(this, mask, args));
@@ -89,8 +96,10 @@ class ControlRoute {
         args: _queryBuilder?.call(args),
       );
 
-  /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
-  /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
+  /// Builds a [Route] with the specified settings.
+  ///
+  /// This method uses the configured [_routeBuilder] or defaults to
+  /// [MaterialPageRoute] or [CupertinoPageRoute] based on the platform.
   Route<dynamic> _buildRoute<T>(
       WidgetBuilder builder, String? path, dynamic args) {
     final routeSettings = RouteSettings(
@@ -117,9 +126,7 @@ class ControlRoute {
     return _builder!.call(context);
   }
 
-  /// Builds [Route] with specified [RouteWidgetBuilder] or with default [MaterialPageRoute]/[CupertinoPageRoute].
-  /// Also [identifier] and [settings] are passed to Route as [RouteSettings].
-  /// Given [args] are passed to Widget.
+  /// Initializes the route with the given arguments and returns a [Route] instance.
   Route<dynamic> init<T>({dynamic args}) {
     assert(_builder != null);
 
@@ -133,24 +140,24 @@ class ControlRoute {
   }
 
   /// {@template route-route}
-  /// Setups new [routeBuilder] and returns copy of [ControlRoute] with new settings..
+  /// Returns a copy of this route with a custom [routeBuilder].
   /// {@endtemplate}
   ControlRoute viaRoute(RouteBuilderFactory routeBuilder) =>
       _copyWith(routeBuilder: routeBuilder);
 
   /// {@macro route-route}
-  /// Via [MaterialPageRoute].
+  /// Uses [MaterialPageRoute] as the route builder.
   ControlRoute viaMaterialRoute() => viaRoute((builder, settings) =>
       MaterialPageRoute(builder: builder, settings: settings));
 
   /// {@macro route-route}
-  /// Via [CupertinoPageRoute].
+  /// Uses [CupertinoPageRoute] as the route builder.
   ControlRoute viaCupertinoRoute() => viaRoute((builder, settings) =>
       CupertinoPageRoute(builder: builder, settings: settings));
 
   /// {@template route-transition}
-  /// Setups new [transition] with given [duration] and returns copy of [ControlRoute] with new settings..
-  /// [ControlRouteTransition] is used as [PageRoute].
+  /// Returns a copy of this route that uses a custom [transition].
+  /// The route will be a [ControlRouteTransition].
   /// {@endtemplate}
   ControlRoute viaTransition(RouteTransitionFactory transition,
           [Duration duration = const Duration(milliseconds: 300)]) =>
@@ -163,10 +170,11 @@ class ControlRoute {
               ));
 
   /// {@template route-path}
-  /// Alters current [identifier] with given [path] and [query] args and returns copy of [ControlRoute] with new settings.
+  /// Returns a copy of this route with altered path and query parameters.
+  ///
   /// ```
   /// ControlRoute.of<DetailPage>(identifier: 'detail').path(path: (_) => 'node', query: (args) => {'id': args['id']});
-  /// refers to: /detail/node?id=1
+  /// // refers to: /detail/node?id=1
   /// ```
   /// {@endtemplate}
   ControlRoute path(
@@ -178,13 +186,13 @@ class ControlRoute {
       );
 
   /// {@template route-name}
-  /// Changes current [identifier] and returns copy of [ControlRoute] with new settings..
+  /// Returns a copy of this route with a new [identifier].
   /// {@endtemplate}
   ControlRoute named(String identifier) => _copyWith(
         identifier: identifier,
       );
 
-  /// Creates copy of [RouteControl] with given settings.
+  /// Creates a copy of this route with the given settings overridden.
   ControlRoute _copyWith({
     dynamic identifier,
     String? mask,
@@ -200,21 +208,18 @@ class ControlRoute {
         .._pathBuilder = path
         .._queryBuilder = query;
 
-  /// Initializes [RouteHandler] with given [navigator] and this Route provider.
+  /// Initializes a [RouteHandler] for this route with the given [navigator].
   RouteHandler navigator(RouteNavigator navigator) =>
       RouteHandler(navigator, this);
 
-  /// Registers this Route to global [RouteStore].
+  /// Registers this route in the global [RouteStore].
   void register<T>() => _store.addRoute<T>(this);
 
   /// @{template route-store-get}
-  /// Returns [ControlRoute] from [RouteStore] by given [Type] or [identifier].
-  /// [Type] or [identifier] is required - check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// Retrieves a [ControlRoute] from the global [RouteStore].
   ///
-  /// [RouteStore] is typically filled during [Control.initControl] or via [ControlRoot].
-  /// [RouteStore] is also stored in [Control] -> [Control.get<RouteStore>()] and can be updated anytime,
-  ///
-  /// Using [Type] as route identifier is recommended.
+  /// A [Type] or [identifier] is required. Using a [Type] is recommended for type safety.
+  /// The [RouteStore] is typically populated at app startup via [Control.initControl] or [ControlRoot].
   /// @{endtemplate}
   static ControlRoute? of<T>([dynamic identifier]) {
     assert(T != dynamic || identifier != null);
@@ -222,8 +227,8 @@ class ControlRoute {
     return _store.getRoute<T>(identifier);
   }
 
-  /// Returns identifier of Route stored in [RouteStore].
-  /// Check [RouteStore.routeIdentifier] for more info about Store keys.
+  /// Returns the identifier of a route stored in the [RouteStore].
+  /// See [RouteStore.routeIdentifier] for more information.
   static String? identifierOf<T>([dynamic identifier]) {
     assert(T != dynamic || identifier != null);
 
@@ -231,18 +236,18 @@ class ControlRoute {
   }
 }
 
-/// Custom [PageRoute] building Widget via given [RouteTransitionFactory].
+/// A custom [PageRoute] that builds its transitions using a [RouteTransitionFactory].
 class ControlRouteTransition extends PageRoute {
-  /// Builder of Widget.
+  /// The builder for the page's content.
   final WidgetBuilder builder;
 
-  /// Builder of Transition.
+  /// The factory for building the page's transition.
   final RouteTransitionFactory transition;
 
-  /// Duration of transition Animation.
+  /// The duration of the transition animation.
   final Duration duration;
 
-  /// Simple [PageRoute] with custom [transition].
+  /// Creates a [PageRoute] with a custom [transition].
   ControlRouteTransition({
     required this.builder,
     required this.transition,
@@ -292,39 +297,55 @@ class ControlRouteTransition extends PageRoute {
           child);
 }
 
+/// Provides setup information for a [ControlRouteTransition].
+/// This is passed to the [RouteTransitionFactory] to build the transition.
 class ControlRouteTransitionSetup {
+  /// The animation for the route being pushed (the incoming route).
   final Animation<double> incomingAnimation;
+
+  /// The animation for the route being popped (the outgoing route).
   final Animation<double> outgoingAnimation;
+
+  /// The route that is being transitioned.
   final ControlRouteTransition route;
 
+  /// The settings for the route.
   RouteSettings? get settings => route.settings;
 
+  /// Whether this is the first route in the stack.
   bool get root => route.isFirst;
 
+  /// Whether this route is the current route.
   bool get active => route.isActive;
 
+  /// Whether the incoming animation is running forward.
   bool get foregroundIncoming =>
       (incomingAnimation.status == AnimationStatus.forward ||
           incomingAnimation.isCompleted) &&
       outgoingAnimation.isDismissed;
 
+  /// Whether the incoming animation is running in reverse.
   bool get foregroundOutgoing =>
       (incomingAnimation.status == AnimationStatus.reverse ||
           incomingAnimation.isDismissed) &&
       outgoingAnimation.isDismissed;
 
+  /// Whether the outgoing animation is running in reverse.
   bool get backgroundIncoming =>
       (outgoingAnimation.status == AnimationStatus.reverse ||
           outgoingAnimation.isDismissed) &&
       incomingAnimation.isCompleted;
 
+  /// Whether the outgoing animation is running forward.
   bool get backgroundOutgoing =>
       (outgoingAnimation.status == AnimationStatus.forward ||
           outgoingAnimation.isCompleted) &&
       incomingAnimation.isCompleted;
 
+  /// Whether the foreground (incoming) route is active.
   bool get foregroundActive => outgoingAnimation.isDismissed;
 
+  /// Whether the background (outgoing) route is active.
   bool get backgroundActive => incomingAnimation.isCompleted;
 
   const ControlRouteTransitionSetup._(
@@ -333,6 +354,7 @@ class ControlRouteTransitionSetup {
     this.route,
   );
 
+  /// Creates a copy of this setup with curved animations.
   ControlRouteTransitionSetup curved({
     Curve? incomingCurve,
     Curve? outgoingCurve,

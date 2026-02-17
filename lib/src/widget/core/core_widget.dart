@@ -1,16 +1,22 @@
 part of flutter_control;
 
-/// Base abstract [StatefulWidget], that creates [CoreContext].
+/// The base [StatefulWidget] for the Control framework.
 ///
-/// Check [CoreState] as counterpart of this Widget.
-/// Check [ControlWidget] and their variants as concrete implementation of this class.
+/// It creates a [CoreContext] (its [Element]), which is the heart of the
+/// framework's state management and dependency injection system. All other
+/// control widgets ([ControlWidget], [SingleControlWidget], etc.) extend from this.
+///
+/// See also:
+///  - [CoreState], the state object for this widget.
+///  - [CoreContext], the element that manages the widget's lifecycle and dependencies.
 abstract class CoreWidget extends StatefulWidget {
-  /// Init args of this widget.
-  /// This is passed to [CoreContext]. Retrieve concrete arg with [CoreContext._get], [CoreContext.use] when needed.
+  /// A map of initial arguments to be passed to the [CoreContext].
+  ///
+  /// These arguments can be retrieved within the widget's lifecycle using
+  /// `context.get<T>()` or `context.args`.
   final Map initArgs;
 
-  /// Abstract implementation of base control widget, that initializes [CoreContext] and handles state management and lifecycle of given resources.
-  /// [initArgs] are passed to [CoreContext].
+  /// Creates a [CoreWidget].
   const CoreWidget({
     super.key,
     this.initArgs = const {},
@@ -22,34 +28,30 @@ abstract class CoreWidget extends StatefulWidget {
   @override
   CoreState createState();
 
-  /// Initial widget initialization.
-  /// Use your mixins here.
+  /// A preliminary initialization method called by the [CoreContext].
+  /// This is a good place for mixins to hook into the initialization process.
   @protected
   void init(CoreContext context) {}
 
-  /// Called right after initState and before build.
-  /// [context] is here fully usable without restrictions.
+  /// Called once when the state is fully initialized and the context is available.
   ///
-  /// Best place to register state notifiers, hooks and other resources.
-  ///
-  /// Check [InitProvider] and [LazyProvider] mixins to alter [args].
-  /// Check [OnLayout] mixin to process resources after view is adjusted.
+  /// This is the recommended place to register dependencies, state notifiers,
+  /// and other resources that the widget will need.
   @protected
   @mustCallSuper
   void onInit(Map args, CoreContext context) {}
 
-  /// Called whenever Widget requests update.
-  /// Check [State.didUpdateWidget] for more info.
-  /// Just callback from State.
+  /// Called when the widget is updated with new configuration.
+  /// See [State.didUpdateWidget] for more information.
   @protected
   void onUpdate(CoreContext context, CoreWidget oldWidget) {}
 
-  /// Called whenever dependency of Widget is changed.
-  /// Check [State.didChangeDependencies] for more info.
-  /// Just callback from State.
+  /// Called when a dependency of this widget changes.
+  /// See [State.didChangeDependencies] for more information.
   @protected
   void onDependencyChanged(CoreContext context) {}
 
+  /// Called when the widget is being disposed.
   @protected
   @mustCallSuper
   void onDispose() {}

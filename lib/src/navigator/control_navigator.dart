@@ -3,21 +3,22 @@ part of flutter_control;
 /// Providing basic type of navigation.
 abstract class RouteNavigator {
   /// {@template route-open}
-  /// Pushes route into current Navigator.
-  /// [route] - specific route: type, settings, transition etc.
-  /// [root] - pushes route into root Navigator - onto top of everything.
-  /// [replacement] - pushes route as replacement of current route.
+  /// Pushes a [Route] onto the navigation stack.
+  ///
+  /// [route] The route to push.
+  /// [root] If `true`, pushes to the root navigator.
+  /// [replacement] If `true`, replaces the current route.
   /// {@endtemplate}
   Future<dynamic> openRoute(Route route,
       {bool root = false, bool replacement = false});
 
   /// {@template route-root}
-  /// Clears current [Navigator] and opens new [Route].
+  /// Pushes a [Route] and removes all previous routes from the stack.
   /// {@endtemplate}
   Future<dynamic> openRoot(Route route);
 
   /// {@template route-back-to}
-  /// Goes back in navigation stack until [Route] found.
+  /// Navigates back in the stack until a route matching the predicate is found.
   /// {@endtemplate}
   void backTo<T>({
     Route? route,
@@ -27,23 +28,27 @@ abstract class RouteNavigator {
   });
 
   /// {@template route-back-root}
-  /// Goes back in navigation stack until first [Route].
+  /// Navigates back to the very first route in the navigation stack.
   /// {@endtemplate}
   void backToRoot({Route? open});
 
   /// {@template route-close}
-  /// Pops [Route] from navigation stack.
-  /// result is send back to parent.
+  /// Pops the current route from the navigation stack.
+  /// A [result] can be passed back to the previous route.
   /// {@endtemplate}
   bool close([dynamic result]);
 
-  /// Removes given [route] from navigator.
+  /// Removes a specific [route] from the navigator.
   bool closeRoute(Route route, [dynamic result]);
 }
 
+/// A concrete implementation of [RouteNavigator] that uses the standard
+/// Flutter [Navigator] to perform navigation actions.
 class ControlNavigator implements RouteNavigator {
+  /// The build context used to find the [Navigator].
   final BuildContext context;
 
+  /// Creates a [ControlNavigator] with a given [BuildContext].
   ControlNavigator(this.context);
 
   @protected

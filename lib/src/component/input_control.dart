@@ -1,74 +1,78 @@
 part of flutter_control;
 
-/// Experimental !
-/// Extends [TextEditingController] and adds functionality to match [Control] library.
-/// Currently usable with [InputField], [InputFieldV1] and other [TextField]s...
+/// Extends [TextEditingController] to integrate with the Control framework's
+/// state management and lifecycle. It provides validation, focus management,
+/// and chaining capabilities for input fields.
+///
+/// Experimental: This API is subject to change.
 class InputControl extends TextEditingController with DisposeHandler {
-  /// Regex to validate.
+  /// Regex pattern for validation.
   final String? regex;
 
-  /// Focus notifier of [TextField].
+  /// Focus node for the input field.
   FocusNode? _focus;
 
-  /// Lazy focus notifier. Should be passed to [TextField].
+  /// Lazily initializes and returns the focus node.
+  /// This should be passed to the `focusNode` property of a [TextField].
   FocusNode get focus =>
       _focus ?? (_focus = FocusNode()..addListener(_notifyFocus));
 
-  /// Checks if [focus] node is attached to corresponding [Widget].
+  /// Checks if the focus node is attached to a widget.
   bool get focusable => focus.context != null;
 
-  /// Checks if corresponding [Widget] is focused.
+  /// Checks if the corresponding widget has focus.
   bool get hasFocus => _focus?.hasFocus ?? false;
 
-  /// Holds field validity.
+  /// Backing field for the validity state.
   bool _isValid = true;
 
-  /// Checks [text] validity. Proceed during [submit] and [validate].
+  /// Whether the current text is valid according to the [regex].
   bool get isValid => _isValid;
 
-  /// Error text message.
+  /// Backing field for the error message.
   String? _error;
 
-  /// Error text message.
+  /// The current error message for the input field.
+  /// Setting a new error will notify listeners.
   String? get error => _error;
 
-  /// Error text message.
+  /// Sets the error message and notifies listeners.
   set error(String? value) {
     _error = value;
     notifyListeners();
   }
 
-  /// Checks if field is obscured.
+  /// Backing field for the obscure text state.
   bool _obscure = false;
 
-  /// Checks if corresponding [Widget] is obscured.
+  /// Whether the text in the input field is obscured.
   bool get obscure => _obscure;
 
-  /// Sets obscuring to corresponding [Widget].
+  /// Sets the obscure text state and notifies listeners.
   set obscure(bool value) {
     _obscure = value;
     notifyListeners();
   }
 
-  /// Next control in chain.
+  /// The next [InputControl] in a focus chain.
   InputControl? _next;
 
-  /// Callback of [submit].
+  /// Callback for when the input is submitted (e.g., by pressing the 'done' action).
   VoidCallback? _onDone;
 
-  /// Callback of [text] changes.
+  /// Callback for when the text changes.
   ValueCallback<String>? _onChanged;
 
-  /// Postponed callback of [text] changes.
+  /// A debounced callback for text changes.
   FutureBlock? _onChangedDelay;
 
-  /// Mark to call [_onChanged] when submit.
+  /// If true, the [_onChanged] callback will also be triggered on submit.
   bool _onChangedDone = false;
 
-  /// Checks if 'next' control is chained.
+  /// Checks if there is a next control in the focus chain.
   bool get isNextChained => _next != null;
 
-  /// Checks if 'done' callback is set.
+  /// Checks if an `onDone` callback is set.
   bool get isDoneMounted => _onDone != null;
 
   @override
@@ -82,33 +86,42 @@ class InputControl extends TextEditingController with DisposeHandler {
     );
   }
 
-  /// Check si [text] is not empty.
+  /// Checks if the current text is empty.
   bool get isEmpty => text.isEmpty;
 
-  /// Checks if [text] is null or empty.
+  /// Checks if the current text is not empty.
   bool get isNotEmpty => text.isNotEmpty;
 
+  /// Creates an [InputControl].
+  ///
+  /// [text] The initial text.
+  /// [regex] A regex pattern for validation.
   InputControl({String? text, this.regex}) {
     value =
         text == null ? TextEditingValue.empty : TextEditingValue(text: text);
   }
 
-  /// Sets [control] to chain.
-  /// Returns chained [control].
+  /// Chains this control to the [next] control.
+  /// When this field is submitted, focus will move to the [next] control.
+  /// Returns the [next] control to allow for fluent chaining.
   InputControl next(InputControl control) {
     _next = control;
     return control;
   }
 
-  /// Sets callback to [submit] event.
-  /// Returns this control.
+  /// Sets the callback to be executed on a submit event.
+  /// Returns this control for fluent configuration.
   InputControl done(VoidCallback onDone) {
     _onDone = onDone;
     return this;
   }
 
-  /// Sets callback to [change] event.
-  /// Returns this control.
+  /// Sets the callback for text changes.
+  ///
+  /// [onChanged] The callback to execute.
+  /// [delay] An optional duration to debounce the callback.
+  /// [onDone] If true, the callback will also be triggered on submit.
+  /// Returns this control for fluent configuration.
   InputControl changed(ValueCallback<String> onChanged,
       {Duration? delay, bool onDone = false}) {
     _onChanged = onChanged;
@@ -130,8 +143,8 @@ class InputControl extends TextEditingController with DisposeHandler {
     return this;
   }
 
-  /// Submits [text] and [validate] input.
-  /// Sets focus to next 'control' if chained.
+  /// Submits the current text for validation and moves focus to the next control if chained.
+  /// Triggers the `onDone` callback if set.
   void submit([String? text]) {
     if (text != null) {
       this.text = text;
@@ -155,7 +168,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
   }
 
-  /// Sets focus to next possible [Widget] in chain.
+  /// Sets focus to the next [InputControl] in the chain.
   void focusNext() {
     if (_next == null) {
       return;
@@ -168,7 +181,8 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
   }
 
-  /// Notifies [changed] event.
+  /// Notifies the [changed] event.
+  /// If a delay is configured, the notification will be debounced.
   void change(String text) {
     if (_onChangedDelay != null) {
       _onChangedDelay = FutureBlock.extend(parent: _onChangedDelay);
@@ -177,8 +191,8 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
   }
 
-  /// Submits first possible field with [done] event.
-  /// Submits whole chain if [all] is set.
+  /// Submits the first control in the chain that has an `onDone` callback.
+  /// If [all] is true, it submits the entire chain.
   void chainSubmit({bool all = false}) {
     validate();
 
@@ -203,7 +217,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     _next?.chainSubmit();
   }
 
-  /// Changes focus if corresponding [Widget] is [focusable].
+  /// Requests or removes focus from the input field.
   void setFocus(bool requestFocus) {
     if (!focusable) {
       return;
@@ -216,15 +230,15 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
   }
 
-  /// Callback of [focus] changes.
+  /// Callback for focus changes. Clears the error when focus is gained.
   void _notifyFocus() {
     if (hasFocus) {
       error = null;
     }
   }
 
-  /// Validates [text] with [regex] if set.
-  /// Returns 'true' if [text] matches [regex].
+  /// Validates the current text against the [regex] pattern.
+  /// Returns `true` if the text is valid or if no regex is provided.
   bool validate() {
     if (regex == null) {
       return _isValid = true;
@@ -233,9 +247,10 @@ class InputControl extends TextEditingController with DisposeHandler {
     return _isValid = RegExp(regex!).hasMatch(text);
   }
 
-  /// Validates continuous chain. Typically called on first item in chain..
-  /// Set [unfocus] to [unfocusChain] - Unfocus corresponding [Widget]s in chain.
-  /// Returns 'true' if all controls are valid.
+  /// Validates the entire chain of controls.
+  ///
+  /// [unfocus] If true, unfocuses the entire chain after validation.
+  /// Returns `true` if all controls in the chain are valid.
   bool validateChain({bool unfocus = true}) {
     if (_next == null) {
       return validate();
@@ -251,22 +266,15 @@ class InputControl extends TextEditingController with DisposeHandler {
     return validate() && isChainValid;
   }
 
-  /// Unfocus corresponding [Widget]s in continuous chain.
-  /// Typically called on first item in chain.
-  /// Check [validateChain] to also validate inputs.
+  /// Unfocuses all controls in the chain.
   void unfocusChain() {
     setFocus(false);
     _next?.unfocusChain();
   }
 
-  /// Cleans all variables and events.
-  ///   - text
-  ///   - error text
-  ///   - done event
-  ///   - changed event
-  ///   - next event
-  /// And sets validity.
-  /// [focus] stays unchanged.
+  /// Clears the text, error, and all callbacks.
+  ///
+  /// [validity] The validity state to set after cleaning.
   void clean({bool validity = true}) {
     text = null;
     error = null;
@@ -276,6 +284,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     _isValid = validity;
   }
 
+  /// Manually sets the validity of the control.
   void validity(bool value) => _isValid = value;
 
   @override

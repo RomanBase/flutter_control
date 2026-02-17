@@ -22,8 +22,6 @@ dependencies:
   localino_live:
     path: ../../modules/localino_live
 
-  win32: ^5.9.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

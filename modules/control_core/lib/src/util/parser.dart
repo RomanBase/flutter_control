@@ -354,9 +354,7 @@ class Parse {
   /// - [converter]/[entryConverter]: Functions to convert each item to type `T`.
   /// - [hardCast]: If `true`, attempts a direct `cast<T>()`, which is faster but can fail at runtime.
   static List<T> toList<T>(dynamic value,
-      {ValueConverter<T>? converter,
-      EntryConverter<T>? entryConverter,
-      bool hardCast = false}) {
+      {ValueConverter<T>? converter, EntryConverter<T>? entryConverter}) {
     final items = <T>[];
     Map? valueMap;
 
@@ -389,19 +387,7 @@ class Parse {
           }
         });
       } else {
-        if (value is List && hardCast) {
-          try {
-            return value.cast<T>();
-          } catch (err) {
-            printDebug(err.toString());
-          }
-        }
-
-        for (final item in value) {
-          if (item is T) {
-            items.add(item);
-          }
-        }
+        return List.of(value.cast());
       }
     } else {
       if (converter != null) {
@@ -445,7 +431,7 @@ class Parse {
       value = value.toList().asMap();
     }
 
-    key ??= (key, _) => key as K;
+    final keyConverter = key ?? (key, _) => key as K;
 
     if (value is Map) {
       if (converter != null) {
@@ -453,7 +439,7 @@ class Parse {
           final mapItem = convert(item, converter: converter);
 
           if (mapItem != null) {
-            items[key!(key, item)] = mapItem;
+            items[keyConverter(key, item)] = mapItem;
           }
         });
       } else if (entryConverter != null) {
@@ -461,13 +447,13 @@ class Parse {
           final mapItem = convertEntry(key, item, converter: entryConverter);
 
           if (mapItem != null) {
-            items[key!(key, item)] = mapItem;
+            items[keyConverter(key, item)] = mapItem;
           }
         });
       } else {
         value.forEach((key, item) {
           if (item is T) {
-            items[key!(key, item)] = item;
+            items[keyConverter(key, item)] = item;
           }
         });
       }
@@ -476,17 +462,17 @@ class Parse {
         final listItem = convert(value, converter: converter);
 
         if (listItem != null) {
-          items[key(null, listItem)] = listItem;
+          items[keyConverter(0, listItem)] = listItem;
         }
       } else if (entryConverter != null) {
         final listItem = convertEntry(0, value, converter: entryConverter);
 
         if (listItem != null) {
-          items[key(null, listItem)] = listItem;
+          items[keyConverter(0, listItem)] = listItem;
         }
       } else {
         if (value is T) {
-          items[key(null, value)] = value;
+          items[keyConverter(0, value)] = value;
         }
       }
     }

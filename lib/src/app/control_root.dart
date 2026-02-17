@@ -74,6 +74,8 @@ class _ControlRootScope {
       );
 }
 
+/// The root widget for the control framework. It initializes the theme, application states,
+/// and other global dependencies. It's the main entry point for a Control-based application structure.
 class ControlRoot extends ControlWidget {
   final ThemeConfig? theme;
   final AppState? initState;
@@ -156,6 +158,8 @@ class ControlRoot extends ControlWidget {
   }
 }
 
+/// The [CoreContext] for the [ControlRoot] widget.
+/// Provides access to global app state and theme configuration.
 class RootContext extends CoreContext {
   static RootContext? of(BuildContext context) =>
       context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;

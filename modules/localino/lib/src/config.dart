@@ -1,11 +1,20 @@
 part of localino;
 
+/// Defines remote options for Localino.
 class LocalinoRemoteOptions {
+  /// Remote space name.
   final String space;
+
+  /// Remote project name.
   final String project;
+
+  /// Remote access token.
   final String access;
+
+  /// Remote version of translations.
   final String version;
 
+  /// Default constructor for [LocalinoRemoteOptions].
   const LocalinoRemoteOptions({
     this.space = 'public',
     required this.project,
@@ -14,15 +23,31 @@ class LocalinoRemoteOptions {
   });
 }
 
+/// Setups Localino from asset file.
 class LocalinoSetup {
+  /// Remote space name.
   final String space;
+
+  /// Remote project name.
   final String project;
+
+  /// Remote access token.
   final String access;
+
+  /// Remote version of translations.
   final String version;
+
+  /// Asset path to localization files.
+  /// Placeholder `{locale}` is used to fill locale identifier.
   final String asset;
+
+  /// Map of supported locales and their remote timestamp.
   final Map<String, DateTime> locales;
+
+  /// Additional options for [Localino.init].
   final Map<String, dynamic> init;
 
+  /// Default constructor for [LocalinoSetup].
   const LocalinoSetup({
     this.space = 'public',
     required this.project,
@@ -33,6 +58,7 @@ class LocalinoSetup {
     this.locales = const {},
   });
 
+  /// Returns remote options.
   LocalinoRemoteOptions get options => LocalinoRemoteOptions(
         space: space,
         project: project,
@@ -40,6 +66,7 @@ class LocalinoSetup {
         version: version,
       );
 
+  /// Returns config with parsed asset paths.
   LocalinoConfig get config => LocalinoConfig(
         defaultLocale: init['default_locale'],
         stableLocale: init['stable_locale'],
@@ -50,6 +77,8 @@ class LocalinoSetup {
             MapEntry(key, Parse.format(asset, {'locale': key}))),
       );
 
+  /// Loads setup from given asset file.
+  /// Default path is `assets/localization/setup.json`.
   static Future<LocalinoSetup> loadAssets(
       [String path = 'assets/localization/setup.json']) async {
     final json = await rootBundle.loadString(path, cache: false);
@@ -67,9 +96,9 @@ class LocalinoSetup {
       access: data['access'] ?? 'none',
       asset: data['asset'] ?? _defaultAssetsLocation,
       version: data['version'] ?? 'latest',
-      locales: Parse.toKeyMap<String, DateTime>(
+      locales: Parse.toMap<String, DateTime>(
         data['locales'],
-        (key, value) => key as String,
+        key: (key, value) => key as String,
         converter: (value) => Parse.date(value) ?? DateTime.now().toUtc(),
       ),
       init: data['init'] ?? {},
@@ -81,9 +110,11 @@ class LocalinoSetup {
 ///
 /// Config is passed to [Control.initControl] to init [Localino].
 class LocalinoConfig {
+  /// Returns current system locale.
   static String get systemLocale =>
       PlatformDispatcher.instance.locale.toString();
 
+  /// Returns empty config with just system locale.
   static LocalinoConfig get empty => LocalinoConfig(
         locales: {
           systemLocale: null,

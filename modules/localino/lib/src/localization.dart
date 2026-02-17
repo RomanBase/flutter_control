@@ -1,5 +1,6 @@
 part of localino;
 
+/// Callback to load additional translations.
 typedef LocalinoDataLoader = Future<Map<String, dynamic>> Function(
     String locale);
 
@@ -46,7 +47,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Custom param decorator.
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
-  ParamDecoratorFormat _paramDecorator = ParamDecorator.curl;
+  ParseDecoratorFormat _paramDecorator = ParseDecorator.curl;
 
   /// The system-reported default locale of the device.
   Locale get deviceLocale => WidgetsBinding.instance.platformDispatcher.locale;
@@ -60,6 +61,9 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
 
   /// Returns currently loaded locale.
   String get locale => _locale ?? defaultLocale;
+
+  /// Returns currently loaded locale without country code.
+  String get localeShort => currentLocale.languageCode;
 
   /// Returns currently loaded locale.
   Locale get currentLocale =>
@@ -107,11 +111,12 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
     this.dataLoader = localDataLoader;
   }
 
-  /// Should be called first.
-  /// Loads initial localization data - [getSystemLocale] is used to get preferred locale.
+  /// Initializes [Localino] and loads default and system locales.
   ///
   /// [loadDefaultLocale] - loads [defaultLocale] before preferred locale.
   /// [handleSystemLocale] - listen for default locale of the device. Whenever this locale is changed, localization will change locale (but only when there is no preferred locale).
+  /// [handleRemoteLocale] - enable/disable remote sync of translations.
+  /// [stableLocale] - locale key of non-translatable data.
   Future<LocalinoArgs> init({
     bool loadDefaultLocale = true,
     bool handleSystemLocale = false,
@@ -215,8 +220,8 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Removes preferred locale stored in shared preferences.
   ///
   /// [loadSystemLocale] - to load new system preferred locale.
-  /// Returns result of localization change [LocalinoArgs] or just result of reset prefs [bool].
-  /// Result of localization change is send to global broadcast with [Localino] key.
+  /// If [loadSystemLocale] is true, then [changeToSystemLocale] is called and result of localization change is returned.
+  /// Otherwise just [preference_key] is removed from preferences and [true] is returned.
   Future<dynamic> resetPreferredLocale({bool loadSystemLocale = false}) async {
     prefs.set(preference_key, null);
 
@@ -712,7 +717,7 @@ class Localino extends ChangeNotifier with PrefsProvider implements Disposable {
   /// Sets custom decorator for string formatting
   ///
   /// Default decorator is [ParamDecorator.curl]: 'city' => '{city}'.
-  void setCustomParamDecorator(ParamDecoratorFormat decorator) =>
+  void setCustomParamDecorator(ParseDecoratorFormat decorator) =>
       _paramDecorator = decorator;
 
   /// Updates value in current localization set.
