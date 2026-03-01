@@ -17,7 +17,8 @@ part of '../../core.dart';
 ///   }
 /// }
 /// ```
-mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?>, ObservableNotifier {
+mixin ObservableComponent<T> on ControlModel
+    implements ObservableValue<T?>, ObservableNotifier {
   /// Actual observable to subscribe.
   final _parent = ControlObservable.empty<T>();
 
@@ -29,30 +30,37 @@ mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?>, Obs
 
   set value(T? value) => _parent.value = value;
 
-  void setValue(T? value, {bool notify = true, bool forceNotify = false}) => _parent.setValue(
+  void setValue(T? value, {bool notify = true, bool forceNotify = false}) =>
+      _parent.setValue(
         value,
         notify: notify,
         forceNotify: forceNotify,
       );
 
   @override
-  ControlSubscription<T?> listen(VoidCallback action) => subscribe((_) => action());
+  ControlSubscription<T?> listen(VoidCallback action) =>
+      subscribe((_) => action());
 
   @override
-  ControlSubscription<T?> subscribe(ValueCallback<T?> action, {bool current = false, dynamic args}) => _parent.subscribe(
+  ControlSubscription<T?> subscribe(ValueCallback<T?> action,
+          {bool current = false, dynamic args}) =>
+      _parent.subscribe(
         action,
         current: current,
         args: args,
       );
 
   @override
-  void cancel(ControlSubscription<T?> subscription) => _parent.cancel(subscription);
+  void cancel(ControlSubscription<T?> subscription) =>
+      _parent.cancel(subscription);
 
   @override
   void notify() => _parent.notify();
 
   @protected
-  ControlSubscription<U> wrap<U>(ObservableValue<U> other, {T Function(U value)? converter, bool autoDispose = true}) => _parent.wrap(other, converter: converter, autoDispose: autoDispose);
+  ControlSubscription<U> wrap<U>(ObservableValue<U> other,
+          {T Function(U value)? converter, bool autoDispose = true}) =>
+      _parent.wrap(other, converter: converter, autoDispose: autoDispose);
 
   @override
   void dispose() {
@@ -76,7 +84,8 @@ mixin ObservableComponent<T> on ControlModel implements ObservableValue<T?>, Obs
 ///   }
 /// }
 /// ```
-mixin NotifierComponent on ControlModel implements ObservableChannel, ObservableNotifier {
+mixin NotifierComponent on ControlModel
+    implements ObservableChannel, ObservableNotifier {
   /// Actual control to subscribe.
   final _parent = ControlObservable.empty();
 
@@ -87,7 +96,9 @@ mixin NotifierComponent on ControlModel implements ObservableChannel, Observable
   ControlSubscription<void> listen(VoidCallback action) => subscribe(action);
 
   @override
-  ControlSubscription<void> subscribe(VoidCallback action, {bool current = false, args}) => _parent.subscribe(
+  ControlSubscription<void> subscribe(VoidCallback action,
+          {bool current = false, args}) =>
+      _parent.subscribe(
         (_) => action.call(),
         current: current,
         args: args,
@@ -100,7 +111,9 @@ mixin NotifierComponent on ControlModel implements ObservableChannel, Observable
   void notify() => _parent.notify();
 
   @protected
-  ControlSubscription<U> wrap<U>(ObservableValue<U> other, {bool autoDispose = true}) => _parent.wrap(other, autoDispose: autoDispose);
+  ControlSubscription<U> wrap<U>(ObservableValue<U> other,
+          {bool autoDispose = true}) =>
+      _parent.wrap(other, autoDispose: autoDispose);
 
   @override
   void dispose() {
@@ -113,9 +126,12 @@ mixin NotifierComponent on ControlModel implements ObservableChannel, Observable
 mixin EventComponent<T> on ControlModel {
   final _parent = ControlObservable.empty<T>();
 
-  ControlSubscription<void> listenEvent(ValueCallback<T?> action) => subscribeEvent(action);
+  ControlSubscription<void> listenEvent(ValueCallback<T?> action) =>
+      subscribeEvent(action);
 
-  ControlSubscription<void> subscribeEvent(ValueCallback<T?> action, {bool current = false, args}) => _parent.subscribe(
+  ControlSubscription<void> subscribeEvent(ValueCallback<T?> action,
+          {bool current = false, args}) =>
+      _parent.subscribe(
         (value) => action(value),
         current: current,
         args: args,
