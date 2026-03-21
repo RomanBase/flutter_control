@@ -6,8 +6,10 @@ extension ThemeDataHook on BuildContext {
   ///
   /// This hook uses [LazyHook] to cache the `ThemeData` and automatically
   /// invalidates it when dependencies change, ensuring the theme is always up-to-date.
-  ThemeData get theme =>
-      use<_ThemeDataHook>(value: () => _ThemeDataHook()).get(core);
+  ThemeData get theme => this is CoreContext
+      ? use<_ThemeDataHook>(value: () => _ThemeDataHook())
+          .get(this as CoreContext)
+      : Theme.of(this);
 }
 
 class _ThemeDataHook with LazyHook<ThemeData> {
