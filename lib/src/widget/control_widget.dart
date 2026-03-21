@@ -150,7 +150,7 @@ abstract class _ControlWidgetBase extends CoreWidget {
   void onDispose() {
     super.onDispose();
 
-    printDebug('dispose: ${this.runtimeType.toString()}');
+    printDebug('dispose: ${runtimeType.toString()}');
   }
 }
 

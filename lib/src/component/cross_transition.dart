@@ -1,6 +1,6 @@
 part of flutter_control;
 
-const _kCrossDuration = const Duration(milliseconds: 300);
+const _kCrossDuration = Duration(milliseconds: 300);
 
 /// Defines a transition between two widgets, typically used with [AnimatedSwitcher] or [CaseWidget].
 /// It consists of two separate transitions: one for the widget coming in, and one for the widget going out.
@@ -169,7 +169,7 @@ class CrossTransition {
         duration: duration ?? _kCrossDuration,
         reverseDuration: reverseDuration,
         transitionIn: (child, anim) => SlideTransition(
-          position: Tween<Offset>(begin: begin, end: Offset(0.0, 0.0))
+          position: Tween<Offset>(begin: begin, end: const Offset(0.0, 0.0))
               .animate(CurvedAnimation(
             parent: anim,
             curve: curveIn,
@@ -177,7 +177,7 @@ class CrossTransition {
           child: child,
         ),
         transitionOut: (child, anim) => SlideTransition(
-          position: Tween<Offset>(begin: end, end: Offset(0.0, 0.0))
+          position: Tween<Offset>(begin: end, end: const Offset(0.0, 0.0))
               .animate(CurvedAnimation(
             parent: anim,
             curve: curveOut,

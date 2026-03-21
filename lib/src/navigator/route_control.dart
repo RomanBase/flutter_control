@@ -202,9 +202,9 @@ class ControlRoute {
   }) =>
       ControlRoute._()
         ..identifier = identifier ?? this.identifier
-        .._mask = mask ?? this._mask
+        .._mask = mask ?? _mask
         .._builder = _builder
-        .._routeBuilder = routeBuilder ?? this._routeBuilder
+        .._routeBuilder = routeBuilder ?? _routeBuilder
         .._pathBuilder = path
         .._queryBuilder = query;
 
@@ -252,8 +252,8 @@ class ControlRouteTransition extends PageRoute {
     required this.builder,
     required this.transition,
     this.duration = const Duration(milliseconds: 300),
-    RouteSettings? settings,
-  }) : super(settings: settings);
+    super.settings,
+  });
 
   @override
   Color? get barrierColor => null;
@@ -361,13 +361,11 @@ class ControlRouteTransitionSetup {
   }) =>
       ControlRouteTransitionSetup._(
         incomingCurve == null
-            ? this.incomingAnimation
-            : CurvedAnimation(
-                parent: this.incomingAnimation, curve: incomingCurve),
+            ? incomingAnimation
+            : CurvedAnimation(parent: incomingAnimation, curve: incomingCurve),
         outgoingCurve == null
-            ? this.outgoingAnimation
-            : CurvedAnimation(
-                parent: this.outgoingAnimation, curve: outgoingCurve),
-        this.route,
+            ? outgoingAnimation
+            : CurvedAnimation(parent: outgoingAnimation, curve: outgoingCurve),
+        route,
       );
 }

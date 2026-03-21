@@ -40,6 +40,7 @@ class RoutingModule extends ControlModule<RouteStore> {
     initModule();
   }
 
+  @override
   void initModule() {
     super.initModule();
 
@@ -234,7 +235,7 @@ class RouteMask {
   static RouteMask get root =>
       RouteMask._([_PathSegment('', false, null)], '/');
 
-  static RouteMask get empty => RouteMask._([], '/');
+  static RouteMask get empty => const RouteMask._([], '/');
 
   const RouteMask._(this._segments, this.identifier);
 

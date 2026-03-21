@@ -32,7 +32,7 @@ class CaseWidget<T> extends StatefulWidget {
   ///
   /// When case is changed [CrossTransition] animation is played between current and next Widget.
   const CaseWidget({
-    Key? key,
+    super.key,
     required this.activeCase,
     required this.builders,
     this.placeholder,
@@ -42,7 +42,7 @@ class CaseWidget<T> extends StatefulWidget {
     this.reverseOrder = false,
     this.reverseAnimation = false,
     this.soft = true,
-  }) : super(key: key);
+  });
 
   /// A convenience builder for [CaseWidget] that uses a [ControlBuilder] to
   /// listen to a `control` and automatically update the active case.

@@ -79,8 +79,8 @@ class _InitLoaderControlFunc extends InitLoaderControl {
 
   _InitLoaderControlFunc({
     this.loadFunc,
-    Duration? delay,
-  }) : super(delay: delay);
+    super.delay,
+  });
 
   @override
   Future<dynamic> load() async {

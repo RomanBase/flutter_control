@@ -59,7 +59,7 @@ void main() {
 class TestInitWidget extends StatelessWidget {
   final dynamic args;
 
-  const TestInitWidget({Key? key, this.args}) : super(key: key);
+  const TestInitWidget({super.key, this.args});
 
   @override
   Widget build(BuildContext context) {

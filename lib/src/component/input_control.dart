@@ -201,7 +201,7 @@ class InputControl extends TextEditingController with DisposeHandler {
         if (_onChangedDelay != null) {
           _onChangedDelay!.trigger();
         } else {
-          _onChanged?.call(this.text);
+          _onChanged?.call(text);
         }
       } else {
         _onChangedDelay?.stop();
@@ -286,11 +286,6 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Manually sets the validity of the control.
   void validity(bool value) => _isValid = value;
-
-  @override
-  void softDispose() {
-    super.softDispose();
-  }
 
   @override
   void dispose() {

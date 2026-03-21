@@ -55,15 +55,15 @@ class AppStateBuilder {
 ///
 /// Change State via [ControlScope.root].
 class AppState {
-  static const init = const AppState();
+  static const init = AppState();
 
-  static const auth = const _AppStateAuth();
+  static const auth = _AppStateAuth();
 
-  static const onboarding = const _AppStateOnboarding();
+  static const onboarding = _AppStateOnboarding();
 
-  static const main = const _AppStateMain();
+  static const main = _AppStateMain();
 
-  static const background = const _AppStateBackground();
+  static const background = _AppStateBackground();
 
   const AppState();
 
@@ -75,8 +75,9 @@ class AppState {
         transition,
       );
 
-  Type get key => this.runtimeType;
+  Type get key => runtimeType;
 
+  @override
   operator ==(Object other) => other is AppState && other.key == key;
 
   @override

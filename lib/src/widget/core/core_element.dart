@@ -22,6 +22,7 @@ typedef CoreContext
 ///  - [InitProvider] and [LazyProvider] for dependency injection patterns.
 class CoreElement extends StatefulElement {
   /// A map of arguments and dependencies associated with this element.
+  // ignore: prefer_const_constructors - dynamic data
   final args = ControlArgs({});
 
   bool _initialized = false;

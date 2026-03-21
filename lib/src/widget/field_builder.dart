@@ -12,17 +12,11 @@ class FieldStreamBuilder<T> extends StreamBuilder<T?> {
   FieldStreamBuilder({
     super.key,
     required FieldControl<T> control,
-    required AsyncWidgetBuilder<T?> builder,
+    required super.builder,
   }) : super(
           initialData: control.value,
           stream: control.stream,
-          builder: builder,
         );
-
-  @override
-  Widget build(BuildContext context, AsyncSnapshot<T?> currentSummary) {
-    return super.build(context, currentSummary);
-  }
 }
 
 /// A convenience widget that builds itself based on the state of a [FieldControl].
@@ -37,23 +31,21 @@ class FieldBuilder<T> extends FieldStreamBuilder<T> {
   /// [nullOk] If `true`, the [builder] will be called even with `null` values.
   FieldBuilder({
     super.key,
-    required FieldControl<T> control,
+    required super.control,
     required ControlWidgetBuilder<T?> builder,
     WidgetBuilder? noData,
     bool nullOk = false,
-  }) : super(
-            control: control,
-            builder: (context, snapshot) {
-              if (snapshot.hasData || nullOk) {
-                return builder(context, snapshot.data);
-              }
+  }) : super(builder: (context, snapshot) {
+          if (snapshot.hasData || nullOk) {
+            return builder(context, snapshot.data);
+          }
 
-              if (noData != null) {
-                return noData(context);
-              }
+          if (noData != null) {
+            return noData(context);
+          }
 
-              return Container();
-            });
+          return Container();
+        });
 }
 
 /// A convenience widget that builds itself based on the state of a [FieldControl]
@@ -113,7 +105,7 @@ class LoadingBuilder extends ControllableWidget<LoadingControl> {
   /// - [done]: A widget to show when loading is complete.
   /// - [error]: A widget to show when an error occurs.
   /// - [transition]: The default transition between states. Defaults to [CrossTransition.fadeOutFadeIn].
-  LoadingBuilder({
+  const LoadingBuilder({
     super.key,
     required super.control,
     this.initial,
@@ -135,8 +127,8 @@ class LoadingBuilder extends ControllableWidget<LoadingControl> {
       activeCase: state,
       builders: {
         if (initial != null) LoadingStatus.initial: initial!,
-        LoadingStatus.progress:
-            progress ?? (context) => Center(child: CircularProgressIndicator()),
+        LoadingStatus.progress: progress ??
+            (context) => const Center(child: CircularProgressIndicator()),
         if (done != null) LoadingStatus.done: done!,
         if (error != null) LoadingStatus.error: error!,
         if (outdated != null) LoadingStatus.outdated: outdated!,
