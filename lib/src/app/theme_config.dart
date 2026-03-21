@@ -34,6 +34,10 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   final dynamic initial;
   final ThemeFactory themes;
 
+  dynamic _current;
+
+  dynamic get currentTheme => _current ?? preferredTheme;
+
   ThemeConfig({
     this.initial,
     required this.themes,
@@ -65,6 +69,7 @@ class ThemeConfig<T> extends ValueNotifier<T> with PrefsProvider {
   bool isPreferred(dynamic key) => preferredTheme == Parse.name(key);
 
   bool changeTheme(dynamic key, [bool preferred = true]) {
+    _current = key;
     final data = getTheme(key);
 
     if (preferred) {

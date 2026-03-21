@@ -29,7 +29,7 @@ abstract class ControllableWidget<T> extends CoreWidget {
 
   /// Builds the widget's UI. This method is called whenever the [control]
   /// notifies of a change.
-  Widget build(CoreContext context);
+  Widget build(BuildContext context);
 }
 
 class _ControllableState<T> extends CoreState<ControllableWidget<T>> {

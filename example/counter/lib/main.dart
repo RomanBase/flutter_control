@@ -102,7 +102,7 @@ class MainPage extends SingleControlWidget<Counter> {
   }
 
   @override
-  Widget build(CoreContext context, Counter counter) {
+  Widget build(BuildContext context, Counter counter) {
     final theme = context.theme;
 
     return Scaffold(
@@ -167,7 +167,7 @@ class SecondPage extends ControlWidget with InitProvider {
   }
 
   @override
-  Widget build(CoreContext context) {
+  Widget build(BuildContext context) {
     final theme = context.theme;
     final counter = context<Counter>();
     final secondPage = context.value<bool>(key: 'second').value!;
@@ -238,7 +238,7 @@ class SecondPage extends ControlWidget with InitProvider {
 
 class ThirdPage extends SingleControlWidget<Counter> with InitProvider {
   @override
-  Widget build(CoreContext context, Counter control) {
+  Widget build(BuildContext context, Counter control) {
     return Scaffold(
       body: Center(
         child: Column(
@@ -271,7 +271,7 @@ class _ThirdScope extends BaseControlWidget with LazyProvider {
   }
 
   @override
-  Widget build(CoreContext context) {
+  Widget build(BuildContext context) {
     final counter = context.get<Counter>();
 
     return Text('Init With: $counter - (${counter?.value})');

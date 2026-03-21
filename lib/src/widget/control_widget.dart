@@ -26,7 +26,7 @@ abstract class BaseControlWidget extends CoreWidget {
   /// state management, and navigation.
   ///
   /// Do not register long-lived dependencies here. Use [onInit] for that purpose.
-  Widget build(CoreContext context);
+  Widget build(BuildContext context);
 }
 
 /// The state for a [BaseControlWidget].
@@ -86,7 +86,7 @@ abstract class SingleControlWidget<T extends ControlModel>
   /// Builds the widget's UI with access to the primary [control].
   ///
   /// Use [context] for framework features and [control] for business logic and state.
-  Widget build(CoreContext context, T control);
+  Widget build(BuildContext context, T control);
 }
 
 /// A flexible [CoreWidget] that can manage multiple [ControlModel]s.
@@ -106,7 +106,7 @@ abstract class ControlWidget extends _ControlWidgetBase {
   /// Builds the widget's UI.
   ///
   /// Use [context] to access dependencies, manage state, and navigate.
-  Widget build(CoreContext context);
+  Widget build(BuildContext context);
 }
 
 /// The base class for widgets that manage a list of [ControlModel]s.

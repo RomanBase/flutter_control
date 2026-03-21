@@ -128,7 +128,7 @@ class InitLoader<T extends InitLoaderControl> extends SingleControlWidget<T> {
       );
 
   @override
-  Widget build(CoreContext context, T control) {
+  Widget build(BuildContext context, T control) {
     return builder(context);
   }
 }

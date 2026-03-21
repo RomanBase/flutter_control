@@ -72,7 +72,7 @@ class _TickerProvider implements Disposable, TickerProvider {
 }
 
 /// Extension hook on [CoreContext] to provide a [TickerProvider].
-extension TickerHook on CoreContext {
+extension TickerHook on BuildContext {
   /// Returns a [TickerProvider] that is hooked to the lifecycle of the [CoreContext].
   _TickerProvider get ticker => use<_TickerProvider>(value: () {
         final provider = _TickerProvider();

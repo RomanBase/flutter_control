@@ -1,7 +1,7 @@
 part of flutter_control;
 
 /// Extension hook on [CoreContext] to provide easy access to [ScrollController]s.
-extension ScrollControllerHook on CoreContext {
+extension ScrollControllerHook on BuildContext {
   /// Provides a [_ScrollControllerProvider] for creating and managing [ScrollController] instances.
   ///
   /// The provider is hooked to the [CoreContext] lifecycle and will be disposed automatically.

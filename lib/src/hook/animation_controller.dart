@@ -1,7 +1,7 @@
 part of flutter_control;
 
 /// Extension hook on [CoreContext] to provide easy access to [AnimationController]s.
-extension AnimationControllerHook on CoreContext {
+extension AnimationControllerHook on BuildContext {
   /// Provides an [_AnimationControllerProvider] for creating and managing [AnimationController] instances.
   ///
   /// The provider is hooked to the [CoreContext] lifecycle and will be disposed automatically.
@@ -22,7 +22,7 @@ class _AnimationControllerProvider extends AnimationController {
   final TickerProvider ticker;
 
   /// The context to which this provider is attached.
-  final CoreContext context;
+  final BuildContext context;
 
   /// Provides an [AnimationController] by key.
   operator [](dynamic key) => this(key: key);

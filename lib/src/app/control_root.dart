@@ -134,7 +134,7 @@ class ControlRoot extends ControlWidget {
   CoreContext createElement() => RootContext(this);
 
   @override
-  Widget build(CoreContext context) {
+  Widget build(BuildContext context) {
     final root = context as RootContext;
     printAction(() =>
         'BUILD CONTROL ROOT: ${Parse.name(root.appState)} | ${ThemeConfig.preferredTheme} --- ${builders.map((e) => Control.get(key: e)?.toString()).join(' | ')}');

@@ -81,7 +81,7 @@ class LoaderStepIndicator extends BaseControlWidget {
   }
 
   @override
-  Widget build(CoreContext context) {
+  Widget build(BuildContext context) {
     final progress = context.animation.value;
     Curve Function(int index) curve = (i) => context.get<Curve>(key: i)!;
 

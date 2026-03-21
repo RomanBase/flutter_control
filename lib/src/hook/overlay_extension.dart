@@ -1,7 +1,7 @@
 part of flutter_control;
 
 /// An extension on [CoreContext] to manage [OverlayEntry]s.
-extension OverlayControl on CoreContext {
+extension OverlayControl on BuildContext {
   /// Shows an [OverlayEntry] and associates it with a [key].
   ///
   /// [key] A unique key to identify the overlay.

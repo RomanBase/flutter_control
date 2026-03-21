@@ -28,6 +28,8 @@ part 'src/component/input_control.dart';
 
 part 'src/hook/animation_controller.dart';
 
+part 'src/hook/context.dart';
+
 part 'src/hook/control_hook.dart';
 
 part 'src/hook/device.dart';
