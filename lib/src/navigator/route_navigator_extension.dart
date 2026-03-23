@@ -131,4 +131,24 @@ extension RouteNavigatorExtension on BuildContext {
 
     return route != null && route.isFirst;
   }
+
+  /// Restores a single route from stored settings.
+  Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
+
+  /// Restores a route and its sub-routes from stored settings and navigates to them.
+  Future<dynamic> restoreNavigation([
+    List<dynamic> subRoutes = const [],
+  ]) async =>
+      Control.get<RouteStore>()
+          ?.routing
+          .restoreRouteNavigation(this, navigator, subRoutes);
+}
+
+/// Extension on [RootContext] for routing.
+extension RootContextRouterExt on RootContext {
+  /// Generates a route, with a special case for the root ('/') route.
+  Route? generateRoute(RouteSettings settings, {Route Function()? root}) =>
+      (settings.name == '/' && root != null)
+          ? root.call()
+          : Control.get<RouteStore>()?.routing.generate(this, settings);
 }

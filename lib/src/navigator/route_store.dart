@@ -341,7 +341,7 @@ class RouteMask {
 }
 
 class _PathSegment {
-  static RegExp _mask = RegExp('{.*}');
+  static final RegExp _mask = RegExp('{.*}');
 
   final String name;
   final bool mask;
@@ -526,26 +526,4 @@ class RoutingProvider {
 
     return null;
   }
-}
-
-/// Extension on [RootContext] for routing.
-extension RootContextRouterExt on RootContext {
-  /// Generates a route, with a special case for the root ('/') route.
-  Route? generateRoute(RouteSettings settings, {Route Function()? root}) =>
-      (settings.name == '/' && root != null)
-          ? root.call()
-          : Control.get<RouteStore>()?.routing.generate(this, settings);
-}
-
-/// Extension on [CoreContext] for routing.
-extension BuildContextRouterExt on CoreContext {
-  /// Restores a single route from stored settings.
-  Route? restoreRoute() => Control.get<RouteStore>()?.routing.restore(this);
-
-  /// Restores a route and its sub-routes from stored settings and navigates to them.
-  Future<dynamic> restoreNavigation(
-          [List<dynamic> subRoutes = const []]) async =>
-      Control.get<RouteStore>()
-          ?.routing
-          .restoreRouteNavigation(this, navigator, subRoutes);
 }

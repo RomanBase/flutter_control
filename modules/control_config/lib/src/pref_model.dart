@@ -26,7 +26,7 @@ class PrefModelBase<T, U> extends ControlModel with NotifierComponent {
 
   /// Sets a new value for the preference.
   /// This updates the stored preference and notifies all listeners via [notify()].
-  set value(T? value) {
+  set value(dynamic value) {
     _set(value as U);
     notify();
   }
