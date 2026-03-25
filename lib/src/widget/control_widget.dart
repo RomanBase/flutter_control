@@ -185,6 +185,8 @@ class ControlState<U extends _ControlWidgetBase> extends CoreState<U> {
     widget.onInitState(this);
   }
 
+  /// Schedules a rebuild of the widget.
+  /// [state] - An optional state value passed to [onChangeState].
   @override
   void notifyState([dynamic state]) {
     if (mounted) {

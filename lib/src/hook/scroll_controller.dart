@@ -18,7 +18,7 @@ class _ScrollControllerProvider extends ScrollController {
   final _scrolls = <dynamic, ScrollController>{};
 
   /// Provides a [ScrollController] by key.
-  operator [](dynamic key) => this(key);
+  ScrollController operator [](dynamic key) => this(key);
 
   /// Retrieves or creates a [ScrollController].
   ///

@@ -77,12 +77,25 @@ class _ControlRootScope {
 /// The root widget for the control framework. It initializes the theme, application states,
 /// and other global dependencies. It's the main entry point for a Control-based application structure.
 class ControlRoot extends ControlWidget {
+  /// Configuration for the application's theme.
   final ThemeConfig? theme;
+
+  /// The initial [AppState] to use when the app starts. Defaults to [AppState.init].
   final AppState? initState;
+
+  /// A list of [AppStateBuilder]s that define the available states and their builders.
   final List<AppStateBuilder> states;
+
+  /// A list of objects that notify the [ControlRoot] of state changes (e.g., [Observable]s).
   final List<dynamic> stateNotifiers;
+
+  /// A list of additional builders to be evaluated and registered.
   final List<dynamic> builders;
+
+  /// A function that builds the root widget tree, providing access to the [RootContext].
   final Widget Function(RootContext context, Widget home) builder;
+
+  /// A callback that is triggered when the application's global setup changes (e.g., theme or language).
   final Function(RootContext context)? onSetupChanged;
 
   const ControlRoot({
@@ -161,17 +174,22 @@ class ControlRoot extends ControlWidget {
 /// The [CoreContext] for the [ControlRoot] widget.
 /// Provides access to global app state and theme configuration.
 class RootContext extends CoreContext {
+  /// Returns the nearest [RootContext] in the widget tree from the given [context].
   static RootContext? of(BuildContext context) =>
       context.findRootAncestorStateOfType<CoreState>()?.element as RootContext;
 
+  /// Returns the current active [AppState].
   AppState get appState => value<AppState>().value ?? AppState.init;
 
+  /// Returns the application's [ThemeConfig].
   ThemeConfig? get themeConfig => get<ThemeConfig>();
 
+  /// The [BuildContext] for the root navigator.
   BuildContext? navigationContext;
 
   RootContext(super.widget);
 
+  /// Registers an [object] that triggers a full app rebuild when changed.
   void registerBuilder(dynamic object) {
     register(ControlObservable.of(object).subscribe(
       (value) {
@@ -187,6 +205,9 @@ class RootContext extends CoreContext {
     el.visitChildren(_rebuildElementTree);
   }
 
+  /// Changes the current [AppState].
+  /// [state] - The new state.
+  /// [clearNavigator] - If true, pops all routes from the navigator until the first route.
   bool changeAppState(AppState state, {bool clearNavigator = true}) {
     if (clearNavigator && navigationContext != null) {
       Navigator.of(navigationContext!).popUntil((route) => route.isFirst);
@@ -197,6 +218,9 @@ class RootContext extends CoreContext {
     return true;
   }
 
+  /// Changes the current theme.
+  /// [key] - The key identifying the new theme.
+  /// [preferred] - If true, saves the theme as the user's preference.
   bool changeTheme(dynamic key, [bool preferred = true]) =>
       themeConfig?.changeTheme(key, preferred) ?? false;
 

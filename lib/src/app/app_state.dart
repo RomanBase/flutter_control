@@ -55,19 +55,27 @@ class AppStateBuilder {
 ///
 /// Change State via [ControlScope.root].
 class AppState {
+  /// Initial state of the application. Typically used during loading or initialization.
   static const init = AppState();
 
+  /// State representing the authentication flow.
   static const auth = _AppStateAuth();
 
+  /// State representing the onboarding flow.
   static const onboarding = _AppStateOnboarding();
 
+  /// The default main state of the application.
   static const main = _AppStateMain();
 
+  /// State for when the application is running in the background.
   static const background = _AppStateBackground();
 
+  /// Default constructor for [AppState].
   const AppState();
 
   /// Creates an [AppStateBuilder] for this state.
+  /// [builder] - Function to build the widget for this state.
+  /// [transition] - Animation to use when transitioning to this state.
   AppStateBuilder build(WidgetBuilder builder, {CrossTransition? transition}) =>
       AppStateBuilder(
         this,
@@ -75,6 +83,7 @@ class AppState {
         transition,
       );
 
+  /// Returns the type of this state, used as a key in maps.
   Type get key => runtimeType;
 
   @override

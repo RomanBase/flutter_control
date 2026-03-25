@@ -249,10 +249,13 @@ class CoreElement extends StatefulElement {
 class ElementValue<T> extends ChangeNotifier {
   T? _value;
 
+  /// Creates an [ElementValue] with an optional initial [value].
   ElementValue(T? value) : _value = value;
 
+  /// Returns the current value.
   T? get value => _value;
 
+  /// Sets a new value and notifies listeners if the value has changed.
   set value(T? value) {
     if (_value != value) {
       _value = value;

@@ -40,23 +40,10 @@ import 'package:flutter_control/control.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 1. Initialize Control Framework
+  
   await Control.initControl(
-    // Register your app's dependencies (models, services)
     entries: {
       MyService: MyService(),
-    },
-    initializers: {
-      MyControl: (args) => MyControl(Control.get<MyService>(args)!),
-    },
-    // Register modules (e.g., LocalinoModule for localization)
-    modules: [
-      // LocalinoModule(LocalinoLive.options()), // If using localino_live
-    ],
-    // Perform asynchronous initialization tasks
-    initAsync: () async {
-      // await loadAppConfig();
     },
   );
 
@@ -66,9 +53,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // 2. Wrap your app with ControlRoot
     return ControlRoot(
-      // Configure global theme management
       theme: MaterialThemeConfig(
         themes: {
           Brightness.light: () => ThemeData.light(),
@@ -76,30 +61,14 @@ class MyApp extends StatelessWidget {
           'custom': () => ThemeData.dark().copyWith(primaryColor: Colors.purple),
         }
       ),
-      // Define application states (e.g., init, auth, main)
       states: [
         AppState.init.build(builder: (_) => LoadingPage()),
-        AppState.main.build(
-          builder: (_) => HomePage(),
-          transition: CrossTransition.fade(), // Optional transition between states
-        ),
-        // Add more states like AppState.auth, AppState.onboarding
+        AppState.main.build(builder: (_) => HomePage(), transition: CrossTransition.fade()),
       ],
-      // The main app builder, usually MaterialApp or CupertinoApp
       builder: (context, home) => MaterialApp(
         title: 'Flutter Control App', // Replace with your app title
         theme: context.themeConfig?.value, // Dynamic theme from ControlRoot
         home: home, // The currently active AppState widget
-        // Localization setup (if using Localino)
-        // locale: LocalinoProvider.instance.currentLocale,
-        // supportedLocales: LocalinoProvider.delegate.supportedLocales(),
-        // localizationsDelegates: [
-        //   LocalinoProvider.delegate,
-        //   GlobalMaterialLocalizations.delegate,
-        //   GlobalWidgetsLocalizations.delegate,
-        //   GlobalCupertinoLocalizations.delegate,
-        // ],
-        // Route generation
         onGenerateRoute: (settings) => context.generateRoute(settings, root: () => MaterialPageRoute(builder: (_) => home)),
       ),
     );
@@ -108,10 +77,16 @@ class MyApp extends StatelessWidget {
 
 // Example pages
 class LoadingPage extends BaseControlWidget {
+  
+  @override
+  void onInit(CoreContext context, Map args){
+    super.onInit(context, args);
+    
+    Future.delayed(Duration(seconds: 2), () => ControlScope.root.setMainState());
+  }
+  
   @override
   Widget build(CoreContext context) {
-    // Navigate to main state after some loading
-    Future.delayed(Duration(seconds: 2), () => ControlScope.root.setMainState());
     return Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
@@ -121,13 +96,6 @@ class HomePage extends BaseControlWidget {
   Widget build(CoreContext context) {
     return Scaffold(appBar: AppBar(title: Text('Home Page')), body: Center(child: Text('Welcome!')));
   }
-}
-
-// Example service and control
-class MyService {}
-class MyControl extends ControlModel {
-  final MyService _service;
-  MyControl(this._service);
 }
 ```
 

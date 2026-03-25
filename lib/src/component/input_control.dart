@@ -145,6 +145,7 @@ class InputControl extends TextEditingController with DisposeHandler {
 
   /// Submits the current text for validation and moves focus to the next control if chained.
   /// Triggers the `onDone` callback if set.
+  /// [text] - Optional text to set before submitting.
   void submit([String? text]) {
     if (text != null) {
       this.text = text;
@@ -181,7 +182,7 @@ class InputControl extends TextEditingController with DisposeHandler {
     }
   }
 
-  /// Notifies the [changed] event.
+  /// Notifies the [changed] event with the given [text].
   /// If a delay is configured, the notification will be debounced.
   void change(String text) {
     if (_onChangedDelay != null) {
@@ -218,6 +219,7 @@ class InputControl extends TextEditingController with DisposeHandler {
   }
 
   /// Requests or removes focus from the input field.
+  /// [requestFocus] - If true, requests focus; otherwise, removes it.
   void setFocus(bool requestFocus) {
     if (!focusable) {
       return;

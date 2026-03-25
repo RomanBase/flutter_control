@@ -216,29 +216,43 @@ class RouteStore {
   }
 }
 
+/// Represents a path mask used for matching and formatting routes with dynamic segments.
+/// For example: `/project/{pid}/user/{uid}`.
 class RouteMask {
+  /// The list of segments that make up the path.
   final List<_PathSegment> _segments;
 
+  /// The unique identifier associated with this mask.
   final String identifier;
 
+  /// The full path representation of the mask (e.g., `/project/{pid}`).
   String get path => '/' + _segments.map((e) => e.name).join('/');
 
+  /// A list of names of the dynamic segments (placeholders) in the mask.
   List<String> get args =>
       _segments.where((e) => e.mask).map((e) => e.name).toList();
 
+  /// Whether the mask is empty.
   bool get isEmpty => _segments.isEmpty;
 
+  /// Whether the mask is not empty.
   bool get isNotEmpty => _segments.isNotEmpty;
 
+  /// The number of segments in the mask.
   int get segmentCount => _segments.length;
 
+  /// The root path mask ('/').
   static RouteMask get root =>
       RouteMask._([_PathSegment('', false, null)], '/');
 
+  /// An empty path mask.
   static RouteMask get empty => const RouteMask._([], '/');
 
   const RouteMask._(this._segments, this.identifier);
 
+  /// Creates a [RouteMask] from a path string.
+  /// [path] - The path string to parse.
+  /// [identifier] - An optional unique identifier.
   factory RouteMask.of(String? path, [String? identifier]) => path == null
       ? empty
       : (path == '/'
@@ -249,6 +263,7 @@ class RouteMask {
                   .pathSegments),
               identifier ?? path));
 
+  /// Checks if this mask matches [other] mask based on its structure and static segments.
   bool match(RouteMask other) {
     if (other._segments.length != _segments.length) {
       return false;
@@ -267,6 +282,9 @@ class RouteMask {
     return true;
   }
 
+  /// Formats the mask's path by replacing placeholders with values from [args].
+  /// [args] - Can be a [Map] of placeholder names to values, or an [Iterable] of values in order.
+  /// [decorator] - An optional decorator for formatting values.
   String format(dynamic args, [ParseDecoratorFormat? decorator]) {
     if (args == null || this.args.isEmpty) {
       return path;
@@ -299,6 +317,7 @@ class RouteMask {
     return Parse.format(path, {this.args.first: '$args'}, ParseDecorator.none);
   }
 
+  /// Extracts parameter values from [other] mask based on this mask's placeholders.
   Map<String, dynamic> params(RouteMask other,
       [int decoratorStartOffset = 1, int decoratorEndOffset = 1]) {
     final map = <String, dynamic>{};

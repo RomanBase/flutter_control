@@ -106,6 +106,10 @@ class CrossTransition {
   }
 
   /// A fade transition where the outgoing widget fades out partially before the new one fades in.
+  /// [duration] - The length of the animation.
+  /// [reverseDuration] - The length of the reverse animation.
+  /// [curveIn] - The curve for the incoming widget.
+  /// [curveOut] - The curve for the outgoing widget.
   factory CrossTransition.fade({
     Duration? duration,
     Duration? reverseDuration,
