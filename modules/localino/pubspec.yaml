@@ -13,10 +13,10 @@ dependencies:
     sdk: flutter
 
   # https://pub.dev/packages/control_core
-  control_core: ">=2.0.0-beta.1 <2.0.0"
+  control_core: ">=2.0.0 <3.0.0"
 
   # https://pub.dev/packages/control_config
-  control_config: ">=1.4.0-beta.2 <2.0.0"
+  control_config: ">=1.4.0 <2.0.0"
 
 dev_dependencies:
   flutter_test:

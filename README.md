@@ -162,6 +162,65 @@ class HomePage extends BaseControlWidget {
     ```
 -   **`ControlBuilder` / `ControlBuilderGroup`**: Widgets that automatically subscribe to `ControlObservable`s (or a list of them) and rebuild their children when changes are notified.
 
+## Hooks & Extensions
+
+Flutter Control provides powerful extensions on `BuildContext` (via `CoreContext`) to simplify common tasks like managing controllers, accessing dependencies, and handling widget-level state. These "hooks" are lazily initialized and automatically disposed of when the widget is removed from the tree.
+
+### Core Context Extensions
+
+-   **`context.core`**: Access the nearest `CoreContext`, providing a scope for local dependencies and state.
+-   **`context.args`**: Retrieve arguments passed to the widget during navigation.
+-   **`context.use<T>(...)`**: Initialize or retrieve a dependency tied to the widget's lifecycle. Ideal for services or controllers used only within a specific widget.
+-   **`context.notifyState()`**: Manually request a widget rebuild.
+-   **`context.registerStateNotifier(object)`**: Automatically rebuild the widget whenever the provided object (e.g., `ChangeNotifier` or `ControlObservable`) notifies changes.
+-   **`context.unfocus()`**: Quickly dismiss the keyboard by unfocusing the primary focus node.
+
+### Built-in Hooks
+
+-   **`context.animation()`**: Create and manage `AnimationController`s effortlessly.
+    ```dart
+    final controller = context.animation(
+      duration: Duration(seconds: 1),
+      stateNotifier: true, // Rebuilds the widget on every animation tick
+    );
+    ```
+-   **`context.scroll()`**: Manage `ScrollController`s with ease.
+    ```dart
+    final scrollController = context.scroll('my_list'); // Identified by a key
+    ```
+-   **`context.theme`**: Direct access to the current `ThemeData`.
+-   **`context.media`**: Direct access to `MediaQueryData`.
+-   **`context.ticker`**: Provides a `TickerProvider` tied to the widget's lifecycle.
+
+### Overlay Management
+
+The `context.showOverlay` extension provides a simple way to manage floating UI elements (like popups or tooltips) associated with a specific context or `GlobalKey`:
+
+```dart
+context.showOverlay(
+  key: 'my_popup',
+  builder: (parentRect) => Positioned(
+    left: parentRect.left,
+    top: parentRect.bottom,
+    child: MyPopupWidget(),
+  ),
+);
+
+// Later:
+context.hideOverlay('my_popup');
+```
+
+### Custom Hooks
+
+You can define your own lazy-initialized objects using `context.use`. This ensures the object is only created when needed and disposed of when the widget is destroyed:
+
+```dart
+final myService = context.use<MyService>(
+  value: () => MyService(),
+  dispose: (service) => service.dispose(),
+);
+```
+
 ## Navigation & Routing
 
 -   **`ControlRoute`**: Defines application routes with associated widgets, dynamic path parameters, custom transitions, and navigation arguments. Routes are typically registered centrally.
@@ -175,7 +234,7 @@ class HomePage extends BaseControlWidget {
       modules: [
         RoutingModule([
           ControlRoute.build<UserPage>(builder: (_) => UserPage()),
-          ControlRoute.build(identifier: 'profile_edit', builder: (_) => ProfileEditPage())
+          ControlRoute.build(identifier: '/profile/edit/{uid}', builder: (_) => ProfileEditPage())
              .viaTransition(CrossTransition.slide()), // Custom transition
         ]),
       ],
@@ -188,10 +247,10 @@ class HomePage extends BaseControlWidget {
         return ElevatedButton(
           onPressed: () {
             // Navigate to UserPage using its type
-            context.routeOf<UserPage>()?.openRoute();
-            
+            context.routeOf<UserPage>()?.openRoute(args: userObject);
+
             // Navigate to 'profile_edit' using its identifier and arguments
-            context.routeOf(identifier: 'profile_edit')?.openRoute(args: {'userId': 123});
+            context.routeOf(identifier: '/profile/edit/123')?.openRoute();
           },
           child: Text('Go to User Page'),
         );
@@ -199,8 +258,26 @@ class HomePage extends BaseControlWidget {
     }
     ```
 
-## Global Event System
+### Retrieving Navigation Arguments
 
+When passing arguments during navigation or defining dynamic path parameters (like `{uid}`), the destination widget needs to retrieve them. Using the `InitProvider` mixin on your `CoreWidget` automatically extracts these arguments from the current `ModalRoute` and populates them into `context.args`.
+
+```dart
+class ProfileEditPage extends BaseControlWidget with InitProvider {
+  @override
+  Widget build(CoreContext context) {
+    // Arguments and path parameters are automatically populated
+    final uid = context.args.get<String>(key: 'uid');
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Edit Profile')),
+      body: Center(child: Text('Editing user: $uid')),
+    );
+  }
+}
+```
+
+## Global Event System
 -   **`ControlBroadcast`**: Provides an application-wide event stream. You can subscribe to specific event types/keys and broadcast data across your app, decoupled from the widget tree.
 -   **`BroadcastProvider`**: A utility class to easily `subscribe` to and `broadcast` events via the `ControlBroadcast` instance managed by `ControlFactory`.
 
