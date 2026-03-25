@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Setup of [AppState].
 /// Holds case [key], [builder] and [transition]

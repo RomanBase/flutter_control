@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A [Curve] that combines multiple curves into a single continuous curve.
 /// Each curve is given an equal portion of the timeline.

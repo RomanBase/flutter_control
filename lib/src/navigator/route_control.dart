@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 typedef RouteBuilderFactory<T> = Route<T> Function(
     WidgetBuilder builder, RouteSettings settings);

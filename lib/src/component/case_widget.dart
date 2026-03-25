@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Showing only one widget by active case.
 /// Based on [AnimatedSwitcher].

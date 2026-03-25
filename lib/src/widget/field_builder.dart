@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A specialized [StreamBuilder] for use with a [FieldControl].
 ///

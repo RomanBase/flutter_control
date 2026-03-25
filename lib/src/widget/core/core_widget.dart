@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../../control.dart';
 
 /// The base [StatefulWidget] for the Control framework.
 ///

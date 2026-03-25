@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Extends [TextEditingController] to integrate with the Control framework's
 /// state management and lifecycle. It provides validation, focus management,

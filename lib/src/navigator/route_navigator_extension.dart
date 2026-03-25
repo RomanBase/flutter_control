@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// An extension on [BuildContext] that provides a set of convenience methods
 /// for navigation, making it easy to perform routing actions from anywhere

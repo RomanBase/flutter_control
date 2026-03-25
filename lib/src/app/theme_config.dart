@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A function that returns a theme of type [T].
 typedef ThemeInitializer<T> = T Function();

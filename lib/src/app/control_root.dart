@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 class _ControlRootKey extends GlobalKey<CoreState> {
   bool get isMounted =>

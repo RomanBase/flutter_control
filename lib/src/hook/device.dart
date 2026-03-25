@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Extension on [BuildContext] to provide convenient access to view and media query information.
 extension MediaViewExt on BuildContext {

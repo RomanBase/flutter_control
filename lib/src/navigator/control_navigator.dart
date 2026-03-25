@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Providing basic type of navigation.
 abstract class RouteNavigator {

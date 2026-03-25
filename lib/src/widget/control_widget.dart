@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A lightweight [CoreWidget] for building UI without requiring a dedicated [ControlModel].
 ///

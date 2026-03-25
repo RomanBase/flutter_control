@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 class _WidgetTicker extends Ticker {
   _TickerProvider? _creator;

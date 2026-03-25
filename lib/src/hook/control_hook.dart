@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A mixin to implement a lazy-initialized object (a "hook") that is tied to
 /// the lifecycle of a [CoreContext]. The object is created only when first accessed.

@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Provides access to the control framework's dependency injection system
 /// within a specific [BuildContext]. It allows retrieving dependencies from the

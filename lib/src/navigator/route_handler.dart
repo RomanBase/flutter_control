@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Legacy - waiting for refactor.
 /// Connects a [ControlRoute] with a [RouteNavigator] to execute navigation.

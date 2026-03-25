@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// An abstract provider for a list of [ControlRoute]s.
 abstract class RoutingStoreProvider {

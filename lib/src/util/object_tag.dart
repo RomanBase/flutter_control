@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A robust [ValueKey] implementation used to uniquely identify objects.
 ///

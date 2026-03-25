@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A curve that maps another curve to a specific interval of the 0.0-1.0 timeline.
 class IntervalCurve extends Curve {

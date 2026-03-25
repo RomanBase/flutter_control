@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Extension hook on [CoreContext] to provide easy access to the current [ThemeData].
 extension ThemeDataHook on BuildContext {

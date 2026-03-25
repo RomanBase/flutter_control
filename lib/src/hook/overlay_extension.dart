@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// An extension on [CoreContext] to manage [OverlayEntry]s.
 extension OverlayControl on BuildContext {

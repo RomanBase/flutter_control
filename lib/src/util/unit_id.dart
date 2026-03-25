@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A utility class for generating unique and random string identifiers.
 class UnitId {

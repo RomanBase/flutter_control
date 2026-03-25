@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// Extension methods on [BuildContext] to simplify access to [CoreContext] features.
 extension CoreContextExt on BuildContext {

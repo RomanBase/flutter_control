@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 const _kCrossDuration = Duration(milliseconds: 300);
 

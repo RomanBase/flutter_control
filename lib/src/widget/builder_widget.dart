@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A widget that subscribes to an observable object and rebuilds when the object notifies of a change.
 ///

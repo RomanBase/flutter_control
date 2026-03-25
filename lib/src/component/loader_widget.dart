@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A control that manages an asynchronous loading process, typically during app initialization.
 /// It transitions through loading states and, upon completion, can change the global [AppState].

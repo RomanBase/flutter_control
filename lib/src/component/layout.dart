@@ -1,4 +1,4 @@
-part of flutter_control;
+part of '../../control.dart';
 
 /// A mixin for a [CoreWidget] that provides a callback after the first frame is rendered.
 ///
