@@ -246,22 +246,8 @@ class CoreElement extends StatefulElement {
 }
 
 /// A simple [ValueNotifier] for use within a [CoreElement].
-class ElementValue<T> extends ChangeNotifier {
-  T? _value;
-
-  /// Creates an [ElementValue] with an optional initial [value].
-  ElementValue(T? value) : _value = value;
-
-  /// Returns the current value.
-  T? get value => _value;
-
-  /// Sets a new value and notifies listeners if the value has changed.
-  set value(T? value) {
-    if (_value != value) {
-      _value = value;
-      notifyListeners();
-    }
-  }
+class ElementValue<T> extends ValueNotifier<T?> {
+  ElementValue(super.value);
 }
 
 /// Extension on [BuildContext] for common Control framework operations.
