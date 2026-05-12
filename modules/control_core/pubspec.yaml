@@ -1,7 +1,7 @@
 name: control_core
 description: Control Core is direct Service Locator and Observable Handler. Also comes with multiple utilities.
 repository: https://github.com/romanbase/flutter_control
-version: 2.0.0
+version: 2.0.0+1
 
 homepage: https://github.com/romanbase/flutter_control
 

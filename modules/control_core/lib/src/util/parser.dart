@@ -602,7 +602,7 @@ class Parse {
         (value is String && value.isEmpty));
 }
 
-extension MapExtension on Map {
+extension MapExtension<K, V> on Map<K, V> {
   /// An extension method equivalent to [Parse.getArgFromMap].
   T? getArg<T>(
           {dynamic key,
@@ -614,7 +614,7 @@ extension MapExtension on Map {
       builder?.call();
 
   /// An extension method equivalent to [Parse.fill].
-  Map<K, V> fill<K, V>() => Parse.fill(this) as Map<K, V>;
+  Map<K, V> fill() => Parse.fill<K, V>(this);
 }
 
 extension ListExt<E> on List<E> {
