@@ -1,4 +1,4 @@
-name: flutter_control_lint
+name: control_lint
 description: >-
   IDE "Wrap with" code assists for the flutter_control framework — wrap a widget
   in ControlBuilder and friends from the editor lightbulb (VS Code, IntelliJ).

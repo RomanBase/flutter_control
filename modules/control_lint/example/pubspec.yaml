@@ -1,5 +1,5 @@
-name: flutter_control_lint_example
-description: Manual-verification app for flutter_control_lint IDE assists.
+name: control_lint_example
+description: Manual-verification app for control_lint IDE assists.
 publish_to: none
 version: 1.0.0
 
@@ -15,7 +15,7 @@ dependencies:
 
 dev_dependencies:
   lints: ^4.0.0
-# NOTE: flutter_control_lint is deliberately NOT a package dependency here.
+# NOTE: control_lint is deliberately NOT a package dependency here.
 # An analysis-server plugin cannot share the app's pub solve (its analyzer
 # constraint conflicts with the Flutter-SDK-pinned `meta`). It is wired ONLY via
 # the top-level `plugins:` block in analysis_options.yaml, which the analysis

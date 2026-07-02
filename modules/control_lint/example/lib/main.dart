@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Manual-verification fixtures for the flutter_control_lint assists.
+/// Manual-verification fixtures for the control_lint assists.
 ///
 /// Open this file in VS Code or IntelliJ/Android Studio (with the plugin
 /// enabled via analysis_options.yaml, after restarting the analysis server).

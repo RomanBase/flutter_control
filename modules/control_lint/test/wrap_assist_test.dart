@@ -1,4 +1,4 @@
-import 'package:flutter_control_lint/src/wrap_assist.dart';
+import 'package:control_lint/src/wrap_assist.dart';
 import 'package:test/test.dart';
 
 void main() {

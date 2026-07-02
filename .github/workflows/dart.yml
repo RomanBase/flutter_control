@@ -32,3 +32,30 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: flutter test
+
+  # Pure-Dart analyzer plugin — runs with `dart`, not `flutter`. Its assist
+  # output is covered by `dart test`; `dart analyze` alone does not exercise
+  # plugin assists.
+  control_lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: modules/control_lint
+    steps:
+      - uses: actions/checkout@v4
+
+      # subosito/flutter-action bundles a Dart SDK; latest stable satisfies the
+      # package's `sdk: ^3.10.0` floor (analysis_server_plugin requirement).
+      - uses: subosito/flutter-action@v2
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze
+        run: dart analyze --fatal-infos
+
+      - name: Run tests
+        run: dart test

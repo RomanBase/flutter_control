@@ -4,7 +4,7 @@
 
 ## Summary
 
-Ship a companion Dart package, `flutter_control_lint`, that adds IDE refactor
+Ship a companion Dart package, `control_lint`, that adds IDE refactor
 assists — the "Wrap with …" lightbulb hints — for `flutter_control`'s reactive
 builder widgets. When a developer places the cursor on a widget expression in
 VS Code or IntelliJ/Android Studio, the editor offers:
@@ -36,7 +36,7 @@ builders themselves.
 
 ### Chosen approach
 
-One new Dart package `flutter_control_lint`, built on `analysis_server_plugin`.
+One new Dart package `control_lint`, built on `analysis_server_plugin`.
 Each assist is a `ResolvedCorrectionProducer` subclass registered by a `Plugin`
 in `lib/main.dart`. Consumers enable it via the top-level `plugins:` block in
 `analysis_options.yaml`. No VS Code extension, no IntelliJ plugin, no
@@ -117,11 +117,11 @@ handling forces per-assist branching, prefer 4 small duplicated producers over t
 abstraction.
 
 ```
-flutter_control_lint/
+control_lint/
   pubspec.yaml            # environment: sdk ^3.10.0; deps: analysis_server_plugin, analyzer, analyzer_plugin
   analysis_options.yaml   # include: package:lints/recommended.yaml  (match control_core, NOT very_good_analysis)
   lib/
-    main.dart             # final plugin = _FlutterControlLintPlugin(); registers 4 assists via WrapAssistSpec list
+    main.dart             # final plugin = _ControlLintPlugin(); registers 4 assists via WrapAssistSpec list
     src/
       wrap_assist.dart    # parameterized producer/function + WrapAssistSpec + widgetType checker + barrel URI const
       # (4 thin per-kind producers here ONLY if registration API requires one class per AssistKind)
@@ -139,26 +139,26 @@ flutter_control_lint/
 Note: `type_checkers.dart` collapsed into `wrap_assist.dart` — one barrel-URI constant +
 one `TypeChecker` doesn't warrant its own file (simplicity review).
 
-Consumer wiring (goes in `flutter_control_lint` README + main flutter_control README):
+Consumer wiring (goes in `control_lint` README + main flutter_control README):
 
 ```yaml
 # pubspec.yaml
 dev_dependencies:
-  flutter_control_lint: ^0.1.0
+  control_lint: ^0.1.0
 
 # analysis_options.yaml  (TOP-LEVEL block, not under `analyzer:`)
 plugins:
-  flutter_control_lint: ^0.1.0
+  control_lint: ^0.1.0
 # then: restart the Dart Analysis Server
 ```
 
 ## Files to create / modify
 
-**New package `modules/flutter_control_lint/` (create):**
+**New package `modules/control_lint/` (create):**
 
 - [ ] `pubspec.yaml` — `environment: sdk: ^3.10.0` (pure-Dart, **no** `flutter:` constraint — unlike every existing module, which are Flutter packages); deps on `analysis_server_plugin: ^0.3.x`, `analyzer`, `analyzer_plugin`; include `repository:`/`homepage:` fields like sibling modules (decide URL — see below).
 - [ ] `analysis_options.yaml` — `include: package:lints/recommended.yaml` (match `control_core`; do NOT introduce `very_good_analysis` — not used in this repo).
-- [ ] `lib/main.dart` — `_FlutterControlLintPlugin extends Plugin`; `register()` registers the 4 assists from a `WrapAssistSpec` list.
+- [ ] `lib/main.dart` — `_ControlLintPlugin extends Plugin`; `register()` registers the 4 assists from a `WrapAssistSpec` list.
 - [ ] `lib/src/wrap_assist.dart` — parameterized producer/function + `WrapAssistSpec` + `widgetType` checker + barrel-URI const + (4 thin per-kind producers only if the registration API requires them).
 - [ ] `test/assists/wrap_widget.dart` + goldens `wrap_widget.wrap_with_*-<offset>.assist.dart` + `test/test_annotation.dart`.
 - [ ] `example/` — single-file MaterialApp with 4 trivial `build()`s for manual VS Code + IntelliJ verification.
@@ -166,15 +166,15 @@ plugins:
 
 **Modify (flutter_control repo):**
 
-- [ ] `README.md` (root) — new "IDE assists" section pointing at `flutter_control_lint`.
+- [ ] `README.md` (root) — new "IDE assists" section pointing at `control_lint`.
 - [ ] `CHANGELOG.md` (root) — note companion tooling package.
-- [ ] **`ci/lib/ci.dart`** — the repo's real publishing/CI harness (a Dart CLI, NOT GitHub Actions). Its `modules` list drives `clean`/`pubGet`/`deploy`, all via **`flutter` commands** (`flutter clean`, `flutter pub get`, `flutter pub publish`). `flutter_control_lint` is **pure Dart** → those `flutter` commands are wrong for it. Add a **separate `dartModules` list** + Dart-command variants (`dart pub get` / `dart pub publish`), OR special-case this one module. Also add `ci/bin/deploy_flutter_control_lint.dart` (mirror the existing `deploy_*.dart`). While here, clean up the **stale** `control_annotations`/`control_builder` entries (not on disk).
-- [ ] **`.github/workflows/dart.yml`** — currently runs `flutter pub get` + `flutter test` at **repo root only** (never enters `modules/`; existing modules aren't CI-tested at all). Uses `subosito/flutter-action@v2` at latest-stable Flutter → **already satisfies Dart 3.10+** (the SDK floor is a *pubspec* concern, not a runner concern). Add a job that `cd modules/flutter_control_lint && dart pub get && dart test` (Dart, not Flutter; `dart test` runs the golden harness — NOT `dart analyze`, which doesn't exercise assists).
+- [ ] **`ci/lib/ci.dart`** — the repo's real publishing/CI harness (a Dart CLI, NOT GitHub Actions). Its `modules` list drives `clean`/`pubGet`/`deploy`, all via **`flutter` commands** (`flutter clean`, `flutter pub get`, `flutter pub publish`). `control_lint` is **pure Dart** → those `flutter` commands are wrong for it. Add a **separate `dartModules` list** + Dart-command variants (`dart pub get` / `dart pub publish`), OR special-case this one module. Also add `ci/bin/deploy_control_lint.dart` (mirror the existing `deploy_*.dart`). While here, clean up the **stale** `control_annotations`/`control_builder` entries (not on disk).
+- [ ] **`.github/workflows/dart.yml`** — currently runs `flutter pub get` + `flutter test` at **repo root only** (never enters `modules/`; existing modules aren't CI-tested at all). Uses `subosito/flutter-action@v2` at latest-stable Flutter → **already satisfies Dart 3.10+** (the SDK floor is a *pubspec* concern, not a runner concern). Add a job that `cd modules/control_lint && dart pub get && dart test` (Dart, not Flutter; `dart test` runs the golden harness — NOT `dart analyze`, which doesn't exercise assists).
 
 **Decisions:**
 
-- **Placement: `modules/flutter_control_lint/`** — same directory as `control_core`/`localino*`, but note it is a **different artifact kind**: pure-Dart analyzer-plugin vs the others' Flutter packages. It is *not* depended on by the root `pubspec` (siblings are pulled from pub.dev by version constraint, not path); consumers add it to *their own* `dev_dependencies` + `plugins:` block.
-- **Naming: `flutter_control_lint`** — matches `riverpod_lint`/`bloc_lint` and the framework pub name.
+- **Placement: `modules/control_lint/`** — same directory as `control_core`/`localino*`, but note it is a **different artifact kind**: pure-Dart analyzer-plugin vs the others' Flutter packages. It is *not* depended on by the root `pubspec` (siblings are pulled from pub.dev by version constraint, not path); consumers add it to *their own* `dev_dependencies` + `plugins:` block.
+- **Naming: `control_lint`** — matches `riverpod_lint`/`bloc_lint` and the framework pub name.
 - **Repository URL**: existing pubspecs bake `github.com/romanbase/flutter_control`, but the working remote is `github.com/SedlarDavid/flutter_control`. Pick one and use it consistently in the new pubspec (flag for the maintainer).
 - **Version**: start `0.1.0` (new tool; `0.x` defensible). Include `repository:`/`homepage:` for pub.dev score parity with siblings.
 
@@ -198,7 +198,7 @@ Adopt riverpod_lint's **golden-file assist harness** (the current, maintained pa
 - [ ] Non-widget expression (e.g. `42`) → **no** assist in produced list.
 - [ ] Already inside a flutter_control builder → assist still offered; golden shows a single added nesting level (no duplicate wrap).
 - [ ] Each of the 4 assists has its own fixture + per-offset goldens.
-- [ ] CI runs the harness via **`dart test`** inside `modules/flutter_control_lint` (NOT `dart run` — a `Plugin` has no `main`; and `dart analyze` does not exercise assists).
+- [ ] CI runs the harness via **`dart test`** inside `modules/control_lint` (NOT `dart run` — a `Plugin` has no `main`; and `dart analyze` does not exercise assists).
 
 **Manual verification (IDE-runtime, can't be unit-tested):**
 
@@ -216,7 +216,7 @@ Adopt riverpod_lint's **golden-file assist harness** (the current, maintained pa
 | **Menu clutter / label collision** with Flutter's & riverpod's "Wrap with …". | Plain labels for v1; revisit wording ("… (flutter_control)") if user testing shows confusion. |
 | **Restart requirement**: editing `analysis_options.yaml` needs an analysis-server restart; new users won't know. | Prominent README step; can't be signaled in-product (plugin isn't loaded yet). |
 | **Monorepo/path setup** differs (path dep vs pub vs workspace). | README documents the `plugins:` path-dependency variant. |
-| **`ci/` harness is Flutter-only** (`flutter clean/pub get/publish`) — will misbehave on a pure-Dart package. | Add a `dartModules` path in `ci/lib/ci.dart` using `dart` commands + a `deploy_flutter_control_lint.dart`. Do NOT add this module to the existing Flutter `modules` list. |
+| **`ci/` harness is Flutter-only** (`flutter clean/pub get/publish`) — will misbehave on a pure-Dart package. | Add a `dartModules` path in `ci/lib/ci.dart` using `dart` commands + a `deploy_control_lint.dart`. Do NOT add this module to the existing Flutter `modules` list. |
 | **Registration API assumption** — plan assumes one producer per `AssistKind`; unverified. | Fact-check riverpod_lint source before scaffolding (milestone 0); file layout follows the answer. |
 
 ## Build sequence (milestones → PRs)
@@ -226,10 +226,10 @@ milestones; each leaves the codebase working. Milestone 0 is a fact-check folded
 into PR 1.
 
 0. **Fact-check (do first, no code)** — from riverpod_lint source: does registration need one producer class per `AssistKind`? Confirms file layout + whether the "shared function vs 4 producers" question is even live.
-1. **PR 1 — Spike:** scaffold `modules/flutter_control_lint/`, ONE assist (`WrapWithControlBuilder`, copy `WrapWithConsumer`), single-file `example/`. Manually verify the lightbulb appears + applies in **both** VS Code and IntelliJ. No automated tests yet. De-risks the IntelliJ unknown. *Deps: none.*
+1. **PR 1 — Spike:** scaffold `modules/control_lint/`, ONE assist (`WrapWithControlBuilder`, copy `WrapWithConsumer`), single-file `example/`. Manually verify the lightbulb appears + applies in **both** VS Code and IntelliJ. No automated tests yet. De-risks the IntelliJ unknown. *Deps: none.*
 2. **PR 2 — Remaining 3 assists + shared spec + refinements:** parameterize the transform (`WrapAssistSpec`), add Group/Field/List, layer in linked-edit `control:` seed, `const`-strip, prefixed-import handling across all 4. *Deps: PR 1.*
 3. **PR 3 — Golden test harness + acceptance tests:** riverpod-style `TestFor` fixtures + per-offset goldens + the full automated matrix above. *Deps: PR 2.*
-4. **PR 4 — Docs, CI, publish:** READMEs + CHANGELOG; `ci/lib/ci.dart` `dartModules` path + `deploy_flutter_control_lint.dart` (+ stale-entry cleanup); `dart.yml` `dart test` job for the module; publish `0.1.0`. *Deps: PR 3.*
+4. **PR 4 — Docs, CI, publish:** READMEs + CHANGELOG; `ci/lib/ci.dart` `dartModules` path + `deploy_control_lint.dart` (+ stale-entry cleanup); `dart.yml` `dart test` job for the module; publish `0.1.0`. *Deps: PR 3.*
 
 ## Reference source files
 
