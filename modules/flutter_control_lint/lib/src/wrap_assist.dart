@@ -4,6 +4,7 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_dart.dart';
+import 'package:meta/meta.dart';
 
 /// The single barrel that re-exports every flutter_control widget.
 ///
@@ -44,7 +45,8 @@ bool isFlutterWidget(DartType? type) {
 /// [InstanceCreationExpression] itself. Walk up to the nearest enclosing
 /// creation expression so the assist fires whether the cursor is on the type
 /// name, inside the argument list, or on the whole expression.
-InstanceCreationExpression? _targetWidget(AstNode? node) {
+@visibleForTesting
+InstanceCreationExpression? targetWidget(AstNode? node) {
   for (var current = node; current != null; current = current.parent) {
     if (current is InstanceCreationExpression) return current;
     // Don't escape the enclosing statement/argument — stop at obvious barriers
@@ -90,6 +92,14 @@ class WrapAssistSpec {
 
   AssistKind get assistKind =>
       AssistKind(kindId, wrapPriority, 'Wrap with $widgetName');
+
+  /// Text inserted at the widget's start offset. [widgetRef] is the (possibly
+  /// import-prefixed) name to emit — bare [widgetName] in tests.
+  String opening([String? widgetRef]) =>
+      '${widgetRef ?? widgetName}($seedArgs builder: ($builderParams) { return ';
+
+  /// Text inserted at the widget's end offset.
+  String get closing => '; },)';
 }
 
 /// Shared transform: wrap the widget under the cursor into [spec]'s builder.
@@ -102,7 +112,7 @@ Future<void> wrapWith(
   String file,
   ChangeBuilder builder,
 ) async {
-  final node = _targetWidget(cursorNode);
+  final node = targetWidget(cursorNode);
   if (node == null) return;
 
   final createdType = node.constructorName.type.type;
@@ -110,11 +120,8 @@ Future<void> wrapWith(
 
   await builder.addDartFileEdit(file, (builder) {
     final widget = importControlWidget(builder, spec.widgetName);
-    builder.addSimpleInsertion(
-      node.offset,
-      '$widget(${spec.seedArgs} builder: (${spec.builderParams}) { return ',
-    );
-    builder.addSimpleInsertion(node.end, '; },)');
+    builder.addSimpleInsertion(node.offset, spec.opening(widget));
+    builder.addSimpleInsertion(node.end, spec.closing);
   });
 }
 

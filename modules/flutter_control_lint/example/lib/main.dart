@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_control/control.dart';
 
 /// Manual-verification fixtures for the flutter_control_lint assists.
 ///
