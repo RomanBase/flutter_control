@@ -1,0 +1,3 @@
+# Matches control_core's convention (package:lints/recommended), not
+# very_good_analysis (not used in this repo).
+include: package:lints/recommended.yaml

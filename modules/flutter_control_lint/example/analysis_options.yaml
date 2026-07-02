@@ -1,0 +1,8 @@
+include: package:lints/recommended.yaml
+
+# Enables the flutter_control_lint assists in this project. NOTE: after editing
+# this block you MUST restart the Dart Analysis Server for the plugin to load.
+# (top-level `plugins:`, NOT under `analyzer:`)
+plugins:
+  flutter_control_lint:
+    path: ../
