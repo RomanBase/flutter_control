@@ -63,41 +63,149 @@ String importControlWidget(DartFileEditBuilder builder, String name) {
   return prefix != null ? '$prefix.$name' : name;
 }
 
-/// Wraps the widget expression under the cursor in `ControlBuilder`.
+/// Describes one "Wrap with …" assist. The transform is identical across the
+/// flutter_control builders — only these strings vary — so the producers are
+/// thin wrappers around a shared [wrapWith] instead of an inheritance hierarchy.
+class WrapAssistSpec {
+  const WrapAssistSpec({
+    required this.kindId,
+    required this.widgetName,
+    required this.seedArgs,
+    required this.builderParams,
+  });
+
+  /// Stable assist id, e.g. `wrap_with_control_builder`.
+  final String kindId;
+
+  /// The flutter_control widget to wrap into, e.g. `ControlBuilder`.
+  final String widgetName;
+
+  /// The required argument(s) seeded before `builder:`, e.g.
+  /// `control: control,` or `controls: [control],`. `control` is a placeholder
+  /// the developer replaces with a real observable.
+  final String seedArgs;
+
+  /// The `builder:` callback parameter list, e.g. `context, value`.
+  final String builderParams;
+
+  AssistKind get assistKind =>
+      AssistKind(kindId, wrapPriority, 'Wrap with $widgetName');
+}
+
+/// Shared transform: wrap the widget under the cursor into [spec]'s builder.
 ///
 /// Before: `Text('x')`
 /// After:  `ControlBuilder(control: control, builder: (context, value) { return Text('x'); })`
-///
-/// The `control` argument is a placeholder the developer must replace.
+Future<void> wrapWith(
+  WrapAssistSpec spec,
+  AstNode? cursorNode,
+  String file,
+  ChangeBuilder builder,
+) async {
+  final node = _targetWidget(cursorNode);
+  if (node == null) return;
+
+  final createdType = node.constructorName.type.type;
+  if (!isFlutterWidget(createdType)) return;
+
+  await builder.addDartFileEdit(file, (builder) {
+    final widget = importControlWidget(builder, spec.widgetName);
+    builder.addSimpleInsertion(
+      node.offset,
+      '$widget(${spec.seedArgs} builder: (${spec.builderParams}) { return ',
+    );
+    builder.addSimpleInsertion(node.end, '; },)');
+  });
+}
+
+/// Wrap in `ControlBuilder(control: …, builder: (context, value) { … })`.
 class WrapWithControlBuilder extends ResolvedCorrectionProducer {
   WrapWithControlBuilder({required super.context});
+
+  static const _spec = WrapAssistSpec(
+    kindId: 'wrap_with_control_builder',
+    widgetName: 'ControlBuilder',
+    seedArgs: 'control: control,',
+    builderParams: 'context, value',
+  );
 
   @override
   CorrectionApplicability get applicability =>
       CorrectionApplicability.singleLocation;
 
   @override
-  AssistKind get assistKind => const AssistKind(
-    'wrap_with_control_builder',
-    wrapPriority,
-    'Wrap with ControlBuilder',
+  AssistKind get assistKind => _spec.assistKind;
+
+  @override
+  Future<void> compute(ChangeBuilder builder) =>
+      wrapWith(_spec, node, file, builder);
+}
+
+/// Wrap in `ControlBuilderGroup(controls: [control], builder: (context, values) { … })`.
+class WrapWithControlBuilderGroup extends ResolvedCorrectionProducer {
+  WrapWithControlBuilderGroup({required super.context});
+
+  static const _spec = WrapAssistSpec(
+    kindId: 'wrap_with_control_builder_group',
+    widgetName: 'ControlBuilderGroup',
+    seedArgs: 'controls: [control],',
+    builderParams: 'context, values',
   );
 
   @override
-  Future<void> compute(ChangeBuilder builder) async {
-    final node = _targetWidget(this.node);
-    if (node == null) return;
+  CorrectionApplicability get applicability =>
+      CorrectionApplicability.singleLocation;
 
-    final createdType = node.constructorName.type.type;
-    if (!isFlutterWidget(createdType)) return;
+  @override
+  AssistKind get assistKind => _spec.assistKind;
 
-    await builder.addDartFileEdit(file, (builder) {
-      final controlBuilder = importControlWidget(builder, 'ControlBuilder');
-      builder.addSimpleInsertion(
-        node.offset,
-        '$controlBuilder(control: control, builder: (context, value) { return ',
-      );
-      builder.addSimpleInsertion(node.end, '; },)');
-    });
-  }
+  @override
+  Future<void> compute(ChangeBuilder builder) =>
+      wrapWith(_spec, node, file, builder);
+}
+
+/// Wrap in `FieldBuilder(control: …, builder: (context, value) { … })`.
+class WrapWithFieldBuilder extends ResolvedCorrectionProducer {
+  WrapWithFieldBuilder({required super.context});
+
+  static const _spec = WrapAssistSpec(
+    kindId: 'wrap_with_field_builder',
+    widgetName: 'FieldBuilder',
+    seedArgs: 'control: control,',
+    builderParams: 'context, value',
+  );
+
+  @override
+  CorrectionApplicability get applicability =>
+      CorrectionApplicability.singleLocation;
+
+  @override
+  AssistKind get assistKind => _spec.assistKind;
+
+  @override
+  Future<void> compute(ChangeBuilder builder) =>
+      wrapWith(_spec, node, file, builder);
+}
+
+/// Wrap in `ListBuilder(control: …, builder: (context, list) { … })`.
+class WrapWithListBuilder extends ResolvedCorrectionProducer {
+  WrapWithListBuilder({required super.context});
+
+  static const _spec = WrapAssistSpec(
+    kindId: 'wrap_with_list_builder',
+    widgetName: 'ListBuilder',
+    seedArgs: 'control: control,',
+    builderParams: 'context, list',
+  );
+
+  @override
+  CorrectionApplicability get applicability =>
+      CorrectionApplicability.singleLocation;
+
+  @override
+  AssistKind get assistKind => _spec.assistKind;
+
+  @override
+  Future<void> compute(ChangeBuilder builder) =>
+      wrapWith(_spec, node, file, builder);
 }

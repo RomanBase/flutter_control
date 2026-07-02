@@ -12,8 +12,9 @@ class _FlutterControlLintPlugin extends Plugin {
 
   @override
   void register(PluginRegistry registry) {
-    // PR1 spike: a single "Wrap with ControlBuilder" assist.
-    // PR2 adds ControlBuilderGroup / FieldBuilder / ListBuilder.
     registry.registerAssist(WrapWithControlBuilder.new);
+    registry.registerAssist(WrapWithControlBuilderGroup.new);
+    registry.registerAssist(WrapWithFieldBuilder.new);
+    registry.registerAssist(WrapWithListBuilder.new);
   }
 }

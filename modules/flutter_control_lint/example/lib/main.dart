@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_control/control.dart';
 
 /// Manual-verification fixtures for the flutter_control_lint assists.
 ///
@@ -26,8 +27,16 @@ class _ExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        // Cursor here -> "Wrap with ControlBuilder".
-        body: Center(child: Text('hello')),
+        // Put the cursor on any widget below and open the lightbulb. All four
+        // assists are offered on every widget (the assist does not verify the
+        // `control:` type — the developer wires that after wrapping):
+        //   - Wrap with ControlBuilder       -> control: control, (context, value)
+        //   - Wrap with ControlBuilderGroup  -> controls: [control], (context, values)
+        //   - Wrap with FieldBuilder         -> control: control, (context, value)
+        //   - Wrap with ListBuilder          -> control: control, (context, list)
+        body: Column(
+          children: [Text('hello'), Icon(Icons.list), SizedBox(height: 8)],
+        ),
       ),
     );
   }
