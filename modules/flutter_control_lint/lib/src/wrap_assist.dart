@@ -37,6 +37,23 @@ bool isFlutterWidget(DartType? type) {
   return type.allSupertypes.any(isWidgetElement);
 }
 
+/// Resolves the widget-creation expression the cursor is on.
+///
+/// `this.node` is the most-deeply-nested AST node covering the cursor, which for
+/// a widget is usually the constructor name (`NamedType`/identifier), not the
+/// [InstanceCreationExpression] itself. Walk up to the nearest enclosing
+/// creation expression so the assist fires whether the cursor is on the type
+/// name, inside the argument list, or on the whole expression.
+InstanceCreationExpression? _targetWidget(AstNode? node) {
+  for (var current = node; current != null; current = current.parent) {
+    if (current is InstanceCreationExpression) return current;
+    // Don't escape the enclosing statement/argument — stop at obvious barriers
+    // so we wrap the widget under the cursor, not some far-out ancestor.
+    if (current is Statement || current is FunctionBody) break;
+  }
+  return null;
+}
+
 /// Imports the flutter_control barrel into the edited file and returns the
 /// identifier to use for [name] — prefixed (`fc.ControlBuilder`) if the existing
 /// import uses a prefix, bare otherwise.
@@ -68,8 +85,8 @@ class WrapWithControlBuilder extends ResolvedCorrectionProducer {
 
   @override
   Future<void> compute(ChangeBuilder builder) async {
-    final node = this.node;
-    if (node is! InstanceCreationExpression) return;
+    final node = _targetWidget(this.node);
+    if (node == null) return;
 
     final createdType = node.constructorName.type.type;
     if (!isFlutterWidget(createdType)) return;
