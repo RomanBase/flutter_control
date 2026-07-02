@@ -308,13 +308,19 @@ BLoC's "Wrap with BlocBuilder" — but as a single Dart
 it works in both VS Code and Android Studio / IntelliJ with no separate IDE
 extension to install.
 
-Enable it per project in `analysis_options.yaml` (top-level `plugins:` block,
-**not** under `analyzer:`), then restart the Dart Analysis Server:
+Enable it per project by adding just a `plugins:` entry to `analysis_options.yaml`
+(top-level, **not** under `analyzer:`) — nothing goes in `pubspec.yaml` — then
+restart the Dart Analysis Server:
 
 ```yaml
 plugins:
   control_lint: ^0.1.0
 ```
+
+> Do **not** add `control_lint` as a (dev-)dependency the way you would
+> `very_good_analysis`. An analyzer plugin is resolved by the analysis server
+> itself; as a Flutter-app dependency its `analyzer` constraint clashes with the
+> SDK-pinned `meta` and `pub get` fails. The `plugins:` block is all you need.
 
 Place the cursor on any widget and open the Quick Fix / lightbulb menu — pick
 **Wrap with ControlBuilder** (or one of its siblings). Requires Dart 3.10+ /

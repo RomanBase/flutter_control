@@ -39,10 +39,14 @@ Then **restart the Dart Analysis Server** (VS Code: "Dart: Restart Analysis
 Server"; IntelliJ: invalidate caches / restart). The plugin is not loaded until
 you do.
 
-> The plugin is wired ONLY through `plugins:`. Do **not** add it to your
-> `dependencies`/`dev_dependencies` — an analysis-server plugin resolves in the
-> server's own isolate, and its `analyzer` constraint conflicts with the
-> Flutter-SDK-pinned `meta`, so a shared pub solve fails.
+> **Do NOT add `control_lint` to `pubspec.yaml`.** Unlike a shared lint config
+> (e.g. `very_good_analysis`, which you `include:` and list as a dev-dependency)
+> or `custom_lint`, an `analysis_server_plugin` is executable code the analysis
+> server resolves in its **own isolate** — it is wired ONLY through the
+> `plugins:` block above, with no dependency line. Adding it to
+> `dependencies`/`dev_dependencies` of a Flutter app actually **breaks
+> `pub get`**: its `analyzer ^12` needs `meta ^1.18`, but the Flutter SDK pins
+> `meta 1.17`, so the solve fails. The `plugins:` block avoids this entirely.
 
 ### Monorepo / local path
 
