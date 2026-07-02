@@ -31,7 +31,9 @@ bool isFlutterWidget(DartType? type) {
     final element = t.element;
     if (element.name != 'Widget') return false;
     final uri = element.library.uri;
-    return uri.scheme == 'package' && uri.pathSegments.first == 'flutter';
+    return uri.scheme == 'package' &&
+        uri.pathSegments.isNotEmpty &&
+        uri.pathSegments.first == 'flutter';
   }
 
   if (isWidgetElement(type)) return true;

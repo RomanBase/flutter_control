@@ -35,6 +35,12 @@ Future proceedModules(Future Function(Shell sh) func) async {
   }
 }
 
+Future proceedDartModules(Future Function(Shell sh) func) async {
+  for (var value in dartModules) {
+    await func.call(moduleShell(value));
+  }
+}
+
 Future proceedExamples(Future Function(Shell sh) func) async {
   for (var value in examples) {
     await func.call(exampleShell(value));
@@ -67,10 +73,14 @@ Future runAll(String script) async {
 
 Future clean() async {
   await runInModules('flutter clean');
+  // Pure-Dart modules have no `flutter clean`; drop resolved deps instead.
+  await proceedDartModules((sh) => sh.run('dart pub get --offline || true'));
 }
 
 Future pubGet() async {
   await runInModules('flutter pub get');
+  // Dart packages use `dart`, not `flutter`.
+  await proceedDartModules((sh) => sh.run('dart pub get'));
 }
 
 Future dartfmt() async {
