@@ -1,14 +1,21 @@
 import 'package:process_run/shell.dart';
 
 final _shell = Shell().cd('../');
+
+/// Flutter packages. Published with `flutter pub publish`; cleaned/pub-got with
+/// `flutter` commands.
 final modules = [
   'control_core',
   'control_config',
   'localino',
   'localino_live',
   'localino_builder',
-  'control_annotations',
-  'control_builder',
+];
+
+/// Pure-Dart packages (e.g. analyzer plugins). These use `dart` commands, not
+/// `flutter` — `flutter pub publish` is wrong for a non-Flutter package.
+final dartModules = [
+  'control_lint',
 ];
 
 final examples = [
@@ -24,6 +31,12 @@ Shell exampleShell(String name) => _shell.cd('example/$name');
 
 Future proceedModules(Future Function(Shell sh) func) async {
   for (var value in modules) {
+    await func.call(moduleShell(value));
+  }
+}
+
+Future proceedDartModules(Future Function(Shell sh) func) async {
+  for (var value in dartModules) {
     await func.call(moduleShell(value));
   }
 }
@@ -60,10 +73,14 @@ Future runAll(String script) async {
 
 Future clean() async {
   await runInModules('flutter clean');
+  // Pure-Dart modules have no `flutter clean`; drop resolved deps instead.
+  await proceedDartModules((sh) => sh.run('dart pub get --offline || true'));
 }
 
 Future pubGet() async {
   await runInModules('flutter pub get');
+  // Dart packages use `dart`, not `flutter`.
+  await proceedDartModules((sh) => sh.run('dart pub get'));
 }
 
 Future dartfmt() async {
@@ -72,6 +89,12 @@ Future dartfmt() async {
 
 Future deploy(String module) async {
   await runInModule(module, 'echo "y" | flutter pub publish');
+}
+
+/// Publishes a pure-Dart [module] (in [dartModules]) using `dart`, not `flutter`.
+Future deployDart(String module) async {
+  await runInModule(module, 'dart pub get');
+  await runInModule(module, 'echo "y" | dart pub publish');
 }
 
 ///////////////////////////////////////////////////////

@@ -1,3 +1,9 @@
+## Unreleased
+
+- Added `control_lint` — a companion `analysis_server_plugin` package providing
+  "Wrap with ControlBuilder / ControlBuilderGroup / FieldBuilder / ListBuilder"
+  IDE assists in VS Code and Android Studio / IntelliJ. See `modules/control_lint`.
+
 ## [4.0.2] - Quality of life updates
 
 ## [4.0.0] - BREAKING: Widget [args] moved to [CoreContext]. All widget constructors should be

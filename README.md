@@ -298,6 +298,33 @@ Flutter Control is part of a larger ecosystem of packages designed to enhance yo
 -   **[Localino](https://pub.dev/packages/localino)**: Comprehensive JSON-based localization solution for Flutter, offering dynamic locale management and string formatting.
 -   **[Localino Live](https://pub.dev/packages/localino_live)**: Enables Over-The-Air (OTA) translation updates by connecting `Localino` to the [localino.app](https://localino.app) backend.
 -   **[Localino Builder](https://pub.dev/packages/localino_builder)**: Code generation for `Localino`, providing type-safe access to translations and automated setup.
+-   **[control_lint](modules/control_lint)**: IDE "Wrap with …" code assists — wrap a widget in `ControlBuilder`, `ControlBuilderGroup`, `FieldBuilder`, or `ListBuilder` straight from the editor lightbulb (VS Code and Android Studio / IntelliJ). See below.
+
+## IDE assists
+
+`control_lint` adds "Wrap with `<Builder>`" lightbulb refactors, like
+BLoC's "Wrap with BlocBuilder" — but as a single Dart
+[`analysis_server_plugin`](https://pub.dev/packages/analysis_server_plugin), so
+it works in both VS Code and Android Studio / IntelliJ with no separate IDE
+extension to install.
+
+Enable it per project by adding just a `plugins:` entry to `analysis_options.yaml`
+(top-level, **not** under `analyzer:`) — nothing goes in `pubspec.yaml` — then
+restart the Dart Analysis Server:
+
+```yaml
+plugins:
+  control_lint: ^0.1.0
+```
+
+> Do **not** add `control_lint` as a (dev-)dependency the way you would
+> `very_good_analysis`. An analyzer plugin is resolved by the analysis server
+> itself; as a Flutter-app dependency its `analyzer` constraint clashes with the
+> SDK-pinned `meta` and `pub get` fails. The `plugins:` block is all you need.
+
+Place the cursor on any widget and open the Quick Fix / lightbulb menu — pick
+**Wrap with ControlBuilder** (or one of its siblings). Requires Dart 3.10+ /
+Flutter 3.38+. Full setup and troubleshooting: [modules/control_lint](modules/control_lint).
 
 ## Examples
 

@@ -1,0 +1,22 @@
+name: control_lint
+description: >-
+  IDE "Wrap with" code assists for the flutter_control framework — wrap a widget
+  in ControlBuilder and friends from the editor lightbulb (VS Code, IntelliJ).
+version: 0.1.0
+repository: https://github.com/romanbase/flutter_control
+homepage: https://github.com/romanbase/flutter_control
+
+environment:
+  # analysis_server_plugin requires Dart 3.10+ (Flutter 3.38+). This is a
+  # pure-Dart analyzer plugin, NOT a Flutter package — no flutter constraint.
+  sdk: ^3.10.0
+
+dependencies:
+  analysis_server_plugin: ^0.3.0
+  analyzer: ^12.0.0
+  analyzer_plugin: ^0.14.0
+  meta: ^1.15.0
+
+dev_dependencies:
+  lints: ^4.0.0
+  test: ^1.24.0
