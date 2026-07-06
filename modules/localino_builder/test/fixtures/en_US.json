@@ -1,0 +1,21 @@
+{
+  "action_add": "Add",
+  "action_delete_locale": "Delete locale",
+  "version": "Version: {version} ({number})",
+  "greeting": "Hello {name}, welcome back",
+  "onboard_card_1": {
+    "title": "Get started",
+    "note": "Swipe to continue"
+  },
+  "plural_items": {
+    "0": "no items",
+    "1": "one item",
+    "other": "{count} items"
+  },
+  "menu_tabs": [
+    "Home",
+    "Search",
+    "Profile"
+  ],
+  "actlion_sign_log": "Sign in"
+}

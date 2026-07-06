@@ -21,7 +21,14 @@ void main(List<String> arguments) async {
     return;
   }
 
-  build(BuilderOptions({...options}));
+  // CLI flags override / augment whichever source produced options.
+  final resolved = {
+    ...options,
+    if (arguments.contains('--generate-keys')) 'generate_keys': true,
+    if (arguments.contains('--report-unused')) 'report_unused': true,
+  };
+
+  build(BuilderOptions({...resolved}));
 }
 
 Map? _parseArgs(List<String> args) {
