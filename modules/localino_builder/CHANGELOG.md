@@ -2,6 +2,7 @@
 - Bidirectional sync: `dart run localino_builder status | pull | push | sync | login`. Three-way merge by value hash against a committed `.localino/lock.json`; pull never drops local-only keys, push never deletes remotely without `--prune`, conflicts stop the run (exit 3) until resolved with `--prefer local|remote`.
 - Push uses a per-project write key (`login` reads it from stdin into `~/.localino/credentials.json`, mode 600; `LOCALINO_WRITE_KEY` overrides). The shared read token is never used for writes.
 - `LOCALINO_API_URL` overrides the API base; plain http is refused except for localhost.
+- MCP server for coding agents: `dart run localino_builder:mcp` (stdio) with `localino_status`, `localino_search_keys`, `localino_set_keys`, `localino_pull` and `localino_push` (dry run by default). The write key is read in-process and never appears in tool input or output.
 - Config: `build.yaml` with `localino_builder|localino_builder` keys or `enabled: false` now falls back to `assets/localization/setup.json`.
 - The builder no longer prints the access token.
 - **Requires Dart 3.7+.** Needs the `snapshot` / `push` routes of Localino API v1 (13).

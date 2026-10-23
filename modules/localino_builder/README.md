@@ -173,6 +173,40 @@ It is saved to `~/.localino/credentials.json` (mode 600), keyed by
 `sync` that pulled but failed to push exits 5 with the pull applied; re-run
 `sync` to finish. Network failures never touch local files.
 
+## MCP server (coding agents)
+
+`dart run localino_builder:mcp` is a local stdio [MCP](https://modelcontextprotocol.io)
+server over the same sync engine, so a coding agent can find, add and sync
+keys without the console. Register it in the project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "localino": { "command": "dart", "args": ["run", "localino_builder:mcp"] }
+  }
+}
+```
+
+(With fvm use `"command": "fvm", "args": ["dart", "run", "localino_builder:mcp"]`.)
+The server runs from the project root; pass `--root <dir>` otherwise.
+
+| Tool | Does |
+|---|---|
+| `localino_status` | Counts and changed keys (local vs lock vs Localino); offline it compares local files with the lock. |
+| `localino_search_keys` | Searches local files by key/value substring, exact `keys`, or keys missing in a locale. Flags keys with an identical value so existing keys get reused. |
+| `localino_set_keys` | Adds, updates or removes keys in local files only (git-reversible). Rejects unknown locales; regenerates `localino_keys.dart` when `generate_keys` is on. |
+| `localino_pull` | Applies Localino changes locally; conflicts stay untouched unless `prefer` is given. |
+| `localino_push` | **Dry run by default** — returns the plan. Applies only with `dry_run: false`. Never deletes remote keys (use the CLI `push --prune`). |
+
+Typical agent flow: `localino_search_keys` → `localino_set_keys` → run the
+project's localization codegen → `localino_push` (plan) → user confirms →
+`localino_push { "dry_run": false }`.
+
+The write key never passes through the agent: the server reads it from
+`~/.localino/credentials.json` or `LOCALINO_WRITE_KEY`, no tool accepts it,
+and anything shaped like a write key is masked in tool output. Run `login`
+yourself in a terminal; never paste the key into a chat.
+
 ## Additional information
 
 Localino can be used as standalone package to manage assets localization. But true power comes with other packages:

@@ -16,6 +16,7 @@ dependencies:
   http: any
   build: any
   yaml: any
+  dart_mcp: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -23,5 +24,6 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
   test: any
+  stream_channel: ^2.1.4
 
 flutter:
