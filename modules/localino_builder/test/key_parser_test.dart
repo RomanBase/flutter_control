@@ -192,7 +192,7 @@ void main() {
     final keys = parseLocalinoKeys(
       {
         'en_US': {'k': 'line1\nline2   spaced'},
-        'x': {'k': '$long'},
+        'x': {'k': long},
       },
       defaultLocale: 'en_US',
     );

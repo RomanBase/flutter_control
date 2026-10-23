@@ -1,0 +1,10 @@
+{
+ "version": "1 (12)",
+ "space": "insight",
+ "project": "inbook",
+ "asset": "assets/localization/{locale}.json",
+ "access": "read-token",
+ "locales": {
+  "cs_CZ": "2025-03-11T14:22:18.675Z"
+ }
+}

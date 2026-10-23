@@ -28,7 +28,7 @@ class LocalinoBuilder extends Builder {
     api.project = project;
     api.token = access;
 
-    print('Localino Builder Initialized: $space - $project | $access}');
+    print('Localino Builder Initialized: $space - $project');
   }
 
   @override

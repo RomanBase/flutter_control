@@ -1,3 +1,11 @@
+## [1.2.0]
+- Bidirectional sync: `dart run localino_builder status | pull | push | sync | login`. Three-way merge by value hash against a committed `.localino/lock.json`; pull never drops local-only keys, push never deletes remotely without `--prune`, conflicts stop the run (exit 3) until resolved with `--prefer local|remote`.
+- Push uses a per-project write key (`login` reads it from stdin into `~/.localino/credentials.json`, mode 600; `LOCALINO_WRITE_KEY` overrides). The shared read token is never used for writes.
+- `LOCALINO_API_URL` overrides the API base; plain http is refused except for localhost.
+- Config: `build.yaml` with `localino_builder|localino_builder` keys or `enabled: false` now falls back to `assets/localization/setup.json`.
+- The builder no longer prints the access token.
+- **Requires Dart 3.7+.** Needs the `snapshot` / `push` routes of Localino API v1 (13).
+
 ## [1.1.0]
 - Typed key generator (opt-in via `generate_keys`): emits `lib/generated/localino_keys.dart` with a `LocalinoKeys` const per JSON key for compile-time-safe lookups. Const values are the original JSON keys verbatim — runtime unchanged.
 - Doc comments carry default-locale preview, `params:` for format strings, and `⚠ missing in:` for keys absent in other locales.

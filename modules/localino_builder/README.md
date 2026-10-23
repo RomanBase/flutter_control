@@ -97,6 +97,82 @@ With `report_unused: true`, after generation any key with no
 `LocalinoKeys.<name>` reference under `lib/` is printed (report-only, never
 deleted) — useful for pruning dead keys once call sites are migrated.
 
+## Sync (two-way)
+
+The plain download above overwrites local locale files. The sync commands
+instead merge local files and Localino key by key, so translations can be
+edited in either place:
+
+```
+dart run localino_builder status            # what changed where
+dart run localino_builder pull [--dry-run]  # apply Localino changes locally
+dart run localino_builder push [--dry-run]  # send local changes to Localino
+dart run localino_builder sync              # pull, then push
+```
+
+Config comes from `build.yaml` options or, if the builder is missing or
+`enabled: false` there, from `assets/localization/setup.json` (`space`,
+`project`, `access`, `asset`). Use `--root <dir>` to point at a project; by
+default the nearest `pubspec.yaml` above the working directory is used.
+
+### Lock file
+
+`.localino/lock.json` records, per locale and key, a hash of the last synced
+value and its Localino timestamp. **Commit it** — it is the shared baseline
+that tells a local edit from a translator's edit. Each key is classified by
+comparing local, lock and remote values:
+
+| Local vs lock | Remote vs lock | State | pull | push |
+|---|---|---|---|---|
+| same | same | unchanged | — | — |
+| changed | same | local changed | kept | sent |
+| same | changed | remote changed | applied | — |
+| changed | changed, equal to local | converged | lock updated | — |
+| changed | changed, different | **conflict** | stops | stops |
+
+Deleting counts as a change, so deleting a key on one side while editing it
+on the other is a conflict. Without a lock (first adoption) equal values
+become the baseline, one-sided keys are added and different values conflict.
+
+- `pull` never drops keys that only exist locally.
+- `push` never deletes keys in Localino unless `--prune` is given.
+- A conflict stops the run with nothing written (exit 3). Re-run with
+  `--prefer local` or `--prefer remote` to pick a side.
+- Existing key order and indentation are kept; new keys are appended sorted.
+- When `generate_keys` is on, `pull` regenerates `lib/generated/localino_keys.dart`.
+  Any other localization codegen of your project still has to run afterwards.
+
+### Write key
+
+`push` and `sync` need a per-project **write key** (`lk_w_…`), generated in the
+Localino console. The `access` read token is never accepted for writes. Store
+the key once per machine — it is read from stdin, so it stays out of shell
+history:
+
+```
+dart run localino_builder login
+```
+
+It is saved to `~/.localino/credentials.json` (mode 600), keyed by
+`space/project`. In CI set `LOCALINO_WRITE_KEY` instead. Never commit the key.
+
+`LOCALINO_API_URL` overrides the API base (default
+`https://api.localino.app/v1`); only https is accepted, plain http only for
+`localhost`.
+
+### Exit codes
+
+| Code | Meaning |
+|---|---|
+| 0 | OK |
+| 1 | Usage or other error |
+| 3 | Conflict (incl. a value type change) — nothing written |
+| 4 | Missing, malformed or rejected credentials |
+| 5 | Network failure or concurrent push — re-run |
+
+`sync` that pulled but failed to push exits 5 with the pull applied; re-run
+`sync` to finish. Network failures never touch local files.
+
 ## Additional information
 
 Localino can be used as standalone package to manage assets localization. But true power comes with other packages:

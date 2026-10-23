@@ -34,6 +34,10 @@ xcuserdata
 
 *.pyc
 *sync/
+# Sync engine sources and tests are not editor sync folders.
+!/lib/src/sync/
+!/test/sync/
+!/test/fixtures/sync/
 Icon?
 .tags*
 
