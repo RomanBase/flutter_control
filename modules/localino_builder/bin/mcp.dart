@@ -11,11 +11,9 @@ import 'package:localino_builder/src/mcp/localino_mcp_server.dart';
 void main(List<String> arguments) {
   runZoned(
     () async {
-      final rootArg = arguments.indexOf('--root');
       final root =
-          rootArg >= 0 && rootArg + 1 < arguments.length
-              ? arguments[rootArg + 1]
-              : findProjectRoot(Directory.current.path);
+          option(arguments, '--root') ??
+          findProjectRoot(Directory.current.path);
       final client = http.Client();
 
       final server = LocalinoMcpServer(

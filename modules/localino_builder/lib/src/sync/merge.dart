@@ -84,12 +84,21 @@ class RemoteEntry {
 
 enum KeyState { unchanged, localChanged, remoteChanged, converged, conflict }
 
-/// `text` | `list` | `map` — the value shape Localino stores (mirrors the API's `shapeOf`).
-String shapeOf(dynamic value) => switch (value) {
+/// `text` | `list` | `map` — the value shape Localino stores, or null for values it
+/// rejects (numbers, booleans). Mirrors the API's `shapeOf`.
+String? shapeOf(dynamic value) => switch (value) {
+  String() => 'text',
   List() => 'list',
   Map() => 'map',
-  _ => 'text',
+  _ => null,
 };
+
+/// Translation keys Localino accepts (mirrors the API's key rule).
+final _translationKey = RegExp(r'^[A-Za-z0-9_.\-]{1,200}$');
+
+bool isValidTranslationKey(String key) =>
+    _translationKey.hasMatch(key) &&
+    !(key.startsWith('__') && key.endsWith('__'));
 
 /// Value shape a Localino key `type` expects (mirrors the API's `shapeOfType`).
 String shapeOfType(Object? type) => switch (type) {
@@ -302,30 +311,40 @@ class PushPlan {
   /// them (it never changes a key's type), so the run stops and nothing is sent.
   final List<KeyDiff> typeMismatches;
 
+  /// Changes the API would reject (`invalid_key`, `unsupported_value`, `mixed_shapes`);
+  /// the run stops and nothing is sent.
+  final List<({KeyDiff diff, String reason})> invalid;
+
   const PushPlan({
     this.chunks = const [],
     this.skippedDeletes = const [],
     this.conflicts = const [],
     this.typeMismatches = const [],
+    this.invalid = const [],
   });
 
   int get changeCount => chunks.fold(0, (sum, chunk) => sum + chunk.length);
+
+  /// Something stops the run before any request.
+  bool get blocked =>
+      conflicts.isNotEmpty || typeMismatches.isNotEmpty || invalid.isNotEmpty;
 }
 
 /// Plans a push of local changes (and conflicts with `prefer: local`). Deletes are sent
-/// only with [prune]. [remoteKeys] are the keys Localino already knows (for chunking);
-/// [remoteTypes] maps them to their Localino `type`.
+/// only with [prune]. [remoteTypes] maps the keys Localino already knows to their `type`.
+/// Everything the API would reject is found here, so a blocked plan sends nothing.
 PushPlan planPush(
   List<KeyDiff> diffs, {
   Prefer? prefer,
   bool prune = false,
-  required Set<String> remoteKeys,
-  Map<String, String> remoteTypes = const {},
+  required Map<String, String> remoteTypes,
 }) {
   final byKey = <String, List<PushChange>>{};
   final skippedDeletes = <KeyDiff>[];
   final conflicts = <KeyDiff>[];
   final typeMismatches = <KeyDiff>[];
+  final invalid = <({KeyDiff diff, String reason})>[];
+  final newKeyShapes = <String, String>{};
 
   for (final diff in diffs) {
     if (diff.state == KeyState.conflict) {
@@ -348,13 +367,30 @@ PushPlan planPush(
       }
     }
 
-    final type = remoteTypes[diff.key];
-
-    if (diff.local != null &&
-        type != null &&
-        shapeOfType(type) != shapeOf(diff.local)) {
-      typeMismatches.add(diff);
+    if (!isValidTranslationKey(diff.key)) {
+      invalid.add((diff: diff, reason: 'invalid_key'));
       continue;
+    }
+
+    if (diff.local != null) {
+      final shape = shapeOf(diff.local);
+      final type = remoteTypes[diff.key];
+
+      if (shape == null) {
+        invalid.add((diff: diff, reason: 'unsupported_value'));
+        continue;
+      }
+
+      if (type != null && shapeOfType(type) != shape) {
+        typeMismatches.add(diff);
+        continue;
+      }
+
+      if (type == null &&
+          newKeyShapes.putIfAbsent(diff.key, () => shape) != shape) {
+        invalid.add((diff: diff, reason: 'mixed_shapes'));
+        continue;
+      }
     }
 
     (byKey[diff.key] ??= []).add(
@@ -374,7 +410,8 @@ PushPlan planPush(
 
   for (final key in byKey.keys.toList()..sort()) {
     final changes = byKey[key]!;
-    final isNew = !remoteKeys.contains(key) && changes.any((e) => !e.delete);
+    final isNew =
+        !remoteTypes.containsKey(key) && changes.any((e) => !e.delete);
 
     if (chunk.isNotEmpty &&
         (chunk.length + changes.length > maxChanges ||
@@ -390,10 +427,20 @@ PushPlan planPush(
 
   if (chunk.isNotEmpty) chunks.add(chunk);
 
-  return PushPlan(
-    chunks: conflicts.isEmpty && typeMismatches.isEmpty ? chunks : const [],
+  final plan = PushPlan(
+    chunks: chunks,
     skippedDeletes: skippedDeletes,
     conflicts: conflicts,
     typeMismatches: typeMismatches,
+    invalid: invalid,
   );
+
+  return plan.blocked
+      ? PushPlan(
+        skippedDeletes: skippedDeletes,
+        conflicts: conflicts,
+        typeMismatches: typeMismatches,
+        invalid: invalid,
+      )
+      : plan;
 }

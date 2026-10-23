@@ -220,6 +220,21 @@ void main() {
       expect(fake.pushes, isEmpty);
     });
 
+    test('keys or values Localino rejects are reported, not pushed', () async {
+      writeLocal(_cs, {'bad key': 'x'});
+      writeLocal(_en, {});
+      final fake = FakeLocalino({_cs: {}, _en: {}});
+      final connection = await connect(fake.client);
+
+      final result = data(await call(connection, 'localino_push'));
+
+      expect(result['invalid'], [
+        {'locale': _cs, 'key': 'bad key', 'reason': 'invalid_key'},
+      ]);
+      expect(result['next_step'], contains('not accepted by Localino'));
+      expect(fake.pushes, isEmpty);
+    });
+
     test('missing write key is an error with zero requests', () async {
       env.remove(writeKeyEnv);
       writeLocal(_cs, {'a': 'A'});
@@ -470,6 +485,28 @@ targets:
   });
 
   group('localino_search_keys', () {
+    test('local tools work even with an unusable LOCALINO_API_URL', () async {
+      writeLocal(_cs, {'a': 'A'});
+      env['LOCALINO_API_URL'] = 'http://example.com/v1';
+      final connection = await connect(FakeLocalino({}).client);
+
+      final search = await call(connection, 'localino_search_keys', {
+        'query': 'a',
+      });
+      final set = await call(connection, 'localino_set_keys', {
+        'keys': [
+          {
+            'key': 'b',
+            'values': {_cs: 'B'},
+          },
+        ],
+      });
+
+      expect(search.isError, isNot(true));
+      expect(set.isError, isNot(true));
+      expect(readLocal(_cs), {'a': 'A', 'b': 'B'});
+    });
+
     setUp(() {
       writeLocal(_cs, {
         'invoice_paid': 'Zaplaceno',

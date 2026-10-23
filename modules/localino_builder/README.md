@@ -115,6 +115,10 @@ Config comes from `build.yaml` options or, if the builder is missing or
 `project`, `access`, `asset`). Use `--root <dir>` to point at a project; by
 default the nearest `pubspec.yaml` above the working directory is used.
 
+The legacy download (no command) still overwrites the locale files, so it runs
+only with `-u … -sp …` or enabled `build.yaml` options — never from
+`setup.json` alone.
+
 ### Lock file
 
 `.localino/lock.json` records, per locale and key, a hash of the last synced
@@ -142,6 +146,9 @@ become the baseline, one-sided keys are added and different values conflict.
   plural map where Localino has text) also stops the run before anything is
   written (exit 3). Push never changes a key's type: change or delete the key
   in the Localino console, then re-run.
+- Keys or values Localino would reject (key outside `A-Z a-z 0-9 _ . -`,
+  a number or boolean value, or one new key with different shapes per locale)
+  are listed as `invalid` and stop the run before anything is written (exit 1).
 - Existing key order and indentation are kept; new keys are appended sorted.
 - When `generate_keys` is on, `pull` regenerates `lib/generated/localino_keys.dart`.
   Any other localization codegen of your project still has to run afterwards.
@@ -169,7 +176,7 @@ It is saved to `~/.localino/credentials.json` (mode 600), keyed by
 | Code | Meaning |
 |---|---|
 | 0 | OK |
-| 1 | Usage or other error |
+| 1 | Usage, invalid file content, keys or values Localino rejects, or other error |
 | 3 | Conflict (incl. a value type change) — nothing written |
 | 4 | Missing, malformed or rejected credentials |
 | 5 | Network failure or concurrent push — re-run |

@@ -1,6 +1,11 @@
 ## [1.2.1]
 - A local value whose shape the key's Localino type rejects (e.g. a plural map where Localino has text) is reported as `type_mismatches` and stops `push`/`sync` with exit 3 before anything is written. `sync` used to pull first and then fail the push with exit 5 ("re-run `sync`"), which could never succeed.
 - `sync` keeps the push's exit code when the push fails after a pull (e.g. 4 for a revoked key) instead of reporting every failure as 5.
+- Keys or values the API would reject (invalid key name, number/boolean value, a new key with different shapes per locale) are reported as `invalid` at plan time and stop `push`/`sync` with exit 1 before any request.
+- The legacy download (no command) no longer falls back to `assets/localization/setup.json`: with `enabled: false` in `build.yaml` (or no options) it does nothing, as before 1.2.0, instead of overwriting the locale files.
+- `sync` plans the pull and the push against one snapshot (one download instead of three).
+- Malformed locale, lock or credentials files exit 1 with a message instead of a stack trace; the terminal echo is restored if reading the key fails.
+- MCP: `localino_search_keys` / `localino_set_keys` work without a valid `LOCALINO_API_URL` (they never reach Localino); the server reports the package version.
 
 ## [1.2.0]
 - Bidirectional sync: `dart run localino_builder status | pull | push | sync | login`. Three-way merge by value hash against a committed `.localino/lock.json`; pull never drops local-only keys, push never deletes remotely without `--prune`, conflicts stop the run (exit 3) until resolved with `--prefer local|remote`.

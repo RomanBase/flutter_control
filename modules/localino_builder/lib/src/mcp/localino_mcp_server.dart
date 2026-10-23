@@ -6,8 +6,10 @@ import 'package:http/http.dart' as http;
 
 import '../config.dart';
 import '../sync/io.dart';
+import '../sync/local_keys.dart';
 import '../sync/merge.dart';
 import '../sync/sync_engine.dart';
+import '../version.dart';
 
 const _codegenHint =
     'Locale files changed — run the project localization codegen '
@@ -17,12 +19,14 @@ const _askUser =
     'Nothing was written for these keys. Show the conflicts to the user and ask which '
     'side wins, then call again with `prefer` and `keys`.';
 
+const _invalid =
+    'Nothing was pushed: some keys or values are not accepted by Localino (see `invalid`). '
+    'Fix them in the locale files (localino_set_keys), then preview again.';
+
 const _typeMismatch =
     'Nothing was pushed: Localino stores these keys with another value type (e.g. text '
     'vs a plural map) and push never changes a type. Tell the user; the key has to be '
     'changed or deleted in the Localino console first.';
-
-final _keyPattern = RegExp(r'^[A-Za-z0-9_.\-]{1,200}$');
 
 /// Anything shaped like a write key is masked in every tool output.
 final _secretPattern = RegExp(r'lk_w_[0-9A-Za-z_]*');
@@ -51,15 +55,24 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     required this.env,
     required this.client,
   }) : super.fromStreamChannel(
-         implementation: Implementation(name: 'localino', version: '1.2.0'),
+         implementation: Implementation(
+           name: 'localino',
+           version: packageVersion,
+         ),
          instructions:
              'Translations live in the project locale files. Use localino_search_keys '
              'before adding a key, localino_set_keys to edit locally, then '
              'localino_push (dry run) and show the plan to the user before applying.',
        ) {
     registerTool(statusTool, (request) => _guard(request, _status));
-    registerTool(searchKeysTool, (request) => _guard(request, _searchKeys));
-    registerTool(setKeysTool, (request) => _guard(request, _setKeys));
+    registerTool(
+      searchKeysTool,
+      (request) => _guard(request, _searchKeys, remote: false),
+    );
+    registerTool(
+      setKeysTool,
+      (request) => _guard(request, _setKeys, remote: false),
+    );
     registerTool(pullTool, (request) => _guard(request, _pull));
     registerTool(pushTool, (request) => _guard(request, _push));
   }
@@ -218,10 +231,13 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       SyncEngine engine,
       Map<String, Object?> args,
     )
-    tool,
-  ) async {
+    tool, {
+    bool remote = true,
+  }) async {
     try {
-      return _result(await tool(_engine(), request.arguments ?? const {}));
+      return _result(
+        await tool(_engine(remote: remote), request.arguments ?? const {}),
+      );
     } on SyncException catch (e) {
       return _error(e.message, _nextStep(e.exitCode));
     } on ConfigException catch (e) {
@@ -235,7 +251,9 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     }
   }
 
-  SyncEngine _engine() {
+  /// Engine for one call. Local-only tools ([remote] false) never reach Localino, so a
+  /// bad `LOCALINO_API_URL` does not block them.
+  SyncEngine _engine({bool remote = true}) {
     final config = loadConfig(root: root);
 
     if (config == null) {
@@ -248,7 +266,7 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     return SyncEngine(
       config: config,
       client: client,
-      apiUrl: resolveApiUrl(env),
+      apiUrl: remote ? resolveApiUrl(env) : Uri.parse(defaultApiUrl),
       env: env,
       credentialsPath: defaultCredentialsPath(env),
     );
@@ -282,105 +300,48 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     SyncEngine engine,
     Map<String, Object?> args,
   ) {
-    final locales = engine.localLocales();
-    final files = {
-      for (final locale in locales)
-        locale: readLocaleFile(engine.localeFile(locale)).data,
-    };
+    final files = engine.readLocalFiles();
     final missingIn = args['missing_in'] as String?;
 
-    if (missingIn != null && !locales.contains(missingIn)) {
+    if (missingIn != null && !files.containsKey(missingIn)) {
       throw _ToolError(
-        'Unknown locale `$missingIn`. Local locales: ${locales.join(', ')}.',
+        'Unknown locale `$missingIn`. Local locales: ${files.keys.join(', ')}.',
       );
     }
 
-    final query = (args['query'] as String?)?.trim().toLowerCase();
-    final exact = (args['keys'] as List?)?.cast<String>().toSet();
-    final limit = _limit(args, 20);
-    final allKeys = {for (final data in files.values) ...data.keys};
-
-    final index = <String, Set<String>>{};
-    for (final locale in locales) {
-      for (final entry in files[locale]!.entries) {
-        if (_isEmpty(entry.value)) continue;
-        (index['$locale\u0000${canonicalJson(entry.value)}'] ??= {}).add(
-          entry.key,
-        );
-      }
-    }
-
-    final matches = <({String key, bool exactValue})>[];
-
-    for (final key in allKeys.toList()..sort()) {
-      if (exact != null && !exact.contains(key)) continue;
-      if (missingIn != null && !_isEmpty(files[missingIn]![key])) continue;
-
-      var exactValue = false;
-
-      if (query != null && query.isNotEmpty) {
-        final values = [
-          for (final data in files.values)
-            if (data[key] != null) data[key],
-        ];
-        final valueHit = values.any(
-          (value) => _text(value).toLowerCase().contains(query),
-        );
-        exactValue = values.any(
-          (value) => value is String && value.trim().toLowerCase() == query,
-        );
-
-        if (!key.toLowerCase().contains(query) && !valueHit) continue;
-      }
-
-      matches.add((key: key, exactValue: exactValue));
-    }
-
-    matches.sort((a, b) {
-      if (a.exactValue != b.exactValue) return a.exactValue ? -1 : 1;
-      return a.key.compareTo(b.key);
-    });
-
-    final shown = [
-      for (final match in matches.take(limit))
-        {
-          'key': match.key,
-          'values': {
-            for (final locale in locales)
-              if (files[locale]!.containsKey(match.key))
-                locale: files[locale]![match.key],
-          },
-          if (match.exactValue) 'exact_value_match': true,
-          if (_sameValue(match.key, locales, files, index) case final same
-              when same.isNotEmpty)
-            'same_value_as': same,
-        },
-    ];
+    final result = searchKeys(
+      files,
+      query: args['query'] as String?,
+      keys: (args['keys'] as List?)?.cast<String>().toSet(),
+      missingIn: missingIn,
+      limit: _limit(args, 20),
+    );
+    final matches = (result['matches'] as List).cast<Map>();
 
     return {
-      'locales': locales,
-      'total': matches.length,
-      'matches': shown,
-      if (matches.length > limit) 'truncated': true,
-      if (exact != null)
-        'not_found':
-            exact.where((key) => !allKeys.contains(key)).toList()..sort(),
-      if (matches.any((e) => e.exactValue))
+      ...result,
+      if (matches.any((e) => e['exact_value_match'] == true))
         'next_step':
             'A key with this exact value exists — reuse it instead of adding a duplicate.',
     };
   }
 
   Map<String, dynamic> _setKeys(SyncEngine engine, Map<String, Object?> args) {
-    final locales = engine.localLocales();
+    final files = engine.readLocalFiles();
 
-    if (locales.isEmpty) {
+    if (files.isEmpty) {
       throw _ToolError(
         'No locale files match `${engine.config.asset}` under $root.',
       );
     }
 
-    final entries = (args['keys'] as List? ?? const []).cast<Map>();
+    final entries = [
+      for (final entry in (args['keys'] as List? ?? const []).cast<Map>())
+        (
+          key: entry['key'] as String,
+          values: Map<String, dynamic>.from(entry['values'] as Map),
+        ),
+    ];
     final removes =
         (args['remove'] as List? ?? const []).cast<String>().toSet();
 
@@ -388,119 +349,24 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       throw const _ToolError('Nothing to change: pass `keys` or `remove`.');
     }
 
-    final sets = <String, Map<String, dynamic>>{};
-    final errors = <String>[];
+    final plan = planSetKeys(files, entries, removes);
 
-    for (final entry in entries) {
-      final key = entry['key'] as String;
-      final values = entry['values'] as Map;
-
-      if (!_keyPattern.hasMatch(key) ||
-          (key.startsWith('__') && key.endsWith('__'))) {
-        errors.add('`$key`: invalid key (A-Z a-z 0-9 _ . -, max 200)');
-      }
-
-      if (removes.contains(key)) {
-        errors.add('`$key`: both set and removed');
-      }
-
-      for (final value in values.entries) {
-        final locale = '${value.key}';
-
-        if (!locales.contains(locale)) {
-          errors.add('`$key`: unknown locale `$locale`');
-        } else if (value.value is! String &&
-            value.value is! List &&
-            value.value is! Map) {
-          errors.add(
-            '`$key` $locale: value must be a string, list or map (use `remove` to delete)',
-          );
-        } else {
-          (sets[locale] ??= {})[key] = value.value;
-        }
-      }
-    }
-
-    if (errors.isNotEmpty) {
+    if (plan.errors.isNotEmpty) {
       throw _ToolError(
-        '${errors.join('; ')}.',
-        'Local locales: ${locales.join(', ')}. Nothing was written.',
+        '${plan.errors.join('; ')}.',
+        'Local locales: ${files.keys.join(', ')}. Nothing was written.',
       );
     }
 
-    final diff = <Map<String, dynamic>>[];
-    var changed = false;
-
-    for (final locale in locales) {
-      final file = readLocaleFile(engine.localeFile(locale));
-      final localeSets = sets[locale] ?? const <String, dynamic>{};
-      final localeRemoves = removes.where(file.data.containsKey).toSet();
-      final before = diff.length;
-
-      for (final entry in localeSets.entries) {
-        final old = file.data[entry.key];
-
-        if (!file.data.containsKey(entry.key)) {
-          diff.add({
-            'locale': locale,
-            'key': entry.key,
-            'change': 'added',
-            'new': entry.value,
-          });
-        } else if (canonicalJson(old) != canonicalJson(entry.value)) {
-          diff.add({
-            'locale': locale,
-            'key': entry.key,
-            'change': 'updated',
-            'old': old,
-            'new': entry.value,
-          });
-        }
-      }
-
-      for (final key in localeRemoves) {
-        diff.add({
-          'locale': locale,
-          'key': key,
-          'change': 'removed',
-          'old': file.data[key],
-        });
-      }
-
-      if (diff.length == before) continue;
-
-      changed = true;
-      writeLocaleFile(
-        engine.localeFile(locale),
-        LocaleFile(
-          applyLocaleChanges(file.data, localeSets, localeRemoves),
-          indent: file.indent,
-          trailingNewline: file.trailingNewline,
-        ),
-      );
-    }
-
-    final after = {
-      for (final locale in locales)
-        locale: readLocaleFile(engine.localeFile(locale)).data,
-    };
-    final incomplete = [
-      for (final entry in entries)
-        if ([
-              for (final locale in locales)
-                if (_isEmpty(after[locale]![entry['key']])) locale,
-            ]
-            case final missing when missing.isNotEmpty)
-          {'key': entry['key'], 'missing_in': missing},
-    ];
+    engine.applyLocalChanges(plan);
 
     return {
-      'changed': changed,
-      'diff': diff,
-      if (incomplete.isNotEmpty) 'incomplete': incomplete,
-      if (changed && engine.config.generateKeys)
-        'generated_keys': engine.regenerateKeys(locales),
-      if (changed) 'next_step': _codegenHint,
+      'changed': plan.changed,
+      'diff': plan.diff,
+      if (plan.incomplete.isNotEmpty) 'incomplete': plan.incomplete,
+      if (plan.changed && engine.config.generateKeys)
+        'generated_keys': engine.regenerateKeys(files.keys.toList()),
+      if (plan.changed) 'next_step': _codegenHint,
     };
   }
 
@@ -533,7 +399,9 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       keys: _keys(args),
     );
     final steps = [
-      if (result.typeMismatches.isNotEmpty)
+      if (result.invalid.isNotEmpty)
+        _invalid
+      else if (result.typeMismatches.isNotEmpty)
         _typeMismatch
       else if (result.conflicts.isNotEmpty)
         _askUser
@@ -569,29 +437,21 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     return {...json, if (truncated.isNotEmpty) 'truncated': truncated};
   }
 
-  CallToolResult _result(Map<String, dynamic> data) {
+  /// [data] as JSON text and structured content, with write keys masked.
+  CallToolResult _result(Map<String, dynamic> data, {bool isError = false}) {
     final text = _redact(jsonEncode(data));
 
     return CallToolResult(
       content: [TextContent(text: text)],
       structuredContent: jsonDecode(text) as Map<String, Object?>,
+      isError: isError ? true : null,
     );
   }
 
-  CallToolResult _error(String message, String? nextStep) {
-    final text = _redact(
-      jsonEncode({
-        'error': message,
-        if (nextStep != null) 'next_step': nextStep,
-      }),
-    );
-
-    return CallToolResult(
-      content: [TextContent(text: text)],
-      structuredContent: jsonDecode(text) as Map<String, Object?>,
-      isError: true,
-    );
-  }
+  CallToolResult _error(String message, String? nextStep) => _result({
+    'error': message,
+    if (nextStep != null) 'next_step': nextStep,
+  }, isError: true);
 }
 
 String? _nextStep(int exitCode) => switch (exitCode) {
@@ -613,29 +473,3 @@ int _limit(Map<String, Object?> args, int fallback) =>
 
 Set<String>? _keys(Map<String, Object?> args) =>
     (args['keys'] as List?)?.cast<String>().toSet();
-
-bool _isEmpty(Object? value) =>
-    value == null ||
-    (value is String && value.trim().isEmpty) ||
-    (value is Map && value.isEmpty) ||
-    (value is List && value.isEmpty);
-
-String _text(Object? value) => value is String ? value : canonicalJson(value);
-
-/// Other keys holding exactly this key's value in the same locale (max 10).
-List<String> _sameValue(
-  String key,
-  List<String> locales,
-  Map<String, Map<String, dynamic>> files,
-  Map<String, Set<String>> index,
-) {
-  final same = <String>{};
-
-  for (final locale in locales) {
-    final value = files[locale]![key];
-    if (_isEmpty(value)) continue;
-    same.addAll(index['$locale\u0000${canonicalJson(value)}'] ?? const {});
-  }
-
-  return ((same..remove(key)).toList()..sort()).take(10).toList();
-}

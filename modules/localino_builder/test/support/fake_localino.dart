@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:localino_builder/src/sync/merge.dart';
 
 const fakeReadToken = 'read-token';
 const fakeWriteKey =
@@ -73,6 +74,7 @@ class FakeLocalino {
     final changes = List<Map>.from(body['changes'] as List);
     final conflicts = <Map>[];
     final applied = <Map>[];
+    final unchanged = <Map>[];
     final rejected = <Map>[];
 
     for (final change in changes) {
@@ -80,6 +82,16 @@ class FakeLocalino {
 
       if (locked.contains(change['key'])) {
         rejected.add({'locale': change['locale'], 'key': change['key']});
+      } else if (change['delete'] == true
+          ? remote == null
+          : remote != null &&
+              canonicalJson(remote.$1) == canonicalJson(change['value'])) {
+        // Same value (or deleting an absent key) is a no-op, as in the API.
+        unchanged.add({
+          'locale': change['locale'],
+          'key': change['key'],
+          'ts': remote?.$2,
+        });
       } else if (change['base_ts'] != remote?.$2) {
         conflicts.add({
           'locale': change['locale'],
@@ -115,7 +127,7 @@ class FakeLocalino {
         for (final change in applied)
           {'locale': change['locale'], 'key': change['key'], 'ts': ts},
       ],
-      'unchanged': [],
+      'unchanged': unchanged,
       'rejected_locked': rejected,
     });
   }

@@ -8,6 +8,7 @@ import '../config.dart';
 import '../key_generator.dart';
 import '../key_parser.dart';
 import 'io.dart';
+import 'local_keys.dart';
 import 'merge.dart';
 
 const keysOutputPath = 'lib/generated/localino_keys.dart';
@@ -56,6 +57,10 @@ class SyncResult {
   /// `{locale, key, local_value, remote_type}` whose value shape the key's Localino type
   /// rejects; they stopped the run.
   final List<Map<String, dynamic>> typeMismatches;
+
+  /// `{locale, key, reason}` the API would reject (`invalid_key`, `unsupported_value`,
+  /// `mixed_shapes`); they stopped the run.
+  final List<Map<String, dynamic>> invalid;
   final List<KeyDiff> skippedDeletes;
 
   /// Local locale files Localino does not have; skipped.
@@ -78,16 +83,51 @@ class SyncResult {
     this.rejectedLocked = const [],
     this.conflicts = const [],
     this.typeMismatches = const [],
+    this.invalid = const [],
     this.skippedDeletes = const [],
     this.unknownLocales = const [],
     this.localFilesChanged = false,
     this.generatedKeys,
   });
 
-  int get exitCode =>
-      conflicts.isEmpty && typeMismatches.isEmpty
-          ? SyncExit.ok
-          : SyncExit.conflict;
+  int get exitCode {
+    if (invalid.isNotEmpty) {
+      return SyncExit.error;
+    }
+
+    return conflicts.isEmpty && typeMismatches.isEmpty
+        ? SyncExit.ok
+        : SyncExit.conflict;
+  }
+
+  SyncResult copyWith({
+    String? command,
+    List<KeyDiff>? pulled,
+    List<Map<String, dynamic>>? pushed,
+    List<Map<String, dynamic>>? rejectedLocked,
+    List<Map<String, dynamic>>? conflicts,
+    List<Map<String, dynamic>>? typeMismatches,
+    List<Map<String, dynamic>>? invalid,
+    List<KeyDiff>? skippedDeletes,
+    bool? localFilesChanged,
+    String? generatedKeys,
+  }) => SyncResult(
+    command: command ?? this.command,
+    dryRun: dryRun,
+    remoteKnown: remoteKnown,
+    counts: counts,
+    changes: changes,
+    pulled: pulled ?? this.pulled,
+    pushed: pushed ?? this.pushed,
+    rejectedLocked: rejectedLocked ?? this.rejectedLocked,
+    conflicts: conflicts ?? this.conflicts,
+    typeMismatches: typeMismatches ?? this.typeMismatches,
+    invalid: invalid ?? this.invalid,
+    skippedDeletes: skippedDeletes ?? this.skippedDeletes,
+    unknownLocales: unknownLocales,
+    localFilesChanged: localFilesChanged ?? this.localFilesChanged,
+    generatedKeys: generatedKeys ?? this.generatedKeys,
+  );
 
   Map<String, dynamic> toJson() => {
     'command': command,
@@ -100,6 +140,7 @@ class SyncResult {
     'rejected_locked': rejectedLocked,
     'conflicts': conflicts,
     'type_mismatches': typeMismatches,
+    'invalid': invalid,
     'skipped_deletes': [for (final diff in skippedDeletes) diff.toJson()],
     'unknown_locales': unknownLocales,
     'local_files_changed': localFilesChanged,
@@ -110,11 +151,11 @@ class SyncResult {
 class _Snapshot {
   final List<String> locales;
 
-  /// key → `{type, locked}`.
-  final Map<String, dynamic> keys;
+  /// Key → Localino `type` (`text`, `list`, `map`, `plural`, …).
+  final Map<String, String> keyTypes;
   final Map<String, Map<String, RemoteEntry>> translations;
 
-  const _Snapshot(this.locales, this.keys, this.translations);
+  const _Snapshot(this.locales, this.keyTypes, this.translations);
 }
 
 /// Local locale files (by locale), their parsed values, the lock, and locales Localino lacks.
@@ -204,8 +245,78 @@ class SyncEngine {
     Prefer? prefer,
     bool dryRun = false,
     Set<String>? keys,
+  }) async =>
+      _pull(await _snapshot(), prefer: prefer, dryRun: dryRun, keys: keys);
+
+  Future<SyncResult> push({
+    Prefer? prefer,
+    bool dryRun = false,
+    bool prune = false,
+    Set<String>? keys,
   }) async {
+    final writeKey = _writeKey();
+
+    return _push(
+      writeKey,
+      await _snapshot(),
+      prefer: prefer,
+      dryRun: dryRun,
+      prune: prune,
+      keys: keys,
+    );
+  }
+
+  /// Pull, then push — both against one snapshot (a pull never changes Localino).
+  /// Anything the push would reject is found before the pull writes, so it leaves both
+  /// sides untouched. A push failure after a successful pull keeps the pull applied.
+  Future<SyncResult> sync({Prefer? prefer, bool prune = false}) async {
+    final writeKey = _writeKey();
     final snapshot = await _snapshot();
+    final preview = _planPush(snapshot, prefer: prefer, prune: prune);
+
+    if (preview.plan.typeMismatches.isNotEmpty ||
+        preview.plan.invalid.isNotEmpty) {
+      return _blocked('sync', snapshot, preview);
+    }
+
+    final pulled = await _pull(snapshot, prefer: prefer);
+
+    if (pulled.conflicts.isNotEmpty) {
+      return pulled.copyWith(command: 'sync');
+    }
+
+    final SyncResult pushed;
+
+    try {
+      pushed = await _push(writeKey, snapshot, prefer: prefer, prune: prune);
+    } on SyncException catch (e) {
+      final next =
+          e.exitCode == SyncExit.network
+              ? 'push pending — re-run `sync`'
+              : 'push failed';
+      throw SyncException(
+        e.exitCode,
+        'Pulled ${pulled.pulled.length} keys; $next. ${e.message}',
+      );
+    }
+
+    return pulled.copyWith(
+      command: 'sync',
+      pushed: pushed.pushed,
+      rejectedLocked: pushed.rejectedLocked,
+      conflicts: pushed.conflicts,
+      typeMismatches: pushed.typeMismatches,
+      invalid: pushed.invalid,
+      skippedDeletes: pushed.skippedDeletes,
+    );
+  }
+
+  Future<SyncResult> _pull(
+    _Snapshot snapshot, {
+    Prefer? prefer,
+    bool dryRun = false,
+    Set<String>? keys,
+  }) async {
     final state = _load(snapshot);
     final diffs = _only(
       classify(
@@ -244,46 +355,37 @@ class SyncEngine {
       return result;
     }
 
-    return SyncResult(
-      command: result.command,
-      counts: result.counts,
-      changes: result.changes,
-      pulled: result.pulled,
-      unknownLocales: result.unknownLocales,
-      localFilesChanged: true,
-      generatedKeys: regenerateKeys(snapshot.locales),
-    );
+    return result.copyWith(generatedKeys: regenerateKeys(snapshot.locales));
   }
 
-  Future<SyncResult> push({
+  Future<SyncResult> _push(
+    WriteKey writeKey,
+    _Snapshot snapshot, {
     Prefer? prefer,
     bool dryRun = false,
     bool prune = false,
     Set<String>? keys,
   }) async {
-    final writeKey = _writeKey();
-    final (:snapshot, :state, :diffs, :plan) = await _planPush(
+    final preview = _planPush(
+      snapshot,
       prefer: prefer,
       prune: prune,
       keys: keys,
     );
+    final (:state, :diffs, :plan) = preview;
+
+    if (plan.blocked) {
+      return _blocked('push', snapshot, preview, dryRun: dryRun);
+    }
 
     final base = SyncResult(
       command: 'push',
       dryRun: dryRun,
       counts: countStates(diffs),
       changes: diffs.where((e) => e.state != KeyState.unchanged).toList(),
-      conflicts: [for (final diff in plan.conflicts) _conflictJson(diff)],
-      typeMismatches: [
-        for (final diff in plan.typeMismatches) _mismatchJson(diff, snapshot),
-      ],
       skippedDeletes: plan.skippedDeletes,
       unknownLocales: state.unknownLocales,
     );
-
-    if (plan.conflicts.isNotEmpty || plan.typeMismatches.isNotEmpty) {
-      return base;
-    }
 
     final pushed = <Map<String, dynamic>>[];
     final rejectedLocked = <Map<String, dynamic>>[];
@@ -297,18 +399,12 @@ class SyncEngine {
       );
 
       if (response['error'] == 'conflict') {
-        return SyncResult(
-          command: base.command,
-          dryRun: dryRun,
-          counts: base.counts,
-          changes: base.changes,
+        return base.copyWith(
           pushed: pushed,
           rejectedLocked: rejectedLocked,
           conflicts: List<Map<String, dynamic>>.from(
             response['conflicts'] as List,
           ),
-          skippedDeletes: base.skippedDeletes,
-          unknownLocales: base.unknownLocales,
         );
       }
 
@@ -351,77 +447,66 @@ class SyncEngine {
       }
     }
 
+    return base.copyWith(pushed: pushed, rejectedLocked: rejectedLocked);
+  }
+
+  /// Result for a push plan that stops before any request.
+  SyncResult _blocked(
+    String command,
+    _Snapshot snapshot,
+    ({_State state, List<KeyDiff> diffs, PushPlan plan}) preview, {
+    bool dryRun = false,
+  }) {
+    final (:state, :diffs, :plan) = preview;
+
     return SyncResult(
-      command: base.command,
+      command: command,
       dryRun: dryRun,
-      counts: base.counts,
-      changes: base.changes,
-      pushed: pushed,
-      rejectedLocked: rejectedLocked,
-      skippedDeletes: base.skippedDeletes,
-      unknownLocales: base.unknownLocales,
+      counts: countStates(diffs),
+      changes: diffs.where((e) => e.state != KeyState.unchanged).toList(),
+      conflicts: [for (final diff in plan.conflicts) _conflictJson(diff)],
+      typeMismatches: [
+        for (final diff in plan.typeMismatches)
+          {
+            'locale': diff.locale,
+            'key': diff.key,
+            'local_value': diff.local,
+            'remote_type': snapshot.keyTypes[diff.key],
+          },
+      ],
+      invalid: [
+        for (final (:diff, :reason) in plan.invalid)
+          {'locale': diff.locale, 'key': diff.key, 'reason': reason},
+      ],
+      skippedDeletes: plan.skippedDeletes,
+      unknownLocales: state.unknownLocales,
     );
   }
 
-  /// Pull, then push. A push failure after a successful pull keeps the pull applied;
-  /// type mismatches are found before the pull, so they leave both sides untouched.
-  Future<SyncResult> sync({Prefer? prefer, bool prune = false}) async {
-    _writeKey();
+  /// Locale → key → value of every local locale file.
+  LocalFiles readLocalFiles() => {
+    for (final locale in localLocales())
+      locale: readLocaleFile(localeFile(locale)).data,
+  };
 
-    final preview = await _planPush(prefer: prefer, prune: prune);
+  /// Writes [plan] to the local locale files, keeping order and indent.
+  void applyLocalChanges(LocalChangePlan plan) {
+    for (final locale in plan.locales) {
+      final file = readLocaleFile(localeFile(locale));
 
-    if (preview.plan.typeMismatches.isNotEmpty) {
-      return SyncResult(
-        command: 'sync',
-        counts: countStates(preview.diffs),
-        changes:
-            preview.diffs.where((e) => e.state != KeyState.unchanged).toList(),
-        typeMismatches: [
-          for (final diff in preview.plan.typeMismatches)
-            _mismatchJson(diff, preview.snapshot),
-        ],
-        unknownLocales: preview.state.unknownLocales,
+      writeLocaleFile(
+        localeFile(locale),
+        LocaleFile(
+          applyLocaleChanges(
+            file.data,
+            plan.sets[locale] ?? const {},
+            plan.removes.where(file.data.containsKey).toSet(),
+          ),
+          indent: file.indent,
+          trailingNewline: file.trailingNewline,
+        ),
       );
     }
-
-    final pulled = await pull(prefer: prefer);
-
-    if (pulled.conflicts.isNotEmpty) {
-      return SyncResult(
-        command: 'sync',
-        counts: pulled.counts,
-        changes: pulled.changes,
-        conflicts: pulled.conflicts,
-        unknownLocales: pulled.unknownLocales,
-      );
-    }
-
-    final SyncResult pushed;
-
-    try {
-      pushed = await push(prefer: prefer, prune: prune);
-    } on SyncException catch (e) {
-      throw SyncException(
-        e.exitCode,
-        e.exitCode == SyncExit.network
-            ? 'Pulled ${pulled.pulled.length} keys; push pending — re-run `sync`. ${e.message}'
-            : 'Pulled ${pulled.pulled.length} keys; push failed. ${e.message}',
-      );
-    }
-
-    return SyncResult(
-      command: 'sync',
-      counts: pushed.counts,
-      changes: pushed.changes,
-      pulled: pulled.pulled,
-      pushed: pushed.pushed,
-      rejectedLocked: pushed.rejectedLocked,
-      conflicts: pushed.conflicts,
-      skippedDeletes: pushed.skippedDeletes,
-      unknownLocales: pushed.unknownLocales,
-      localFilesChanged: pulled.localFilesChanged,
-      generatedKeys: pulled.generatedKeys,
-    );
   }
 
   /// Regenerates [keysOutputPath] from the locale files. Returns its path.
@@ -521,12 +606,13 @@ class SyncEngine {
     }
   }
 
-  /// Snapshot, local state, diffs and the push plan for [push] (and the [sync] preview).
-  Future<
-    ({_Snapshot snapshot, _State state, List<KeyDiff> diffs, PushPlan plan})
-  >
-  _planPush({Prefer? prefer, bool prune = false, Set<String>? keys}) async {
-    final snapshot = await _snapshot();
+  /// Local state, diffs and the push plan against [snapshot].
+  ({_State state, List<KeyDiff> diffs, PushPlan plan}) _planPush(
+    _Snapshot snapshot, {
+    Prefer? prefer,
+    bool prune = false,
+    Set<String>? keys,
+  }) {
     final state = _load(snapshot);
     final diffs = _only(
       classify(
@@ -536,26 +622,18 @@ class SyncEngine {
       ),
       keys,
     );
-    final plan = planPush(
-      diffs,
-      prefer: prefer,
-      prune: prune,
-      remoteKeys: snapshot.keys.keys.toSet(),
-      remoteTypes: {
-        for (final entry in snapshot.keys.entries)
-          entry.key: '${(entry.value as Map?)?['type']}',
-      },
+
+    return (
+      state: state,
+      diffs: diffs,
+      plan: planPush(
+        diffs,
+        prefer: prefer,
+        prune: prune,
+        remoteTypes: snapshot.keyTypes,
+      ),
     );
-
-    return (snapshot: snapshot, state: state, diffs: diffs, plan: plan);
   }
-
-  Map<String, dynamic> _mismatchJson(KeyDiff diff, _Snapshot snapshot) => {
-    'locale': diff.locale,
-    'key': diff.key,
-    'local_value': diff.local,
-    'remote_type': (snapshot.keys[diff.key] as Map?)?['type'],
-  };
 
   Map<String, dynamic> _conflictJson(KeyDiff diff) => {
     'locale': diff.locale,
@@ -595,7 +673,10 @@ class SyncEngine {
 
     return _Snapshot(
       locales,
-      Map<String, dynamic>.from(json['keys'] as Map? ?? {}),
+      {
+        for (final entry in (json['keys'] as Map? ?? {}).entries)
+          '${entry.key}': '${(entry.value as Map?)?['type'] ?? 'text'}',
+      },
       {
         for (final locale in locales)
           locale: {

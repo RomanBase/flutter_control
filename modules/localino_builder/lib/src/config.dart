@@ -54,20 +54,20 @@ class LocalinoConfig {
       'LocalinoConfig($space/$project, asset: $asset, root: $root)';
 }
 
+/// Value after the flag [name] in [args], or null.
+String? option(List<String> args, String name) {
+  final index = args.indexOf(name);
+  return index >= 0 && index + 1 < args.length ? args[index + 1] : null;
+}
+
 /// `-u {access} -sp {space:project}`, or null when either flag is missing.
 Map? parseArgs(List<String> args) {
-  final userArg = args.indexOf('-u');
-  final projectArg = args.indexOf('-sp');
+  final access = option(args, '-u');
+  final project = option(args, '-sp')?.split(':');
 
-  if (userArg < 0 ||
-      projectArg < 0 ||
-      userArg + 1 >= args.length ||
-      projectArg + 1 >= args.length) {
+  if (access == null || project == null) {
     return null;
   }
-
-  final access = args[userArg + 1];
-  final project = args[projectArg + 1].split(':');
 
   return {'access': access, 'space': project.first, 'project': project.last};
 }
@@ -146,11 +146,16 @@ Uri resolveApiUrl(Map<String, String> env) {
   return url;
 }
 
-/// Loads config from CLI args, then `build.yaml`, then `assets/localization/setup.json`
-/// under [root]. `asset` defaults from `setup.json`. Returns null when none is found.
+/// Loads config from CLI args, then `build.yaml`, then (with [setupFallback])
+/// `assets/localization/setup.json` under [root]. `asset` defaults from `setup.json`.
+/// Returns null when none is found.
+///
+/// The legacy download passes `setupFallback: false`: it overwrites the locale files, so
+/// it runs only where args or `build.yaml` configure it explicitly.
 LocalinoConfig? loadConfig({
   List<String> args = const [],
   required String root,
+  bool setupFallback = true,
 }) {
   final setup = _readJson('$root/$setupJsonPath');
   final buildYaml = File('$root/build.yaml');
@@ -159,7 +164,7 @@ LocalinoConfig? loadConfig({
       (buildYaml.existsSync()
           ? parseBuildYaml(loadYaml(buildYaml.readAsStringSync()))
           : null) ??
-      setup;
+      (setupFallback ? setup : null);
 
   if (options == null ||
       options['space'] == null ||

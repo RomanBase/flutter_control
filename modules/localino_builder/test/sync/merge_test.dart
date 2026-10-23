@@ -232,7 +232,7 @@ void main() {
       () {
         final edit = _one(local: 'B', lock: _lock('A'), remote: ('A', 7));
         final added = _one(local: 'N');
-        final plan = planPush([edit, added], remoteKeys: {'k'});
+        final plan = planPush([edit, added], remoteTypes: {'k': 'text'});
 
         expect(plan.chunks.single.map((e) => e.toJson()), [
           {'locale': _l, 'key': 'k', 'value': 'B', 'base_ts': 7},
@@ -243,7 +243,7 @@ void main() {
 
     test('never sends deletes without prune', () {
       final deleted = _one(lock: _lock('A'), remote: ('A', 7));
-      final plan = planPush([deleted], remoteKeys: {'k'});
+      final plan = planPush([deleted], remoteTypes: {'k': 'text'});
 
       expect(plan.chunks, isEmpty);
       expect(plan.skippedDeletes, [deleted]);
@@ -251,7 +251,7 @@ void main() {
 
     test('sends deletes with prune', () {
       final deleted = _one(lock: _lock('A'), remote: ('A', 7));
-      final plan = planPush([deleted], prune: true, remoteKeys: {'k'});
+      final plan = planPush([deleted], prune: true, remoteTypes: {'k': 'text'});
 
       expect(plan.chunks.single.single.toJson(), {
         'locale': _l,
@@ -265,7 +265,7 @@ void main() {
       expect(
         planPush(
           [_one(local: 'A', lock: _lock('A'), remote: ('B', 2))],
-          remoteKeys: {'k'},
+          remoteTypes: {'k': 'text'},
         ).chunks,
         isEmpty,
       );
@@ -274,7 +274,7 @@ void main() {
     test('conflict stops the push unless prefer local', () {
       final conflict = _one(local: 'B', lock: _lock('A'), remote: ('C', 4));
 
-      final stopped = planPush([conflict], remoteKeys: {'k'});
+      final stopped = planPush([conflict], remoteTypes: {'k': 'text'});
       expect(stopped.conflicts, [conflict]);
       expect(stopped.chunks, isEmpty);
 
@@ -282,7 +282,7 @@ void main() {
         planPush(
           [conflict],
           prefer: Prefer.remote,
-          remoteKeys: {'k'},
+          remoteTypes: {'k': 'text'},
         ).changeCount,
         0,
       );
@@ -290,7 +290,7 @@ void main() {
       final forced = planPush(
         [conflict],
         prefer: Prefer.local,
-        remoteKeys: {'k'},
+        remoteTypes: {'k': 'text'},
       );
       expect(forced.chunks.single.single.toJson(), {
         'locale': _l,
@@ -309,7 +309,6 @@ void main() {
         final plan = planPush(
           [conflict],
           prefer: Prefer.local,
-          remoteKeys: {'k'},
           remoteTypes: {'k': 'text'},
         );
         expect(plan.typeMismatches, [conflict]);
@@ -317,11 +316,7 @@ void main() {
 
         final edited = _one(local: 'nový', lock: _lock('A'), remote: ('A', 2));
         final other = _one(local: 'B', lock: _lock('A'), remote: ('A', 2));
-        final mixed = planPush(
-          [edited, other],
-          remoteKeys: {'k'},
-          remoteTypes: {'k': 'map'},
-        );
+        final mixed = planPush([edited, other], remoteTypes: {'k': 'map'});
         expect(mixed.typeMismatches, hasLength(2));
         expect(
           mixed.chunks,
@@ -330,6 +325,45 @@ void main() {
         );
       },
     );
+
+    test('changes the API would reject stop the push as invalid', () {
+      final badKey =
+          classify(
+            local: {
+              _l: {'bad key': 'v'},
+            },
+            lock: Lock({}),
+            remote: {_l: {}},
+          ).single;
+      final number = _one(local: 42);
+      final mixed = classify(
+        local: {
+          'cs': {'n': 'text'},
+          'en': {
+            'n': {'one': 'map'},
+          },
+        },
+        lock: Lock({}),
+        remote: {'cs': {}, 'en': {}},
+      );
+
+      final plan = planPush([badKey, number, ...mixed], remoteTypes: {});
+
+      expect(plan.invalid.map((e) => (e.diff.key, e.reason)), [
+        ('bad key', 'invalid_key'),
+        ('k', 'unsupported_value'),
+        ('n', 'mixed_shapes'),
+      ]);
+      expect(plan.blocked, isTrue);
+      expect(plan.chunks, isEmpty);
+    });
+
+    test('isValidTranslationKey mirrors the API key rule', () {
+      expect(isValidTranslationKey('a.b-c_D9'), isTrue);
+      expect(isValidTranslationKey('a b'), isFalse);
+      expect(isValidTranslationKey('__reserved__'), isFalse);
+      expect(isValidTranslationKey('x' * 201), isFalse);
+    });
 
     test(
       'plural and map keys take maps, list keys take lists, text keys strings',
@@ -343,7 +377,6 @@ void main() {
         ]) {
           final plan = planPush(
             [_one(local: value, lock: _lock('x'), remote: ('x', 1))],
-            remoteKeys: {'k'},
             remoteTypes: {'k': type},
           );
           expect(plan.typeMismatches, isEmpty, reason: type);
@@ -367,7 +400,7 @@ void main() {
           remote: {'cs': {}, 'en': {}},
         );
 
-        final plan = planPush(diffs, remoteKeys: {});
+        final plan = planPush(diffs, remoteTypes: {});
         expect(plan.chunks.map((e) => e.length), [maxNewKeys + 1, 1]);
         expect(
           plan.chunks.first.where((e) => e.key == 'k0000').map((e) => e.locale),
@@ -376,7 +409,7 @@ void main() {
 
         final known = planPush(
           diffs,
-          remoteKeys: diffs.map((e) => e.key).toSet(),
+          remoteTypes: {for (final diff in diffs) diff.key: 'text'},
         );
         expect(known.chunks.length, 1);
       },
@@ -390,9 +423,9 @@ void main() {
         lock: Lock({}),
         remote: {'cs': {}},
       );
-      final keys = diffs.map((e) => e.key).toSet();
+      final types = {for (final diff in diffs) diff.key: 'text'};
 
-      expect(planPush(diffs, remoteKeys: keys).chunks.map((e) => e.length), [
+      expect(planPush(diffs, remoteTypes: types).chunks.map((e) => e.length), [
         maxChanges,
         5,
       ]);

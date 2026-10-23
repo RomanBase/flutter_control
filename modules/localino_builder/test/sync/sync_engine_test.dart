@@ -194,6 +194,30 @@ void main() {
   });
 
   group('push', () {
+    test('a same-value `unchanged` answer re-stamps the lock', () async {
+      writeLocal({'a': 'B'});
+      writeLockOf({'a': ('A', 1)});
+      final fake = FakeLocalino({
+          _cs: {'a': ('A', 1)},
+        })
+        ..pushResponses[0] = FakeLocalino.json(200, {
+          'dry_run': false,
+          'applied': [],
+          'unchanged': [
+            {'locale': _cs, 'key': 'a', 'ts': 9},
+          ],
+          'rejected_locked': [],
+        });
+
+      final result = await engine(fake).push();
+
+      expect(result.exitCode, SyncExit.ok);
+      expect(
+        readLock(lockFile()).entry(_cs, 'a'),
+        LockEntry(valueHash('B'), 9),
+      );
+    });
+
     test('a key Localino types differently is reported, not sent', () async {
       writeLocal({
         'days': {'one': 'den', 'other': 'dní'},
@@ -460,6 +484,40 @@ void main() {
   });
 
   group('sync', () {
+    test(
+      'invalid keys or values stop before the pull: exit 1, nothing written',
+      () async {
+        writeLocal({'bad key': 'x', 'count': 3});
+        final fake = FakeLocalino({
+          _cs: {'remote': ('R', 2)},
+        });
+
+        final result = await engine(fake).sync();
+
+        expect(result.exitCode, SyncExit.error);
+        expect(result.invalid.map((e) => e['reason']), [
+          'invalid_key',
+          'unsupported_value',
+        ]);
+        expect(fake.pushes, isEmpty);
+        expect(readLocal(), {'bad key': 'x', 'count': 3});
+        expect(lockFile().existsSync(), isFalse);
+      },
+    );
+
+    test('reports the deletes the push skipped', () async {
+      writeLocal({});
+      writeLockOf({'gone': ('G', 1)});
+      final fake = FakeLocalino({
+        _cs: {'gone': ('G', 1)},
+      });
+
+      final result = await engine(fake).sync();
+
+      expect(result.skippedDeletes.single.key, 'gone');
+      expect(fake.translations[_cs], contains('gone'));
+    });
+
     test('pulls then pushes; a second sync is a no-op', () async {
       writeLocal({'local': 'L'});
       final fake = FakeLocalino({

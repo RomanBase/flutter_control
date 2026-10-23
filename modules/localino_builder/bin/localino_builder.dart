@@ -45,7 +45,15 @@ void main(List<String> arguments) async {
   }
 
   if (arguments.isNotEmpty && _commands.contains(arguments.first)) {
-    exitCode = await _run(arguments.first, arguments.skip(1).toList());
+    try {
+      exitCode = await _run(arguments.first, arguments.skip(1).toList());
+    } on FormatException catch (e) {
+      stderr.writeln('Invalid file content: ${e.message}');
+      exitCode = SyncExit.error;
+    } catch (e) {
+      stderr.writeln('$e');
+      exitCode = SyncExit.error;
+    }
     return;
   }
 
@@ -55,7 +63,8 @@ void main(List<String> arguments) async {
 void _legacy(List<String> arguments) {
   print('Localino Run Binary');
 
-  final config = loadConfig(args: arguments, root: '.');
+  // Overwrites the locale files, so only an explicit args / build.yaml config runs it.
+  final config = loadConfig(args: arguments, root: '.', setupFallback: false);
 
   if (config == null) {
     print('Localino Config Not Found');
@@ -66,7 +75,7 @@ void _legacy(List<String> arguments) {
 }
 
 Future<int> _run(String command, List<String> args) async {
-  final prefer = _option(args, '--prefer');
+  final prefer = option(args, '--prefer');
 
   if (prefer != null && parsePrefer(prefer) == null) {
     stderr.writeln('--prefer must be `local` or `remote`.\n\n$_usage');
@@ -74,7 +83,7 @@ Future<int> _run(String command, List<String> args) async {
   }
 
   final root =
-      _option(args, '--root') ?? findProjectRoot(Directory.current.path);
+      option(args, '--root') ?? findProjectRoot(Directory.current.path);
   final config = loadConfig(root: root);
 
   if (config == null) {
@@ -142,9 +151,13 @@ int _login(LocalinoConfig config, String? credentialsPath) {
   final terminal = stdin.hasTerminal;
   if (terminal) stdin.echoMode = false;
 
-  final line = stdin.readLineSync()?.trim() ?? '';
+  final String line;
 
-  if (terminal) stdin.echoMode = true;
+  try {
+    line = stdin.readLineSync()?.trim() ?? '';
+  } finally {
+    if (terminal) stdin.echoMode = true;
+  }
 
   if (!WriteKey.isValid(line)) {
     stderr.writeln('Not a Localino write key (expected lk_w_…).');
@@ -212,6 +225,18 @@ void _report(SyncResult result) {
     print('  Nothing written. Resolve with --prefer local or --prefer remote.');
   }
   _list(
+    'Not accepted by Localino',
+    result.invalid.map((e) => '${e['locale']} ${e['key']} (${e['reason']})'),
+  );
+
+  if (result.invalid.isNotEmpty) {
+    print(
+      '  Nothing written. Fix these keys or values in the locale files '
+      '(keys: A-Z a-z 0-9 _ . -; values: text, list or map, one shape per key), then re-run.',
+    );
+  }
+
+  _list(
     'Type differs from Localino',
     result.typeMismatches.map(
       (e) => '${e['locale']} ${e['key']} (Localino: ${e['remote_type']})',
@@ -246,9 +271,4 @@ void _list(String label, Iterable<String> items) {
     print('    $item');
   }
   if (list.length > _listLimit) print('    … ${list.length - _listLimit} more');
-}
-
-String? _option(List<String> args, String name) {
-  final index = args.indexOf(name);
-  return index >= 0 && index + 1 < args.length ? args[index + 1] : null;
 }
