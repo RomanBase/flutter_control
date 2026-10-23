@@ -301,6 +301,58 @@ void main() {
     });
 
     test(
+      'a value whose shape the Localino key type rejects stops the push',
+      () {
+        const plural = {'1': 'den', '2': 'dny', '5': 'dní', 'other': 'dní'};
+        final conflict = _one(local: plural, remote: ('dny', 4));
+
+        final plan = planPush(
+          [conflict],
+          prefer: Prefer.local,
+          remoteKeys: {'k'},
+          remoteTypes: {'k': 'text'},
+        );
+        expect(plan.typeMismatches, [conflict]);
+        expect(plan.chunks, isEmpty);
+
+        final edited = _one(local: 'nový', lock: _lock('A'), remote: ('A', 2));
+        final other = _one(local: 'B', lock: _lock('A'), remote: ('A', 2));
+        final mixed = planPush(
+          [edited, other],
+          remoteKeys: {'k'},
+          remoteTypes: {'k': 'map'},
+        );
+        expect(mixed.typeMismatches, hasLength(2));
+        expect(
+          mixed.chunks,
+          isEmpty,
+          reason: 'nothing is sent when any key mismatches',
+        );
+      },
+    );
+
+    test(
+      'plural and map keys take maps, list keys take lists, text keys strings',
+      () {
+        for (final (type, value) in [
+          ('plural', {'one': 'a'}),
+          ('map', {'one': 'a'}),
+          ('list', ['a']),
+          ('text', 'a'),
+          ('html', '<b>a</b>'),
+        ]) {
+          final plan = planPush(
+            [_one(local: value, lock: _lock('x'), remote: ('x', 1))],
+            remoteKeys: {'k'},
+            remoteTypes: {'k': type},
+          );
+          expect(plan.typeMismatches, isEmpty, reason: type);
+          expect(plan.changeCount, 1, reason: type);
+        }
+      },
+    );
+
+    test(
       'chunks at $maxNewKeys new keys; known keys and locales of one key stay together',
       () {
         final diffs = classify(

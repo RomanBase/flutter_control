@@ -48,8 +48,16 @@ class FakeLocalino {
   Map<String, dynamic> _snapshot() => {
     'locales': translations.keys.toList(),
     'keys': {
-      for (final key in translations.values.expand((e) => e.keys).toSet())
-        key: {'type': 'text', 'locked': locked.contains(key)},
+      for (final locale in translations.values)
+        for (final MapEntry(:key, :value) in locale.entries)
+          key: {
+            'type': switch (value.$1) {
+              List() => 'list',
+              Map() => 'map',
+              _ => 'text',
+            },
+            'locked': locked.contains(key),
+          },
     },
     'translations': {
       for (final locale in translations.entries)

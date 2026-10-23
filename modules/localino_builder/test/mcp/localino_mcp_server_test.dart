@@ -197,6 +197,29 @@ void main() {
       expect(fake.translations[_cs]!['a']!.$1, 'remote');
     });
 
+    test('a key Localino types differently is reported, not pushed', () async {
+      writeLocal(_cs, {
+        'days': {'one': 'den', 'other': 'dní'},
+      });
+      writeLocal(_en, {});
+      final fake = FakeLocalino({
+        _cs: {'days': ('dny', 5)},
+        _en: {},
+      });
+      final connection = await connect(fake.client);
+
+      final result = data(
+        await call(connection, 'localino_push', {
+          'dry_run': false,
+          'prefer': 'local',
+        }),
+      );
+
+      expect(result['type_mismatches'], [containsPair('remote_type', 'text')]);
+      expect(result['next_step'], contains('Localino console'));
+      expect(fake.pushes, isEmpty);
+    });
+
     test('missing write key is an error with zero requests', () async {
       env.remove(writeKeyEnv);
       writeLocal(_cs, {'a': 'A'});

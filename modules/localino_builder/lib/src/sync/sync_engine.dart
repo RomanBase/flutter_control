@@ -52,6 +52,10 @@ class SyncResult {
 
   /// Conflicts that stopped the run.
   final List<Map<String, dynamic>> conflicts;
+
+  /// `{locale, key, local_value, remote_type}` whose value shape the key's Localino type
+  /// rejects; they stopped the run.
+  final List<Map<String, dynamic>> typeMismatches;
   final List<KeyDiff> skippedDeletes;
 
   /// Local locale files Localino does not have; skipped.
@@ -73,13 +77,17 @@ class SyncResult {
     this.pushed = const [],
     this.rejectedLocked = const [],
     this.conflicts = const [],
+    this.typeMismatches = const [],
     this.skippedDeletes = const [],
     this.unknownLocales = const [],
     this.localFilesChanged = false,
     this.generatedKeys,
   });
 
-  int get exitCode => conflicts.isEmpty ? SyncExit.ok : SyncExit.conflict;
+  int get exitCode =>
+      conflicts.isEmpty && typeMismatches.isEmpty
+          ? SyncExit.ok
+          : SyncExit.conflict;
 
   Map<String, dynamic> toJson() => {
     'command': command,
@@ -91,6 +99,7 @@ class SyncResult {
     'pushed': pushed,
     'rejected_locked': rejectedLocked,
     'conflicts': conflicts,
+    'type_mismatches': typeMismatches,
     'skipped_deletes': [for (final diff in skippedDeletes) diff.toJson()],
     'unknown_locales': unknownLocales,
     'local_files_changed': localFilesChanged,
@@ -107,6 +116,15 @@ class _Snapshot {
 
   const _Snapshot(this.locales, this.keys, this.translations);
 }
+
+/// Local locale files (by locale), their parsed values, the lock, and locales Localino lacks.
+typedef _State =
+    ({
+      Map<String, LocaleFile> files,
+      Map<String, Map<String, dynamic>> local,
+      Lock lock,
+      List<String> unknownLocales,
+    });
 
 /// Bidirectional sync between local locale files, `.localino/lock.json` and Localino.
 /// Returns results; never prints. Files and lock are written only after the remote call
@@ -244,21 +262,10 @@ class SyncEngine {
     Set<String>? keys,
   }) async {
     final writeKey = _writeKey();
-    final snapshot = await _snapshot();
-    final state = _load(snapshot);
-    final diffs = _only(
-      classify(
-        local: state.local,
-        lock: state.lock,
-        remote: snapshot.translations,
-      ),
-      keys,
-    );
-    final plan = planPush(
-      diffs,
+    final (:snapshot, :state, :diffs, :plan) = await _planPush(
       prefer: prefer,
       prune: prune,
-      remoteKeys: snapshot.keys.keys.toSet(),
+      keys: keys,
     );
 
     final base = SyncResult(
@@ -267,11 +274,14 @@ class SyncEngine {
       counts: countStates(diffs),
       changes: diffs.where((e) => e.state != KeyState.unchanged).toList(),
       conflicts: [for (final diff in plan.conflicts) _conflictJson(diff)],
+      typeMismatches: [
+        for (final diff in plan.typeMismatches) _mismatchJson(diff, snapshot),
+      ],
       skippedDeletes: plan.skippedDeletes,
       unknownLocales: state.unknownLocales,
     );
 
-    if (plan.conflicts.isNotEmpty) {
+    if (plan.conflicts.isNotEmpty || plan.typeMismatches.isNotEmpty) {
       return base;
     }
 
@@ -353,9 +363,26 @@ class SyncEngine {
     );
   }
 
-  /// Pull, then push. A push failure after a successful pull keeps the pull applied.
+  /// Pull, then push. A push failure after a successful pull keeps the pull applied;
+  /// type mismatches are found before the pull, so they leave both sides untouched.
   Future<SyncResult> sync({Prefer? prefer, bool prune = false}) async {
     _writeKey();
+
+    final preview = await _planPush(prefer: prefer, prune: prune);
+
+    if (preview.plan.typeMismatches.isNotEmpty) {
+      return SyncResult(
+        command: 'sync',
+        counts: countStates(preview.diffs),
+        changes:
+            preview.diffs.where((e) => e.state != KeyState.unchanged).toList(),
+        typeMismatches: [
+          for (final diff in preview.plan.typeMismatches)
+            _mismatchJson(diff, preview.snapshot),
+        ],
+        unknownLocales: preview.state.unknownLocales,
+      );
+    }
 
     final pulled = await pull(prefer: prefer);
 
@@ -375,8 +402,10 @@ class SyncEngine {
       pushed = await push(prefer: prefer, prune: prune);
     } on SyncException catch (e) {
       throw SyncException(
-        e.exitCode == SyncExit.error ? SyncExit.error : SyncExit.network,
-        'Pulled ${pulled.pulled.length} keys; push pending — re-run `sync`. ${e.message}',
+        e.exitCode,
+        e.exitCode == SyncExit.network
+            ? 'Pulled ${pulled.pulled.length} keys; push pending — re-run `sync`. ${e.message}'
+            : 'Pulled ${pulled.pulled.length} keys; push failed. ${e.message}',
       );
     }
 
@@ -437,13 +466,7 @@ class SyncEngine {
     return key;
   }
 
-  ({
-    Map<String, LocaleFile> files,
-    Map<String, Map<String, dynamic>> local,
-    Lock lock,
-    List<String> unknownLocales,
-  })
-  _load(_Snapshot? snapshot) {
+  _State _load(_Snapshot? snapshot) {
     final onDisk = localLocales();
     final locales = snapshot?.locales ?? onDisk;
     final indent =
@@ -497,6 +520,42 @@ class SyncEngine {
       );
     }
   }
+
+  /// Snapshot, local state, diffs and the push plan for [push] (and the [sync] preview).
+  Future<
+    ({_Snapshot snapshot, _State state, List<KeyDiff> diffs, PushPlan plan})
+  >
+  _planPush({Prefer? prefer, bool prune = false, Set<String>? keys}) async {
+    final snapshot = await _snapshot();
+    final state = _load(snapshot);
+    final diffs = _only(
+      classify(
+        local: state.local,
+        lock: state.lock,
+        remote: snapshot.translations,
+      ),
+      keys,
+    );
+    final plan = planPush(
+      diffs,
+      prefer: prefer,
+      prune: prune,
+      remoteKeys: snapshot.keys.keys.toSet(),
+      remoteTypes: {
+        for (final entry in snapshot.keys.entries)
+          entry.key: '${(entry.value as Map?)?['type']}',
+      },
+    );
+
+    return (snapshot: snapshot, state: state, diffs: diffs, plan: plan);
+  }
+
+  Map<String, dynamic> _mismatchJson(KeyDiff diff, _Snapshot snapshot) => {
+    'locale': diff.locale,
+    'key': diff.key,
+    'local_value': diff.local,
+    'remote_type': (snapshot.keys[diff.key] as Map?)?['type'],
+  };
 
   Map<String, dynamic> _conflictJson(KeyDiff diff) => {
     'locale': diff.locale,

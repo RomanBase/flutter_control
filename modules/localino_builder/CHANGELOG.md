@@ -1,3 +1,7 @@
+## [1.2.1]
+- A local value whose shape the key's Localino type rejects (e.g. a plural map where Localino has text) is reported as `type_mismatches` and stops `push`/`sync` with exit 3 before anything is written. `sync` used to pull first and then fail the push with exit 5 ("re-run `sync`"), which could never succeed.
+- `sync` keeps the push's exit code when the push fails after a pull (e.g. 4 for a revoked key) instead of reporting every failure as 5.
+
 ## [1.2.0]
 - Bidirectional sync: `dart run localino_builder status | pull | push | sync | login`. Three-way merge by value hash against a committed `.localino/lock.json`; pull never drops local-only keys, push never deletes remotely without `--prune`, conflicts stop the run (exit 3) until resolved with `--prefer local|remote`.
 - Push uses a per-project write key (`login` reads it from stdin into `~/.localino/credentials.json`, mode 600; `LOCALINO_WRITE_KEY` overrides). The shared read token is never used for writes.

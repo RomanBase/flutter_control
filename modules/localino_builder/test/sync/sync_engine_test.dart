@@ -194,6 +194,24 @@ void main() {
   });
 
   group('push', () {
+    test('a key Localino types differently is reported, not sent', () async {
+      writeLocal({
+        'days': {'one': 'den', 'other': 'dní'},
+        'new': 'N',
+      });
+      final fake = FakeLocalino({
+        _cs: {'days': ('dny', 2)},
+      });
+
+      final result = await engine(fake).push(prefer: Prefer.local);
+
+      expect(result.exitCode, SyncExit.conflict);
+      expect(result.typeMismatches.single['key'], 'days');
+      expect(result.pushed, isEmpty);
+      expect(fake.pushes, isEmpty);
+      expect(lockFile().existsSync(), isFalse);
+    });
+
     test('sends local edits and records the server ts in the lock', () async {
       writeLocal({'a': 'A2', 'new_key': 'N'});
       writeLockOf({'a': ('A', 3)});
@@ -485,6 +503,49 @@ void main() {
         readLock(lockFile()).entry(_cs, 'remote'),
         LockEntry(valueHash('R'), 2),
       );
+    });
+
+    test(
+      'type mismatch stops before the pull: exit 3, nothing written, nothing sent',
+      () async {
+        const plural = {'1': 'den', '2': 'dny', '5': 'dní', 'other': 'dní'};
+        writeLocal({'days': plural});
+        final fake = FakeLocalino({
+          _cs: {'days': ('dny', 2), 'remote': ('R', 3)},
+        });
+
+        final result = await engine(fake).sync(prefer: Prefer.local);
+
+        expect(result.exitCode, SyncExit.conflict);
+        expect(result.typeMismatches.single, {
+          'locale': _cs,
+          'key': 'days',
+          'local_value': plural,
+          'remote_type': 'text',
+        });
+        expect(fake.pushes, isEmpty);
+        expect(readLocal(), {
+          'days': plural,
+        }, reason: 'remote-only key not pulled');
+        expect(lockFile().existsSync(), isFalse);
+      },
+    );
+
+    test('a push rejected for auth after the pull keeps exit 4', () async {
+      writeLocal({'local': 'L'});
+      final fake = FakeLocalino({
+        _cs: {'remote': ('R', 2)},
+      })..pushResponses[0] = FakeLocalino.json(401, {'error': 'unauthorized'});
+
+      await expectLater(
+        engine(fake).sync(),
+        throwsA(
+          isA<SyncException>()
+              .having((e) => e.exitCode, 'exitCode', SyncExit.auth)
+              .having((e) => e.message, 'message', contains('push failed')),
+        ),
+      );
+      expect(readLocal(), {'local': 'L', 'remote': 'R'});
     });
 
     test(

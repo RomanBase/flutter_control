@@ -138,6 +138,10 @@ become the baseline, one-sided keys are added and different values conflict.
 - `push` never deletes keys in Localino unless `--prune` is given.
 - A conflict stops the run with nothing written (exit 3). Re-run with
   `--prefer local` or `--prefer remote` to pick a side.
+- A local value whose type differs from the key's type in Localino (e.g. a
+  plural map where Localino has text) also stops the run before anything is
+  written (exit 3). Push never changes a key's type: change or delete the key
+  in the Localino console, then re-run.
 - Existing key order and indentation are kept; new keys are appended sorted.
 - When `generate_keys` is on, `pull` regenerates `lib/generated/localino_keys.dart`.
   Any other localization codegen of your project still has to run afterwards.
@@ -170,8 +174,9 @@ It is saved to `~/.localino/credentials.json` (mode 600), keyed by
 | 4 | Missing, malformed or rejected credentials |
 | 5 | Network failure or concurrent push — re-run |
 
-`sync` that pulled but failed to push exits 5 with the pull applied; re-run
-`sync` to finish. Network failures never touch local files.
+`sync` that pulled but failed to push keeps the pull applied and exits with
+the push's code — 5 (network, contention) means re-run `sync` to finish.
+Network failures never touch local files.
 
 ## MCP server (coding agents)
 

@@ -84,6 +84,20 @@ class RemoteEntry {
 
 enum KeyState { unchanged, localChanged, remoteChanged, converged, conflict }
 
+/// `text` | `list` | `map` — the value shape Localino stores (mirrors the API's `shapeOf`).
+String shapeOf(dynamic value) => switch (value) {
+  List() => 'list',
+  Map() => 'map',
+  _ => 'text',
+};
+
+/// Value shape a Localino key `type` expects (mirrors the API's `shapeOfType`).
+String shapeOfType(Object? type) => switch (type) {
+  'list' => 'list',
+  'map' || 'plural' => 'map',
+  _ => 'text',
+};
+
 enum Prefer { local, remote }
 
 Prefer? parsePrefer(String? value) => switch (value) {
@@ -284,26 +298,34 @@ class PushPlan {
   /// Unresolved conflicts — the run stops and nothing is sent.
   final List<KeyDiff> conflicts;
 
+  /// Local values whose shape does not match the key's type in Localino. The API rejects
+  /// them (it never changes a key's type), so the run stops and nothing is sent.
+  final List<KeyDiff> typeMismatches;
+
   const PushPlan({
     this.chunks = const [],
     this.skippedDeletes = const [],
     this.conflicts = const [],
+    this.typeMismatches = const [],
   });
 
   int get changeCount => chunks.fold(0, (sum, chunk) => sum + chunk.length);
 }
 
 /// Plans a push of local changes (and conflicts with `prefer: local`). Deletes are sent
-/// only with [prune]. [remoteKeys] are the keys Localino already knows (for chunking).
+/// only with [prune]. [remoteKeys] are the keys Localino already knows (for chunking);
+/// [remoteTypes] maps them to their Localino `type`.
 PushPlan planPush(
   List<KeyDiff> diffs, {
   Prefer? prefer,
   bool prune = false,
   required Set<String> remoteKeys,
+  Map<String, String> remoteTypes = const {},
 }) {
   final byKey = <String, List<PushChange>>{};
   final skippedDeletes = <KeyDiff>[];
   final conflicts = <KeyDiff>[];
+  final typeMismatches = <KeyDiff>[];
 
   for (final diff in diffs) {
     if (diff.state == KeyState.conflict) {
@@ -324,6 +346,15 @@ PushPlan planPush(
         skippedDeletes.add(diff);
         continue;
       }
+    }
+
+    final type = remoteTypes[diff.key];
+
+    if (diff.local != null &&
+        type != null &&
+        shapeOfType(type) != shapeOf(diff.local)) {
+      typeMismatches.add(diff);
+      continue;
     }
 
     (byKey[diff.key] ??= []).add(
@@ -360,8 +391,9 @@ PushPlan planPush(
   if (chunk.isNotEmpty) chunks.add(chunk);
 
   return PushPlan(
-    chunks: conflicts.isEmpty ? chunks : const [],
+    chunks: conflicts.isEmpty && typeMismatches.isEmpty ? chunks : const [],
     skippedDeletes: skippedDeletes,
     conflicts: conflicts,
+    typeMismatches: typeMismatches,
   );
 }

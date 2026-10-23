@@ -17,6 +17,11 @@ const _askUser =
     'Nothing was written for these keys. Show the conflicts to the user and ask which '
     'side wins, then call again with `prefer` and `keys`.';
 
+const _typeMismatch =
+    'Nothing was pushed: Localino stores these keys with another value type (e.g. text '
+    'vs a plural map) and push never changes a type. Tell the user; the key has to be '
+    'changed or deleted in the Localino console first.';
+
 final _keyPattern = RegExp(r'^[A-Za-z0-9_.\-]{1,200}$');
 
 /// Anything shaped like a write key is masked in every tool output.
@@ -528,7 +533,9 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       keys: _keys(args),
     );
     final steps = [
-      if (result.conflicts.isNotEmpty)
+      if (result.typeMismatches.isNotEmpty)
+        _typeMismatch
+      else if (result.conflicts.isNotEmpty)
         _askUser
       else if (result.dryRun && result.pushed.isNotEmpty)
         'Show this plan to the user and get their confirmation, then call '

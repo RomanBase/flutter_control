@@ -211,6 +211,19 @@ void _report(SyncResult result) {
   if (result.conflicts.isNotEmpty) {
     print('  Nothing written. Resolve with --prefer local or --prefer remote.');
   }
+  _list(
+    'Type differs from Localino',
+    result.typeMismatches.map(
+      (e) => '${e['locale']} ${e['key']} (Localino: ${e['remote_type']})',
+    ),
+  );
+
+  if (result.typeMismatches.isNotEmpty) {
+    print(
+      '  Nothing written. Localino never changes a key\'s type through push: '
+      'change or delete these keys in the Localino console, then re-run.',
+    );
+  }
 
   if (result.generatedKeys != null) {
     print('  Regenerated ${result.generatedKeys}');
