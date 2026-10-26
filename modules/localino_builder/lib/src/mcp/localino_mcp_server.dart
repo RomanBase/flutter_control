@@ -12,8 +12,8 @@ import '../sync/sync_engine.dart';
 import '../version.dart';
 
 const _codegenHint =
-    'Locale files changed — run the project localization codegen '
-    '(e.g. `cd ci && dart run bin/localino.dart`), then preview with localino_push.';
+    "Locale files changed — run the project's localization codegen (see its README "
+    'or agent instructions), then preview with localino_push.';
 
 const _askUser =
     'Nothing was written for these keys. Show the conflicts to the user and ask which '

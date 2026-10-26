@@ -1,5 +1,6 @@
 ## [1.2.2]
 - An option a command does not take is rejected with exit 1 instead of being ignored. `sync --dry-run` used to run a real sync (pull and push), and a typo such as `push --dryrun` a real push. Preview a sync with `status`, or `pull --dry-run` / `push --dry-run`.
+- MCP: the codegen hint after `localino_set_keys` / `localino_pull` no longer names one consumer's command (`cd ci && dart run bin/localino.dart`), which other projects do not have.
 
 ## [1.2.1]
 - A local value whose shape the key's Localino type rejects (e.g. a plural map where Localino has text) is reported as `type_mismatches` and stops `push`/`sync` with exit 3 before anything is written. `sync` used to pull first and then fail the push with exit 5 ("re-run `sync`"), which could never succeed.
