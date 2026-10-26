@@ -110,6 +110,10 @@ dart run localino_builder push [--dry-run]  # send local changes to Localino
 dart run localino_builder sync              # pull, then push
 ```
 
+`sync` has no `--dry-run`: preview with `status`, or `pull --dry-run` and
+`push --dry-run`. An option a command does not take is rejected (exit 1), never
+ignored.
+
 Config comes from `build.yaml` options or, if the builder is missing or
 `enabled: false` there, from `assets/localization/setup.json` (`space`,
 `project`, `access`, `asset`). Use `--root <dir>` to point at a project; by

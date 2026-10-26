@@ -8,7 +8,20 @@ import 'package:localino_builder/src/sync/io.dart';
 import 'package:localino_builder/src/sync/merge.dart';
 import 'package:localino_builder/src/sync/sync_engine.dart';
 
-const _commands = {'status', 'pull', 'push', 'sync', 'login'};
+/// Options per command; `true` when the option takes a value.
+const _options = <String, Map<String, bool>>{
+  'status': {'--root': true},
+  'pull': {'--root': true, '--prefer': true, '--dry-run': false},
+  'push': {
+    '--root': true,
+    '--prefer': true,
+    '--dry-run': false,
+    '--prune': false,
+  },
+  'sync': {'--root': true, '--prefer': true},
+  'login': {'--root': true},
+};
+
 const _listLimit = 50;
 
 const _usage = '''
@@ -44,7 +57,7 @@ void main(List<String> arguments) async {
     return;
   }
 
-  if (arguments.isNotEmpty && _commands.contains(arguments.first)) {
+  if (arguments.isNotEmpty && _options.containsKey(arguments.first)) {
     try {
       exitCode = await _run(arguments.first, arguments.skip(1).toList());
     } on FormatException catch (e) {
@@ -74,7 +87,30 @@ void _legacy(List<String> arguments) {
   build(BuilderOptions({...config.options}));
 }
 
+/// Why [args] are not valid for [command], or null. An unknown option is an error, never
+/// ignored: a dropped `--dry-run` would run for real.
+String? _invalidOption(String command, List<String> args) {
+  final allowed = _options[command]!;
+
+  for (var i = 0; i < args.length; i++) {
+    final arg = args[i];
+    final takesValue = allowed[arg];
+
+    if (takesValue == null) return '`$command` does not accept `$arg`.';
+    if (takesValue && ++i == args.length) return '`$arg` needs a value.';
+  }
+
+  return null;
+}
+
 Future<int> _run(String command, List<String> args) async {
+  final invalid = _invalidOption(command, args);
+
+  if (invalid != null) {
+    stderr.writeln('$invalid\n\n$_usage');
+    return SyncExit.error;
+  }
+
   final prefer = option(args, '--prefer');
 
   if (prefer != null && parsePrefer(prefer) == null) {

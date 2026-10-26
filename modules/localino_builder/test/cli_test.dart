@@ -68,6 +68,40 @@ void main() {
     expect(result.stderr, contains('--prefer must be'));
   });
 
+  test('an option the command does not take exits 1 before any work', () async {
+    final locale = File('${root.path}/assets/localization/cs_CZ.json');
+    final before = locale.readAsStringSync();
+
+    for (final (args, message) in [
+      (['sync', '--dry-run'], '`sync` does not accept `--dry-run`'),
+      (['push', '--dryrun'], '`push` does not accept `--dryrun`'),
+      (['pull', '--prune'], '`pull` does not accept `--prune`'),
+      (['pull', '--prefer'], '`--prefer` needs a value'),
+    ]) {
+      final result = await run(args);
+
+      expect(result.exitCode, 1, reason: '$args');
+      expect(result.stderr, contains(message), reason: '$args');
+    }
+    expect(locale.readAsStringSync(), before);
+    expect(Directory('${root.path}/.localino').existsSync(), isFalse);
+  });
+
+  test('every documented push option is accepted', () async {
+    final result = await run([
+      'push',
+      '--dry-run',
+      '--prune',
+      '--prefer',
+      'local',
+      '--root',
+      root.path,
+    ]);
+
+    // Past option checks: fails only for the missing write key.
+    expect(result.exitCode, 4, reason: '${result.stderr}');
+  });
+
   test('a missing config exits 1', () async {
     File('${root.path}/assets/localization/setup.json').deleteSync();
 
