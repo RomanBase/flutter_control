@@ -91,11 +91,7 @@ InitPlan planInit(LocalinoConfig config, {String? codegen, String? rules}) {
       projectRoot == workspaceRoot
           ? ''
           : projectRoot.substring(workspaceRoot.length + 1);
-  final fvm = [projectRoot, workspaceRoot].any(
-    (dir) =>
-        File('$dir/.fvmrc').existsSync() ||
-        File('$dir/.fvm/fvm_config.json').existsSync(),
-  );
+  final fvm = sharedFvmConfig(projectRoot, workspaceRoot);
   final run = '${fvm ? 'fvm ' : ''}dart run localino_builder';
   final warnings = <String>[];
 
@@ -173,6 +169,37 @@ String findWorkspaceRoot(String start) {
 
     dir = parent;
   }
+}
+
+/// Whether the project shares an fvm config (`.fvmrc` or `.fvm/fvm_config.json` in
+/// [projectRoot] or [workspaceRoot]). `.mcp.json` and the rules are committed, so a
+/// config git does not track (a personal fvm setup) does not count; outside git an
+/// existing file does.
+bool sharedFvmConfig(String projectRoot, String workspaceRoot) {
+  for (final dir in {projectRoot, workspaceRoot}) {
+    for (final name in ['.fvmrc', '.fvm/fvm_config.json']) {
+      if (!File('$dir/$name').existsSync()) continue;
+
+      final ProcessResult tracked;
+
+      try {
+        tracked = Process.runSync('git', [
+          '-C',
+          dir,
+          'ls-files',
+          '--error-unmatch',
+          name,
+        ]);
+      } on ProcessException {
+        return true;
+      }
+
+      // 0 tracked, 1 untracked; anything else means no usable git here.
+      if (tracked.exitCode != 1) return true;
+    }
+  }
+
+  return false;
 }
 
 /// The `.mcp.json` entry that starts the server from the workspace root. A nested

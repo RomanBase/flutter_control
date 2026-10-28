@@ -335,6 +335,21 @@ void main() {
       },
     );
 
+    test(
+      'fvm only when git tracks the fvm config (a personal one is not shared)',
+      () {
+        Directory('${repo.path}/.git').deleteSync();
+        Process.runSync('git', ['init', '-q', repo.path]);
+        write('.fvmrc', '{"flutter": "3.44.6"}');
+
+        expect(planInit(config()).run, 'dart run localino_builder');
+
+        Process.runSync('git', ['-C', repo.path, 'add', '.fvmrc']);
+
+        expect(planInit(config()).run, 'fvm dart run localino_builder');
+      },
+    );
+
     test('a codegen command with backticks is refused', () {
       expect(
         () => planInit(config(), codegen: 'run `this`'),

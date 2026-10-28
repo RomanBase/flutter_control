@@ -125,7 +125,8 @@ The Localino console shows these steps with your project filled in
    `--prefer remote` if it reports conflicts). Commit `.localino/lock.json`,
    `.mcp.json` and the rules file.
 
-fvm projects get `fvm dart …` commands. An app below the git root without a
+Projects that commit an fvm config (`.fvmrc`) get `fvm dart …` commands; an
+untracked, personal `.fvmrc` does not count, because `.mcp.json` is shared. An app below the git root without a
 root `pubspec.yaml` (e.g. `main_tablet/`) gets an MCP entry that runs
 `dart pub -C main_tablet run localino_builder:mcp --root main_tablet`, because
 coding agents start MCP servers in the repository root.
