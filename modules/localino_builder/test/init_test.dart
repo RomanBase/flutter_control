@@ -78,6 +78,14 @@ void main() {
       });
     }
 
+    test('keeps CRLF line endings', () {
+      final existing = _inline.replaceAll('\n', '\r\n');
+      final text = mergeMcpJson(existing, _server);
+
+      expect(jsonDecode(text)['mcpServers']['localino'], _server);
+      expect(text.replaceAll('\r\n', ''), isNot(contains('\n')));
+    });
+
     test('fills an empty mcpServers object', () {
       final text = mergeMcpJson('{\n  "mcpServers": {}\n}\n', _server);
 
@@ -194,6 +202,14 @@ void main() {
       expect(second, contains('run `b`'));
       expect(second, isNot(contains('run `a`')));
       expect(applyRulesBlock(second, block(codegen: 'b')), second);
+    });
+
+    test('takes CRLF line endings from the rules file', () {
+      final text = applyRulesBlock('# Rules\r\n', block(codegen: 'a'));
+
+      expect(text.replaceAll('\r\n', ''), isNot(contains('\n')));
+      expect(previousCodegen(text), 'a');
+      expect(applyRulesBlock(text, block(codegen: 'a')), text);
     });
 
     test('a block without its end line is an error', () {
@@ -349,6 +365,21 @@ void main() {
         expect(planInit(config()).run, 'fvm dart run localino_builder');
       },
     );
+
+    test('an empty --codegen keeps the recorded command', () {
+      planInit(
+        config(),
+        codegen: 'cd ci && dart run bin/localino.dart',
+      ).apply();
+
+      final plan = planInit(config(), codegen: '  ');
+
+      expect(plan.rules.changed, false);
+      expect(
+        previousCodegen(plan.rules.after),
+        'cd ci && dart run bin/localino.dart',
+      );
+    });
 
     test('a codegen command with backticks is refused', () {
       expect(

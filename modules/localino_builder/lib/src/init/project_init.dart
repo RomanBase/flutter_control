@@ -81,7 +81,9 @@ class InitPlan {
 /// is the project's localization codegen command; without it, the one from a previous
 /// block is kept.
 InitPlan planInit(LocalinoConfig config, {String? codegen, String? rules}) {
-  if (codegen != null && codegen.contains('`')) {
+  final command = codegen?.trim();
+
+  if (command != null && command.contains('`')) {
     throw const ConfigException('--codegen must not contain backticks.');
   }
 
@@ -118,7 +120,8 @@ InitPlan planInit(LocalinoConfig config, {String? codegen, String? rules}) {
     config,
     run: run,
     projectDir: projectDir,
-    codegen: codegen ?? previousCodegen(rulesBefore),
+    codegen:
+        (command?.isEmpty ?? true) ? previousCodegen(rulesBefore) : command,
   );
   final rulesAfter = applyRulesBlock(rulesBefore, block);
 
@@ -275,10 +278,11 @@ String mergeMcpJson(String? existing, Map<String, Object?> server) {
         !empty && next.contains('\n')
             ? next.substring(next.lastIndexOf('\n') + 1)
             : '$parentIndent  ';
-    final entry = '\n$indent"$_serverName": ${_inline(server)}';
+    final newline = _newline(existing);
+    final entry = '$newline$indent"$_serverName": ${_inline(server)}';
     final text =
         existing.substring(0, match.end) +
-        (empty ? '$entry\n$parentIndent' : '$entry,') +
+        (empty ? '$entry$newline$parentIndent' : '$entry,') +
         (empty ? rest.substring(next.length) : rest);
 
     if (_canonical(jsonDecode(text)) == _canonical(expected)) {
@@ -342,16 +346,19 @@ $run sync              # pull, then push
 $_blockEnd''';
 }
 
-/// [existing] rules with [block] in place of the managed block, or appended.
+/// [existing] rules with [block] in place of the managed block, or appended. The block
+/// takes the file's line endings.
 String applyRulesBlock(String? existing, String block) {
   if (existing == null || existing.trim().isEmpty) {
     return '$block\n';
   }
 
+  final newline = _newline(existing);
+  block = block.replaceAll('\n', newline);
   final start = existing.indexOf(_blockBegin);
 
   if (start < 0) {
-    return '${existing.trimRight()}\n\n$block\n';
+    return '${existing.trimRight()}$newline$newline$block$newline';
   }
 
   final end = existing.indexOf(_blockEnd, start);
@@ -390,6 +397,8 @@ String _outsideBlock(String text) {
 bool _sameServer(String text, Map<String, Object?> server) =>
     _canonical((jsonDecode(text) as Map)['mcpServers']?[_serverName]) ==
     _canonical(server);
+
+String _newline(String text) => text.contains('\r\n') ? '\r\n' : '\n';
 
 String? _read(String path) {
   final file = File(path);
