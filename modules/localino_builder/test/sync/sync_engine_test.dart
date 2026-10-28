@@ -149,6 +149,9 @@ void main() {
       expect(result.conflicts.single, containsPair('key', 'a'));
       expect(readLocal(), {'a': 'mine'});
       expect(lockFile().readAsStringSync(), before);
+      // `b` would be pulled, but the stopped run reports nothing as written.
+      expect(result.pulled, isEmpty);
+      expect(result.localFilesChanged, false);
     });
 
     test('prefer remote resolves the conflict', () async {

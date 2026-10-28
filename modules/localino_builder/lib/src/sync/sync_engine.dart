@@ -339,8 +339,13 @@ class SyncEngine {
       localFilesChanged: plan.updates.isNotEmpty,
     );
 
-    if (dryRun || plan.conflicts.isNotEmpty) {
+    if (dryRun) {
       return result;
+    }
+
+    // Conflicts stop the run before anything is written, so nothing was pulled.
+    if (plan.conflicts.isNotEmpty) {
+      return result.copyWith(pulled: const [], localFilesChanged: false);
     }
 
     _writeLocales(state.files, plan.updates);
