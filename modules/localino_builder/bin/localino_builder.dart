@@ -4,6 +4,7 @@ import 'package:build/build.dart';
 import 'package:http/http.dart' as http;
 import 'package:localino_builder/build.dart';
 import 'package:localino_builder/src/config.dart';
+import 'package:localino_builder/src/init/project_init.dart';
 import 'package:localino_builder/src/sync/io.dart';
 import 'package:localino_builder/src/sync/merge.dart';
 import 'package:localino_builder/src/sync/sync_engine.dart';
@@ -20,6 +21,12 @@ const _options = <String, Map<String, bool>>{
   },
   'sync': {'--root': true, '--prefer': true},
   'login': {'--root': true},
+  'init': {
+    '--root': true,
+    '--codegen': true,
+    '--rules': true,
+    '--dry-run': false,
+  },
 };
 
 const _listLimit = 50;
@@ -40,6 +47,9 @@ Usage:
     sync   [--prefer local|remote] Pull, then push.
     login                          Store the project write key read from stdin
                                    (~/.localino/credentials.json, mode 600).
+    init   [--codegen <command>] [--rules <file>] [--dry-run]
+                                   Register the MCP server in .mcp.json and write the
+                                   Localino block into the agent rules.
 
 Options:
   --root <dir>   Project root (default: nearest pubspec.yaml).
@@ -126,6 +136,11 @@ Future<int> _run(String command, List<String> args) async {
     stderr.writeln(
       'Localino config not found under $root (build.yaml options or $setupJsonPath).',
     );
+    if (command == 'init') {
+      stderr.writeln(
+        'Copy setup.json from the Localino console (project → Connect code) to $setupJsonPath, then re-run init.',
+      );
+    }
     return SyncExit.error;
   }
 
@@ -134,6 +149,10 @@ Future<int> _run(String command, List<String> args) async {
 
   if (command == 'login') {
     return _login(config, credentialsPath);
+  }
+
+  if (command == 'init') {
+    return _init(config, args, env, credentialsPath);
   }
 
   final client = http.Client();
@@ -210,6 +229,87 @@ int _login(LocalinoConfig config, String? credentialsPath) {
   print(
     'Stored $key for ${config.space}/${config.project} in $credentialsPath',
   );
+
+  return SyncExit.ok;
+}
+
+int _init(
+  LocalinoConfig config,
+  List<String> args,
+  Map<String, String> env,
+  String? credentialsPath,
+) {
+  final dryRun = args.contains('--dry-run');
+  final plan = planInit(
+    config,
+    codegen: option(args, '--codegen'),
+    rules: option(args, '--rules'),
+  );
+  final client = http.Client();
+  final locales =
+      SyncEngine(
+        config: config,
+        client: client,
+        apiUrl: Uri.parse(defaultApiUrl),
+        env: env,
+        credentialsPath: credentialsPath,
+      ).localLocales();
+  client.close();
+
+  final writeKey = readWriteKey(
+    config.space,
+    config.project,
+    env: env,
+    credentialsPath: credentialsPath,
+  );
+  final synced = File('${config.root}/$lockPath').existsSync();
+  final server = plan.server;
+
+  if (!dryRun) plan.apply();
+
+  String action(InitFile file, String what) =>
+      !file.changed
+          ? 'unchanged'
+          : '${dryRun ? 'would be ' : ''}${file.before == null ? 'created' : 'updated'} — $what';
+
+  print(
+    'Localino init${dryRun ? ' (dry run)' : ''} — ${config.space}/${config.project}',
+  );
+  print(
+    '  ${plan.mcpJson.path}: ${server == null ? '`localino` already registered, kept' : action(plan.mcpJson, '`localino`: ${server['command']} ${(server['args'] as List).join(' ')}')}',
+  );
+  print('  ${plan.rules.path}: ${action(plan.rules, 'Localino block')}');
+  print(
+    '  Locale files (${config.asset}): ${locales.isEmpty ? 'none found — check `asset` in $setupJsonPath' : locales.join(', ')}',
+  );
+  print(
+    '  Write key: ${writeKey == null ? 'not stored for ${config.space}/${config.project}' : 'stored'}',
+  );
+  print('  Lock: ${synced ? '$lockPath present' : 'none — never synced'}');
+
+  for (final warning in plan.warnings) {
+    print('  Warning: $warning');
+  }
+
+  final next = [
+    if (writeKey == null)
+      'Create a write key in the Localino console (project → key icon), then run '
+          '`${plan.run} login` and paste it.',
+    if (!synced)
+      'First sync, in a terminal: `${plan.run} status`, then `${plan.run} sync` '
+          '(add `--prefer local` or `--prefer remote` if it reports conflicts). '
+          'Commit $lockPath.',
+    if (!dryRun && plan.files.any((e) => e.changed))
+      'Commit ${plan.files.where((e) => e.changed).map((e) => e.path).join(' and ')}; '
+          'restart your coding agent to load the `localino` MCP server.',
+  ];
+
+  if (next.isNotEmpty) {
+    print('Next:');
+    for (final (index, step) in next.indexed) {
+      print('  ${index + 1}. $step');
+    }
+  }
 
   return SyncExit.ok;
 }

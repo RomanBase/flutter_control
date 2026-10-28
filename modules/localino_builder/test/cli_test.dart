@@ -1,6 +1,7 @@
 @Timeout(Duration(minutes: 3))
 library;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -100,6 +101,58 @@ void main() {
 
     // Past option checks: fails only for the missing write key.
     expect(result.exitCode, 4, reason: '${result.stderr}');
+  });
+
+  test('init registers the MCP server and writes the agent rules', () async {
+    final mcpJson = File('${root.path}/.mcp.json');
+    final rules = File('${root.path}/CLAUDE.md');
+
+    final dry = await run(['init', '--dry-run']);
+
+    expect(dry.exitCode, 0, reason: '${dry.stderr}');
+    expect(dry.stdout, contains('.mcp.json: would be created'));
+    expect(mcpJson.existsSync(), isFalse);
+    expect(rules.existsSync(), isFalse);
+
+    final result = await run([
+      'init',
+      '--codegen',
+      'cd ci && dart run bin/localino.dart',
+    ]);
+
+    expect(result.exitCode, 0, reason: '${result.stderr}');
+    expect(
+      result.stdout,
+      contains('Locale files (assets/localization/{locale}.json): cs_CZ'),
+    );
+    expect(result.stdout, contains('Write key: not stored for insight/inbook'));
+    expect(result.stdout, contains('Lock: none'));
+    expect(result.stdout, contains('dart run localino_builder login'));
+    expect(jsonDecode(mcpJson.readAsStringSync())['mcpServers']['localino'], {
+      'command': 'dart',
+      'args': ['run', 'localino_builder:mcp'],
+    });
+    expect(
+      rules.readAsStringSync(),
+      contains('run `cd ci && dart run bin/localino.dart`'),
+    );
+
+    final rulesBefore = rules.readAsStringSync();
+    final again = await run(['init']);
+
+    expect(again.exitCode, 0, reason: '${again.stderr}');
+    expect(again.stdout, contains('`localino` already registered, kept'));
+    expect(again.stdout, contains('CLAUDE.md: unchanged'));
+    expect(rules.readAsStringSync(), rulesBefore);
+  });
+
+  test('init without a config points at the console', () async {
+    File('${root.path}/assets/localization/setup.json').deleteSync();
+
+    final result = await run(['init']);
+
+    expect(result.exitCode, 1);
+    expect(result.stderr, contains('project → Connect code'));
   });
 
   test('a missing config exits 1', () async {

@@ -8,6 +8,7 @@ import 'package:http/testing.dart';
 import 'package:localino_builder/src/config.dart';
 import 'package:localino_builder/src/mcp/localino_mcp_server.dart';
 import 'package:localino_builder/src/sync/io.dart';
+import 'package:localino_builder/src/sync/merge.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/test.dart';
 
@@ -46,6 +47,8 @@ void main() {
           'locales': {_cs: '', _en: ''},
         }),
       );
+    // Synced before with no keys: the MCP writes only after a first sync.
+    writeLock(File('${root.path}/$lockPath'), Lock({}));
   });
 
   tearDown(() => root.deleteSync(recursive: true));
@@ -157,6 +160,8 @@ void main() {
       writeLocal(_en, {});
       final fake = FakeLocalino({_cs: {}, _en: {}});
       final connection = await connect(fake.client);
+      final lock = File('${root.path}/$lockPath');
+      final lockBefore = lock.readAsStringSync();
 
       final plan = data(await call(connection, 'localino_push'));
 
@@ -167,7 +172,7 @@ void main() {
       expect(plan['next_step'], contains('dry_run: false'));
       expect(jsonDecode(fake.pushes.single.body)['dry_run'], true);
       expect(fake.translations[_cs], isEmpty);
-      expect(File('${root.path}/$lockPath').existsSync(), false);
+      expect(lock.readAsStringSync(), lockBefore);
 
       final applied = data(
         await call(connection, 'localino_push', {'dry_run': false}),
@@ -175,7 +180,7 @@ void main() {
 
       expect(applied['dry_run'], false);
       expect(fake.translations[_cs]!['invoice_paid']!.$1, 'Zaplaceno');
-      expect(File('${root.path}/$lockPath').existsSync(), true);
+      expect(lock.readAsStringSync(), contains('invoice_paid'));
     });
 
     test('lists conflicts and asks the user instead of writing', () async {
@@ -248,6 +253,46 @@ void main() {
       expect(fake.requests, isEmpty);
     });
   });
+
+  test(
+    'before the first sync, pull and push write nothing; dry runs still work',
+    () async {
+      final lock = File('${root.path}/$lockPath')..deleteSync();
+      writeLocal(_cs, {'invoice_paid': 'Zaplaceno'});
+      writeLocal(_en, {});
+      final fake = FakeLocalino({
+        _cs: {'remote_only': ('Vzdálené', 5)},
+        _en: {},
+      });
+      final connection = await connect(fake.client);
+      final before = readLocal(_cs);
+
+      for (final result in [
+        await call(connection, 'localino_push', {'dry_run': false}),
+        await call(connection, 'localino_pull'),
+      ]) {
+        expect(result.isError, true);
+        expect(data(result)['error'], contains(lockPath));
+        expect(data(result)['next_step'], contains('localino_builder sync'));
+      }
+      expect(fake.requests, isEmpty);
+      expect(readLocal(_cs), before);
+      expect(lock.existsSync(), false);
+
+      final push = data(await call(connection, 'localino_push'));
+      final pull = data(
+        await call(connection, 'localino_pull', {'dry_run': true}),
+      );
+
+      expect(push['pushed'], [
+        {'locale': _cs, 'key': 'invoice_paid', 'ts': null},
+      ]);
+      expect(pull['pulled'], [containsPair('key', 'remote_only')]);
+      expect(fake.translations[_cs]!.keys, ['remote_only']);
+      expect(readLocal(_cs), before);
+      expect(lock.existsSync(), false);
+    },
+  );
 
   test('the write key appears in no tool output', () async {
     writeLocal(_cs, {'a': 'A', 'b': 'B'});

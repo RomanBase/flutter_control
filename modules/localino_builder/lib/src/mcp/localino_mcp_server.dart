@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show File;
 
 import 'package:dart_mcp/server.dart';
 import 'package:http/http.dart' as http;
@@ -22,6 +23,11 @@ const _askUser =
 const _invalid =
     'Nothing was pushed: some keys or values are not accepted by Localino (see `invalid`). '
     'Fix them in the locale files (localino_set_keys), then preview again.';
+
+const _firstSync =
+    'Ask the user to run the first sync in a terminal: `localino_builder status`, then '
+    '`localino_builder sync` (with --prefer on conflicts), and to commit $lockPath. '
+    'Dry runs work meanwhile.';
 
 const _typeMismatch =
     'Nothing was pushed: Localino stores these keys with another value type (e.g. text '
@@ -370,13 +376,27 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     };
   }
 
+  /// The first sync decides how local files and Localino combine, so it is the user's:
+  /// without a lock only dry runs pass.
+  void _requireLock(SyncEngine engine, bool dryRun) {
+    if (!dryRun && !File('${engine.config.root}/$lockPath').existsSync()) {
+      throw const _ToolError(
+        'No $lockPath yet: this project was never synced, so nothing was written.',
+        _firstSync,
+      );
+    }
+  }
+
   Future<Map<String, dynamic>> _pull(
     SyncEngine engine,
     Map<String, Object?> args,
   ) async {
+    final dryRun = args['dry_run'] as bool? ?? false;
+    _requireLock(engine, dryRun);
+
     final result = await engine.pull(
       prefer: parsePrefer(args['prefer'] as String?),
-      dryRun: args['dry_run'] as bool? ?? false,
+      dryRun: dryRun,
       keys: _keys(args),
     );
 
@@ -393,9 +413,12 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
     SyncEngine engine,
     Map<String, Object?> args,
   ) async {
+    final dryRun = args['dry_run'] as bool? ?? true;
+    _requireLock(engine, dryRun);
+
     final result = await engine.push(
       prefer: parsePrefer(args['prefer'] as String?),
-      dryRun: args['dry_run'] as bool? ?? true,
+      dryRun: dryRun,
       keys: _keys(args),
     );
     final steps = [

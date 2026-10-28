@@ -97,6 +97,39 @@ With `report_unused: true`, after generation any key with no
 `LocalinoKeys.<name>` reference under `lib/` is printed (report-only, never
 deleted) — useful for pruning dead keys once call sites are migrated.
 
+## Connect a project (`init`)
+
+The Localino console shows these steps with your project filled in
+(project → **Connect code**):
+
+1. Save the console's `setup.json` as `assets/localization/setup.json`.
+2. Add `localino_builder` under `dev_dependencies` and run `pub get`.
+3. Run `init` from the app directory:
+
+   ```
+   dart run localino_builder init --codegen "<your localization codegen command>"
+   ```
+
+   It registers the `localino` MCP server in `.mcp.json` at the git root and
+   writes a managed block (`<!-- localino:begin -->` … `<!-- localino:end -->`)
+   with the sync commands and the agent flow into the agent rules:
+   `rules/localization.md`, `AGENTS.md` or `CLAUDE.md`, the first that exists
+   (`CLAUDE.md` is created otherwise; `--rules <file>` picks another). Other
+   MCP servers and the rest of the rules file are left as they are; an
+   existing `localino` server entry is never overwritten. Re-run `init` after
+   upgrading the package to refresh the block; the codegen command is kept.
+   `--dry-run` shows what would change.
+4. Create a write key in the console (project → key icon) and store it with
+   `dart run localino_builder login`.
+5. First sync, in a terminal: `status`, then `sync` (with `--prefer local` or
+   `--prefer remote` if it reports conflicts). Commit `.localino/lock.json`,
+   `.mcp.json` and the rules file.
+
+fvm projects get `fvm dart …` commands. An app below the git root without a
+root `pubspec.yaml` (e.g. `main_tablet/`) gets an MCP entry that runs
+`dart pub -C main_tablet run localino_builder:mcp --root main_tablet`, because
+coding agents start MCP servers in the repository root.
+
 ## Sync (two-way)
 
 The plain download above overwrites local locale files. The sync commands
@@ -193,7 +226,8 @@ Network failures never touch local files.
 
 `dart run localino_builder:mcp` is a local stdio [MCP](https://modelcontextprotocol.io)
 server over the same sync engine, so a coding agent can find, add and sync
-keys without the console. Register it in the project's `.mcp.json`:
+keys without the console. `init` registers it; by hand, add it to the
+project's `.mcp.json`:
 
 ```json
 {
@@ -217,6 +251,10 @@ The server runs from the project root; pass `--root <dir>` otherwise.
 Typical agent flow: `localino_search_keys` → `localino_set_keys` → run the
 project's localization codegen → `localino_push` (plan) → user confirms →
 `localino_push { "dry_run": false }`.
+
+Before the first sync (no `.localino/lock.json`) `localino_pull` and
+`localino_push` only dry-run: the first sync decides how local files and
+Localino combine, so a human runs it in a terminal.
 
 The write key never passes through the agent: the server reads it from
 `~/.localino/credentials.json` or `LOCALINO_WRITE_KEY`, no tool accepts it,
