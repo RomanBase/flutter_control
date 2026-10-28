@@ -771,4 +771,38 @@ void main() {
       expect(fake.translations[de]!['a']!.$1, 'Hallo');
     });
   });
+
+  test(
+    'a Localino locale that differs from a local file only in case stops every command',
+    () async {
+      writeLocal({'a': 'A'});
+      final before = readLocal();
+      final fake = FakeLocalino({
+        'cs_cz': {'r': ('R', 5)},
+      });
+
+      for (final run in [
+        () => engine(fake).status(),
+        () => engine(fake).pull(),
+        () => engine(fake).push(),
+        () => engine(fake).sync(),
+      ]) {
+        await expectLater(
+          run(),
+          throwsA(
+            isA<SyncException>()
+                .having((e) => e.exitCode, 'exitCode', SyncExit.error)
+                .having(
+                  (e) => e.message,
+                  'message',
+                  contains('`cs_cz`, the local file is `cs_CZ`'),
+                ),
+          ),
+        );
+      }
+      expect(readLocal(), before);
+      expect(lockFile().existsSync(), false);
+      expect(fake.pushes, isEmpty);
+    },
+  );
 }

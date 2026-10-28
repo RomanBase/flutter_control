@@ -616,6 +616,22 @@ class SyncEngine {
 
   _State _load(_Snapshot? snapshot) {
     final onDisk = localLocales();
+
+    // `cs_cz` vs `cs_CZ.json`: one file on case-insensitive file systems, two locales for
+    // apps and Linux. Stop before anything is merged into the wrong one.
+    for (final remote in snapshot?.locales ?? const <String>[]) {
+      for (final local in onDisk) {
+        if (local != remote && local.toLowerCase() == remote.toLowerCase()) {
+          throw SyncException(
+            SyncExit.error,
+            'Localino has the locale `$remote`, the local file is `$local`: the same '
+            'locale in different letter case, which apps and case-sensitive file systems '
+            'treat as two. Make them match (in the Localino console: remove the locale and '
+            'add it again with the same case as the file), then re-run. Nothing was changed.',
+          );
+        }
+      }
+    }
     final locales = snapshot?.locales ?? onDisk;
     final indent =
         onDisk.isEmpty ? '  ' : readLocaleFile(localeFile(onDisk.first)).indent;

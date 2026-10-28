@@ -3,6 +3,7 @@
 - `push --add-locales` / `sync --add-locales` create in Localino the locales that exist only as local files (a dry run lists them as "Would add locales"), then push their keys; MCP `localino_push` takes `add_locales`. Anything the push would reject in a new locale stops the run before the locale is created. Without the flag such locales are skipped as before, with a hint. **Needs Localino API v1 (14)** (`POST …/locales`).
 - MCP: `localino_pull` and `localino_push` with `dry_run: false` refuse to write before the first sync (no `.localino/lock.json`) and ask the user to run it in a terminal; dry runs still work.
 - `pull` / `sync` stopped by a conflict no longer report the other keys as pulled or say the locale files changed: nothing is written until the conflict is resolved, and the output now says so (CLI, and `pulled` / `local_files_changed` in `localino_pull`).
+- A Localino locale that differs from a local file only in letter case (`cs_cz` vs `cs_CZ.json`) stops every command with exit 1 and a message, before anything is merged: on case-insensitive file systems both name one file, while apps and Linux see two.
 - An option a command does not take is rejected with exit 1 instead of being ignored. `sync --dry-run` used to run a real sync (pull and push), and a typo such as `push --dryrun` a real push. Preview a sync with `status`, or `pull --dry-run` / `push --dry-run`.
 - MCP: the codegen hint after `localino_set_keys` / `localino_pull` no longer names one consumer's command (`cd ci && dart run bin/localino.dart`), which other projects do not have.
 
