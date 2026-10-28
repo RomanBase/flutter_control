@@ -66,6 +66,9 @@ class SyncResult {
   /// Local locale files Localino does not have; skipped.
   final List<String> unknownLocales;
 
+  /// Locales created in Localino (dry run: that would be) for local files it lacked.
+  final List<String> addedLocales;
+
   /// Locale files were rewritten — project codegen should run.
   final bool localFilesChanged;
 
@@ -86,6 +89,7 @@ class SyncResult {
     this.invalid = const [],
     this.skippedDeletes = const [],
     this.unknownLocales = const [],
+    this.addedLocales = const [],
     this.localFilesChanged = false,
     this.generatedKeys,
   });
@@ -109,6 +113,7 @@ class SyncResult {
     List<Map<String, dynamic>>? typeMismatches,
     List<Map<String, dynamic>>? invalid,
     List<KeyDiff>? skippedDeletes,
+    List<String>? addedLocales,
     bool? localFilesChanged,
     String? generatedKeys,
   }) => SyncResult(
@@ -125,6 +130,7 @@ class SyncResult {
     invalid: invalid ?? this.invalid,
     skippedDeletes: skippedDeletes ?? this.skippedDeletes,
     unknownLocales: unknownLocales,
+    addedLocales: addedLocales ?? this.addedLocales,
     localFilesChanged: localFilesChanged ?? this.localFilesChanged,
     generatedKeys: generatedKeys ?? this.generatedKeys,
   );
@@ -143,6 +149,7 @@ class SyncResult {
     'invalid': invalid,
     'skipped_deletes': [for (final diff in skippedDeletes) diff.toJson()],
     'unknown_locales': unknownLocales,
+    'added_locales': addedLocales,
     'local_files_changed': localFilesChanged,
     if (generatedKeys != null) 'generated_keys': generatedKeys,
   };
@@ -248,38 +255,89 @@ class SyncEngine {
   }) async =>
       _pull(await _snapshot(), prefer: prefer, dryRun: dryRun, keys: keys);
 
+  /// With [addLocales], local locale files Localino lacks are created there first (a dry run
+  /// only lists them; their keys are pushed once the locales exist).
   Future<SyncResult> push({
     Prefer? prefer,
     bool dryRun = false,
     bool prune = false,
     Set<String>? keys,
+    bool addLocales = false,
   }) async {
     final writeKey = _writeKey();
+    var snapshot = await _snapshot();
+    final missing = addLocales ? _missingLocales(snapshot) : const <String>[];
 
-    return _push(
+    if (missing.isNotEmpty) {
+      // Anything the push would reject in the new locales stops the run before a locale is created.
+      final preview = _planPush(
+        _withLocales(snapshot, missing),
+        prefer: prefer,
+        prune: prune,
+        keys: keys,
+      );
+
+      if (preview.plan.blocked) {
+        return _blocked('push', snapshot, preview, dryRun: dryRun);
+      }
+    }
+
+    final added =
+        missing.isEmpty
+            ? const <String>[]
+            : await _addLocales(writeKey, missing, dryRun: dryRun);
+
+    if (added.isNotEmpty && !dryRun) {
+      snapshot = await _snapshot();
+    }
+
+    final result = await _push(
       writeKey,
-      await _snapshot(),
+      snapshot,
       prefer: prefer,
       dryRun: dryRun,
       prune: prune,
       keys: keys,
     );
+
+    return result.copyWith(addedLocales: added);
   }
 
   /// Pull, then push — both against one snapshot (a pull never changes Localino).
   /// Anything the push would reject is found before the pull writes, so it leaves both
   /// sides untouched. A push failure after a successful pull keeps the pull applied.
-  Future<SyncResult> sync({Prefer? prefer, bool prune = false}) async {
+  Future<SyncResult> sync({
+    Prefer? prefer,
+    bool prune = false,
+    bool addLocales = false,
+  }) async {
     final writeKey = _writeKey();
-    final snapshot = await _snapshot();
-    final preview = _planPush(snapshot, prefer: prefer, prune: prune);
+    var snapshot = await _snapshot();
+    final missing = addLocales ? _missingLocales(snapshot) : const <String>[];
+    final preview = _planPush(
+      _withLocales(snapshot, missing),
+      prefer: prefer,
+      prune: prune,
+    );
 
     if (preview.plan.typeMismatches.isNotEmpty ||
         preview.plan.invalid.isNotEmpty) {
       return _blocked('sync', snapshot, preview);
     }
 
-    final pulled = await _pull(snapshot, prefer: prefer);
+    final added =
+        missing.isEmpty
+            ? const <String>[]
+            : await _addLocales(writeKey, missing, dryRun: false);
+
+    if (added.isNotEmpty) {
+      snapshot = await _snapshot();
+    }
+
+    final pulled = (await _pull(
+      snapshot,
+      prefer: prefer,
+    )).copyWith(addedLocales: added);
 
     if (pulled.conflicts.isNotEmpty) {
       return pulled.copyWith(command: 'sync');
@@ -651,6 +709,76 @@ class SyncEngine {
   Uri _url(String route) {
     final base = apiUrl.toString().replaceFirst(RegExp(r'/+$'), '');
     return Uri.parse('$base/${config.space}/${config.project}/$route');
+  }
+
+  /// Local locale files Localino does not have.
+  List<String> _missingLocales(_Snapshot snapshot) => [
+    for (final locale in localLocales())
+      if (!snapshot.locales.contains(locale)) locale,
+  ];
+
+  /// [snapshot] as it is once [locales] exist in Localino, still empty.
+  _Snapshot _withLocales(_Snapshot snapshot, List<String> locales) =>
+      locales.isEmpty
+          ? snapshot
+          : _Snapshot(
+            [...snapshot.locales, ...locales],
+            snapshot.keyTypes,
+            {
+              ...snapshot.translations,
+              for (final locale in locales) locale: {},
+            },
+          );
+
+  /// Creates [locales] in Localino (a dry run only checks them). Returns those the API
+  /// added (or would add).
+  Future<List<String>> _addLocales(
+    WriteKey key,
+    List<String> locales, {
+    required bool dryRun,
+  }) async {
+    final response = await _send(
+      () => client.post(
+        _url('locales'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json; charset=utf-8',
+          'Authorization': 'Bearer ${key.value}',
+        },
+        body: jsonEncode({
+          'dry_run': dryRun,
+          'locales': [
+            for (final locale in locales) {'locale': locale},
+          ],
+        }),
+      ),
+    );
+
+    final body = _decode(response);
+
+    switch (response.statusCode) {
+      case 200:
+        return [for (final locale in body['added'] as List? ?? []) '$locale'];
+      case 401:
+        throw SyncException(
+          SyncExit.auth,
+          'Write key rejected (unauthorized) for ${key.keyId}.',
+        );
+      case 409:
+        throw const SyncException(
+          SyncExit.network,
+          'The project locales changed at the same time (contention) — re-run.',
+        );
+      case 422:
+        final details = List<Map>.from(body['details'] as List? ?? []);
+        throw SyncException(
+          SyncExit.error,
+          'Locales rejected: ${details.map((e) => [e['locale'], e['reason']].whereType<Object>().join(' ')).join('; ')} '
+          '(file names must be `ll` or `ll_CC`, e.g. en_US).',
+        );
+      default:
+        throw _statusError(response);
+    }
   }
 
   Future<_Snapshot> _snapshot() async {

@@ -144,6 +144,12 @@ dart run localino_builder push [--dry-run]  # send local changes to Localino
 dart run localino_builder sync              # pull, then push
 ```
 
+New keys need nothing extra: a push creates them in Localino. A local locale
+file Localino does not have (e.g. a new `de_DE.json`) is skipped unless you pass
+`--add-locales` to `push` or `sync`, which creates the locale first (the MCP
+`localino_push` takes `add_locales`). Locales are never removed from Localino
+this way; that stays in the console.
+
 `sync` has no `--dry-run`: preview with `status`, or `pull --dry-run` and
 `push --dry-run`. An option a command does not take is rejected (exit 1), never
 ignored.
@@ -247,7 +253,7 @@ The server runs from the project root; pass `--root <dir>` otherwise.
 | `localino_search_keys` | Searches local files by key/value substring, exact `keys`, or keys missing in a locale. Flags keys with an identical value so existing keys get reused. |
 | `localino_set_keys` | Adds, updates or removes keys in local files only (git-reversible). Rejects unknown locales; regenerates `localino_keys.dart` when `generate_keys` is on. |
 | `localino_pull` | Applies Localino changes locally; conflicts stay untouched unless `prefer` is given. |
-| `localino_push` | **Dry run by default** — returns the plan. Applies only with `dry_run: false`. Never deletes remote keys (use the CLI `push --prune`). |
+| `localino_push` | **Dry run by default** — returns the plan. Applies only with `dry_run: false`. Never deletes remote keys (use the CLI `push --prune`). `add_locales: true` creates locales that exist only locally (after the user agreed). |
 
 Typical agent flow: `localino_search_keys` → `localino_set_keys` → run the
 project's localization codegen → `localino_push` (plan) → user confirms →

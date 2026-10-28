@@ -294,6 +294,36 @@ void main() {
     },
   );
 
+  test(
+    'a local locale Localino lacks is skipped with a hint, and created with add_locales',
+    () async {
+      writeLocal(_cs, {'a': 'A'});
+      writeLocal(_en, {'a': 'A'});
+      writeLocal('de_DE', {'a': 'Hallo'});
+      final fake = FakeLocalino({_cs: {}, _en: {}});
+      final connection = await connect(fake.client);
+
+      final skipped = data(
+        await call(connection, 'localino_push', {'dry_run': false}),
+      );
+
+      expect(skipped['unknown_locales'], ['de_DE']);
+      expect(skipped['next_step'], contains('add_locales: true'));
+      expect(fake.localeRequests, isEmpty);
+
+      final added = data(
+        await call(connection, 'localino_push', {
+          'dry_run': false,
+          'add_locales': true,
+        }),
+      );
+
+      expect(added['added_locales'], ['de_DE']);
+      expect(added['unknown_locales'], isEmpty);
+      expect(fake.translations['de_DE']!['a']!.$1, 'Hallo');
+    },
+  );
+
   test('the write key appears in no tool output', () async {
     writeLocal(_cs, {'a': 'A', 'b': 'B'});
     writeLocal(_en, {'a': 'A'});

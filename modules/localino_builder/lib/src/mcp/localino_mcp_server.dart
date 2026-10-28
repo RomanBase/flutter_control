@@ -213,7 +213,8 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
         'Sends local changes to Localino. Defaults to a dry run that returns the plan. '
         'Show the plan to the user and get their confirmation before calling again with '
         '`dry_run: false`. Ask the user before using `prefer`. Never deletes remote '
-        'keys (remote deletes are CLI-only: `localino_builder push --prune`).',
+        'keys (remote deletes are CLI-only: `localino_builder push --prune`). Local '
+        'locale files Localino lacks are skipped (`unknown_locales`) unless `add_locales`.',
     annotations: ToolAnnotations(
       readOnlyHint: false,
       destructiveHint: true,
@@ -224,6 +225,11 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       properties: {
         'dry_run': Schema.bool(
           description: 'Return the plan without writing (default true).',
+        ),
+        'add_locales': Schema.bool(
+          description:
+              'Also create in Localino the locales that exist only as local files '
+              '(dry run lists them as `added_locales`). Only after the user agreed.',
         ),
         'prefer': _prefer,
         'keys': _keyFilter,
@@ -420,6 +426,7 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       prefer: parsePrefer(args['prefer'] as String?),
       dryRun: dryRun,
       keys: _keys(args),
+      addLocales: args['add_locales'] as bool? ?? false,
     );
     final steps = [
       if (result.invalid.isNotEmpty)
@@ -436,6 +443,10 @@ base class LocalinoMcpServer extends MCPServer with ToolsSupport {
       if (result.skippedDeletes.isNotEmpty)
         'Local deletes were not sent; remote deletes are CLI-only '
             '(`localino_builder push --prune`).',
+      if (result.unknownLocales.any((e) => !result.addedLocales.contains(e)))
+        'Some local locales do not exist in Localino and were skipped '
+            '(`unknown_locales`). Ask the user whether to create them, then call '
+            'with `add_locales: true`.',
     ];
 
     return {

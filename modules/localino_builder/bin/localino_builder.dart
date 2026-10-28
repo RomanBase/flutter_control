@@ -18,8 +18,9 @@ const _options = <String, Map<String, bool>>{
     '--prefer': true,
     '--dry-run': false,
     '--prune': false,
+    '--add-locales': false,
   },
-  'sync': {'--root': true, '--prefer': true},
+  'sync': {'--root': true, '--prefer': true, '--add-locales': false},
   'login': {'--root': true},
   'init': {
     '--root': true,
@@ -42,9 +43,11 @@ Usage:
     status                         Compare local files, .localino/lock.json and Localino.
     pull   [--prefer local|remote] [--dry-run]
                                    Apply remote changes; never drops local-only keys.
-    push   [--prefer local|remote] [--dry-run] [--prune]
-                                   Send local changes (write key required). Deletes only with --prune.
-    sync   [--prefer local|remote] Pull, then push.
+    push   [--prefer local|remote] [--dry-run] [--prune] [--add-locales]
+                                   Send local changes (write key required). Deletes only with --prune;
+                                   --add-locales creates locales that exist only as local files.
+    sync   [--prefer local|remote] [--add-locales]
+                                   Pull, then push.
     login                          Store the project write key read from stdin
                                    (~/.localino/credentials.json, mode 600).
     init   [--codegen <command>] [--rules <file>] [--dry-run]
@@ -174,8 +177,12 @@ Future<int> _run(String command, List<String> args) async {
         prefer: parsePrefer(prefer),
         dryRun: dryRun,
         prune: args.contains('--prune'),
+        addLocales: args.contains('--add-locales'),
       ),
-      _ => await engine.sync(prefer: parsePrefer(prefer)),
+      _ => await engine.sync(
+        prefer: parsePrefer(prefer),
+        addLocales: args.contains('--add-locales'),
+      ),
     };
 
     _report(result);
@@ -354,7 +361,23 @@ void _report(SyncResult result) {
     'Local deletes not pushed (use --prune)',
     result.skippedDeletes.map((e) => '${e.locale} ${e.key}'),
   );
-  _list('Locales unknown to Localino (skipped)', result.unknownLocales);
+  _list(
+    result.dryRun ? 'Would add locales' : 'Added locales',
+    result.addedLocales,
+  );
+
+  if (result.dryRun && result.addedLocales.isNotEmpty) {
+    print('  Their keys are pushed once the locales exist.');
+  }
+
+  final unknown = result.unknownLocales.where(
+    (e) => !result.addedLocales.contains(e),
+  );
+  _list('Locales unknown to Localino (skipped)', unknown);
+
+  if (unknown.isNotEmpty && {'push', 'sync'}.contains(result.command)) {
+    print('  Add them in the Localino console, or re-run with --add-locales.');
+  }
   _list('Conflicts', result.conflicts.map((e) => '${e['locale']} ${e['key']}'));
 
   if (result.conflicts.isNotEmpty) {

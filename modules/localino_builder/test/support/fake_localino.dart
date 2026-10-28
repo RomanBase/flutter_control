@@ -31,6 +31,27 @@ class FakeLocalino {
       return json(200, _snapshot());
     }
 
+    if (request.url.path.endsWith('/locales')) {
+      if (request.headers['authorization'] != 'Bearer $fakeWriteKey') {
+        return json(401, {'error': 'unauthorized'});
+      }
+      final body = jsonDecode(request.body) as Map;
+      final locales = [
+        for (final item in body['locales'] as List) '${item['locale']}',
+      ];
+      final added = locales.where((e) => !translations.containsKey(e)).toList();
+      if (body['dry_run'] != true) {
+        for (final locale in added) {
+          translations[locale] = {};
+        }
+      }
+      return json(200, {
+        'dry_run': body['dry_run'] == true,
+        'added': added,
+        'existing': locales.where((e) => !added.contains(e)).toList(),
+      });
+    }
+
     if (request.url.path.endsWith('/push')) {
       final override = pushResponses[_pushes++];
       if (override != null) return override;
@@ -42,6 +63,9 @@ class FakeLocalino {
 
     return http.Response('not found', 404);
   });
+
+  List<http.Request> get localeRequests =>
+      requests.where((e) => e.url.path.endsWith('/locales')).toList();
 
   List<http.Request> get pushes =>
       requests.where((e) => e.url.path.endsWith('/push')).toList();

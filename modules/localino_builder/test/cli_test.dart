@@ -88,19 +88,25 @@ void main() {
     expect(Directory('${root.path}/.localino').existsSync(), isFalse);
   });
 
-  test('every documented push option is accepted', () async {
-    final result = await run([
-      'push',
-      '--dry-run',
-      '--prune',
-      '--prefer',
-      'local',
-      '--root',
-      root.path,
-    ]);
+  test('every documented push and sync option is accepted', () async {
+    for (final args in [
+      [
+        'push',
+        '--dry-run',
+        '--prune',
+        '--add-locales',
+        '--prefer',
+        'local',
+        '--root',
+        root.path,
+      ],
+      ['sync', '--add-locales', '--prefer', 'remote'],
+    ]) {
+      final result = await run(args);
 
-    // Past option checks: fails only for the missing write key.
-    expect(result.exitCode, 4, reason: '${result.stderr}');
+      // Past option checks: fails only for the missing write key.
+      expect(result.exitCode, 4, reason: '$args ${result.stderr}');
+    }
   });
 
   test('init registers the MCP server and writes the agent rules', () async {

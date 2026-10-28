@@ -703,4 +703,72 @@ void main() {
       throwsA(isA<ConfigException>()),
     );
   });
+
+  group('add locales', () {
+    const de = 'de_DE';
+
+    test(
+      'a local locale Localino lacks is skipped, listed by a dry run, then created and pushed',
+      () async {
+        writeLocal({'a': 'A'});
+        writeLocal({'a': 'Hallo'}, de);
+        final fake = FakeLocalino({_cs: {}});
+
+        final skipped = await engine(fake).push();
+
+        expect(skipped.unknownLocales, [de]);
+        expect(skipped.addedLocales, isEmpty);
+        expect(fake.localeRequests, isEmpty);
+
+        final preview = await engine(fake).push(dryRun: true, addLocales: true);
+
+        expect(preview.addedLocales, [de]);
+        expect(jsonDecode(fake.localeRequests.single.body), {
+          'dry_run': true,
+          'locales': [
+            {'locale': de},
+          ],
+        });
+        expect(fake.translations.keys, [_cs]);
+
+        final applied = await engine(fake).push(addLocales: true);
+
+        expect(applied.addedLocales, [de]);
+        expect(applied.unknownLocales, isEmpty);
+        expect(applied.pushed, [containsPair('locale', de)]);
+        expect(fake.translations[de]!['a']!.$1, 'Hallo');
+      },
+    );
+
+    test(
+      'anything the push would reject in a new locale stops before the locale is created',
+      () async {
+        writeLocal({});
+        writeLocal({'bad key': 'x'}, de);
+        final fake = FakeLocalino({_cs: {}});
+
+        final result = await engine(fake).push(addLocales: true);
+
+        expect(result.invalid, [containsPair('locale', de)]);
+        expect(result.exitCode, SyncExit.error);
+        expect(fake.localeRequests, isEmpty);
+        expect(fake.pushes, isEmpty);
+      },
+    );
+
+    test('sync creates the locale, then pulls and pushes', () async {
+      writeLocal({'a': 'A'});
+      writeLocal({'a': 'Hallo'}, de);
+      final fake = FakeLocalino({
+        _cs: {'r': ('R', 5)},
+      });
+
+      final result = await engine(fake).sync(addLocales: true);
+
+      expect(result.exitCode, SyncExit.ok);
+      expect(result.addedLocales, [de]);
+      expect(readLocal()['r'], 'R');
+      expect(fake.translations[de]!['a']!.$1, 'Hallo');
+    });
+  });
 }
