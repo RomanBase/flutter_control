@@ -8,5 +8,11 @@ Builder build(BuilderOptions options) {
     options.config['space'],
     options.config['project'],
     options.config['access'],
+    generateKeys: _asBool(options.config['generate_keys']),
+    reportUnused: _asBool(options.config['report_unused']),
   )..build(null);
 }
+
+/// Coerces a `build.yaml` / CLI option to `bool`. `loadYaml` yields `YamlBool`
+/// or scalar strings, not `bool`, so accept both `true` and `'true'`.
+bool _asBool(Object? value) => value == true || value == 'true';

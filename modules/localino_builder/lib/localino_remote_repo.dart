@@ -22,8 +22,8 @@ class LocalinoRemoteRepo {
 
   Uri localeUrl(String space, String project, String locale,
           [int? timestamp]) =>
-      Uri.parse('$url/$space/$project/locale/$locale' +
-          (timestamp == null ? '' : '?timestamp=$timestamp'));
+      Uri.parse('$url/$space/$project/locale/$locale'
+          '${timestamp == null ? '' : '?timestamp=$timestamp'}');
 
   Map<String, String> get headers => <String, String>{
         'Content-Type': 'application/json',

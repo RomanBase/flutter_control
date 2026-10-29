@@ -1,0 +1,20 @@
+{
+  "action_add": "Přidat",
+  "version": "Verze: {version} ({number})",
+  "greeting": "Ahoj {name}, vítej zpět",
+  "onboard_card_1": {
+    "title": "Začínáme",
+    "note": "Přejeďte pro pokračování"
+  },
+  "plural_items": {
+    "0": "žádné položky",
+    "1": "jedna položka",
+    "other": "{count} položek"
+  },
+  "menu_tabs": [
+    "Domů",
+    "Hledat",
+    "Profil"
+  ],
+  "actlion_sign_log": "Přihlásit se"
+}

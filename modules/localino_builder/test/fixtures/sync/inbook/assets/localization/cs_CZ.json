@@ -1,0 +1,13 @@
+{
+ "invoice_paid": "Zaplaceno",
+ "a_first": "Příliš žluťoučký kůň",
+ "person_tenure_years": {
+  "1": "{years} rok",
+  "few": "{years} roky",
+  "other": "{years} let"
+ },
+ "tabs": [
+  "Domů",
+  "Profil"
+ ]
+}

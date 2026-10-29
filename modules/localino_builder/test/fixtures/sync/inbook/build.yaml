@@ -1,0 +1,12 @@
+targets:
+  $default:
+    sources:
+      - lib/**
+      - assets/**
+    builders:
+      # Mirrors inbook: the builder is disabled, config comes from setup.json.
+      localino_builder|localino_builder:
+        enabled: false
+      json_serializable:
+        options:
+          explicit_to_json: true
